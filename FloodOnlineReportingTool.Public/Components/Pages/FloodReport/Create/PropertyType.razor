@@ -1,0 +1,71 @@
+﻿@page "/floodreport/create/propertytype"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="PropertyType">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    @if (!string.IsNullOrWhiteSpace(_addressPreview))
+    {
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                    Address
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @_addressPreview
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Address.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                </dd>
+            </div>
+        </dl>
+    }
+
+    @if (Model.ResponsibleOrganisations.Count > 0)
+    {
+        <h2 class="govuk-heading-l">Information sharing</h2>
+        <p>Details of this report will be shared with the following flood risk organisations.</p>
+        @foreach (var org in Model.ResponsibleOrganisations)
+        {
+            <div class="govuk-grid-row govuk-!-margin-top-3">
+                <div class="govuk-grid-column-one-quarter">
+                    <a href="@org.Website" target="_blank">
+                        <img src="@org.Logo" alt="Visit the @org.Name website" class="govuk-!-width-full">
+                    </a>
+                </div>
+                <div class="govuk-grid-column-three-quarters">@org.Description</div>
+            </div>
+        }
+    }
+
+    <GdsFormGroup For="() => Model.Property" Show="Model.PropertyOptions.Count > 0">
+        <InputRadioGroup @bind-Value="Model.Property">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Property type</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>
+                        <div>Select one option.</div>
+                        @if (!string.IsNullOrWhiteSpace(_classification))
+                        {
+                            <div>The selected address is listed as @_classification. Select a different property type if this is incorrect.</div>
+                        }
+                    </GdsHint>
+                    <GdsErrorMessage />
+                    <GdsRadios Options="Model.PropertyOptions" />
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+</EditForm>

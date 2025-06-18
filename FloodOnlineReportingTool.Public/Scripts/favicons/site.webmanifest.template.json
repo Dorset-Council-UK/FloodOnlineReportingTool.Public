@@ -1,0 +1,43 @@
+{
+  "name": "Flood online reporting tool - Public",
+  "short_name": "FORT Public",
+  "id": "/__MANIFEST_PATH_BASE__",
+  "start_url": "/__MANIFEST_PATH_BASE__",
+  "theme_color": "#06699C",
+  "background_color": "#06699C",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/__MANIFEST_PATH_BASE__/favicons/144x144.webp",
+      "sizes": "144x144",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/__MANIFEST_PATH_BASE__/favicons/192x192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/__MANIFEST_PATH_BASE__/favicons/512x512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/__MANIFEST_PATH_BASE__/assets/images/logos/screenshot%20wide.webp",
+      "sizes": "1280x644",
+      "type": "image/webp",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/__MANIFEST_PATH_BASE__/assets/images/logos/screenshot%20narrow.webp",
+      "sizes": "600x1100",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    }
+  ]
+}

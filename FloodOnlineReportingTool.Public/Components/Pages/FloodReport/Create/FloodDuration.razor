@@ -1,0 +1,90 @@
+﻿@page "/floodreport/create/floodduration"
+@using FloodOnlineReportingTool.DataAccess.Models
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodDuration">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                The flooding started on
+            </dt>
+            <dd class="govuk-summary-list__value">
+                @(_floodStart.HasValue ? _floodStart.Value.GdsReadable() : "Unknown")
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.FloodStarted.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> when the flooding started</span></a>
+            </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                Still flooding
+            </dt>
+            <dd class="govuk-summary-list__value">
+                @(_isFloodOngoing ? "Yes" : "No")
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.FloodStarted.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> is flooding ongoing</span></a>
+            </dd>
+        </div>
+    </dl>
+
+    @if (!_isLoading && _durationOptions.Count <= 0)
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>The flood duration options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+        </p>
+    }
+
+    <GdsFormGroup For="() => Model.DurationKnownId" Show="!_isLoading">
+        <InputRadioGroup @bind-Value="Model.DurationKnownId">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">What was the duration of the flooding?</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        @foreach (var option in _durationOptions)
+                        {
+                            var conditionalId = option.Value == FloodProblemIds.DurationKnown ? "conditional-known" : null;
+                            <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                            if (conditionalId != null)
+                            {
+                                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                    <GdsFormGroup For="@(() => Model.DurationDays)">
+                                        <GdsLabel Text="Days" />
+                                        <GdsErrorMessage />
+                                        <InputNumber id="@nameof(Model.DurationDays)" @bind-Value="Model.DurationDays" inputmode="numeric" spellcheck="false" class="govuk-input govuk-input--width-3" />
+                                    </GdsFormGroup>
+
+                                    <GdsFormGroup For="@(() => Model.DurationHours)">
+                                        <GdsLabel Text="Hours" />
+                                        <GdsErrorMessage />
+                                        <InputNumber id="@nameof(Model.DurationHours)" @bind-Value="Model.DurationHours" inputmode="numeric" spellcheck="false" class="govuk-input govuk-input--width-3" />
+                                    </GdsFormGroup>
+                                </div>
+                            }
+                        }
+                    </div>
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    @if (!_isLoading)
+    {
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    }
+</EditForm>

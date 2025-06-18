@@ -1,0 +1,73 @@
+﻿@page "/floodreport/investigation/internal"
+@using FloodOnlineReportingTool.DataAccess.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="InvestigationInternalWhen">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            <GdsFormGroup For="() => Model.WhenWaterEnteredKnownId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.WhenWaterEnteredKnownId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Do you know when the water entered?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>
+                                If you don't have an exact date and time it can still be useful to let us know roughly when the water entered the property.
+                                This helps us understand how the flood incident developed.
+                            </GdsHint>
+                            <GdsErrorMessage />
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                @foreach (var option in _whenWaterEnteredOptions)
+                                {
+                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-known" : null;
+                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                                    if (conditionalId != null)
+                                    {
+                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                            <GdsInputDate Id="water-entered" Date="@Model.WhenWaterEnteredDate">
+                                                <Heading>
+                                                    <h3 class="govuk-fieldset__heading">When did the flooding enter the property?</h3>
+                                                </Heading>
+                                                <Hint>For example, 27 3 2024</Hint>
+                                            </GdsInputDate>
+
+                                            <GdsFormGroup For="() => Model.TimeText">
+                                                <GdsLabel Text="Do you know what time? (optional)" />
+                                                <GdsHint>
+                                                    <div>For example, 2pm or 14:00</div>
+                                                    <div>Please put the time if known or 9am for morning and 2pm for afternoon if giving an estimate.</div>
+                                                </GdsHint>
+                                                <GdsErrorMessage />
+                                                <GdsInputText @bind-Value="Model.TimeText" class="govuk-input govuk-input--width-5" autocomplete="date-time" spellcheck="false" inputmode="numeric" />
+                                            </GdsFormGroup>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

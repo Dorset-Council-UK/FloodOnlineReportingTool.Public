@@ -1,0 +1,47 @@
+﻿@page "/floodreport/investigation/helpreceived"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationHelpReceived">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            @if (!_isLoading && Model.HelpReceivedOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The help received options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.HelpReceivedOptions" Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <Heading>
+                        <h2 class="govuk-fieldset__heading">Did you get any help for the flooding?</h2>
+                    </Heading>
+                    <Content>
+                        <GdsHint>Select all that apply</GdsHint>
+                        <GdsErrorMessage />
+                        <GdsCheckboxes Options="Model.HelpReceivedOptions" />
+                    </Content>
+                </GdsFieldsetGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

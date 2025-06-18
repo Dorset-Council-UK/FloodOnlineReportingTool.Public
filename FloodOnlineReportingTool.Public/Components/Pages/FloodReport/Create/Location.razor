@@ -1,0 +1,34 @@
+﻿@page "/floodreport/create/location"
+
+<HeadContent>
+    <link rel="stylesheet" href="/css/leaflet.css">
+</HeadContent>
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-l">@Title</h1>
+
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Location">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <p @ref="_map" class="map"></p>
+
+    @if (!_isLoading && !_editContext.GetValidationMessages().Any())
+    {
+        <p>Where is the flood located?</p>
+        <p>Click the 'Choose a location' button below and click on the map to choose the location.</p>
+
+        <div>
+            <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="ChooseLocation">Choose a location</button>
+        </div>
+
+        <div>
+            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
+        </div>
+    }
+</EditForm>

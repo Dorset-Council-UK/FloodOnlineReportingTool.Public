@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FloodOnlineReportingTool.Public", "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj", "{5C23281F-31A3-42AE-8D04-B1848AE0D23B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4FCBE61B-A312-4C99-9472-F42CA5D02A4A}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		CONTRIBUTING.md = CONTRIBUTING.md
+		DEVELOPING.md = DEVELOPING.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "designs", "designs", "{5762052E-024C-4F6B-89A6-493F6663D8A2}"
+	ProjectSection(SolutionItems) = preProject
+		designs\data.drawio = designs\data.drawio
+		designs\flood report pages.drawio = designs\flood report pages.drawio
+		designs\flood reports.drawio = designs\flood reports.drawio
+		designs\investigation page order.drawio = designs\investigation page order.drawio
+		designs\investigation pages.drawio = designs\investigation pages.drawio
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5762052E-024C-4F6B-89A6-493F6663D8A2} = {4FCBE61B-A312-4C99-9472-F42CA5D02A4A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF772CD8-BC77-450F-9D1B-13D27ACCBFAA}
+	EndGlobalSection
+EndGlobal

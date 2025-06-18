@@ -1,0 +1,60 @@
+﻿@page "/floodreport/update/{eligibilityCheckId:guid}"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="@Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        @if (_updateModel == null)
+        {
+            <GdsWarning Text="Flood report not found" />
+            <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></div>
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="UpdateEligibilityCheck">
+                <FluentValidationValidator />
+                <GdsErrorSummary />
+
+                <GdsWarning Text="To do..." />
+
+                <div>Created: @_updateModel.CreatedUtc.GdsReadable()</div>
+                @if (_updateModel.UpdatedUtc != null)
+                {
+                    <div>Updated: @_updateModel.UpdatedUtc.GdsReadable()</div>
+                }
+
+                <GdsFormGroup For="() => _updateModel.Uprn">
+                    <GdsLabel Text="UPRN" />
+                    <GdsErrorMessage />
+                    <InputNumber id="@nameof(_updateModel.Uprn)" @bind-Value="_updateModel.Uprn" class="govuk-input" />
+                </GdsFormGroup>
+
+                <GdsFormGroup For="() => _updateModel.Easting">
+                    <GdsLabel Text="Easting" />
+                    <GdsErrorMessage />
+                    <InputNumber id="@nameof(_updateModel.Easting)" @bind-Value="_updateModel.Easting" class="govuk-input" />
+                </GdsFormGroup>
+
+                <GdsFormGroup For="() => _updateModel.Northing">
+                    <GdsLabel Text="Northing" />
+                    <GdsErrorMessage />
+                    <InputNumber id="@nameof(_updateModel.Northing)" @bind-Value="_updateModel.Northing" class="govuk-input" />
+                </GdsFormGroup>
+
+                <GdsFormGroup For="() => _updateModel.LocationDesc">
+                    <GdsLabel Text="Location description" />
+                    <GdsErrorMessage />
+                    <InputText id="@nameof(_updateModel.LocationDesc)" @bind-Value="_updateModel.LocationDesc" class="govuk-input" />
+                </GdsFormGroup>
+            </EditForm>
+        }
+    </Authorized>
+</AuthorizeView>

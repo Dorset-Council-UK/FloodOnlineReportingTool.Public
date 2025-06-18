@@ -1,0 +1,39 @@
+﻿@page "/floodreport/create/floodstarted"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodStarted">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsInputDate Id="flood-start" Date="@Model.StartDate">
+        <Heading>
+            <h1 class="govuk-fieldset__heading">When did the flooding start?</h1>
+        </Heading>
+        <Hint>For example, 27 3 2024</Hint>
+    </GdsInputDate>
+
+    <GdsFormGroup For="() => Model.IsFloodOngoing" Show="!_isLoading">
+        <InputRadioGroup @bind-Value="Model.IsFloodOngoing">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Is the flooding ongoing?</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+                    <GdsRadios Options="_floodOngoingOptions" Inline="true" />
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    @if (!_isLoading)
+    {
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    }
+</EditForm>

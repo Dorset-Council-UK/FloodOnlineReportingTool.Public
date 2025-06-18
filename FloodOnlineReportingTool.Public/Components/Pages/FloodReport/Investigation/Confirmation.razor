@@ -1,0 +1,38 @@
+﻿@page "/floodreport/investigation/confirmation"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+        @if (!_isLoading)
+        {
+            if (_investigation == null)
+            {
+                <h1 class="govuk-heading-xl">@Title</h1>
+                <GdsWarning Text="We cannot find your investigation." />
+            }
+            else
+            {
+                <div class="govuk-panel govuk-panel--confirmation">
+                    <h1 class="govuk-panel__title">@Title</h1>
+                    <div class="govuk-panel__body">Created on @_investigation.CreatedUtc.GdsReadable()</div>
+                </div>
+
+                <p>Thank you for taking the time to complete this investigation.</p>
+            
+                <section id="what-happens-next">
+                    <h2 class="govuk-heading-l">What happens next</h2>
+
+                </section>
+            }
+        }
+    </Authorized>
+</AuthorizeView>

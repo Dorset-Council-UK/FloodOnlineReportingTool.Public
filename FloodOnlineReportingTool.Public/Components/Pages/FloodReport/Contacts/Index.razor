@@ -1,0 +1,71 @@
+﻿@page "/floodreport/contacts"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<AuthorizeView>
+    <NotAuthorized>
+        <h1 class="govuk-heading-l">@Title</h1>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-l">@Title</h1>
+
+                @if (_contactModels.Count == 0)
+                {
+                    <p>Give us your contact details if you would like to:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>recieve updates</li>
+                        <li>check the progress of your application</li>
+                        <li>reset your login details</li>
+                    </ul>
+
+                    <a href="@ContactPages.Create.Url" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+                        New contact
+                        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+                        </svg>
+                    </a>
+                }
+                else
+                {
+                    <p>Change your contact details if you would like to:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>recieve updates</li>
+                        <li>check the progress of your application</li>
+                        <li>reset your login details</li>
+                        <li>update your contact information</li>
+                        <li>provide temporary contact information</li>
+                    </ul>
+
+                    <h2 class="govuk-heading-m">Contacts</h2>
+
+                    @foreach (var contactModel in _contactModels)
+                    {
+                        <ContactInformation Contact="@contactModel" SummaryCard="true" />
+                    }
+
+                    if (_numberOfUnusedRecordTypes > 0)
+                    {
+                        <a href="@ContactPages.Create.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
+                            Add another contact
+                        </a>
+                    }
+                }
+            </div>
+
+            <section class="govuk-grid-column-one-third related-navigation">
+                <h2 class="govuk-heading-s" id="related-content">Related content</h2>
+                <nav role="navigation" aria-labelledby="related-content">
+                    <ul class="govuk-list govuk-body-s">
+                        <li><a class="govuk-link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></li>
+                    </ul>
+                </nav>
+            </section>
+        </div>
+    </Authorized>
+</AuthorizeView>

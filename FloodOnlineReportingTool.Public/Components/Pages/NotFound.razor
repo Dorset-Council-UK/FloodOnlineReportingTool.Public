@@ -1,0 +1,26 @@
+﻿<PageTitle>Page not found</PageTitle>
+
+<h1 class="govuk-heading-l">Page not found</h1>
+
+<p>If you typed the web address, check it is correct.</p>
+
+<p>If you pasted the web address, check you copied the entire address.</p>
+
+<p>
+    If the web address is correct or you selected a link or button,
+    @if (ContactLink == null)
+    {
+        @ContactText
+    }
+    else
+    {
+        <a href="@ContactLink" class="govuk-link">@ContactText</a>
+
+    }
+    if you need to speak to someone.
+</p>
+
+@code {
+    private Uri? ContactLink = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
+    private string ContactText = "contact a system administrator";
+}

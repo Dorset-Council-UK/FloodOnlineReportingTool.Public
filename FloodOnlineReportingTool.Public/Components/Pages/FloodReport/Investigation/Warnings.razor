@@ -1,0 +1,71 @@
+﻿@page "/floodreport/investigation/warnings"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationWarnings">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            @if (!_isLoading && _registeredWithFloodlineOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The floodline warning options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.RegisteredWithFloodlineId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.RegisteredWithFloodlineId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Are you registered to receive floodline warnings from the Environment Agency?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>See <a href="https://www.gov.uk/sign-up-for-flood-warnings" target="_blank" class="govuk-link">https://www.gov.uk/sign-up-for-flood-warnings</a> for more information</GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_registeredWithFloodlineOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading && _otherWarningOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The other warning options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.OtherWarningId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.OtherWarningId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Did you get any other warnings of the flood from another source?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>For example, from the TV, radio, neighbours or somewhere else</GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_otherWarningOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

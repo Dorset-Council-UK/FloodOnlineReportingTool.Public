@@ -1,0 +1,35 @@
+﻿@page "/floodreport/contacts/change/{contactid:guid}"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-l">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        @if (_contactModel == null)
+        {
+            <GdsWarning Text="Contact information not found" />
+            <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">@ContactPages.Home.Title</a></div>
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact">
+                <FluentValidationValidator />
+                <GdsErrorSummary />
+
+                <ContactInformation Contact="_contactModel" />
+
+                <div class="govuk-button-group">
+                    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Home.Url">Cancel</a>
+                </div>
+            </EditForm>
+        }
+    </Authorized>
+</AuthorizeView>

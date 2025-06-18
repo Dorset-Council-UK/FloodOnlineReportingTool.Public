@@ -1,0 +1,82 @@
+﻿@page "/floodreport/investigation/speed"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationSpeed">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            <GdsFormGroup For="() => Model.Begin" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.Begin">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">How quickly did the flooding start?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>Select one option.</GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_beginOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            <GdsFormGroup For="() => Model.WaterSpeed" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.WaterSpeed">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">How fast was the water moving?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>Select one option.</GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_waterSpeedOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            <GdsFormGroup For="() => Model.Appearance" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.Appearance">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">What did the water look like?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>Select one option.</GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_appearanceOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            <GdsFormGroup For="() => Model.MoreDetails" Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
+                <h2 class="govuk-label-wrapper">
+                    <GdsLabel Text="Can you provide more detail of the appearance? (optional)" AdditionalCssClasses="govuk-label--m" />
+                </h2>
+                <GdsHint>Do not include personal or financial information</GdsHint>
+                <GdsErrorMessage />
+                <InputTextArea id="@nameof(Model.MoreDetails)" @bind-Value="Model.MoreDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
+                <div id="@($"{nameof(Model.MoreDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

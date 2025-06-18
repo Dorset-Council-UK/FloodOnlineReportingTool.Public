@@ -1,0 +1,150 @@
+﻿@page "/test"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<dl class="govuk-summary-list">
+    <AuthorizeView>
+        <Authorized>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Fort user is signed in</dt>
+                <dd class="govuk-summary-list__value">true</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignOut.Title</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Fort Name</dt>
+                <dd class="govuk-summary-list__value">@context.User.Identity?.Name</dd>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Fort user is signed in</dt>
+                <dd class="govuk-summary-list__value">false</dd>
+                <dd class="govuk-summary-list__actions">
+                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignIn.Title</a>
+                </dd>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</dl>
+
+<h2 class="govuk-heading-l">Session details</h2>
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Has create data</dt>
+        <dd class="govuk-summary-list__value">@_hasCreateData</dd>
+        <dd class="govuk-summary-list__actions">
+            @if (_hasCreateData)
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateData" title="Delete the create data in the session">
+                    Delete<span class="govuk-visually-hidden"> the create data in the session</span>
+                </a>
+            }
+            else
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateData" title="Create blank create data in the session">
+                    Create<span class="govuk-visually-hidden"> blank create data in the session</span>
+                </a>
+            }
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Has create extra data</dt>
+        <dd class="govuk-summary-list__value">@_hasCreateExtraData</dd>
+        <dd class="govuk-summary-list__actions">
+            @if (_hasCreateExtraData)
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateExtraData" title="Delete the create extra data in the session">
+                    Delete<span class="govuk-visually-hidden"> the create extra data in the session</span>
+                </a>
+            }
+            else
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateExtraData" title="Create blank create extra data in the session">
+                    Create<span class="govuk-visually-hidden"> blank create extra data in the session</span>
+                </a>
+            }
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Has investigation data</dt>
+        <dd class="govuk-summary-list__value">@_hasInvestigationData</dd>
+        <dd class="govuk-summary-list__actions">
+            @if (_hasInvestigationData)
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteInvestigationData" title="Delete the investigation data in the session">
+                    Delete<span class="govuk-visually-hidden"> the investigation data in the session</span>
+                </a>
+            }
+            else
+            {
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankInvestigationData" title="Create blank investigation data in the session">
+                    Create<span class="govuk-visually-hidden"> blank investigation data in the session</span>
+                </a>
+            }
+        </dd>
+    </div>
+</dl>
+
+<div>
+    <h2 class="govuk-heading-l">General pages</h2>
+    <ul class="govuk-list">
+        <li><a class="govuk-link" href="@GeneralPages.Home.Url">@GeneralPages.Home.Title</a></li>
+        <li><a class="govuk-link" href="@GeneralPages.Error.Url">@GeneralPages.Error.Title</a></li>
+        <li><a class="govuk-link" href="@GeneralPages.AccessDenied.Url">@GeneralPages.AccessDenied.Title</a></li>
+    </ul>
+</div>
+
+<div>
+    <h2 class="govuk-heading-l">Create flood report pages</h2>
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            @foreach (var info in _floodReportCreatePages)
+            {
+                <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @info.Note</a></li>
+            }
+        </ol>
+    </nav>
+</div>
+
+<div>
+    <h2 class="govuk-heading-l">Investigation pages</h2>
+    <div>Secured pages</div>
+    <div>Status needed is 'Action needed'</div>
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            @foreach (var info in _investigationPages)
+            {
+                <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @info.Note</a></li>
+            }
+        </ol>
+    </nav>
+</div>
+
+<div>
+    <h2 class="govuk-heading-l">Account pages</h2>
+    <ul class="govuk-list">
+        @foreach (var info in _accountPages)
+        {
+            <li><a class="govuk-link" href="@info.Url">@info.Title @info.Note</a></li>
+        }
+    </ul>
+</div>
+
+<div>
+    <h2 class="govuk-heading-l">User pages</h2>
+    <p>Secured pages</p>
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></li>
+            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@ContactPages.Home.Url">@ContactPages.Home.Title</a></li>
+            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@ContactPages.Create.Url">@ContactPages.Create.Title</a></li>
+        </ol>
+    </nav>
+</div>

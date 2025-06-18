@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+@inherits LayoutComponentBase
+
+<GdsHeader ServiceName="Flood Online Reporting Tool (FORT)" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["assets/images/logos/logo.webp"]">
+    @if (!Env.IsProduction())
+    {
+        <div class="govuk-header__service-name govuk-!-display-block">This is <strong>@Env.EnvironmentName</strong>!</div>
+    }
+</GdsHeader>
+
+<div class="govuk-width-container">
+    <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Alpha" FeedbackLink="_feedbackUri" />
+
+    <SectionOutlet SectionName="Layout.GdsBreadcrumbs" />
+
+    <main class="govuk-main-wrapper govuk-body" id="main-content" role="main">
+        @Body
+    </main>
+</div>
+
+<GdsFooter />
+
+@code {
+    [Inject]
+    public IWebHostEnvironment Env { get; set; } = default!;
+
+    private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
+}

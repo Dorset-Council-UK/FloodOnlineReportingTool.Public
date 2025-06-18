@@ -1,0 +1,50 @@
+﻿@page "/floodreport/create/address"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Address">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Searching..." />
+
+    @if (!_isSearching && Model.AddressOptions.Count == 0)
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>No addresses were found, please check the postcode and search again</span>
+        </p>
+    }
+
+    <GdsFormGroup For="() => Model.UPRN" Show="Model.AddressOptions.Count > 0">
+        @{
+            var hintId = "UPRN-hint";
+            var errorId = "UPRN-error";
+            var describedBy = _editContext.IsValid(() => Model.UPRN) ? hintId : $"{hintId} {errorId}";
+        }
+        <GdsLabel Text="Choose address" />
+        <GdsHint Id="@hintId">Select one option.</GdsHint>
+        <GdsErrorMessage Id="@errorId" />
+        <InputSelect id="@nameof(Model.UPRN)" @bind-Value="Model.UPRN" class="govuk-select" aria-describedby="@describedBy">
+            <option value=""></option>
+            @foreach (var option in Model.AddressOptions)
+            {
+                <option value="@option.Value" selected="@option.Selected">@option.Label</option>
+            }
+        </InputSelect>
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => Model.Postcode">
+        <GdsLabel Text="Postcode" />
+        <GdsHint>If the address is not showing you can search again with a different postcode.</GdsHint>
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="Model.Postcode" class="govuk-input govuk-input--width-10" autocomplete="postal-code" />
+        <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="SearchAgain">Search again</button>
+    </GdsFormGroup>
+
+    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
+
+</EditForm>

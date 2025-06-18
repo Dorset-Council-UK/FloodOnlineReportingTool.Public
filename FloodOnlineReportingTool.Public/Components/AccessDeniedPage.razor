@@ -1,0 +1,14 @@
+﻿@page "/access-denied"
+<PageTitle>@GeneralPages.AccessDenied.Title</PageTitle>
+
+<GdsBreadcrumbs Items="@_breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@GeneralPages.AccessDenied.Title</h1>
+
+<AccessDenied />
+
+@code {
+    private readonly IReadOnlyCollection<GdsBreadcrumb> _breadcrumbs = [
+        new (GeneralPages.Home.Url, GeneralPages.Home.Title)
+    ];
+}

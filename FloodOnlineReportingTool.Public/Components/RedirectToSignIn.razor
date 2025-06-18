@@ -1,0 +1,8 @@
+﻿@inject NavigationManager NavigationManager
+@code {
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"{AccountPages.SignIn.Url}?returnUrl={Uri.EscapeDataString(uri.PathAndQuery)}", forceLoad: true, replace: true);
+    }
+}

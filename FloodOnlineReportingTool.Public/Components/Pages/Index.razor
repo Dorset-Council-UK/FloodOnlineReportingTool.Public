@@ -1,0 +1,35 @@
+﻿@page "/"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="@Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">Flood Online Reporting Tool (FORT)</h1>
+
+<div>
+    <p>Multiple groups are responsible for flood risk so the FORT tool will attempt to forward your report to the correct place.</p>
+    <p>You can then manage your flood report via this site and see any responses you recieve.</p>
+    
+    <GdsWarning Text="It is a legal requirement to report past flooding to potential buyers when selling a property." />
+    
+    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button govuk-button-start" href="@FloodReportPages.Home.Url">
+        Start a new flood report
+        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+        </svg>
+    </a>
+</div>
+
+<div>
+    <p>You can also update an existing record if you have provided contact details.</p>
+    <div class="govuk-inset-text">
+        You will require the reference and access code which should have been sent to you in order to use this service.
+    </div>
+
+    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button govuk-button-start" href="@FloodReportPages.Overview.Url">
+        Manage an existing report
+        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+        </svg>
+    </a>
+</div>

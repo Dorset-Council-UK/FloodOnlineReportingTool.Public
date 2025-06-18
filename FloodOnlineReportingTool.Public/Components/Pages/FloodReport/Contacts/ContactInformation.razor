@@ -1,0 +1,104 @@
+﻿@if (SummaryCard)
+{
+    <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">@Contact.ContactType</h2>
+            <ul class="govuk-summary-card__actions">
+                <li class="govuk-summary-card__action">
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Change.Url}/{Contact.Id}")">Change<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
+                </li>
+                <li class="govuk-summary-card__action">
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Delete.Url}/{Contact.Id}")">Delete<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Contact name</dt>
+                    <dd class="govuk-summary-list__value">@Contact.ContactName</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Email address</dt>
+                    <dd class="govuk-summary-list__value">@Contact.EmailAddress</dd>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Contact.PhoneNumber))
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">UK telephone number</dt>
+                        <dd class="govuk-summary-list__value">@Contact.PhoneNumber</dd>
+                    </div>
+                }
+            </dl>
+        </div>
+    </div>
+}
+else if (ViewOnly)
+{
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Type of contact</dt>
+            <dd class="govuk-summary-list__value">@Contact.ContactType</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Contact name</dt>
+            <dd class="govuk-summary-list__value">@Contact.ContactName</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Email address</dt>
+            <dd class="govuk-summary-list__value">@Contact.EmailAddress</dd>
+        </div>
+        @if (!string.IsNullOrEmpty(Contact.PhoneNumber))
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">UK telephone number</dt>
+                <dd class="govuk-summary-list__value">@Contact.PhoneNumber</dd>
+            </div>
+        }
+    </dl>
+}
+else if (_contactTypes.Count == 0)
+{
+    <GdsWarning Text="There are no more contact types available" />
+}
+else
+{
+    <GdsFormGroup For="() => Contact.ContactType">
+        <InputRadioGroup @bind-Value="Contact.ContactType">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Type of contact</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+                    <GdsRadios Options="_contactTypes" />
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => Contact.ContactName">
+        <GdsLabel Text="Contact name" />
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="Contact.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => Contact.EmailAddress">
+        <GdsLabel Text="Email address" />
+        <GdsHint>
+            <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
+            <div>Email addresses will be deleted within 6 months unless a further investigation is started.</div>
+        </GdsHint>
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="Contact.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => Contact.PhoneNumber">
+        <GdsLabel Text="UK telephone number (optional)" />
+        <GdsHint>Only add a telephone number if requested by an organisation</GdsHint>
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="postal-code" aria-describedby="PhoneNumber-hint" />
+    </GdsFormGroup>
+}

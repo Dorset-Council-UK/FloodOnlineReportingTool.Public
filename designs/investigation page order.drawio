@@ -1,0 +1,203 @@
+<mxfile host="65bd71144e">
+    <diagram id="mbynM6EiDv0cm4Cm7i9c" name="Page-1">
+        <mxGraphModel dx="1198" dy="441" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="115" value="" style="edgeStyle=none;html=1;" parent="1" source="CommunityImpact" target="Blockages" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Impact on the community" id="CommunityImpact">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="40" y="640" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <object label="Before the flooding&lt;div&gt;(page: Warnings)&lt;/div&gt;" id="BeforeFlooding">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="1000" y="640" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="30" value="" style="edgeStyle=none;html=1;" parent="1" source="HelpReceived" target="BeforeFlooding" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Help received" id="HelpReceived">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="760" y="640" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="29" value="" style="edgeStyle=none;html=1;" parent="1" source="ActionTaken" target="HelpReceived" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Actions taken" id="ActionTaken">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="520" y="640" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="28" value="" style="edgeStyle=none;html=1;" parent="1" source="Blockages" target="ActionTaken" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Blockages" id="Blockages">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="280" y="640" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="110" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.99;exitY=0.432;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="PeakDepth" target="CommunityImpact" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1640" y="480" as="targetPoint"/>
+                        <mxPoint x="1660" y="190" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="1680" y="235"/>
+                            <mxPoint x="1680" y="600"/>
+                            <mxPoint x="120" y="600"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <object label="Peak depth&lt;div&gt;(how deep inside&lt;/div&gt;&lt;div&gt;how deep outside)&lt;/div&gt;" id="PeakDepth">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=default;" parent="1" vertex="1">
+                        <mxGeometry x="1480" y="200" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="78" value="" style="edgeStyle=none;html=1;" parent="1" source="InvestigationHome" target="FloodWaterDetails" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Investigation home" id="InvestigationHome">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;strokeOpacity=100;" parent="1" vertex="1">
+                        <mxGeometry x="40" y="200" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="100" value="" style="edgeStyle=none;html=1;" parent="1" source="InternalFloodingHow" target="InternalFloodingWhen" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="81" value="" style="edgeStyle=none;html=1;" parent="1" source="FloodWaterDetails" target="Destination" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Flood water details&lt;div&gt;(Page: speed)&lt;/div&gt;&lt;div&gt;(begin, speed, appearance)&lt;/div&gt;" id="FloodWaterDetails">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="280" y="200" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="79" value="Only show an investigation page when:&lt;div&gt;&lt;ul&gt;&lt;li&gt;Signed in (has flood reference)&lt;/li&gt;&lt;li&gt;No investigation exists in the database&lt;/li&gt;&lt;li&gt;Status is Action Needed&lt;/li&gt;&lt;li&gt;An investigation object exists in the session&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="320" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="109" value="" style="edgeStyle=none;html=1;" parent="1" source="Destination" target="DamageToVehicles" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Destination" id="Destination">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="520" y="200" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="101" value="" style="edgeStyle=none;html=1;" parent="1" source="DamageToVehicles" target="PeakDepth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Damage to vehicles" id="DamageToVehicles">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="760" y="200" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="88" value="" style="edgeStyle=none;html=1;" parent="1" source="FloodHistory" target="Summary" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Flood history" id="FloodHistory">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="520" y="800" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <object label="Comfirmation" id="Confirmation">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="1000" y="800" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="89" value="" style="edgeStyle=none;html=1;" parent="1" source="Summary" target="Confirmation" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Summary" id="Summary">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="760" y="800" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="91" value="" style="edgeStyle=none;html=1;" parent="1" source="WarningSources" target="FloodHistory" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <object label="Warning sources" id="WarningSources">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="40" y="800" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="93" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0;exitDx=160;exitDy=45;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;curved=1;" parent="1" source="FloodlineWarning" target="FloodHistory" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="94" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1.006;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;curved=1;" parent="1" source="WarningSources" target="FloodlineWarning" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="106" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.514;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=classic;curved=1;" parent="1" source="DamageToVehicles" target="InternalFloodingHow" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="107" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.994;exitY=0.543;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;curved=1;" parent="1" source="InternalFloodingWhen" target="PeakDepth" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1400" y="430" as="sourcePoint"/>
+                        <mxPoint x="1480" y="340" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="114" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1.006;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;rounded=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=classic;" parent="1" source="BeforeFlooding" target="WarningSources" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1200" y="675"/>
+                            <mxPoint x="1200" y="755"/>
+                            <mxPoint x="120" y="755"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <object label="Water entry&lt;div&gt;(how it entered)&lt;/div&gt;" id="InternalFloodingHow">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="1000" y="280" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <object label="When" id="InternalFloodingHowConditions">
+                    <mxCell style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="1000" y="360" width="160" height="140" as="geometry">
+                            <mxRectangle x="40" y="110" width="160" height="30" as="alternateBounds"/>
+                        </mxGeometry>
+                    </mxCell>
+                </object>
+                <mxCell id="99" value="Inernal flooding" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="InternalFloodingHowConditions" vertex="1">
+                    <mxGeometry y="30" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="116" value="Logic is handled by FloodReport &amp;gt; EligibilityCheck &amp;gt; IsInternal()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="InternalFloodingHowConditions" vertex="1">
+                    <mxGeometry y="70" width="160" height="70" as="geometry"/>
+                </mxCell>
+                <object label="Internal flooding&lt;div&gt;(when it entered)&lt;/div&gt;" id="InternalFloodingWhen">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="1240" y="280" width="160" height="80" as="geometry"/>
+                    </mxCell>
+                </object>
+                <object label="When" id="InternalFloodingWhenConditions">
+                    <mxCell style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                        <mxGeometry x="1240" y="360" width="160" height="140" as="geometry">
+                            <mxRectangle x="40" y="110" width="160" height="30" as="alternateBounds"/>
+                        </mxGeometry>
+                    </mxCell>
+                </object>
+                <mxCell id="112" value="Inernal flooding" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="InternalFloodingWhenConditions" vertex="1">
+                    <mxGeometry y="30" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="119" value="Logic is handled by FloodReport &amp;gt; EligibilityCheck &amp;gt; IsInternal()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="InternalFloodingWhenConditions" vertex="1">
+                    <mxGeometry y="70" width="160" height="70" as="geometry"/>
+                </mxCell>
+                <object label="Floodline warning" id="FloodlineWarning">
+                    <mxCell style="shape=note;size=20;whiteSpace=wrap;html=1;direction=east;" parent="1" vertex="1">
+                        <mxGeometry x="280" y="880" width="160" height="70" as="geometry"/>
+                    </mxCell>
+                </object>
+                <mxCell id="95" value="When" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="950" width="160" height="70" as="geometry">
+                        <mxRectangle x="40" y="110" width="160" height="30" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="96" value="Floodline was selected as a Warning source&amp;nbsp;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="95" vertex="1">
+                    <mxGeometry y="30" width="160" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

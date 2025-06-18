@@ -1,0 +1,174 @@
+﻿@page "/floodreport/create/confirmation"
+@using FloodOnlineReportingTool.DataAccess.Models
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<GdsSpinner Show="_isLoading" />
+
+@if (_loadingError)
+{
+    <h1 class="govuk-heading-xl">@Title</h1>
+    <p class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span> <span>Sorry there was a problem completing your flood report. Please try again but if this issue happens again then please report a bug.</span>
+    </p>
+}
+
+@if (!_isLoading && string.IsNullOrWhiteSpace(Reference))
+{
+    <h1 class="govuk-heading-xl">@Title</h1>
+    <p class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span> <span>The flood report reference was missing from the URL. Please try again but if this issue happens again then please report a bug.</span>
+    </p>
+}
+
+@if (!_isLoading && !_loadingError)
+{
+    <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">@Title</h1>
+        <div class="govuk-panel__body">Your reference number<br><strong>@Reference</strong></div>
+    </div>
+
+    <p>Thank you for taking the time to report this flood.</p>
+    <p>The information you have provided will:</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>prioritise assistance</li>
+        <li>be used to help flood risk managers to get a better overall picture of what is going on during and after a flood event</li>
+        <li>be used to inform the flood defence planning processes</li>
+    </ul>
+
+    <section id="eligibility-results">
+        <h2 class="govuk-heading-l">Eligibility results</h2>
+
+        @if (_isEmergencyResponse)
+        {
+            <p>An emergency response was triggered by your report and you should have been contacted by the relevant organisation.</p>
+        }
+
+        @switch (_floodInvestigation)
+        {
+            case EligibilityOptions.Eligible:
+                <p>Your record is eligible for a property level flood investigation. Please complete a full flood report so the relevant organisations can complete this investigation.</p>
+                break;
+
+            case EligibilityOptions.Conditional:
+                <p>Because your property was flooded internally you may be eligible for additional support from you lead local flood authority. Eligibility is not automatic but if you are signed up for updates on this record the relevant organisation can let you know if they believe you are eligible.</p>
+                <p>If you want to discuss this further with the relevant organisations, use the reference number above to allow them to see the details of this flood event and this may help you to get a decision.</p>
+                break;
+
+            case EligibilityOptions.None:
+                <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                break;
+        }
+
+        @switch (_grantApplication)
+        {
+            case EligibilityOptions.Eligible:
+                <p>You have successfully applied for a grant in relation to this flood event.</p>
+                <p>For further details, refer to whichever system you used to apply for the grant.</p>
+                break;
+
+            case EligibilityOptions.Conditional:
+                <p>You may be eligible to apply for a grant. Use the link provided to submit an application.</p>
+                break;
+        }
+
+        @switch (_propertyProtection)
+        {
+            case EligibilityOptions.Eligible:
+                <p>You have successfully applied for help installing property level protection for your property.</p>
+                break;
+
+            case EligibilityOptions.Conditional:
+                <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                break;
+        }
+
+        @switch (_section19)
+        {
+            case EligibilityOptions.Eligible:
+                <p>The lead local flood authority responsible for your property has begun a section 19 flood investigation. To help with this process you can complete a full flood report to provide further information about this flood event. The details you provide will assist them in their investigations.</p>
+                break;
+
+            case EligibilityOptions.Completed:
+                <p>
+                    The lead local flood authority responsible for your property has completed a section 19 flood investigation for this flood event.
+                    @if (string.IsNullOrEmpty(_section19Url))
+                    {
+                        <span>The report is published and can be found by contacting the lead local flood authority.</span>
+                    }
+                    else
+                    {
+                        <span>The report is published and can be found at <a href="@_section19Url" target="_blank" class="govuk-link">@_section19Url</a>.</span>
+                    }
+                </p>
+                break;
+        }
+    </section>
+
+    <section id="responsible-organisations">
+        <h2 class="govuk-heading-l">Responsible organisations</h2>
+
+        @if (_leadLocalFloodAuthorities.Any())
+        {
+            <div class="govuk-inset-text">
+                @foreach (var org in _leadLocalFloodAuthorities)
+                {
+                    @((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))
+                }
+            </div>
+        }
+
+        @if (_otherFloodAuthorities.Any())
+        {
+            <p>Other responsible organisations include:</p>
+            @foreach (var org in _otherFloodAuthorities)
+            {
+                <p>@((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))</p>
+            }
+        }
+    </section>
+
+    <section id="what-happens-next">
+        <h2 class="govuk-heading-l">What happens next</h2>
+
+        @if (_hasContactInformation)
+        {
+            <p>Change your contact details if you would like to:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>recieve updates</li>
+                <li>check the progress of your application</li>
+                <li>reset your login details</li>
+                <li>update your contact information</li>
+                <li>provide temporary contact information</li>
+            </ul>
+            <p>
+                <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">Change your contact information</a>
+            </p>
+        }
+        else
+        {
+            <p>Give us your contact details if you would like to:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>recieve updates</li>
+                <li>check the progress of your application</li>
+                <li>reset your login details</li>
+            </ul>
+            <p>
+                <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Create.Url">Add contact information</a>
+            </p>
+        }
+
+        <p>
+            If you have not been offered any further options above then the details you have entered will be kept active on the system for 6 months.
+            Where you have provided an email address you will be emailed should any new assistance become available.
+            This occassionally happens for major incidents where additional funding may be provided by the UK Government.
+        </p>
+        <p>
+            At the end of the 6 months period your email address will be deleted but the record of flooding will be kept to help with the general understanding of flooding
+            and its impacts. The data you have provided is essential when flood risk authorities develop plans and strategies as it helps them to understand where flooding
+            has occurred and what the causes of that flooding may be. Thank you for contributing to this work.
+        </p>
+    </section>
+}

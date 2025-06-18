@@ -1,0 +1,65 @@
+﻿@page "/floodreport/investigation/vehicles"
+@using FloodOnlineReportingTool.DataAccess.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationVehicles">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            @if (!_isLoading && _wereVehiclesDamagedOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The vehicle options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            <GdsFormGroup For="() => Model.WereVehiclesDamagedId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.WereVehiclesDamagedId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Were any vehicles damaged as part of the flooding?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsErrorMessage />
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                @foreach (var option in _wereVehiclesDamagedOptions)
+                                {
+                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-yes" : null;
+                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                                    if (conditionalId != null)
+                                    {
+                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                            <GdsFormGroup For="() => Model.NumberOfVehiclesDamaged">
+                                                <GdsLabel Text="How many vehicles were damaged?" />
+                                                <GdsErrorMessage />
+                                                <InputNumber id="@nameof(Model.NumberOfVehiclesDamaged)" @bind-Value="Model.NumberOfVehiclesDamaged" class="govuk-input govuk-input--width-5" spellcheck="false" inputmode="numeric" />
+                                            </GdsFormGroup>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

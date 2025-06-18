@@ -1,0 +1,34 @@
+﻿@page "/account/email/confirm"
+
+<PageTitle>@Title</PageTitle>
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+@if (_confirmed)
+{
+    <div class="govuk-panel govuk-panel--confirmation">
+        <h2 class="govuk-panel__title">Email address confirmed</h2>
+        <div class="govuk-panel__body">Thank you for confirming your email address!</div>
+    </div>
+
+    <h2 class="govuk-heading-l">What happens next</h2>
+    <p>@_expirationMessage</p>
+    <p>You can now <a href="@_signInUrl" class="govuk-link">@_signInTitle</a>.</p>
+}
+else
+{
+    @if (_confirmError)
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>There was a problem confirming your email address.</span>
+        </p>
+    }
+
+    <GdsWarning Text="Please check your email" />
+
+    <p>Confirm your email address by clicking the link in the email we sent you.</p>
+
+    <p>You can close this page.</p>
+
+    <p><a href="@_resendEmailUrl" class="govuk-link">Resend confirmation email</a></p>
+}

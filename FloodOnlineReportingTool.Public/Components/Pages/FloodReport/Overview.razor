@@ -1,0 +1,118 @@
+﻿@page "/floodreport/overview"
+@using FloodOnlineReportingTool.DataAccess.Models
+@using FloodOnlineReportingTool.Public.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="@Breadcrumbs" />
+
+<AuthorizeView Roles="@AuthenticationSchemeDefaults.FloodReportAdminRole">
+    <Authorized>
+        <h1 class="govuk-heading-xl">The users flood report</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1 class="govuk-heading-xl">Your flood report</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView>
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <div class="govuk-grid-row">
+            @if (_floodReport == null)
+            {
+                <div class="govuk-grid-column-full">
+                    <GdsWarning Text="We cannot find your flood report." />
+                </div>
+            }
+            else
+            {
+                <div class="govuk-grid-column-full">
+                    <p class="govuk-body-l">
+                        <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown status")</strong>
+                        Flood reference <strong>@_floodReport.Reference</strong>
+                    </p>
+
+                    <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+
+                    @if (_accessHasExpired)
+                    {
+                        <GdsWarning Text="Your access to this flood report has expired" />
+                    }
+                    else
+                    {
+                        <p>Your access to this flood report will expire in @_accessTimeLeft.GdsReadable()</p>
+
+                        @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                        {
+                            <h2 class="govuk-heading-l">Tell us more</h2>
+                            <p>There is currently an ongoing investigation.</p>
+                            <p>We need some more information from you to help us complete the investigation.</p>
+                            <p>This will include details about:</p>
+                            <ul>
+                                <li>Information about how and when water entered your property</li>
+                                <li>Flood depths</li>
+                                <li>Warnings you recieved</li>
+                                <li>Any help you were provided with</li>
+                                <li>More information about the flood water itself</li>
+                            </ul>
+                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button govuk-button--start" data-module="govuk-button" href="@InvestigationPages.FirstPage.Url">
+                                Start now
+                                <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                                    <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+                                </svg>
+                            </a>
+                        }
+
+                        @if (_floodReport.InvestigationId != null)
+                        {
+                            <h2 class="govuk-heading-l">Investigation</h2>
+                            <p>An investigation has been completed for this flood report.</p>
+                        }
+
+                        @if (_floodReport.EligibilityCheckId != null)
+                        {
+                            <h2 class="govuk-heading-l">Update your records</h2>
+                            <p>You can provide updates to records you have already submitted.</p>
+                            <GdsWarning Text="Coming soon..." />
+                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@($"{FloodReportPages.Update.Url}/{_floodReport.EligibilityCheckId}")">@FloodReportPages.Update.Title</a>
+                        }
+                    }
+                </div>
+
+                @if (!_accessHasExpired)
+                {
+                    <div class="govuk-grid-column-full">
+                        <h2 class="govuk-heading-l">Keep informed</h2>
+
+                        @if (_floodReport.ContactRecords.Count > 0)
+                        {
+                            <p>Change your contact details if you would like to:</p>
+                            <ul class="govuk-list govuk-list--bullet">
+                                <li>recieve updates</li>
+                                <li>check the progress of your application</li>
+                                <li>reset your login details</li>
+                                <li>update your contact information</li>
+                                <li>provide temporary contact information</li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>Give us your contact details if you would like to:</p>
+                            <ul class="govuk-list govuk-list--bullet">
+                                <li>recieve updates</li>
+                                <li>check the progress of your application</li>
+                                <li>reset your login details</li>
+                            </ul>
+                        }
+
+                        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Home.Url">@ContactPages.Home.Title</a>
+                    </div>
+                }
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>

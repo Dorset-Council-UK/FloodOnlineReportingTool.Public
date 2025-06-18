@@ -1,0 +1,69 @@
+﻿@page "/floodreport/investigation/blockages"
+@using FloodOnlineReportingTool.DataAccess.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationBlockages">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            @if (!_isLoading && _blockageOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The blockage options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.HasKnownProblemsId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.HasKnownProblemsId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Do you know of any problems, blockages, or recent repair works?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsErrorMessage />
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                @foreach (var option in _blockageOptions)
+                                {
+                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-known" : null;
+                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                                    if (conditionalId != null)
+                                    {
+                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                            <GdsFormGroup For="() => Model.KnownProblemDetails" Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
+                                                <h2 class="govuk-label-wrapper">
+                                                    <GdsLabel Text="Describe the problems, blockages, or recent repair works" AdditionalCssClasses="govuk-label--m" />
+                                                </h2>
+                                                <GdsHint>Do not include personal or financial information</GdsHint>
+                                                <GdsErrorMessage />
+                                                <InputTextArea id="@nameof(Model.KnownProblemDetails)" @bind-Value="Model.KnownProblemDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
+                                                <div id="@($"{nameof(Model.KnownProblemDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
+                                            </GdsFormGroup>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

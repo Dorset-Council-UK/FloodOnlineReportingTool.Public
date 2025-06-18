@@ -1,0 +1,24 @@
+﻿@page "/error"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="@Breadcrumbs" />
+
+<h1 class="govuk-heading-l">Sorry! Something went wrong</h1>
+<p>There was an error dealing with your request.</p>
+<p>
+    Please try again but if this issue happens again please
+    @if (_contactLink == null)
+    {
+        @_contactText
+    }
+    else
+    {
+        <a href="@_contactLink" class="govuk-link">@_contactText</a>
+    }
+</p>
+
+@if (ShowRequestId)
+{
+    <p><strong>Request ID:</strong> <code>@RequestId</code></p>
+}

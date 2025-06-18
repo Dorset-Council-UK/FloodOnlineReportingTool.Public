@@ -1,0 +1,40 @@
+﻿@page "/floodreport"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="@Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<h2 class="govuk-heading-l">Overview</h2>
+<div>
+    <p>Use this service to report flooding at your property to relevant organisations and groups.</p>
+    <p>The organisations who can help you during a flood depend on the type and location of the flooding. This service will help you work out who to contact and where possible report the event directly.</p>
+    <p>By reporting a flood, you are helping communities to protect properties from flooding.</p>
+
+    <a href="@FloodReportCreatePages.Home.Url" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+        Start now
+        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+        </svg>
+    </a>
+</div>
+
+<h2 class="govuk-heading-l">Before you start</h2>
+<div>
+    <p>You will be asked for your contact details and about the affected property.</p>
+    <p>Your personal details will only be shared with departments and groups helping you and those who collect flood data to create flood strategies. This helps organisations to plan flood defences in the places that need them, and stops developments being built in the wrong places.</p>
+    <GdsWarning Text="It is a legal requirement to report past flooding to potential buyers when selling a property." />
+</div>
+
+<h2 class="govuk-heading-l">Need help?</h2>
+<div>
+    <p>If you still have concerns or need help reporting or updating your details, <a href="https://www.gov.uk/find-local-council" class="govuk-link">contact your local authority</a>.</p>
+</div>
+
+<h2 class="govuk-heading-l">Further information about flooding</h2>
+<ul class="govuk-list">
+    <li>
+        <a class="govuk-link" href="https://www.gov.uk/report-flood-cause">Report a flood or possible cause of flooding</a>
+    </li>
+</ul>

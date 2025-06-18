@@ -1,0 +1,58 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: Npm@1
+  displayName: 'Install npm dependencies'
+  inputs:
+    command: 'install'
+    workingDir: '$(Build.SourcesDirectory)/Flood Reporting Tool - Public'
+
+- task: Npm@1
+  displayName: 'Webpack Build (prod)'
+  inputs:
+    command: 'custom'
+    workingDir: '$(Build.SourcesDirectory)/Flood Reporting Tool - Public'
+    customCommand: 'run build'
+
+- task: UseDotNet@2
+  displayName: 'Install .NET Core SDK'
+  inputs:
+    version: 9.x
+    performMultiLevelLookup: true
+    includePreviewVersions: true # Required for preview versions
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    feedsToUse: 'select'
+    vstsFeed: '4d9d9ae5-0283-42cf-8918-f3a7e99c5200' # A series of numbers and letters
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    arguments: '--configuration $(buildConfiguration)'
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output "$(Build.ArtifactStagingDirectory)"'
+    zipAfterPublish: true
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'fort-cloud-$(Build.SourceVersion)'
+    publishLocation: 'Container'

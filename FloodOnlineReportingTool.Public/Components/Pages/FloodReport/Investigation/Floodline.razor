@@ -1,0 +1,77 @@
+﻿@page "/floodreport/investigation/floodline"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationFloodline">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            @if (!_isLoading && _timelyOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The floodline warning timely options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.WarningTimelyId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.WarningTimelyId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Was the floodline warning timely?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>
+                                <div>Select one option.</div>
+                                <div>The message should have arrived in time for you to act, accepting that some flooding can start very quickly.</div>
+                            </GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_timelyOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading && _appropriateOptions.Count <= 0)
+            {
+                <p class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> <span>The floodline warning appropriate options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
+                </p>
+            }
+
+            <GdsFormGroup For="() => Model.WarningAppropriateId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.WarningAppropriateId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Was the warning message correctly worded?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>
+                                <div>Select one option.</div>
+                                <div>The warning should have provided the information you needed.</div>
+                            </GdsHint>
+                            <GdsErrorMessage />
+                            <GdsRadios Options="_appropriateOptions" />
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

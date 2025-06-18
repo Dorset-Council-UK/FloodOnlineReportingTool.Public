@@ -1,0 +1,65 @@
+﻿@page "/floodreport/create/floodareas"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodAreas">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFormGroup For="() => Model.ResidentialOptions" Id="residential-impacts" Show="Model.ShowResidential">
+        <GdsFieldsetGroup>
+            <Heading>
+                <h2 class="govuk-fieldset__heading">Which areas of the residential property were flooded?</h2>
+            </Heading>
+            <Content>
+                <GdsHint>Select all that apply</GdsHint>
+                <GdsErrorMessage />
+                <GdsCheckboxes Options="Model.ResidentialOptions" />
+            </Content>
+        </GdsFieldsetGroup>
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => Model.CommercialOptions" Id="commercial-impacts" Show="Model.ShowCommercial">
+        <GdsFieldsetGroup>
+            <Heading>
+                <h2 class="govuk-fieldset__heading">Which areas of the commercial property were flooded?</h2>
+            </Heading>
+            <Content>
+                <GdsHint>Select all that apply</GdsHint>
+                <GdsErrorMessage />
+                <GdsCheckboxes Options="Model.CommercialOptions" />
+            </Content>
+        </GdsFieldsetGroup>
+    </GdsFormGroup>
+
+    @if (!_isLoading && !Model.ShowResidential && !Model.ShowCommercial)
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>There was a problem working out what type of property you have. Please try again but if this issue happens again then please report a bug.</span>
+        </p>
+    }
+    <GdsFormGroup For="() => Model.IsUninhabitable">
+        <InputRadioGroup @bind-Value="Model.IsUninhabitable">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Did you have to evacuate the property?</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>
+                        <GdsWarning Text="This service will not trigger an emergency response - contact 999 if there is a danger to life." />
+                    </GdsHint>
+                    <GdsErrorMessage />
+                    <GdsRadios Options="_uninhabitableOptions" Inline="true" />
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+</EditForm>

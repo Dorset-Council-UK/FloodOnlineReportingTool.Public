@@ -1,0 +1,48 @@
+{
+  "name": "flood-online-reporting-tool-public",
+  "version": "1.0.0",
+  "description": "This is a web service to allow members of the public to report property level flooding for use by responders and lead local authorities.",
+  "repository": "https://dev.azure.com/dccgisvsts/Flood%20Reporting%20Tool%20-%20Public",
+  "license": "OGL-UK-3.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --node-env production --config webpack.prod.js",
+    "build:dev": "webpack --node-env development --config webpack.dev.js",
+    "watch": "webpack --config webpack.dev.js --watch"
+  },
+  "author": "Dorset Council",
+  "dependencies": {
+    "@types/govuk-frontend": "^5.9.0",
+    "glob": "^11.0.1",
+    "govuk-frontend": "^5.9.0",
+    "leaflet": "^1.9.4",
+    "proj4": "^2.11.0",
+    "proj4leaflet": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.12",
+    "@types/node": "^20.11.16",
+    "@types/proj4": "^2.5.5",
+    "@types/proj4leaflet": "^1.0.10",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^6.10.0",
+    "mini-css-extract-plugin": "^2.8.0",
+    "sass": "^1.70.0",
+    "sass-loader": "^14.1.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^5.10.0"
+  },
+  "-vs-binding": {
+    "ProjectOpened": [
+      "watch",
+      "build:dev"
+    ],
+    "BeforeBuild": [
+      "build:dev"
+    ]
+  }
+}

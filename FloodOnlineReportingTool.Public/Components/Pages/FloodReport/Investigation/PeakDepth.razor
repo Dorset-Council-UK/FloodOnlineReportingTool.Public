@@ -1,0 +1,84 @@
+﻿@page "/floodreport/investigation/peakdepth"
+@using FloodOnlineReportingTool.DataAccess.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationPeakDepth">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            <GdsFormGroup For="() => Model.IsPeakDepthKnownId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.IsPeakDepthKnownId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Do you know how deep the water was?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsHint>
+                                <div>You will have the option to add a maximum depth both inside and outside the property.</div>
+                                <div>You may be able to measure the depth from a tide mark on a wall.</div>
+                            </GdsHint>
+                            <GdsErrorMessage />
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                @foreach (var option in _peakDepthKnownOptions)
+                                {
+                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-depth-known" : null;
+                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                                    if (conditionalId != null)
+                                    {
+                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                            <div>
+                                                <GdsFormGroup For="() => Model.InsideCentimetresText">
+                                                    <GdsLabel Text="What was the depth inside?" />
+                                                    <GdsHint>Total centimetres, like 5</GdsHint>
+                                                    <GdsErrorMessage />
+                                                    <div class="govuk-input__wrapper">
+                                                        <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                                        <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                                    </div>
+                                                </GdsFormGroup>
+
+                                                <GdsHint Id="inside-total">This it roughly equal to @Model.InsideFeet feet and @Model.InsideInches inches</GdsHint>
+                                            </div>
+
+                                            <div>
+                                                <GdsFormGroup For="() => Model.OutsideCentimetresText">
+                                                    <GdsLabel Text="What was the depth outside?" />
+                                                    <GdsHint>Total centimetres, like 5</GdsHint>
+                                                    <GdsErrorMessage />
+                                                    <div class="govuk-input__wrapper">
+                                                        <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                                        <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                                    </div>
+                                                </GdsFormGroup>
+
+                                                <GdsHint Id="outside-total">This it roughly equal to @Model.OutsideFeet feet and @Model.OutsideInches inches</GdsHint>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>

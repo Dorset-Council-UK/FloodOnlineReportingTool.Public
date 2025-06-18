@@ -1,0 +1,40 @@
+﻿@page "/floodreport/investigation/flooddestination"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+    <Authorized>
+        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationDestination">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+            <GdsFormGroup For="() => Model.DestinationOptions" Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <Heading>
+                        <h2 class="govuk-fieldset__heading">Do you know where the water was going?</h2>
+                    </Heading>
+                    <Content>
+                        <GdsHint>Select all that apply</GdsHint>
+                        <GdsErrorMessage />
+                        <GdsCheckboxes Options="Model.DestinationOptions" />
+                    </Content>
+                </GdsFieldsetGroup>
+            </GdsFormGroup>
+
+            @if (!_isLoading)
+            {
+                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+            }
+        </EditForm>
+    </Authorized>
+</AuthorizeView>
