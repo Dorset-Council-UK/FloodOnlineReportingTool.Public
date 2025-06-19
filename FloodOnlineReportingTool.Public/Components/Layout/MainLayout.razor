@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 
-<GdsHeader ServiceName="Flood Online Reporting Tool (FORT)" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["assets/images/logos/logo.webp"]">
+<GdsHeader ServiceName="Flood Online Reporting Tool (FORT)" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
     @if (!Env.IsProduction())
     {
         <div class="govuk-header__service-name govuk-!-display-block">This is <strong>@Env.EnvironmentName</strong>!</div>

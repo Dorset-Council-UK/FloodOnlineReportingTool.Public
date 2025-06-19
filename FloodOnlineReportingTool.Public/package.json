@@ -2,7 +2,7 @@
   "name": "flood-online-reporting-tool-public",
   "version": "1.0.0",
   "description": "This is a web service to allow members of the public to report property level flooding for use by responders and lead local authorities.",
-  "repository": "https://dev.azure.com/dccgisvsts/Flood%20Reporting%20Tool%20-%20Public",
+  "repository": "https://github.com/Dorset-Council-UK/FloodOnlineReportingTool.Public",
   "license": "OGL-UK-3.0",
   "main": "index.js",
   "scripts": {
@@ -13,9 +13,7 @@
   },
   "author": "Dorset Council",
   "dependencies": {
-    "@types/govuk-frontend": "^5.9.0",
     "glob": "^11.0.1",
-    "govuk-frontend": "^5.9.0",
     "leaflet": "^1.9.4",
     "proj4": "^2.11.0",
     "proj4leaflet": "^1.0.2"

@@ -58,16 +58,6 @@ module.exports = {
                     {
                         loader: 'sass-loader', // Compiles Sass to CSS
                         options: {
-                            additionalData: (content, loaderContext) => {
-                                const { resourcePath, rootContext } = loaderContext;
-                                const relativePath = path.relative(rootContext, resourcePath);
-
-                                if (relativePath === 'Scripts\\app.scss' || relativePath === 'Scripts/app.scss') {
-                                    return content.toString().replace(/__GOVUK_ASSETS_PATH_BASE__/g, pathBase);
-                                }
-
-                                return content;
-                            },
                             sassOptions: {
                                 quietDeps: true,
                                 includePaths: ['node_modules']
@@ -94,8 +84,6 @@ module.exports = {
         // Copy the assets to the output folder for GDS gov frontend, leaflet and favicons
         new CopyPlugin({
             patterns: [
-                { from: 'node_modules/govuk-frontend/dist/govuk/assets/images', to: 'assets/images' },
-                { from: 'node_modules/govuk-frontend/dist/govuk/assets/fonts', to: 'assets/fonts' },
                 { from: 'node_modules/leaflet/dist/leaflet.css', to: 'css' },
                 { from: 'node_modules/leaflet/dist/images', to: 'css/images' },
                 {
@@ -112,7 +100,7 @@ module.exports = {
                         return content.toString().replace(/__MANIFEST_PATH_BASE__/g, pathBase);
                     }
                 },
-                { from: 'Scripts/images/logos', to: 'assets/images/logos' },
+                { from: 'Scripts/images/logos', to: 'images/logos' },
             ]
         }),
         // Extract the CSS into a separate file

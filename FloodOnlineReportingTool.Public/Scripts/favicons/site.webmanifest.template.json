@@ -28,13 +28,13 @@
   ],
   "screenshots": [
     {
-      "src": "/__MANIFEST_PATH_BASE__/assets/images/logos/screenshot%20wide.webp",
+      "src": "/__MANIFEST_PATH_BASE__/images/logos/screenshot%20wide.webp",
       "sizes": "1280x644",
       "type": "image/webp",
       "form_factor": "wide"
     },
     {
-      "src": "/__MANIFEST_PATH_BASE__/assets/images/logos/screenshot%20narrow.webp",
+      "src": "/__MANIFEST_PATH_BASE__/images/logos/screenshot%20narrow.webp",
       "sizes": "600x1100",
       "type": "image/webp",
       "form_factor": "narrow"
