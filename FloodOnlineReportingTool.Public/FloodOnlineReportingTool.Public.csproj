@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FloodOnlineReportingTool.GdsComponents\GdsComponents\FloodOnlineReportingTool.GdsComponents.csproj" />
+    <ProjectReference Include="..\..\GdsBlazorComponents\GdsBlazorComponents\GdsBlazorComponents.csproj" />
   </ItemGroup>
 
   <ItemGroup>
