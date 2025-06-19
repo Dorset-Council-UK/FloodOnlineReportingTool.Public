@@ -1,10 +1,9 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.GdsComponents;
 using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.JSInterop;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.Account;
 
@@ -14,7 +13,7 @@ public partial class SignIn(
     ILogger<SignIn> logger,
     NavigationManager navigationManager,
     SignInManager<FortUser> signInManager,
-    IJSRuntime JS
+    IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -68,7 +67,7 @@ public partial class SignIn(
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("window.initGDS", _cts.Token);
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 

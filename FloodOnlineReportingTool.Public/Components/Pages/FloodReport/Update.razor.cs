@@ -1,13 +1,12 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
 using FloodOnlineReportingTool.DataAccess.Repositories;
-using FloodOnlineReportingTool.GdsComponents;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Update;
 using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.JSInterop;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 
@@ -16,7 +15,7 @@ public partial class Update(
     ILogger<Update> logger,
     NavigationManager navigationManager,
     IEligibilityCheckRepository eligibilityCheckRepository,
-    IJSRuntime JS
+    IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -73,7 +72,7 @@ public partial class Update(
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("window.initGDS", _cts.Token);
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 

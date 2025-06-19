@@ -1,5 +1,4 @@
-﻿
-using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.DataAccess.Models;
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 

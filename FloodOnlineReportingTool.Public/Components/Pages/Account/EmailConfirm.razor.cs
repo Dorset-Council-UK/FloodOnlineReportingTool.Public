@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
 using FloodOnlineReportingTool.DataAccess.Settings;
-using FloodOnlineReportingTool.GdsComponents;
+using GdsBlazorComponents;
 using FloodOnlineReportingTool.Public.Models.Order;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;

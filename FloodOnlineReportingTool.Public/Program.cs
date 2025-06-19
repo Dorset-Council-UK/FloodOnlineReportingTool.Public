@@ -107,6 +107,7 @@ builder.Services
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddScoped<GdsBlazorComponents.IGdsJsInterop, GdsBlazorComponents.GdsJsInterop>();
 
 // Add the database connections
 var floodReportingConnectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");

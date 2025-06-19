@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.GdsComponents;
-using FluentValidation;
+﻿using FluentValidation;
+using GdsBlazorComponents;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Validators.Gds;

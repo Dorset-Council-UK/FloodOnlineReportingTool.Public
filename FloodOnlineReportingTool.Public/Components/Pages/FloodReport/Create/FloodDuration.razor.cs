@@ -1,12 +1,11 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
 using FloodOnlineReportingTool.DataAccess.Repositories;
-using FloodOnlineReportingTool.GdsComponents;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.JSInterop;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -15,7 +14,7 @@ public partial class FloodDuration(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
-    IJSRuntime JS
+    IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -81,7 +80,7 @@ public partial class FloodDuration(
             _isLoading = false;
             StateHasChanged();
 
-            await JS.InvokeVoidAsync("window.initGDS", _cts.Token);
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 

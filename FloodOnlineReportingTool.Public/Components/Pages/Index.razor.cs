@@ -1,10 +1,9 @@
-﻿using FloodOnlineReportingTool.GdsComponents;
-using FloodOnlineReportingTool.Public.Models.Order;
-using Microsoft.JSInterop;
+﻿using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
-public partial class Index(IJSRuntime JS) : IPageOrder
+public partial class Index(IGdsJsInterop gdsJs) : IPageOrder
 {
     // Page order properties
     public string Title { get; set; } = GeneralPages.Home.Title;
@@ -14,7 +13,7 @@ public partial class Index(IJSRuntime JS) : IPageOrder
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("window.initGDS");
+            await gdsJs.InitGds();
         }
     }
 }

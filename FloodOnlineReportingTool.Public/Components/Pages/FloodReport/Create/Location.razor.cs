@@ -1,10 +1,10 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Exceptions;
 using FloodOnlineReportingTool.DataAccess.Models;
 using FloodOnlineReportingTool.DataAccess.Repositories;
-using FloodOnlineReportingTool.GdsComponents;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -19,6 +19,7 @@ public partial class Location(
     ISearchRepository repository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
+    IGdsJsInterop gdsJs,
     IJSRuntime JS
 ) : IPageOrder, IAsyncDisposable
 {
@@ -77,7 +78,7 @@ public partial class Location(
         try
         {
             _dotNetReference = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("window.initGDS", _cts.Token);
+            await gdsJs.InitGds(_cts.Token);
             _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/location.js");
             if (_module == null)
             {

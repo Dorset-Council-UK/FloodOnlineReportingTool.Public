@@ -3,11 +3,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
-public partial class App(IOptions<GISSettings> _settings, IJSRuntime JS)
+public partial class App(IOptions<GISSettings> _settings, GdsBlazorComponents.IGdsJsInterop gdsJs)
 {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -31,7 +30,7 @@ public partial class App(IOptions<GISSettings> _settings, IJSRuntime JS)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("window.initGDS");
+            await gdsJs.InitGds();
         }
     }
 }

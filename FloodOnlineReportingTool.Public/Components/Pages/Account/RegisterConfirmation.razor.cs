@@ -1,9 +1,8 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.GdsComponents;
 using FloodOnlineReportingTool.Public.Models.Order;
+using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.JSInterop;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.Account;
 
@@ -11,7 +10,7 @@ public partial class RegisterConfirmation(
     ILogger<RegisterConfirmation> logger,
     UserManager<FortUser> userManager,
     NavigationManager navigationManager,
-    IJSRuntime JS
+    IGdsJsInterop gdsJs
 ) : IPageOrder
 {
     // Page order properties
@@ -43,7 +42,7 @@ public partial class RegisterConfirmation(
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("window.initGDS");
+            await gdsJs.InitGds();
         }
     }
 }

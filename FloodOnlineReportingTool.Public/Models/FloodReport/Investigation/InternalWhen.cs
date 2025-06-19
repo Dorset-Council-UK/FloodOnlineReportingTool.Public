@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.GdsComponents;
+﻿using GdsBlazorComponents;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
