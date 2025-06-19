@@ -53,14 +53,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FloodOnlineReportingTool.GdsComponents\GdsComponents\FloodOnlineReportingTool.GdsComponents.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="FloodOnlineReportingTool.Contracts">
       <HintPath>..\FloodOnlineReportingTool.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="FloodOnlineReportingTool.DataAccess">
       <HintPath>..\FloodOnlineReportingTool.DataAccess.dll</HintPath>
-    </Reference>
-    <Reference Include="FloodOnlineReportingTool.GdsComponents">
-      <HintPath>..\FloodOnlineReportingTool.GdsComponents.dll</HintPath>
     </Reference>
   </ItemGroup>
 
