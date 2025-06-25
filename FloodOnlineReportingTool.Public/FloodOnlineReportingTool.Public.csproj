@@ -53,10 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\GdsBlazorComponents\GdsBlazorComponents\GdsBlazorComponents.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="FloodOnlineReportingTool.Contracts">
       <HintPath>..\FloodOnlineReportingTool.Contracts.dll</HintPath>
     </Reference>
