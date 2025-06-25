@@ -15,4 +15,5 @@ internal static class FloodReportCreatePages
     public static readonly PageInfo Location = new(BaseUrl, "/location", "Choose a location");
     public static readonly PageInfo Summary = new(BaseUrl, "/summary", "Check your answers");
     public static readonly PageInfo Vulnerability = new(BaseUrl, "/vulnerability", "Vulnerable persons");
+    public static readonly PageInfo Media = new(BaseUrl, "/photos-and-videos", "Photos and Videos");
 }

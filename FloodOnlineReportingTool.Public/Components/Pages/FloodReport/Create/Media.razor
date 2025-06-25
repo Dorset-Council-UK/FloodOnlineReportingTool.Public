@@ -1,0 +1,21 @@
+﻿@page "/floodreport/create/media"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Media">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFileInput Label="Add photos or videos" MaxAllowedFiles="5" MaxFileSizeMB="50" OnValidFilesSubmitted="OnValidFilesSubmitted"></GdsFileInput>
+
+    @if (!_isLoading)
+    {
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    }
+</EditForm>
