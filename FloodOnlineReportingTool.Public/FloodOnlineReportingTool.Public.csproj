@@ -54,9 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FloodOnlineReportingTool.Contracts">
-      <HintPath>..\FloodOnlineReportingTool.Contracts.dll</HintPath>
-    </Reference>
     <Reference Include="FloodOnlineReportingTool.DataAccess">
       <HintPath>..\FloodOnlineReportingTool.DataAccess.dll</HintPath>
     </Reference>
