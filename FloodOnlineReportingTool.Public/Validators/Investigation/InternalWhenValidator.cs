@@ -1,8 +1,6 @@
 ﻿using FloodOnlineReportingTool.DataAccess.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
-using FloodOnlineReportingTool.Public.Validators.Gds;
 using FluentValidation;
-
 
 namespace FloodOnlineReportingTool.Public.Validators.Investigation;
 
@@ -19,19 +17,24 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
         When(o => o.WhenWaterEnteredKnownId == RecordStatusIds.Yes, () =>
         {
             RuleFor(o => o.WhenWaterEnteredDate)
-                .SetValidator(new GdsDateValidator("When water entered"));
-
-            // If the year entered cannot be correct
-            RuleFor(o => o.WhenWaterEnteredDate.Year)
-                .InclusiveBetween(now.Year - 1, now.Year)
-                .WithMessage("When water entered year must be between {From} and {To}")
-                .OverridePropertyName(o => o.WhenWaterEnteredDate.YearText);
+                .Cascade(CascadeMode.Stop)
+                .DayMonthYearNotEmpty()
+                .DayMustBeNumber()
+                .MonthMustBeNumber()
+                .YearMustBeNumber()
+                .DayInclusiveBetween(1, 31)
+                .MonthInclusiveBetween(1, 12)
+                .YearInclusiveBetween(now.Year - 1, now.Year)
+                .CorrectDaysInMonth()
+                .IsRealDate()
+                .WithName("When water entered");
 
             // If the date is in the future when it needs to be today or in the past
             RuleFor(o => o.WhenWaterEnteredDate.DateUtc)
                 .LessThanOrEqualTo(now)
                 .WithMessage("When water entered date must be today or in the past")
-                .When(o => o.WhenWaterEnteredDate.DateUtc != null);
+                .When(o => o.WhenWaterEnteredDate.DateUtc != null)
+                .OverridePropertyName(o => o.WhenWaterEnteredDate);
 
             // If the date must be between two dates
             RuleFor(o => o.WhenWaterEnteredDate.DateUtc)
@@ -41,7 +44,8 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
                     var to = now.GdsReadable();
                     return $"When water entered date must be between {from} and {to}";
                 })
-                .When(o => o.WhenWaterEnteredDate.DateUtc != null && o.WhenWaterEnteredDate.DateUtc <= now);
+                .When(o => o.WhenWaterEnteredDate.DateUtc != null && o.WhenWaterEnteredDate.DateUtc <= now)
+                .OverridePropertyName(o => o.WhenWaterEnteredDate);
 
             RuleFor(o => o.Time)
                 .NotEmpty()

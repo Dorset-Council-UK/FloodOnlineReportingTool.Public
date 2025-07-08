@@ -28,7 +28,7 @@
     <PackageReference Include="Bogus" Version="35.6.3" />
     <PackageReference Include="Dorset-Council-UK.FloodOnlineReportingTool.Contracts" Version="1.0.0" />
     <PackageReference Include="Dorset-Council-UK.FloodOnlineReportingTool.DataAccess" Version="1.0.0" />
-    <PackageReference Include="Dorset-Council-UK.GdsBlazorComponents" Version="1.0.1" />
+    <PackageReference Include="Dorset-Council-UK.GdsBlazorComponents" Version="1.0.3" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
