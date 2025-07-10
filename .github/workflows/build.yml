@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: actions/setup-node@v4
+
+      - run: npm ci
+        working-directory: ./FloodOnlineReportingTool.Public
+
+      - run: npm run build
+        working-directory: ./FloodOnlineReportingTool.Public
+
+      - run: dotnet restore
+
+      - run: dotnet build --configuration Release --no-restore
