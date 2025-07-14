@@ -21,4 +21,5 @@ public class Summary
     public Guid? VulnerablePeopleId { get; set; }
 
     public int? NumberOfVulnerablePeople { get; set; }
+    public int? NumberOfMediaItemsUploaded { get; set; }
 }

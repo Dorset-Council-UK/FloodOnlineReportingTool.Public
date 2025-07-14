@@ -73,6 +73,7 @@ public partial class Summary(
             Model.FloodDurationHours = eligibilityCheck.ImpactDuration;
             Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId;
             Model.NumberOfVulnerablePeople = eligibilityCheck.VulnerableCount;
+            Model.NumberOfMediaItemsUploaded = await GetNumberOfMediaItems();
 
             _isLoading = false;
             StateHasChanged();
@@ -187,6 +188,21 @@ public partial class Summary(
             .Select(o => o.TypeName ?? "");
 
         return [.. query];
+    }
+
+    private async Task<int> GetNumberOfMediaItems()
+    {
+        var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
+        if (data.Success)
+        {
+            if (data.Value != null)
+            {
+                return data.Value.Media?.Count ?? 0;
+            }
+        }
+
+        logger.LogDebug("Eligibility Check > Extra Data was not found in the protected storage.");
+        return 0;
     }
 
     private async Task<SaveResult> SaveEligibilityCheck()

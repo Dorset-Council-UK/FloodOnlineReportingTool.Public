@@ -155,6 +155,17 @@
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>
                 </dd>
             </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                    Photos and videos
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @Model.NumberOfMediaItemsUploaded files uploaded
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Media.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> uploaded photos or videos</span></a>
+                </dd>
+            </div>
         </dl>
 
         <h2 class="govuk-heading-l">Now send your flood report</h2>
