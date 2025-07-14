@@ -39,7 +39,7 @@
                                     if (conditionalId != null)
                                     {
                                         <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                            <GdsInputDate Id="water-entered" Date="@Model.WhenWaterEnteredDate">
+                                            <GdsInputDate Id="water-entered" For="() => Model.WhenWaterEnteredDate">
                                                 <Heading>
                                                     <h3 class="govuk-fieldset__heading">When did the flooding enter the property?</h3>
                                                 </Heading>

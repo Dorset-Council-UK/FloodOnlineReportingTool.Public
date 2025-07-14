@@ -10,7 +10,7 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsInputDate Id="flood-start" Date="@Model.StartDate">
+    <GdsInputDate Id="flood-start" For="() => Model.StartDate" Show="!_isLoading">
         <Heading>
             <h1 class="govuk-fieldset__heading">When did the flooding start?</h1>
         </Heading>
