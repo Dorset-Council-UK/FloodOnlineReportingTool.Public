@@ -63,16 +63,16 @@
                             if (conditionalId != null)
                             {
                                 <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                    <GdsFormGroup For="@(() => Model.DurationDays)">
+                                    <GdsFormGroup For="() => Model.DurationDaysText">
                                         <GdsLabel Text="Days" />
                                         <GdsErrorMessage />
-                                        <InputNumber id="@nameof(Model.DurationDays)" @bind-Value="Model.DurationDays" inputmode="numeric" spellcheck="false" class="govuk-input govuk-input--width-3" />
+                                        <GdsInputNumber @bind-Text="Model.DurationDaysText" @bind-WholeNumber="Model.DurationDaysNumber" Width="InputNumberWidths.Three" />
                                     </GdsFormGroup>
 
-                                    <GdsFormGroup For="@(() => Model.DurationHours)">
+                                    <GdsFormGroup For="() => Model.DurationHoursText">
                                         <GdsLabel Text="Hours" />
                                         <GdsErrorMessage />
-                                        <InputNumber id="@nameof(Model.DurationHours)" @bind-Value="Model.DurationHours" inputmode="numeric" spellcheck="false" class="govuk-input govuk-input--width-3" />
+                                        <GdsInputNumber @bind-Text="Model.DurationHoursText" @bind-WholeNumber="Model.DurationHoursNumber" Width="InputNumberWidths.Three" />
                                     </GdsFormGroup>
                                 </div>
                             }
