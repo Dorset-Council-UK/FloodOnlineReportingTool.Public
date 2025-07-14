@@ -6,6 +6,10 @@
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
+<p>Upload some photos or videos that show the flooding or damage caused. </p>
+<p>You can upload up to 5 files at once, maximum of 20MB per file.</p>
+<p>If you don't have any files to add, you can <a href="@(FloodReportCreatePages.Summary.Url)">skip this section</a></p>
+
 <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Media">
     <FluentValidationValidator />
     <GdsErrorSummary />

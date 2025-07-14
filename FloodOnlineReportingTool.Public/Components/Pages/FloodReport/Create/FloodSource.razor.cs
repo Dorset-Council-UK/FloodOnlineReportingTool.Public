@@ -24,6 +24,9 @@ public partial class FloodSource(
         FloodReportPages.Home.ToGdsBreadcrumb(),
     ];
 
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
+
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
@@ -81,8 +84,8 @@ public partial class FloodSource(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page, which is always the summary
-        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        // Go to the next page
+        navigationManager.NavigateTo(FromSummary ? FloodReportCreatePages.Summary.Url : FloodReportCreatePages.Media.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

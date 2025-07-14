@@ -160,7 +160,7 @@
                     Photos and videos
                 </dt>
                 <dd class="govuk-summary-list__value">
-                    @Model.NumberOfMediaItemsUploaded files uploaded
+                    @Model.NumberOfMediaItemsUploaded @(Model.NumberOfMediaItemsUploaded == 1 ? "file" : "files") uploaded
                 </dd>
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Media.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> uploaded photos or videos</span></a>
