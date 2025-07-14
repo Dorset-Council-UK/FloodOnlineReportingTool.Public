@@ -12,8 +12,85 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFileInput Label="Add photos or videos" MaxAllowedFiles="5" MaxFileSizeMB="50" OnValidFilesSubmitted="OnValidFilesSubmitted"></GdsFileInput>
+    @if(errorMessage is not null)
+    {
+        <p>@errorMessage</p>
+    }
 
+    <GdsFileInput Label="Add photos or videos"
+                  MaxAllowedFiles="5"
+                  MaxFileSizeMB="@MaxFileSizeMB"
+                  AllowedFileTypes="@AllowedFileTypes"
+                  IsBusy="@_isLoading"
+                  OnValidFilesSubmitted="OnValidFilesSubmitted"
+                  OnFileInputError="OnFileInputError"></GdsFileInput>
+
+    @if(Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0)
+    {
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header">File</th>
+                    <th scope="col" class="govuk-table__header">Status</th>
+                    <th scope="col" class="govuk-table__header">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                @foreach (var file in uploadingFiles)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@file.Name</td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--blue">
+                                Uploading
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                        </td>
+                    </tr>
+                }
+                @foreach (var file in Model.UploadedFiles)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@file.Name</td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--green">
+                                Uploaded
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+                        </td>
+                    </tr>
+                }
+                @foreach (var rejectedFile in rejectedFiles)
+                {
+                    var errorMessage = "The selected file could not be uploaded – try again";
+                    switch (rejectedFile.FileRejectionReason)
+                    {
+                        case FileRejectionReason.InvalidFileType:
+                            errorMessage = "The selected file must be a JPG, PNG, GIF, MP4, WEBM, OGG or PDF";
+                            break;
+                        case FileRejectionReason.FileTooLarge:
+                            errorMessage = $"The selected file must be smaller than {MaxFileSizeMB}MB";
+                            break;
+                    }
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--red">
+                                Rejected
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+       
+        </table>
+    }
     @if (!_isLoading)
     {
         <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>

@@ -46,6 +46,7 @@ builder.Services.AddApplicationInsightsTelemetry();
 var rabbitMqSection = builder.Configuration.GetSection(RabbitMqSettings.SectionName);
 builder.Services.Configure<RabbitMqSettings>(rabbitMqSection);
 builder.Services.Configure<GISSettings>(builder.Configuration.GetSection(GISSettings.SectionName));
+builder.Services.Configure<AzureBlobStorageSettings>(builder.Configuration.GetSection(AzureBlobStorageSettings.SectionName));
 
 builder.Services.AddFloodReportingVersioning();
 builder.Services.AddFloodReportingOpenApi();
@@ -108,6 +109,7 @@ builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<GdsBlazorComponents.IGdsJsInterop, GdsBlazorComponents.GdsJsInterop>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Add the database connections
 var floodReportingConnectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");

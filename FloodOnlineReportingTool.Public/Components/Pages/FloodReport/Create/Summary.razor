@@ -61,7 +61,7 @@
                 <dd class="govuk-summary-list__value">
                     @if(Model.IsUninhabitable == null)
                     {
-                        <>Unknown</>
+                        <text>Unknown</text>
                     }
                     else
                     {
@@ -95,7 +95,7 @@
                 <dd class="govuk-summary-list__value">
                     @if (Model.IsOnGoing == null)
                     {
-                        <>Unknown</>
+                        <text>Unknown</text>
                     }
                     else
                     {
@@ -115,7 +115,7 @@
                     <dd class="govuk-summary-list__value">
                         @if (Model.FloodDurationHours == null)
                         {
-                            <>Unknown</>
+                            <text>Unknown</text>
                         }
                         else
                         {

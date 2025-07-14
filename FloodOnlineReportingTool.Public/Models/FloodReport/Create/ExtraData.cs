@@ -9,4 +9,5 @@ public record ExtraData
     public string? SecondaryClassification { get; init; }
 
     public Guid? PropertyType { get; init; }
+    public IList<MediaItem>? Media { get; set; }
 }
