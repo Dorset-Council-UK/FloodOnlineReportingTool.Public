@@ -66,13 +66,13 @@
                                     <GdsFormGroup For="() => Model.DurationDaysText">
                                         <GdsLabel Text="Days" />
                                         <GdsErrorMessage />
-                                        <GdsInputNumber @bind-Text="Model.DurationDaysText" @bind-WholeNumber="Model.DurationDaysNumber" Width="InputNumberWidths.Three" />
+                                        <GdsInputNumber @bind-Value="Model.DurationDaysText" @bind-WholeNumber="Model.DurationDaysNumber" class="govuk-input govuk-input--width-3" />
                                     </GdsFormGroup>
 
                                     <GdsFormGroup For="() => Model.DurationHoursText">
                                         <GdsLabel Text="Hours" />
                                         <GdsErrorMessage />
-                                        <GdsInputNumber @bind-Text="Model.DurationHoursText" @bind-WholeNumber="Model.DurationHoursNumber" Width="InputNumberWidths.Three" />
+                                        <GdsInputNumber @bind-Value="Model.DurationHoursText" @bind-WholeNumber="Model.DurationHoursNumber" class="govuk-input govuk-input--width-3" />
                                     </GdsFormGroup>
                                 </div>
                             }
