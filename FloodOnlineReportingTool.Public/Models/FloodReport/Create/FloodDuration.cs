@@ -8,8 +8,10 @@ public class FloodDuration
     public Guid? DurationKnownId { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public int? DurationDays { get; set; }
+    public string? DurationDaysText { get; set; }
+    public int? DurationDaysNumber { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public int? DurationHours { get; set; }
+    public string? DurationHoursText { get; set; }
+    public int? DurationHoursNumber { get; set; }
 }

@@ -8,5 +8,6 @@ public class Vehicles
     public Guid? WereVehiclesDamagedId { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public int? NumberOfVehiclesDamaged { get; set; } // Intensionally using an int here instead of byte
+    public string? NumberOfVehiclesDamagedText { get; set; }
+    public int? NumberOfVehiclesDamagedNumber { get; set; } // Intensionally using an int here instead of byte
 }

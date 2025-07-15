@@ -8,9 +8,9 @@ internal static class UpdateModelExtensions
     {
         return new()
         {
-            Uprn = updateModel.Uprn,
-            Easting = updateModel.Easting,
-            Northing = updateModel.Northing,
+            Uprn = updateModel.UprnNumber.Value,
+            Easting = updateModel.EastingNumber.Value,
+            Northing = updateModel.NorthingNumber.Value,
             LocationDesc = updateModel.LocationDesc,
         };
     }

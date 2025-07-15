@@ -31,28 +31,28 @@
                     <div>Updated: @_updateModel.UpdatedUtc.GdsReadable()</div>
                 }
 
-                <GdsFormGroup For="() => _updateModel.Uprn">
+                <GdsFormGroup For="() => _updateModel.UprnText">
                     <GdsLabel Text="UPRN" />
                     <GdsErrorMessage />
-                    <InputNumber id="@nameof(_updateModel.Uprn)" @bind-Value="_updateModel.Uprn" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.UprnText" @bind-WholeNumber="_updateModel.UprnNumber" class="govuk-input" />
                 </GdsFormGroup>
 
-                <GdsFormGroup For="() => _updateModel.Easting">
+                <GdsFormGroup For="() => _updateModel.EastingText">
                     <GdsLabel Text="Easting" />
                     <GdsErrorMessage />
-                    <InputNumber id="@nameof(_updateModel.Easting)" @bind-Value="_updateModel.Easting" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.EastingText" @bind-FloatNumber="_updateModel.EastingNumber" class="govuk-input" />
                 </GdsFormGroup>
 
-                <GdsFormGroup For="() => _updateModel.Northing">
+                <GdsFormGroup For="() => _updateModel.NorthingText">
                     <GdsLabel Text="Northing" />
                     <GdsErrorMessage />
-                    <InputNumber id="@nameof(_updateModel.Northing)" @bind-Value="_updateModel.Northing" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.NorthingText" @bind-FloatNumber="_updateModel.NorthingNumber" class="govuk-input" />
                 </GdsFormGroup>
 
                 <GdsFormGroup For="() => _updateModel.LocationDesc">
                     <GdsLabel Text="Location description" />
                     <GdsErrorMessage />
-                    <InputText id="@nameof(_updateModel.LocationDesc)" @bind-Value="_updateModel.LocationDesc" class="govuk-input" />
+                    <GdsInputText @bind-Value="_updateModel.LocationDesc" class="govuk-input" />
                 </GdsFormGroup>
             </EditForm>
         }
