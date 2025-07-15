@@ -57,7 +57,7 @@ public partial class Update(
         if (_updateModel == null)
         {
             _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _updateModel = await GetEligibilityCheck();
+            _updateModel = await GetUpdateModel();
 
             if (_updateModel != null)
             {
@@ -107,12 +107,12 @@ public partial class Update(
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem updating the eligibility check");
-            _messageStore.Add(() => _updateModel.Uprn, $"There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
+            _messageStore.Add(() => _updateModel.UprnText, $"There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
     }
 
-    private async Task<UpdateModel?> GetEligibilityCheck()
+    private async Task<UpdateModel?> GetUpdateModel()
     {
         var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userId, EligibilityCheckId, _cts.Token);
         if (eligibilityCheck == null)
