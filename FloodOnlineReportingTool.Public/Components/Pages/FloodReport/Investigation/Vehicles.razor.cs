@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -71,7 +72,8 @@ public partial class Vehicles(
             // Set any previously entered data
             var investigation = await GetInvestigation();
             Model.WereVehiclesDamagedId = investigation.WereVehiclesDamagedId;
-            Model.NumberOfVehiclesDamaged = investigation.NumberOfVehiclesDamaged;
+            Model.NumberOfVehiclesDamagedNumber = investigation.NumberOfVehiclesDamaged;
+            Model.NumberOfVehiclesDamagedText = investigation.NumberOfVehiclesDamaged?.ToString(CultureInfo.CurrentCulture);
 
             _wereVehiclesDamagedOptions = await CreateVehiclesDamagedOptions();
 
@@ -88,7 +90,7 @@ public partial class Vehicles(
         var updatedInvestigation = investigation with
         {
             WereVehiclesDamagedId = Model.WereVehiclesDamagedId,
-            NumberOfVehiclesDamaged = Model.WereVehiclesDamagedId == RecordStatusIds.Yes ? (byte?)Model.NumberOfVehiclesDamaged : null,
+            NumberOfVehiclesDamaged = Model.WereVehiclesDamagedId == RecordStatusIds.Yes ? (byte?)Model.NumberOfVehiclesDamagedNumber : null,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 

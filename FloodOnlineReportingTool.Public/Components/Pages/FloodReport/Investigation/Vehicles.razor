@@ -42,10 +42,10 @@
                                     if (conditionalId != null)
                                     {
                                         <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                            <GdsFormGroup For="() => Model.NumberOfVehiclesDamaged">
+                                            <GdsFormGroup For="() => Model.NumberOfVehiclesDamagedText">
                                                 <GdsLabel Text="How many vehicles were damaged?" />
                                                 <GdsErrorMessage />
-                                                <InputNumber id="@nameof(Model.NumberOfVehiclesDamaged)" @bind-Value="Model.NumberOfVehiclesDamaged" class="govuk-input govuk-input--width-5" spellcheck="false" inputmode="numeric" />
+                                                <GdsInputNumber @bind-Value="Model.NumberOfVehiclesDamagedText" @bind-WholeNumber="Model.NumberOfVehiclesDamagedNumber" class="govuk-input govuk-input--width-5" />
                                             </GdsFormGroup>
                                         </div>
                                     }
