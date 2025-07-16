@@ -1,4 +1,6 @@
 ﻿@page "/floodreport/create/photos-and-videos"
+@using FloodOnlineReportingTool.Public.Models.Media
+@using System.Globalization
 
 <PageTitle>@Title</PageTitle>
 
@@ -16,18 +18,12 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    @if(errorMessage is not null)
-    {
-        <p>@errorMessage</p>
-    }
-
     <GdsFileInput Label="Add photos or videos"
-                  MaxAllowedFiles="5"
-                  MaxFileSizeMB="@MaxFileSizeMB"
-                  AllowedFileTypes="@AllowedFileTypes"
+                  Id="file-input"
+                  For="() => Model.UploadedFiles"
                   IsBusy="@_isLoading"
-                  OnValidFilesSubmitted="OnValidFilesSubmitted"
-                  OnFileInputError="OnFileInputError"></GdsFileInput>
+                  OnFilesSubmitted="OnFilesSubmitted"
+                  ShowErrorOnComponent="false"></GdsFileInput>
 
     @if(Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0)
     {
@@ -40,7 +36,7 @@
                 </tr>
             </thead>
             <tbody class="govuk-table__body">
-                @foreach (var file in uploadingFiles)
+                @foreach (var file in _uploadingFiles)
                 {
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell">@file.Name</td>
@@ -67,18 +63,9 @@
                         </td>
                     </tr>
                 }
-                @foreach (var rejectedFile in rejectedFiles)
+                @foreach (var rejectedFile in _rejectedFiles)
                 {
-                    var errorMessage = "The selected file could not be uploaded – try again";
-                    switch (rejectedFile.FileRejectionReason)
-                    {
-                        case FileRejectionReason.InvalidFileType:
-                            errorMessage = "The selected file must be a JPG, PNG, GIF, MP4, WEBM, OGG or PDF";
-                            break;
-                        case FileRejectionReason.FileTooLarge:
-                            errorMessage = $"The selected file must be smaller than {MaxFileSizeMB}MB";
-                            break;
-                    }
+                    var errorMessage = GetErrorMessageForFile(rejectedFile);
                     <tr class="govuk-table__row">
                         <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
                         <td class="govuk-table__cell">
