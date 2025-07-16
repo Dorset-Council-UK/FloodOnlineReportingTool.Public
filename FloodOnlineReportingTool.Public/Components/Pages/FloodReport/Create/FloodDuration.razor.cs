@@ -6,6 +6,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -70,9 +71,14 @@ public partial class FloodDuration(
             _isFloodOngoing = eligibilityCheck.OnGoing;
             if (eligibilityCheck.ImpactDuration.HasValue)
             {
+                var days = eligibilityCheck.ImpactDuration.Value / 24;
+                var hours = eligibilityCheck.ImpactDuration.Value % 24;
+
                 Model.DurationKnownId = FloodProblemIds.DurationKnown;
-                Model.DurationDays = eligibilityCheck.ImpactDuration.Value / 24;
-                Model.DurationHours = eligibilityCheck.ImpactDuration.Value % 24;
+                Model.DurationDaysNumber = days;
+                Model.DurationDaysText = days.ToString(CultureInfo.CurrentCulture);
+                Model.DurationHoursNumber = hours;
+                Model.DurationHoursText = hours.ToString(CultureInfo.CurrentCulture);
             }
 
             _durationOptions = await CreateDurationOptions();
@@ -104,7 +110,7 @@ public partial class FloodDuration(
         int? impactDuration = null;
         if (Model.DurationKnownId == FloodProblemIds.DurationKnown)
         {
-            impactDuration = (Model.DurationDays ?? 0) * 24 + (Model.DurationHours ?? 0);
+            impactDuration = (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0);
         }
 
         var eligibilityCheck = await GetEligibilityCheck();
@@ -130,7 +136,7 @@ public partial class FloodDuration(
     private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, Guid? selectedValue)
     {
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
+        var label = floodProblem.TypeDescription.AsSpan();
         var selected = floodProblem.Id == selectedValue;
         var isExclusive = floodProblem.Id == FloodProblemIds.DurationNotSure;
 
