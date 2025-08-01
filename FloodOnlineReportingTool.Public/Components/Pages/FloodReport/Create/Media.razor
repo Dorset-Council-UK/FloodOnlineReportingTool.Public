@@ -18,14 +18,16 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFileInput Label="Add photos or videos"
-                  Id="file-input"
-                  For="() => Model.UploadedFiles"
-                  IsBusy="@_isLoading"
-                  OnFilesSubmitted="OnFilesSubmitted"
-                  ShowErrorOnComponent="false"></GdsFileInput>
+    <GdsFormGroup For="() => Model.UploadedFiles">
+        <GdsLabel Text="Add photos or videos" />
+        <GdsErrorMessage />
+        <GdsFileInput
+            IsBusy="@_isLoading"
+            OnFilesSubmitted="OnFilesSubmitted" />
+    </GdsFormGroup>
 
-    @if(Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0)
+
+    @if((Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0) || (_uploadingFiles is not null && _uploadingFiles.Count != 0) || (_rejectedFiles is not null && _rejectedFiles.Count != 0))
     {
         <table class="govuk-table">
             <thead class="govuk-table__head">

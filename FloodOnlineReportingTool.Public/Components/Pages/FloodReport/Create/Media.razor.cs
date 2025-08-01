@@ -239,11 +239,6 @@ public partial class Media(
                 _validationMessageStore.Add(_fieldIdentifier, GetErrorMessageForFile(rejectedFile));
             }
         }
-        else if (Model.UploadedFiles.Count == 0)
-        {
-            // If no files were uploaded, add a validation message
-            _validationMessageStore.Add(_fieldIdentifier, ErrorMessageConstants.NoFileSelected);
-        }
 
         // Notify the EditContext that validation state has changed
         _editContext.NotifyValidationStateChanged();
