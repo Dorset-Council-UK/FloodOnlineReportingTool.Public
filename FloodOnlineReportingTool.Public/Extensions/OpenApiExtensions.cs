@@ -31,9 +31,9 @@ internal static class OpenApiExtensions
     }
 
     /// <summary>
-    /// Add the Swagger UI <see href="https://localhost:7222/swagger" />
+    /// Add the Swagger UI <see href="https://localhost:7222/report-flooding/swagger" />
     /// </summary>
-    internal static WebApplication MapSwagger(this WebApplication app)
+    internal static WebApplication UseSwagger(this WebApplication app)
     {
         app.UseSwaggerUI(options =>
         {
@@ -43,29 +43,32 @@ internal static class OpenApiExtensions
             {
                 options.SwaggerEndpoint($"/openapi/{versionInfo.DocumentName}.json", $"{DocumentTransformer.Title} {versionInfo.DocumentName}");
             }
+            options.OAuthUsePkce();
         });
 
         return app;
     }
 
     /// <summary>
-    /// Add the Scalar UI <see href="https://localhost:7222/scalar" />
+    /// Add the Scalar UI <see href="https://localhost:7222/report-flooding/scalar" />
     /// </summary>
-    internal static WebApplication MapScalar(this WebApplication app)
+    internal static WebApplication UseScalar(this WebApplication app)
     {
-        const string BearerAuth = "BearerAuth";
+        var documentNames = Versions.All.Select(o => o.DocumentName);
 
         app.MapScalarApiReference(options =>
         {
             options
                 .WithTitle(DocumentTransformer.Title)
                 .WithOperationSorter(OperationSorter.Alpha)
-                .WithOpenApiRoutePattern($"/openapi/{Versions.V1.DocumentName}.json")
-                .WithModels(false)
-                .WithPreferredScheme(BearerAuth)
-                .AddHttpAuthentication(BearerAuth, scheme =>
+                .AddDocuments(documentNames)
+                .AddPreferredSecuritySchemes("Bearer")
+                .AddOAuth2Flows("Bearer", flows =>
                 {
-                    scheme.Token = "your-bearer-token";
+                    flows.WithAuthorizationCode(options =>
+                    {
+                        options.Pkce = Pkce.Sha256;
+                    });
                 });
         });
 

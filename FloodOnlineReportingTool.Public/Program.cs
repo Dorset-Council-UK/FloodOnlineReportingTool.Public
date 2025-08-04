@@ -138,8 +138,8 @@ if (isDevelopment)
 {
     app.UseDeveloperExceptionPage();
     app.MapOpenApi();
-    app.MapScalar();
-    app.MapSwagger();
+    app.UseScalar();
+    app.UseSwagger();
 }
 else
 {
@@ -159,7 +159,7 @@ app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 
 // Map all identity endpoints
-app.MapGroup("api/auth").MapIdentityApi<FortUser>();
+app.MapGroup($"{pathBase}/api/auth").MapIdentityApi<FortUser>();
 
 await app.RunAsync()
          .ConfigureAwait(false);
