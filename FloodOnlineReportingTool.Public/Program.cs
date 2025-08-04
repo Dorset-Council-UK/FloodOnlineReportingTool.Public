@@ -17,9 +17,8 @@ var assembly = typeof(Program).Assembly;
 
 var isDevelopment = builder.Environment.IsDevelopment();
 
-var section = builder.Configuration
-        .GetSection(GISSettings.SectionName)
-        .GetSection(KeyVaultSettings.SectionName);
+// Configure all the settings.
+var (keyVaultSettings, messagingSettings, gisSettings) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
 var keyVaultOptions = section.Get<KeyVaultSettings>();
 //if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
@@ -59,7 +58,7 @@ builder.Services
     });
 
 // Add health checks
-builder.Services.AddFloodReportingHealthChecks(rabbitMqSection);
+builder.Services.AddFloodReportingHealthChecks(messagingSettings);
 
 // Setup identity
 builder.Services
@@ -124,13 +123,12 @@ builder.Services.AddRepositories();
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
 
-// Add the message system, this API only needs to publish messages, not consume them
-builder.Services.AddMessageSystem(rabbitMqSection);
+// Add the message system
+builder.Services.AddMessageSystem(messagingSettings);
 
 var app = builder.Build();
 
-var settings = builder.Configuration.GetSection(GISSettings.SectionName).Get<GISSettings>();
-var pathBase = string.IsNullOrWhiteSpace(settings?.PathBase) ? "/" : $"/{settings.PathBase}";
+var pathBase = string.IsNullOrWhiteSpace(gisSettings.PathBase) ? "/" : $"/{gisSettings.PathBase}";
 app.UsePathBase(pathBase);
 
 // Configure the HTTP request pipeline.
