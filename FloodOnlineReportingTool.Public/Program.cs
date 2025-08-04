@@ -1,15 +1,11 @@
-using Azure.Identity;
 using FloodOnlineReportingTool.DataAccess.DbContexts;
 using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Settings;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
-using FloodOnlineReportingTool.Public.Settings;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,31 +16,14 @@ var isDevelopment = builder.Environment.IsDevelopment();
 // Configure all the settings.
 var (keyVaultSettings, messagingSettings, gisSettings) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
-var keyVaultOptions = section.Get<KeyVaultSettings>();
 //if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
-if(keyVaultOptions != null && !string.IsNullOrEmpty(keyVaultOptions.Name))
+if(keyVaultSettings != null)
 {
-    using var x509Store = new X509Store(StoreLocation.LocalMachine);
-    x509Store.Open(OpenFlags.ReadOnly);
-
-    var x509Certificate = x509Store.Certificates
-        .Find(X509FindType.FindByThumbprint, keyVaultOptions.AzureAd.CertificateThumbprint, validOnly: false)
-        .OfType<X509Certificate2>()
-        .Single();
-
-    builder.Configuration.AddAzureKeyVault(
-        new Uri($"https://{keyVaultOptions.Name}.vault.azure.net/"),
-        new ClientCertificateCredential(keyVaultOptions.AzureAd.DirectoryId, keyVaultOptions.AzureAd.ApplicationId, x509Certificate));
+    builder.Configuration.AddFloodReportingKeyVault(keyVaultSettings);
 }
-
 
 // Add services to the container.
 builder.Services.AddApplicationInsightsTelemetry();
-
-// Add the settings/options
-var rabbitMqSection = builder.Configuration.GetSection(RabbitMqSettings.SectionName);
-builder.Services.Configure<RabbitMqSettings>(rabbitMqSection);
-builder.Services.Configure<GISSettings>(builder.Configuration.GetSection(GISSettings.SectionName));
 
 builder.Services.AddFloodReportingVersioning();
 builder.Services.AddFloodReportingOpenApi();
