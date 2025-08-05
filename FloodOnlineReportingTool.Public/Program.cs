@@ -11,8 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
-var isDevelopment = builder.Environment.IsDevelopment();
-
 // Configure all the settings.
 var (keyVaultSettings, messagingSettings, gisSettings) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
@@ -92,9 +90,9 @@ var floodReportingConnectionString = builder.Configuration.GetConnectionString("
 var boundariesConnectionString = builder.Configuration.GetConnectionString("Boundaries");
 var identityConnectionString = builder.Configuration.GetConnectionString("FloodReportingUsers");
 builder.Services
-    .AddFloodReportingDatabase(floodReportingConnectionString, isDevelopment)
-    .AddBoundariesDatabase(boundariesConnectionString, isDevelopment)
-    .AddFloodReportingUsersDatabase(identityConnectionString, isDevelopment);
+    .AddFloodReportingDatabase(floodReportingConnectionString)
+    .AddBoundariesDatabase(boundariesConnectionString)
+    .AddFloodReportingUsersDatabase(identityConnectionString);
 
 // Add the repositories
 builder.Services.AddRepositories();
@@ -111,7 +109,7 @@ var pathBase = string.IsNullOrWhiteSpace(gisSettings.PathBase) ? "/" : $"/{gisSe
 app.UsePathBase(pathBase);
 
 // Configure the HTTP request pipeline.
-if (isDevelopment)
+if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.MapOpenApi();
