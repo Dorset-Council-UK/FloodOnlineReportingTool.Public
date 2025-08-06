@@ -1,5 +1,4 @@
-﻿using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.DataAccess.DbContexts;
+﻿using FloodOnlineReportingTool.DataAccess.DbContexts;
 using FloodOnlineReportingTool.Public.Settings;
 using MassTransit;
 
@@ -29,6 +28,8 @@ internal static class MessageSystemExtensions
 
         services.AddMassTransit(o =>
         {
+            var assembly = typeof(Program).Assembly;
+
             o.SetKebabCaseEndpointNameFormatter();
 
             // Add the outbox pattern
@@ -41,13 +42,6 @@ internal static class MessageSystemExtensions
             o.UsingAzureServiceBus((context, config) =>
             {
                 config.Host(new Uri(messagingSettings.ConnectionString));
-                config.SubscriptionEndpoint<ContactRecordCreated>(SubscriptionNames.ContactRecordCreated, o => { });
-                config.SubscriptionEndpoint<ContactRecordUpdated>(SubscriptionNames.ContactRecordUpdated, o => { });
-                config.SubscriptionEndpoint<ContactRecordDeleted>(SubscriptionNames.ContactRecordDeleted, o => { });
-                config.SubscriptionEndpoint<EligibilityCheckCreated>(SubscriptionNames.EligibilityCheckCreated, o => { });
-                config.SubscriptionEndpoint<EligibilityCheckUpdated>(SubscriptionNames.EligibilityCheckUpdated, o => { });
-                config.SubscriptionEndpoint<FloodReportCreated>(SubscriptionNames.FloodReportCreated, o => { });
-                config.SubscriptionEndpoint<InvestigationCreated>(SubscriptionNames.InvestigationCreated, o => { });
             });
         });
 
