@@ -2,6 +2,7 @@
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -9,7 +10,8 @@ namespace FloodOnlineReportingTool.Public.Components.Pages;
 
 public partial class Test(
     ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs
+    IGdsJsInterop gdsJs,
+    TestService testService
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -107,6 +109,10 @@ public partial class Test(
         return data.Success && data.Value != null;
     }
 
+    private async Task TestMessage()
+    {
+        await testService.TestMessage(_cts.Token);
+    }
     private async Task BlankCreateData()
     {
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, new EligibilityCheckDto());

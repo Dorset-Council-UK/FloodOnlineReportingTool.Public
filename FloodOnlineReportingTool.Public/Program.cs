@@ -77,6 +77,8 @@ builder.Services.AddValidatorsFromAssembly(assembly);
 // Add the message system
 builder.Services.AddMessageSystem(messagingSettings);
 
+builder.Services.AddScoped<TestService>();
+
 var app = builder.Build();
 
 var pathBase = string.IsNullOrWhiteSpace(gisSettings.PathBase) ? "/" : $"/{gisSettings.PathBase}";
