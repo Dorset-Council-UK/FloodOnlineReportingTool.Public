@@ -1,19 +1,28 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 
 namespace FloodOnlineReportingTool.Public.Models.OpenApi;
 
-internal sealed class DocumentTransformer(ApiVersion version) : IOpenApiDocumentTransformer
+internal sealed class DocumentTransformer(ApiVersion version, MicrosoftIdentityOptions? identityOptions) : IOpenApiDocumentTransformer
 {
     internal static string Title = "Flood Online Reporting Tool - Public API";
-    internal static string Description = "Flood online reporting API and application";
+    internal static string Description = "Flood online reporting Public API and application";
 
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
+        // dictionary or empty dictionary
+        var scopes = identityOptions == null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { $"api://{identityOptions.ClientId}/access_as_user", "Access the API as the signed-in user" },
+            };
+
         AddInformation(document);
-        AddSecuritySchemes(document);
-        AddSecurityRequirements(document);
+        AddSecuritySchemes(document, scopes);
+        AddSecurityRequirements(document, scopes);
 
         return Task.CompletedTask;
     }
@@ -47,20 +56,20 @@ internal sealed class DocumentTransformer(ApiVersion version) : IOpenApiDocument
     /// <summary>
     /// Adds security schemes to the OpenAPI document.
     /// </summary>
-    private static void AddSecuritySchemes(OpenApiDocument document)
+    private void AddSecuritySchemes(OpenApiDocument document, Dictionary<string, string> scopes)
     {
-        // Note: OpenIdConnectUrl may not be needed unless Type is set to SecuritySchemeType.OpenIdConnect (OIDC) which might mean that the flow would need to be changed to Implicit.
-
-        var baseEndpoint = new Uri(new Uri("https://login.microsoftonline.com/"), "TenantId/");
+        var baseEndpoint = identityOptions != null
+            ? new Uri(new Uri(identityOptions.Instance), $"{identityOptions.TenantId}/")
+            : new Uri(new Uri("https://login.microsoftonline.com/"), "YOUR_TENANT_ID");
         var openIdConnectUrl = new Uri(baseEndpoint, "v2.0/.well-known/openid-configuration");
         var authorizationUrl = new Uri(baseEndpoint, "oauth2/v2.0/authorize");
         var tokenUrl = new Uri(baseEndpoint, "oauth2/v2.0/token");
 
         document.Components ??= new();
-        document.Components.SecuritySchemes.Add("Bearer", new()
+        document.Components.SecuritySchemes.Add(Constants.Bearer, new()
         {
             Name = "Authorization",
-            Scheme = "Bearer",
+            Scheme = Constants.Bearer,
             In = ParameterLocation.Header,
             Type = SecuritySchemeType.OAuth2,
             OpenIdConnectUrl = openIdConnectUrl,
@@ -70,6 +79,7 @@ internal sealed class DocumentTransformer(ApiVersion version) : IOpenApiDocument
                 {
                     AuthorizationUrl = authorizationUrl,
                     TokenUrl = tokenUrl,
+                    Scopes = scopes,
                 },
             },
         });
@@ -78,7 +88,7 @@ internal sealed class DocumentTransformer(ApiVersion version) : IOpenApiDocument
     /// <summary>
     /// Adds security requirements to the OpenAPI document.
     /// </summary>
-    private static void AddSecurityRequirements(OpenApiDocument document)
+    private static void AddSecurityRequirements(OpenApiDocument document, Dictionary<string, string> scopes)
     {
         document.SecurityRequirements.Add(new()
         {
@@ -87,11 +97,11 @@ internal sealed class DocumentTransformer(ApiVersion version) : IOpenApiDocument
                 {
                     Reference = new()
                     {
-                        Id = "Bearer",
+                        Id = Constants.Bearer,
                         Type = ReferenceType.SecurityScheme,
                     },
                 },
-                Array.Empty<string>()
+                scopes.Select(scope => scope.Key).ToArray()
             },
         });
     }

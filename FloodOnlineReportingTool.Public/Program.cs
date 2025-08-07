@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 var assembly = typeof(Program).Assembly;
 
 // Configure all the settings.
-var (keyVaultSettings, messagingSettings, gisSettings) = builder.Services.AddFloodReportingSettings(builder.Configuration);
+var (keyVaultSettings, messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
 //if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
 if(keyVaultSettings != null)
@@ -22,9 +22,9 @@ if(keyVaultSettings != null)
 
 // Add services to the container.
 builder.Services.AddApplicationInsightsTelemetry();
-
+builder.Services.AddFloodReportingAuthentication(builder.Configuration);
 builder.Services.AddFloodReportingVersioning();
-builder.Services.AddFloodReportingOpenApi();
+builder.Services.AddFloodReportingOpenApi(identityOptions);
 
 // Add the HttpClient and configure it with the standard policies
 builder.Services
@@ -52,32 +52,6 @@ builder.Services
     .AddEntityFrameworkStores<UserDbContext>()
     .AddApiEndpoints();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
-
-// Add the authentication and authorization
-builder.Services
-    .AddAuthentication(IdentityConstants.ApplicationScheme)
-    .AddCookie(IdentityConstants.ApplicationScheme, options =>
-    {
-        options.Cookie.IsEssential = true;
-        options.Cookie.Name = "FloodReportCookie";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Strict;
-        options.ReturnUrlParameter = "returnUrl";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-        options.LoginPath = "/" + AccountPages.SignIn.Url;
-        options.LogoutPath = "/" + AccountPages.SignOut.Url;
-        options.AccessDeniedPath = "/" + GeneralPages.AccessDenied;
-        options.SlidingExpiration = true;
-    });
-builder.Services.AddCascadingAuthenticationState();
-builder.Services
-    .AddAuthorizationBuilder()
-    .AddPolicy(PolicyNames.Identity, policy =>
-    {
-        policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme);
-        policy.RequireAuthenticatedUser();
-    });
 
 // Add Blazor services
 builder.Services
@@ -113,8 +87,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.MapOpenApi();
-    app.UseScalar();
-    app.UseSwagger();
+    app.UseScalar(identityOptions);
+    app.UseSwagger(identityOptions);
 }
 else
 {
@@ -134,7 +108,10 @@ app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 
 // Map all identity endpoints
-app.MapGroup($"{pathBase}/api/auth").MapIdentityApi<FortUser>();
+app
+    .MapGroup($"{pathBase}/api/auth")
+    .RequireAuthorization(PolicyNames.Admin)
+    .MapIdentityApi<FortUser>();
 
 await app.RunAsync()
          .ConfigureAwait(false);

@@ -7,7 +7,7 @@
 
 <GdsBreadcrumbs Items="@Breadcrumbs" />
 
-<AuthorizeView Roles="@AuthenticationSchemeDefaults.FloodReportAdminRole">
+<AuthorizeView Policy="@PolicyNames.Admin">
     <Authorized>
         <h1 class="govuk-heading-xl">The users flood report</h1>
     </Authorized>

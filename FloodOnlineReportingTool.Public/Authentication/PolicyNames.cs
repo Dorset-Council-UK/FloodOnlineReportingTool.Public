@@ -1,7 +1,8 @@
 ﻿namespace FloodOnlineReportingTool.Public.Authentication;
 
-public class PolicyNames
+internal static class PolicyNames
 {
-    private const string FortPrefix = "Fort";
-    public const string Identity = $"{FortPrefix}.IdentityPolicy";
+    internal const string Identity = "identity_policy";
+    internal const string Admin = "admin_policy";
+    internal const string Reader = "reader_policy";
 }
