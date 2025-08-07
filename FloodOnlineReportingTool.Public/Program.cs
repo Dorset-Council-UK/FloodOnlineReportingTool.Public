@@ -35,7 +35,7 @@ builder.Services
     });
 
 // Add health checks
-builder.Services.AddFloodReportingHealthChecks(messagingSettings);
+builder.Services.AddFloodReportingHealthChecks();
 
 // Setup identity
 builder.Services

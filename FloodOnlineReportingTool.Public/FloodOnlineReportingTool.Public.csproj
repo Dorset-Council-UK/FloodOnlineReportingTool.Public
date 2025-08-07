@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.AzureServiceBus" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageReference Include="Azure.Identity" Version="1.14.2" />
