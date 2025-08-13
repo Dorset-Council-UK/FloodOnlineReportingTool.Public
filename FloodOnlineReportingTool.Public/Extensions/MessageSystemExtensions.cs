@@ -38,10 +38,10 @@ internal static class MessageSystemExtensions
                 config.UsePostgres();
                 config.UseBusOutbox();
             });
-            
+
             o.UsingAzureServiceBus((context, config) =>
             {
-                config.Host(new Uri(messagingSettings.ConnectionString));
+                config.Host(messagingSettings.ConnectionString);
             });
         });
 
