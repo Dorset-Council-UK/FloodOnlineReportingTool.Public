@@ -41,7 +41,14 @@ internal static class MessageSystemExtensions
             
             o.UsingAzureServiceBus((context, config) =>
             {
-                config.Host(new Uri(messagingSettings.ConnectionString));
+                if (messagingSettings.ConnectionString.Contains("Endpoint=", StringComparison.OrdinalIgnoreCase))
+                {
+                    config.Host(messagingSettings.ConnectionString);
+                }
+                else
+                {
+                    config.Host(new Uri(messagingSettings.ConnectionString));
+                }
             });
         });
 
