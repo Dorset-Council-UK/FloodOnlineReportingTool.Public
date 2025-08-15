@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Web;
 
@@ -14,13 +14,15 @@ internal static class AuthenticationExtensions
     /// </summary>
     internal static IServiceCollection AddFloodReportingAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var authenticationBuilder = BuildIdentityAuthentication(services);
+        // Setup authentication
+        BuildIdentityAuthentication(services, configuration);
 
-        BuildIdentityPlatform(services, authenticationBuilder, configuration);
+        ConfigureResilientJwtBearerOptions(services);
 
         // Add Blazor cascading authentication state
         services.AddCascadingAuthenticationState();
 
+        // Setup Authorization
         BuildAuthentication(services);
 
         return services;
@@ -29,9 +31,9 @@ internal static class AuthenticationExtensions
     /// <summary>
     /// Build the Identity authentication scheme and settings.
     /// </summary>
-    private static AuthenticationBuilder BuildIdentityAuthentication(IServiceCollection services)
+    private static void BuildIdentityAuthentication(IServiceCollection services, IConfiguration configuration)
     {
-        return services
+        services
             .AddAuthentication(IdentityConstants.ApplicationScheme)
             .AddCookie(IdentityConstants.ApplicationScheme, options =>
             {
@@ -46,37 +48,27 @@ internal static class AuthenticationExtensions
                 options.LogoutPath = "/" + AccountPages.SignOut.Url;
                 options.AccessDeniedPath = "/" + GeneralPages.AccessDenied;
                 options.SlidingExpiration = true;
-            });
+            })
+            .AddMicrosoftIdentityWebApi(configuration);
     }
 
     /// <summary>
-    /// Build the Identity Platform authentication scheme and settings. Used to protect the Identity Platform API endpoints.
+    /// Configure a resilient JWT Bearer Options authentication handler.
     /// </summary>
-    private static void BuildIdentityPlatform(IServiceCollection services, AuthenticationBuilder authenticationBuilder, IConfiguration configuration)
+    /// <remarks>For example, retrying when .well-known fails to read.</remarks>
+    private static void ConfigureResilientJwtBearerOptions(IServiceCollection services)
     {
-        if (!configuration.GetSection(Constants.AzureAd).Exists())
-        {
-            return;
-        }
-
-        // Resilient HTTP client for authentication purposes. For example: retrying when .well-known fails to read.
         const string clientName = "OAuthResilient";
+
         services
             .AddHttpClient(clientName)
             .AddStandardResilienceHandler();
 
-        var httpClientFactory = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
-        var backingChannel = httpClientFactory.CreateClient(clientName);
-
-        authenticationBuilder
-            .AddMicrosoftIdentityWebApi(jwtBearerOptions =>
+        services
+            .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IHttpClientFactory>((options, httpClientFactory) =>
             {
-                configuration.Bind(Constants.AzureAd, jwtBearerOptions);
-                jwtBearerOptions.Backchannel = backingChannel;
-            },
-            microsoftIdentityOptions =>
-            {
-                configuration.Bind(Constants.AzureAd, microsoftIdentityOptions);
+                options.Backchannel = httpClientFactory.CreateClient(clientName);
             });
     }
 
