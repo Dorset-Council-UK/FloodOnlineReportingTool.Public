@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -218,7 +218,7 @@ public partial class Summary(
     /// <summary>
     /// Add the flood report, and eligibility check
     /// </summary>
-    private async Task<DataAccess.Models.FloodReport?> CreateFloodReport()
+    private async Task<Database.Models.FloodReport?> CreateFloodReport()
     {
         var eligibilityCheck = await GetEligibilityCheck();
         var floodReport = await floodReportRepository.CreateWithEligiblityCheck(eligibilityCheck, _cts.Token);

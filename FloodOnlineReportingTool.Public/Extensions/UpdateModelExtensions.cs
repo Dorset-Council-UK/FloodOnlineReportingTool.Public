@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Database.Models;
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Update;
 

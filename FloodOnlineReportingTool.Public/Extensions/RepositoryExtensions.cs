@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Repositories;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

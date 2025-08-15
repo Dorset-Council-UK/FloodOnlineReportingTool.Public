@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.Exceptions;
-using FloodOnlineReportingTool.DataAccess.Settings;
+﻿using FloodOnlineReportingTool.Database.Exceptions;
+using FloodOnlineReportingTool.Database.Settings;
 using FloodOnlineReportingTool.Public.Settings;
 using Microsoft.Identity.Web;
 

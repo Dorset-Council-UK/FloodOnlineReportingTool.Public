@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.DataAccess.DbContexts;
+using FloodOnlineReportingTool.Database.DbContexts;
 using MassTransit;
 using System.Globalization;
 

@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Models;
+using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 

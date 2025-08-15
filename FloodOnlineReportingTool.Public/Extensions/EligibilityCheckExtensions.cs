@@ -1,7 +1,7 @@
 ﻿using FloodOnlineReportingTool.Public.Models.FloodReport.Update;
 using System.Globalization;
 
-namespace FloodOnlineReportingTool.DataAccess.Models;
+namespace FloodOnlineReportingTool.Database.Models;
 
 internal static class EligibilityCheckExtensions
 {

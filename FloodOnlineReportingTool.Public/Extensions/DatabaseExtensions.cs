@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Exceptions;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

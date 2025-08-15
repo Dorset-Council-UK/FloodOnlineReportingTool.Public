@@ -1,5 +1,5 @@
-using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Models;
+using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
