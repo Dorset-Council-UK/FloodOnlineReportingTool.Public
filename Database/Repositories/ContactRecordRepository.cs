@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class ContactRecordRepository(FORTDbContext context, IPublishEndpoint publishEndpoint) : IContactRecordRepository
+public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IContactRecordRepository
 {
     public async Task<ContactRecord?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
     {

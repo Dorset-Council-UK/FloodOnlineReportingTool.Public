@@ -26,7 +26,7 @@ internal static class DatabaseExtensions
         }
 
         // Add the database context
-        services.AddDbContextPool<FORTDbContext>(
+        services.AddDbContextPool<PublicDbContext>(
             options =>
             {
                 options.UseNpgsql(builder.ToString(), o =>

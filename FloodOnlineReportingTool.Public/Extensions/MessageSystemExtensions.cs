@@ -33,7 +33,7 @@ internal static class MessageSystemExtensions
             o.SetKebabCaseEndpointNameFormatter();
 
             // Add the outbox pattern
-            o.AddEntityFrameworkOutbox<FORTDbContext>(config =>
+            o.AddEntityFrameworkOutbox<PublicDbContext>(config =>
             {
                 config.UsePostgres();
                 config.UseBusOutbox();

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class InvestigationRepository(FORTDbContext context, IPublishEndpoint publishEndpoint) : IInvestigationRepository
+public class InvestigationRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IInvestigationRepository
 {
     public async Task<Investigation?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
     {

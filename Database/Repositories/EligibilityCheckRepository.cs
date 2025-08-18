@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logger, FORTDbContext context, IPublishEndpoint publishEndpoint, ICommonRepository commonRepository) : IEligibilityCheckRepository
+public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logger, PublicDbContext context, IPublishEndpoint publishEndpoint, ICommonRepository commonRepository) : IEligibilityCheckRepository
 {
     public async Task<EligibilityCheck?> ReportedByUser(Guid userId, CancellationToken ct)
     {

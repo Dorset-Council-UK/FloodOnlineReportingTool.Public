@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class CommonRepository(FORTDbContext context, BoundariesDbContext boundariesDb) : ICommonRepository
+public class CommonRepository(PublicDbContext context, BoundariesDbContext boundariesDb) : ICommonRepository
 {
     private const string SqlAllCounties = @"SELECT name, area_description, admin_unit_id FROM dc_boundaries.uk_county WHERE public.ST_Contains(geom, public.ST_SetSRID(public.ST_MakePoint({0}, {1}), 27700)) ORDER BY name";
 

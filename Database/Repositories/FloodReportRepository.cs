@@ -10,7 +10,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
-    FORTDbContext context,
+    PublicDbContext context,
     IPublishEndpoint publishEndpoint,
     IOptions<GISSettings> options
 ) : IFloodReportRepository

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
 
-public class FORTDbContext(DbContextOptions<FORTDbContext> options) : DbContext(options)
+public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbContext(options)
 {
     public DbSet<ContactRecord> ContactRecords { get; set; }
     public DbSet<EligibilityCheck> EligibilityChecks { get; set; }
@@ -37,6 +37,6 @@ public class FORTDbContext(DbContextOptions<FORTDbContext> options) : DbContext(
         modelBuilder.AddOutboxMessageEntity();
 
         // Entity configurations
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FORTDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PublicDbContext).Assembly);
     }
 }
