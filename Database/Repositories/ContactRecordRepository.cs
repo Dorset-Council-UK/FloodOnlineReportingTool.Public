@@ -18,31 +18,6 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             .ConfigureAwait(false);
     }
 
-    public async Task<(IList<ContactRecord>, string?)> GetAllByReference(string reference, CancellationToken ct)
-    {
-        var result = await context.FloodReports
-            .AsNoTracking()
-            .Include(o => o.ContactRecords)
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
-            .Select(o => new
-            {
-                ContactRecords = o.ContactRecords
-                    .OrderByDescending(cr => cr.CreatedUtc)
-                    .ToList(),
-                LocationDescription = o.EligibilityCheck != null ? o.EligibilityCheck.LocationDesc : "Unknown",
-            })
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
-
-        if (result is null)
-        {
-            return ([], null);
-        }
-
-        return (result.ContactRecords, result.LocationDescription);
-    }
-
     public async Task<IReadOnlyCollection<ContactRecord>> AllReportedByUser(Guid userId, CancellationToken ct)
     {
         return await context.FloodReports
