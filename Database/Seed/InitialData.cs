@@ -3,7 +3,7 @@
 namespace FloodOnlineReportingTool.Database.Seed;
 
 /// <summary>
-///     <para>The initail data to seed the database with. This is applied in the migration.</para>
+///     <para>The initial data to seed the database with. This is applied in the migration.</para>
 ///     <para>"you should use explicit Guids when seeding with HasData, never generated ones" <see href="https://learn.microsoft.com/en-us/archive/msdn-magazine/2018/august/data-points-deep-dive-into-ef-core-hasdata-seeding#what-about-private-setters">Deep Dive into EF Core HasData Seeding</see></para>
 /// </summary>
 internal static class InitialData
