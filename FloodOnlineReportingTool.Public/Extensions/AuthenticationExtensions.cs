@@ -23,13 +23,13 @@ internal static class AuthenticationExtensions
         services.AddCascadingAuthenticationState();
 
         // Setup Authorization
-        BuildAuthentication(services);
+        BuildAuthorization(services);
 
         return services;
     }
 
     /// <summary>
-    /// Build the Identity authentication scheme and settings.
+    ///     Build the Identity authentication scheme and settings.
     /// </summary>
     private static void BuildIdentityAuthentication(IServiceCollection services, IConfiguration configuration)
     {
@@ -72,7 +72,7 @@ internal static class AuthenticationExtensions
             });
     }
 
-    private static void BuildAuthentication(IServiceCollection services)
+    private static void BuildAuthorization(IServiceCollection services)
     {
         services
             .AddAuthorizationBuilder()

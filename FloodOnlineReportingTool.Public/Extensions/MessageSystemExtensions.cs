@@ -38,7 +38,7 @@ internal static class MessageSystemExtensions
                 config.UsePostgres();
                 config.UseBusOutbox();
             });
-            
+
             o.UsingAzureServiceBus((context, config) =>
             {
                 if (messagingSettings.ConnectionString.Contains("Endpoint=", StringComparison.OrdinalIgnoreCase))
