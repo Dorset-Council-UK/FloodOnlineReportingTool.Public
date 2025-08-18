@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "designs", "designs", "{5762
 		designs\investigation pages.drawio = designs\investigation pages.drawio
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{A427791D-89C4-4C61-98F5-795C098DE3B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C23281F-31A3-42AE-8D04-B1848AE0D23B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A427791D-89C4-4C61-98F5-795C098DE3B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A427791D-89C4-4C61-98F5-795C098DE3B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A427791D-89C4-4C61-98F5-795C098DE3B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A427791D-89C4-4C61-98F5-795C098DE3B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

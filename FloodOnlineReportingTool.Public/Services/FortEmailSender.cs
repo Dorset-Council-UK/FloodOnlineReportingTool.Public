@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Models;
+using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 
@@ -44,7 +44,7 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
     private async Task PublishMessage<T>(T message) where T : class
     {
         using var scope = serviceScopeFactory.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<FORTDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<PublicDbContext>();
         var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
         await publishEndpoint.Publish(message).ConfigureAwait(false);
         await context.SaveChangesAsync().ConfigureAwait(false);

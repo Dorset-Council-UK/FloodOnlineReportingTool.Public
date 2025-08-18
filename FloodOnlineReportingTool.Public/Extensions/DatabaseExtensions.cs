@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Exceptions;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -26,7 +26,7 @@ internal static class DatabaseExtensions
         }
 
         // Add the database context
-        services.AddDbContextPool<FORTDbContext>(
+        services.AddDbContextPool<PublicDbContext>(
             options =>
             {
                 options.UseNpgsql(builder.ToString(), o =>

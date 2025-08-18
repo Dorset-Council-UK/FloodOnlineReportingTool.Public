@@ -1,6 +1,6 @@
 ﻿using Bogus;
 using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.DataAccess.DbContexts;
+using FloodOnlineReportingTool.Database.DbContexts;
 using MassTransit;
 using System.Globalization;
 
@@ -9,9 +9,9 @@ namespace FloodOnlineReportingTool.Public.Services;
 public sealed class TestService
 {
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly FORTDbContext _context;
+    private readonly PublicDbContext _context;
 
-    public TestService(IPublishEndpoint publishEndpoint, FORTDbContext context)
+    public TestService(IPublishEndpoint publishEndpoint, PublicDbContext context)
     {
         _publishEndpoint = publishEndpoint;
         _context = context;

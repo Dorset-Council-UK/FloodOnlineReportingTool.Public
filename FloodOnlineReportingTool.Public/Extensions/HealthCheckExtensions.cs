@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.DbContexts;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Public.Health;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -18,7 +18,7 @@ internal static class HealthCheckExtensions
     {
         var builder = services
             .AddHealthChecks()
-            .AddDbContextCheck<FORTDbContext>(tags: tagsDatabase)
+            .AddDbContextCheck<PublicDbContext>(tags: tagsDatabase)
             .AddDbContextCheck<UserDbContext>(tags: tagsDatabase)
             .AddDbContextCheck<BoundariesDbContext>(tags: tagsDatabase)
             .AddCheck<ApiAdvancedSearchHealthCheck>("ApiAdvancedSearch", tags: tagsAddressSearchAPI)

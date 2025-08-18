@@ -1,6 +1,5 @@
-using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.Public.Authentication;
+using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
@@ -12,13 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 var assembly = typeof(Program).Assembly;
 
 // Configure all the settings.
-var (keyVaultSettings, messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
-
-//if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
-if(keyVaultSettings != null)
-{
-    builder.Configuration.AddFloodReportingKeyVault(keyVaultSettings);
-}
+builder.Configuration.AddFloodReportingKeyVault();
+var (messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddApplicationInsightsTelemetry();
@@ -110,10 +104,7 @@ app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 
 // Map all identity endpoints
-app
-    .MapGroup($"{pathBase}/api/auth")
-    .RequireAuthorization(PolicyNames.Admin)
-    .MapIdentityApi<FortUser>();
+app.MapGroup("/api/auth").MapIdentityApi<FortUser>();
 
 await app.RunAsync()
          .ConfigureAwait(false);

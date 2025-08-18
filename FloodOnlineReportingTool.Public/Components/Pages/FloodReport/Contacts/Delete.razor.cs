@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
@@ -105,7 +105,7 @@ public partial class Delete(
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem deleting contact information");
-            _messageStore.Add(() => _contactModel.ContactType, $"There was a problem deleting the contact information. Please try again but if this issue happens again then please report a bug.");
+            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem deleting the contact information. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
     }

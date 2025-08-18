@@ -14,7 +14,7 @@ internal static class AuthenticationExtensions
     /// </summary>
     internal static IServiceCollection AddFloodReportingAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        // Setup Authentication
+        // Setup authentication
         BuildIdentityAuthentication(services, configuration);
 
         ConfigureResilientJwtBearerOptions(services);

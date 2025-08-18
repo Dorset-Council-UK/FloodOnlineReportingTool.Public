@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 
-namespace FloodOnlineReportingTool.DataAccess.Models;
+namespace FloodOnlineReportingTool.Database.Models;
 
 internal static class ContactRecordExtensions
 {

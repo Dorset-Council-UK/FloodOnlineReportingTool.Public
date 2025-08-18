@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Settings;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Settings;
 using GdsBlazorComponents;
 using FloodOnlineReportingTool.Public.Models.Order;
 using Microsoft.AspNetCore.Components;
@@ -37,7 +37,7 @@ public partial class EmailConfirm(
     private bool _confirmed = false;
     private bool _confirmError = false;
     private string? _expirationMessage;
-    private GISSettings _gisSettings => gisSettings.Value;
+    private GISSettings GisSettings => gisSettings.Value;
 
     protected override void OnInitialized()
     {
@@ -82,7 +82,7 @@ public partial class EmailConfirm(
     private string? CreateExpirationMessage()
     {
         var now = DateTimeOffset.UtcNow;
-        var expiration = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths);
+        var expiration = now.AddMonths(GisSettings.AccessTokenIssueDurationMonths);
         var timeLeft = expiration - now;
         return string.Format(CultureInfo.CurrentCulture, "Your access to this flood report will expire in {0}.", timeLeft.GdsReadable());
     }

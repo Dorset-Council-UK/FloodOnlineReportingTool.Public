@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +22,7 @@ public partial class Overview(
 
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
-    private FloodOnlineReportingTool.DataAccess.Models.FloodReport? _floodReport;
+    private Database.Models.FloodReport? _floodReport;
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
 
