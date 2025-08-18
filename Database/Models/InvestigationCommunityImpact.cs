@@ -6,6 +6,6 @@
 public record InvestigationCommunityImpact(Guid InvestigationId, Guid FloodImpactId)
 {
     public Guid InvestigationId { get; init; } = InvestigationId;
-    public Guid FloodImpactd { get; init; } = FloodImpactId;
+    public Guid FloodImpactId { get; init; } = FloodImpactId;
     public FloodImpact FloodImpact { get; init; } = null!;
 }
