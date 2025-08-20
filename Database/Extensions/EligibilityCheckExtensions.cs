@@ -4,7 +4,7 @@ namespace FloodOnlineReportingTool.Database.Models;
 
 public static class EligibilityCheckExtensions
 {
-    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference)
+    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference, IList<Organisation> organisations)
     {
         return new EligibilityCheckCreated(
             eligibilityCheck.Id,
@@ -17,7 +17,15 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            [..
+                organisations.Select(o => new EligibilityCheckOrganisation(
+                    o.Id,
+                    o.Name,
+                    o.FloodAuthorityId,
+                    o.FloodAuthority.AuthorityName
+                )),
+            ]
         );
     }
 

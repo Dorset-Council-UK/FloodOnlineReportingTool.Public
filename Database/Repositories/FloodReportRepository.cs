@@ -12,7 +12,8 @@ public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     PublicDbContext context,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISSettings> options
+    IOptions<GISSettings> options,
+    ICommonRepository commonRepository
 ) : IFloodReportRepository
 {
     private readonly GISSettings _gisSettings = options.Value;
@@ -161,19 +162,17 @@ public class FloodReportRepository(
         context.FloodReports.Add(floodReport);
 
         // Publish mutiple messages to the message system
+        var responsibleOrganisations = await commonRepository
+            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
+            .ConfigureAwait(false);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint
-            .Publish(floodReportCreatedMessage, ct)
-            .ConfigureAwait(false);
-        await publishEndpoint
-            .Publish(eligibilityCheckCreatedMessage, ct)
-            .ConfigureAwait(false);
+        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations);
+
+        await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);
+        await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct).ConfigureAwait(false);
 
         // Save the flood report, eligibility check, and messages to the database
-        await context
-            .SaveChangesAsync(ct)
-            .ConfigureAwait(false);
+        await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return floodReport;
     }

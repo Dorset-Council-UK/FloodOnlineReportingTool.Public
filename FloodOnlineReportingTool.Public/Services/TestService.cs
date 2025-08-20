@@ -35,7 +35,21 @@ public sealed class TestService
             faker.Random.Int(1, 72),
             faker.Random.Bool(),
             faker.Random.Bool(),
-            faker.Random.Int(0, 5)
+            faker.Random.Int(0, 5),
+            [
+                new(
+                    faker.Random.Uuid(),
+                    faker.Company.CompanyName(),
+                    faker.Random.Uuid(),
+                    faker.Company.CompanyName()
+                ),
+                new(
+                    faker.Random.Uuid(),
+                    faker.Company.CompanyName(),
+                    faker.Random.Uuid(),
+                    faker.Company.CompanyName()
+                ),
+            ]
         );
 
         await _publishEndpoint.Publish(message, ct).ConfigureAwait(false);
