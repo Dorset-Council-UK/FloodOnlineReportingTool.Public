@@ -47,6 +47,7 @@ internal static class MessageSystemExtensions
                 }
                 else
                 {
+                    // Using Azure Managed Identity
                     config.Host(new Uri(messagingSettings.ConnectionString));
                 }
             });
