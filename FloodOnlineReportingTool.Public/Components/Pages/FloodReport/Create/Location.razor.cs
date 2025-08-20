@@ -63,12 +63,14 @@ public partial class Location(
             Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
             Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.Postcode = createExtraData.Postcode;
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            Model.LocationDesc = eligibilityCheck.LocationDesc;
 
             await LoadJavaScriptAndMap();
 
             _isLoading = false;
             StateHasChanged();
-        }
+        } 
     }
 
     private async Task LoadJavaScriptAndMap()
@@ -192,34 +194,61 @@ public partial class Location(
 
     private async Task OnValidSubmit()
     {
-        Model.Postcode = await GetPostcodeFromLocation();
+        var createExtraData = await GetCreateExtraData();
+        var eligibilityCheck = await GetEligibilityCheck();
+        ExtraData? updatedExtraData = null;
+        if ( Model.IsAddress)
+        {
+            Model.Postcode = await GetPostcodeFromLocation();
+
+            updatedExtraData = createExtraData with
+            {
+                Postcode = Model.Postcode,
+                //PrimaryClassification = apiAddress.PrimaryClassification,
+                //SecondaryClassification = apiAddress.SecondaryClassification,
+            };
+            
+        } else if(!string.Equals(Model.LocationDesc, eligibilityCheck.LocationDesc))
+        {
+            updatedExtraData = createExtraData with
+            {
+                Postcode = null,
+                PropertyType = null
+            };
+        }
+        if (updatedExtraData != null)
+        {
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+        }
 
         // Remember the entered postcode
-        var eligibilityCheck = await GetEligibilityCheck();
-        var createExtraData = await GetCreateExtraData();
-
         var updatedEligibilityCheck = eligibilityCheck with
         {
             //Uprn = apiAddress.UPRN,
             Easting = Model.Easting.Value,
             Northing = Model.Northing.Value,
-            IsAddress = false,
-            //LocationDesc = apiAddress.ConcatenatedAddress,
+            LocationDesc = Model.LocationDesc,
+            
         };
-
-        var updatedExtraData = createExtraData with
-        {
-            Postcode = Model.Postcode,
-            //PrimaryClassification = apiAddress.PrimaryClassification,
-            //SecondaryClassification = apiAddress.SecondaryClassification,
-        };
-
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Address;
+        var nextPage = GetNextPage();
         navigationManager.NavigateTo(nextPage.Url);
+    }
+    private PageInfo GetNextPage()
+    {
+        if (FromSummary)
+        {
+            return FloodReportCreatePages.Summary;
+        }
+
+        if (Model.IsAddress == true)
+        {
+            return FloodReportCreatePages.Address;
+        }
+        
+        return FloodReportCreatePages.PropertyTypeFromLocation;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

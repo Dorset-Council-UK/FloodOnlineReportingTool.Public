@@ -19,19 +19,6 @@
         </p>
     }
 
-    @if (Model.UPRN is null && (Model.Easting is not null || Model.Northing is not null))
-    {
-        <GdsFormGroup For="() => Model.LocationDesc">
-            <GdsLabel Text="Describe the location selected" />
-            <GdsHint>For example: Barn in far field</GdsHint>
-            <GdsErrorMessage />
-            <GdsInputText @bind-Value=Model.LocationDesc class="govuk-input govuk-input--width-50" />
-        </GdsFormGroup>
-
-        <p>
-            or
-        </p>
-    }
     <GdsFormGroup For="() => Model.UPRN" Show="Model.AddressOptions.Count > 0">
         @{
             var hintId = "UPRN-hint";
@@ -41,7 +28,7 @@
         <GdsLabel Text="Choose address" />
         <GdsHint Id="@hintId">Select one option.</GdsHint>
         <GdsErrorMessage Id="@errorId" />
-        <InputSelect id="@nameof(Model.UPRN)" @bind-Value="SelectedUPRN" class="govuk-select" aria-describedby="@describedBy">
+        <InputSelect id="@nameof(Model.UPRN)" @bind-Value="Model.UPRN" class="govuk-select" aria-describedby="@describedBy">
             <option value=""></option>
             @foreach (var option in Model.AddressOptions)
             {

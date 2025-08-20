@@ -2,7 +2,7 @@
 
 namespace FloodOnlineReportingTool.Public.Validators.Create;
 
-public class PostcodeValidator : AbstractValidator<Models.FloodReport.Create.Index>
+public class PostcodeValidator : AbstractValidator<Models.FloodReport.Create.SelectPostcode>
 {
     public PostcodeValidator()
     {

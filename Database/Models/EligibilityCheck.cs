@@ -11,6 +11,7 @@ public record EligibilityCheck
     public long? Uprn { get; init; }
     public double Easting { get; init; }
     public double Northing { get; init; }
+    public bool IsAddress { get; init; }
     public string? LocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public int ImpactDuration { get; init; } // In hours

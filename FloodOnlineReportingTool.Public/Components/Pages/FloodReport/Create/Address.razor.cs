@@ -80,15 +80,6 @@ public partial class Address(
             await gdsJs.InitGds(_cts.Token);
         }
     }
-    private long? SelectedUPRN
-    { 
-        get => Model.UPRN;
-        set
-        {
-            Model.UPRN = value;
-            Model.IsAddress = value != null ? true : false;
-        }
-    }
 
     private async Task OnValidSubmit()
     {
@@ -105,7 +96,6 @@ public partial class Address(
                 Easting = apiAddress.Easting,
                 Northing = apiAddress.Northing,
                 LocationDesc = apiAddress.ConcatenatedAddress,
-                IsAddress = true,
             };
 
             var updatedExtraData = createExtraData with
@@ -121,35 +111,7 @@ public partial class Address(
             // Go to the next page or back to the summary
             var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
             navigationManager.NavigateTo(nextPage.Url);
-        } else if (Model.IsAddress == false)
-        {
-            //This is a location only report
-            var eligibilityCheck = await GetEligibilityCheck();
-            var createExtraData = await GetCreateExtraData();
-
-            var updatedEligibilityCheck = eligibilityCheck with
-            {
-                Uprn = null,
-                Easting = (double)Model.Easting,
-                Northing = (double)Model.Northing,
-                LocationDesc = Model.LocationDesc,
-                IsAddress = false,
-            };
-
-            var updatedExtraData = createExtraData with
-            {
-                Postcode = null,
-                PrimaryClassification = null,
-                SecondaryClassification = null,
-            };
-
-            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
-
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
-            navigationManager.NavigateTo(nextPage.Url);
-        }
+        } 
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

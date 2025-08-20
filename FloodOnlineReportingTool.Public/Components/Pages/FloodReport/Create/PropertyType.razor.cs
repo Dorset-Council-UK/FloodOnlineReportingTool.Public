@@ -20,10 +20,14 @@ public partial class PropertyType(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.PropertyType.Title;
+
+    [SupplyParameterFromQuery]
+    private bool FromLocation { get; set; }
+
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Address.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
     ];
 
     [SupplyParameterFromQuery]
@@ -63,6 +67,8 @@ public partial class PropertyType(
     {
         if (firstRender)
         {
+            Model.FromLocation = FromLocation;
+
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();

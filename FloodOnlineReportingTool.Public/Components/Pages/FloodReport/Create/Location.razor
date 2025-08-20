@@ -27,6 +27,16 @@
             <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="ChooseLocation">Choose a location</button>
         </div>
 
+        @if (Model.IsAddress == false)
+        {
+            <GdsFormGroup For="() => Model.LocationDesc">
+                <GdsLabel Text="Describe the location selected" />
+                <GdsHint>For example: Barn in far field</GdsHint>
+                <GdsErrorMessage />
+                <GdsInputText @bind-Value=Model.LocationDesc class="govuk-input govuk-input--width-50" />
+            </GdsFormGroup>
+        }
+
         <div>
             <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
         </div>

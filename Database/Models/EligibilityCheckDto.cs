@@ -8,7 +8,7 @@ public record EligibilityCheckDto
     public long? Uprn { get; init; }
     public double Easting { get; init; }
     public double Northing { get; init; }
-    public bool IsAddress { get; init; }
+    public bool IsAddress { get; init; } = true;
     public string? LocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public int? ImpactDuration { get; init; } // In hours

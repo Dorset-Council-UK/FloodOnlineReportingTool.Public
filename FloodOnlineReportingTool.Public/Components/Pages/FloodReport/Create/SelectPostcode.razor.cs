@@ -10,31 +10,32 @@ using System.Net;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
-public partial class Index(
-    ILogger<Index> logger,
+public partial class SelectPostcode(
+    ILogger<SelectPostcode> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.Home.Title;
+    public string Title { get; set; } = FloodReportCreatePages.Postcode.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
     ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
 
-    private Models.FloodReport.Create.Index Model { get; set; } = default!;
+    private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _isAddressOptions = [
-        new("is-address-yes", "Yes", value: true),
-        new("is-address-no", "No", value: false),
+    private IReadOnlyCollection<GdsOptionItem<bool>> _postcodeKnownOptions = [
+        new("postcode-known-yes", "Yes", value: true),
+        new("postcode-known-no", "No", value: false),
     ];
 
     protected override void OnInitialized()
@@ -50,15 +51,19 @@ public partial class Index(
         if (firstRender)
         {
             // Set any previously entered data
-            var eligibilityCheck = await GetEligibilityCheck();
-            Model.IsAddress = eligibilityCheck.IsAddress;
-            _isAddressOptions.Single(o => o.Value).Selected = true;
+            var createExtraData = await GetCreateExtraData();
+            Model.Postcode = createExtraData.Postcode;
+            if (Model.Postcode != null)
+            {
+                Model.PostcodeKnown = true;
+                _postcodeKnownOptions.Single(o => o.Value).Selected = true;
+            }
 
             _isLoading = false;
             StateHasChanged();
 
             await gdsJs.InitGds(_cts.Token);
-        } 
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -77,15 +82,14 @@ public partial class Index(
 
     private async Task OnValidSubmit()
     {
-        // Set the IsAddress so that location page knows if this is a postal search rather than location
-        var eligibilityCheck = await GetEligibilityCheck();
-        var updatedEligibilityCheck = eligibilityCheck with
+        // Save the postcode
+        var createExtraData = await GetCreateExtraData();
+        var updatedExtraData = createExtraData with
         {
-            IsAddress = Model.IsAddress,
-            LocationDesc = null, //Always reset this at this point to avoid unexpected results
+            Postcode = Model.Postcode?.ToUpperInvariant(),
         };
 
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
+        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
         var nextPage = GetNextPage();
@@ -99,12 +103,27 @@ public partial class Index(
             return FloodReportCreatePages.Summary;
         }
 
-        if (Model.IsAddress == true)
+        if (Model.PostcodeKnown == true)
         {
-            return FloodReportCreatePages.Postcode;
+            return FloodReportCreatePages.Address;
         }
 
         return FloodReportCreatePages.Location;
+    }
+
+    private async Task<ExtraData> GetCreateExtraData()
+    {
+        var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
+        if (data.Success)
+        {
+            if (data.Value != null)
+            {
+                return data.Value;
+            }
+        }
+
+        logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
+        return new();
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
