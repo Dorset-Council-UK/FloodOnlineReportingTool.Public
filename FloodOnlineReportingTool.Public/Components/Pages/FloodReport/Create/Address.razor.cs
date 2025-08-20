@@ -68,12 +68,25 @@ public partial class Address(
             var createExtraData = await GetCreateExtraData();
 
             Model.Postcode = createExtraData.Postcode;
+            Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
+            Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            Model.LocationDesc = eligibilityCheck.LocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
 
             StateHasChanged();
 
             await gdsJs.InitGds(_cts.Token);
+        }
+    }
+    private long? SelectedUPRN
+    { 
+        get => Model.UPRN;
+        set
+        {
+            Model.UPRN = value;
+            Model.IsAddress = value != null ? true : false;
         }
     }
 
@@ -92,6 +105,7 @@ public partial class Address(
                 Easting = apiAddress.Easting,
                 Northing = apiAddress.Northing,
                 LocationDesc = apiAddress.ConcatenatedAddress,
+                IsAddress = true,
             };
 
             var updatedExtraData = createExtraData with
@@ -99,6 +113,34 @@ public partial class Address(
                 Postcode = apiAddress.Postcode.ToUpperInvariant(),
                 PrimaryClassification = apiAddress.PrimaryClassification,
                 SecondaryClassification = apiAddress.SecondaryClassification,
+            };
+
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+
+            // Go to the next page or back to the summary
+            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
+            navigationManager.NavigateTo(nextPage.Url);
+        } else if (Model.IsAddress == false)
+        {
+            //This is a location only report
+            var eligibilityCheck = await GetEligibilityCheck();
+            var createExtraData = await GetCreateExtraData();
+
+            var updatedEligibilityCheck = eligibilityCheck with
+            {
+                Uprn = null,
+                Easting = (double)Model.Easting,
+                Northing = (double)Model.Northing,
+                LocationDesc = Model.LocationDesc,
+                IsAddress = false,
+            };
+
+            var updatedExtraData = createExtraData with
+            {
+                Postcode = null,
+                PrimaryClassification = null,
+                SecondaryClassification = null,
             };
 
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
@@ -151,8 +193,12 @@ public partial class Address(
     /// </summary>
     private async Task<IList<ApiAddress>> AddressSearch()
     {
-
-        if (string.IsNullOrWhiteSpace(Model.Postcode))
+        if (string.IsNullOrWhiteSpace(Model.Postcode) && Model.IsAddress == false)
+        {
+            logger.LogDebug("Non address query so not searching");
+            _isSearching = false;
+            return [];
+        } else if (string.IsNullOrWhiteSpace(Model.Postcode))
         {
             logger.LogDebug("No postcode, not searching");
             _isSearching = false;

@@ -1,10 +1,12 @@
-﻿using FloodOnlineReportingTool.Public.Models;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Net;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -81,13 +83,23 @@ public partial class Index(
     {
         // Save the postcode
         var createExtraData = await GetCreateExtraData();
-
         var updatedExtraData = createExtraData with
         {
             Postcode = Model.Postcode?.ToUpperInvariant(),
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+
+        if (Model.Postcode != null)
+        {
+            var eligibilityCheck = await GetEligibilityCheck();
+            var updatedEligibilityCheck = eligibilityCheck with
+            {
+                IsAddress = true,
+            };
+
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
+        }
 
         // Go to the next page or back to the summary
         var nextPage = GetNextPage();
@@ -122,5 +134,20 @@ public partial class Index(
 
         logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
         return new();
+    }
+
+    private async Task<EligibilityCheckDto> GetEligibilityCheck()
+    {
+        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
+        if (data.Success)
+        {
+            if (data.Value != null)
+            {
+                return data.Value;
+            }
+        }
+
+        logger.LogWarning("Eligibility Check was not found in the protected storage.");
+        return new EligibilityCheckDto();
     }
 }

@@ -203,6 +203,7 @@ public partial class Location(
             //Uprn = apiAddress.UPRN,
             Easting = Model.Easting.Value,
             Northing = Model.Northing.Value,
+            IsAddress = false,
             //LocationDesc = apiAddress.ConcatenatedAddress,
         };
 

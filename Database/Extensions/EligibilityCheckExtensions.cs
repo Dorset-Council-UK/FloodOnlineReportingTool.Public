@@ -6,11 +6,12 @@ public static class EligibilityCheckExtensions
 {
     internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference)
     {
+        //TODO - sort UPRN
         return new EligibilityCheckCreated(
             eligibilityCheck.Id,
             reference,
             eligibilityCheck.CreatedUtc,
-            eligibilityCheck.Uprn,
+            (long)eligibilityCheck.Uprn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,
@@ -23,10 +24,11 @@ public static class EligibilityCheckExtensions
 
     internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck)
     {
+        //TODO - sort UPRN
         return new EligibilityCheckUpdated(
             eligibilityCheck.Id,
             eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
-            eligibilityCheck.Uprn,
+            (long)eligibilityCheck.Uprn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,

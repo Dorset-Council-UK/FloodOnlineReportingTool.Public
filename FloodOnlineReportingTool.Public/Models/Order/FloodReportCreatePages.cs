@@ -5,7 +5,7 @@ internal static class FloodReportCreatePages
     private static ReadOnlySpan<char> BaseUrl => "floodreport/create";
 
     public static readonly PageInfo Home = new(BaseUrl, "Postal address");
-    public static readonly PageInfo Address = new(BaseUrl, "/address", "Affected property");
+    public static readonly PageInfo Address = new(BaseUrl, "/address", "Affected property or location");
     public static readonly PageInfo PropertyType = new(BaseUrl, "/propertytype", "Property type");
     public static readonly PageInfo Confirmation = new(BaseUrl, "/confirmation", "Flood report complete");
     public static readonly PageInfo FloodAreas = new(BaseUrl, "/floodareas", "Flood impact");
