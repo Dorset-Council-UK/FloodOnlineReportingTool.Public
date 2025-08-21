@@ -94,7 +94,7 @@ public partial class Location(
 
             // Pass the OS key to JavaScript
             var apiKey = Configuration["GIS:OSApiKey"];
-            await _module.InvokeVoidAsync("receiveApiKey", apiKey);
+            await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
 
             //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();

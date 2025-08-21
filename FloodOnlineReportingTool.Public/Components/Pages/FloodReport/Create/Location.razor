@@ -17,16 +17,12 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <p @ref="_map" class="map"></p>
+    <div @ref="_map" class="map"></div>
 
     @if (!_isLoading)
     {
         <p>Where is the flood located?</p>
-        <p>Click the 'Choose a location' button below and click on the map to choose the location.</p>
-
-        <div>
-            <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="ChooseLocation">Choose a location</button>
-        </div>
+        <p>Click on the map to choose the location.</p>
 
         @if (Model.IsAddress == false)
         {

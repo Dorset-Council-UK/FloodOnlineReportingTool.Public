@@ -22,7 +22,7 @@ export function receiveApiKey(key: string): void {
  */
 export function setupMap(element: HTMLElement, centreEasting: Number, centreNorthing: Number, startingEasting: Number | undefined, startingNorthing: Number | undefined) {
     //console.log("setupMap is using:", apiKey);
-    if (!apiKey) {
+    if (apiKey) {
         destroyMap();
 
 
@@ -57,6 +57,7 @@ export function setupMap(element: HTMLElement, centreEasting: Number, centreNort
         }
 
         L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Road_27700/{z}/{x}/{y}.png?key=${apiKey}`).addTo(map);
+        turnMarkerOn(); //On by default now
         map.on('click', onMapClick);
     }
 }
@@ -88,7 +89,6 @@ function onMapClick(evt: L.LeafletMouseEvent) {
     const latLng = evt.latlng as L.LatLng;
     setMarkerLocation(latLng, evt.target);
     rememberCoordinates(latLng);
-    markerEnabled = false;
 }
 
 /**
