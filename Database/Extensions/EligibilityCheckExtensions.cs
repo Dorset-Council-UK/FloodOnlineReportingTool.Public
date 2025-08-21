@@ -29,7 +29,7 @@ public static class EligibilityCheckExtensions
         );
     }
 
-    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck)
+    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck, IList<Organisation> organisations)
     {
         return new EligibilityCheckUpdated(
             eligibilityCheck.Id,
@@ -41,7 +41,15 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            [..
+                organisations.Select(o => new EligibilityCheckOrganisation(
+                    o.Id,
+                    o.Name,
+                    o.FloodAuthorityId,
+                    o.FloodAuthority.AuthorityName
+                )),
+            ]
         );
     }
 
@@ -73,18 +81,8 @@ public static class EligibilityCheckExtensions
     public static bool IsInternal(this EligibilityCheck eligibilityCheck)
     {
         return
-            eligibilityCheck.Residentials.Any(o => IsInternal(o.FloodImpact)) ||
-            eligibilityCheck.Commercials.Any(o => IsInternal(o.FloodImpact));
-    }
-
-    private static bool IsInternal(FloodImpact floodImpact)
-    {
-        if (floodImpact.CategoryPriority is null)
-        {
-            return false;
-        }
-
-        return floodImpact.CategoryPriority.Equals(FloodImpactPriority.Internal, StringComparison.OrdinalIgnoreCase);
+            eligibilityCheck.Residentials.Any(o => o.FloodImpact.IsInternal()) ||
+            eligibilityCheck.Commercials.Any(o => o.FloodImpact.IsInternal());
     }
 
     /// <summary>
@@ -96,18 +94,8 @@ public static class EligibilityCheckExtensions
     public static bool IsExternal(this EligibilityCheck eligibilityCheck)
     {
         return
-            eligibilityCheck.Residentials.Any(o => IsExternal(o.FloodImpact)) ||
-            eligibilityCheck.Commercials.Any(o => IsExternal(o.FloodImpact));
-    }
-
-    private static bool IsExternal(FloodImpact floodImpact)
-    {
-        if (floodImpact.CategoryPriority is null)
-        {
-            return false;
-        }
-
-        return floodImpact.CategoryPriority.Equals(FloodImpactPriority.External, StringComparison.OrdinalIgnoreCase);
+            eligibilityCheck.Residentials.Any(o => o.FloodImpact.IsExternal()) ||
+            eligibilityCheck.Commercials.Any(o => o.FloodImpact.IsExternal());
     }
 
     // TODO: make a method for get score
