@@ -1,4 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts;
+
+namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
 /// A data transfer object representing an eligibility check. Only the data which can be changed.

@@ -4,38 +4,38 @@ namespace FloodOnlineReportingTool.Database.Models;
 
 public static class EligibilityCheckExtensions
 {
-    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference)
+    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheckMessageDto eligibilityCheck, string reference)
     {
-        //TODO - sort UPRN
         return new EligibilityCheckCreated(
             eligibilityCheck.Id,
             reference,
             eligibilityCheck.CreatedUtc,
-            (long)eligibilityCheck.Uprn,
+            eligibilityCheck.Uprn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            eligibilityCheck.Organisations
         );
     }
 
-    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck)
+    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheckMessageDto eligibilityCheck)
     {
-        //TODO - sort UPRN
         return new EligibilityCheckUpdated(
             eligibilityCheck.Id,
             eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
-            (long)eligibilityCheck.Uprn,
+            eligibilityCheck.Uprn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            eligibilityCheck.Organisations
         );
     }
 
@@ -55,6 +55,22 @@ public static class EligibilityCheckExtensions
             Sources = [.. eligibilityCheck.Sources.Select(o => o.FloodProblemId)],
             Residentials = [.. eligibilityCheck.Residentials.Select(o => o.FloodImpactId)],
             Commercials = [.. eligibilityCheck.Commercials.Select(o => o.FloodImpactId)],
+        };
+    }
+
+    public static EligibilityCheckMessageDto ToMessageDto(this EligibilityCheck eligibilityCheck)
+    {
+        return new EligibilityCheckMessageDto
+        {
+            Uprn = eligibilityCheck.Uprn,
+            Easting = eligibilityCheck.Easting,
+            Northing = eligibilityCheck.Northing,
+            LocationDesc = eligibilityCheck.LocationDesc,
+            ImpactStart = eligibilityCheck.ImpactStart,
+            ImpactDuration = eligibilityCheck.ImpactDuration,
+            OnGoing = eligibilityCheck.OnGoing,
+            Uninhabitable = eligibilityCheck.Uninhabitable,
+            VulnerableCount = eligibilityCheck.VulnerableCount,
         };
     }
 

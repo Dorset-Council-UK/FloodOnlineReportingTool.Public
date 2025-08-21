@@ -3,11 +3,11 @@
 namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
-/// Represents an assessment to determine if a person qualifies for assistance, related to flood damage.
+/// A data transfer object representing an eligibility check data required for messages. Only the data which can be changed.
 /// </summary>
-public record EligibilityCheck
+public record EligibilityCheckMessageDto
 {
-    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid Id { get; init; }
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
     public long? Uprn { get; init; }
@@ -19,11 +19,6 @@ public record EligibilityCheck
     public int ImpactDuration { get; init; } // In hours
     public bool OnGoing { get; init; }
     public bool Uninhabitable { get; init; }
-    public Guid VulnerablePeopleId { get; init; }
-    public RecordStatus? VulnerablePeople { get; init; }
     public int? VulnerableCount { get; init; }
-    public DateTimeOffset TermsAgreed { get; init; }
-    public IList<EligibilityCheckResidential> Residentials { get; init; } = [];
-    public IList<EligibilityCheckCommercial> Commercials { get; init; } = [];
-    public IList<EligibilityCheckSource> Sources { get; init; } = [];
+    public IReadOnlyCollection<EligibilityCheckOrganisation> Organisations { get; set; } = [];
 }
