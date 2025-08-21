@@ -61,12 +61,19 @@
                     Areas flooded
                 </dt>
                 <dd class="govuk-summary-list__value">
-                    <ul class="govuk-list">
-                        @foreach (var label in Model.FloodedAreas)
-                        {
-                            <li>@label</li>
-                        }
-                    </ul>
+                    @if (Model.FloodedAreas.Count == 0)
+                    {
+                        <span>Unknown</span>
+                    }
+                    else
+                    {
+                        <ul class="govuk-list">
+                            @foreach (var label in Model.FloodedAreas)
+                            {
+                                <li>@label</li>
+                            }
+                        </ul>
+                    }
                 </dd>
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> which areas of the property were flooded</span></a>
@@ -79,7 +86,7 @@
                 <dd class="govuk-summary-list__value">
                     @if(Model.IsUninhabitable == null)
                     {
-                        <>Unknown</>
+                        <span>Unknown</span>
                     }
                     else
                     {
@@ -113,7 +120,7 @@
                 <dd class="govuk-summary-list__value">
                     @if (Model.IsOnGoing == null)
                     {
-                        <>Unknown</>
+                        <span>Unknown</span>
                     }
                     else
                     {
@@ -131,18 +138,10 @@
                         Flooding lasted
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @if (Model.FloodDurationHours == null)
-                        {
-                            <>Unknown</>
-                        }
-                        else
-                        {
-                            var duration = TimeSpan.FromHours(Model.FloodDurationHours.Value);
-                            @duration.GdsReadable()
-                        }
+                        @(Model.FloodingLasted ?? "Unknown")
                     </dd>
                     <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodDuration.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how long the flooding lasted</span></a>
+                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodDuration.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how long the flooding lasted</span></a>
                     </dd>
                 </div>
             }
@@ -162,12 +161,19 @@
                     Flood source
                 </dt>
                 <dd class="govuk-summary-list__value">
-                    <ul class="govuk-list">
-                        @foreach (var label in Model.FloodSources)
-                        {
-                            <li>@label</li>
-                        }
-                    </ul>
+                    @if (Model.FloodSources.Count == 0)
+                    {
+                        <span>Unknown</span>
+                    }
+                    else
+                    {
+                        <ul class="govuk-list">
+                            @foreach (var label in Model.FloodSources)
+                            {
+                                <li>@label</li>
+                            }
+                        </ul>
+                    }
                 </dd>
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>

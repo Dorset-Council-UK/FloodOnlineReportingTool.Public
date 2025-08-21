@@ -17,7 +17,9 @@ public class Summary
 
     public bool? IsOnGoing { get; set; }
 
-    public int? FloodDurationHours { get; set; }
+    public Guid? FloodDurationKnownId { get; set; }
+
+    public string? FloodingLasted { get; set; }
 
     public Guid? VulnerablePeopleId { get; set; }
 

@@ -11,6 +11,7 @@ public record EligibilityCheckDto
     public bool IsAddress { get; init; } = true;
     public string? LocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
+    public Guid? DurationKnownId { get; init; }
     public int? ImpactDuration { get; init; } // In hours
     public bool OnGoing { get; init; }
     public bool? Uninhabitable { get; init; }
