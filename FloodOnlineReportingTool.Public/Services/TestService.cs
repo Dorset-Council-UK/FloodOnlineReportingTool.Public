@@ -17,6 +17,22 @@ public sealed class TestService
         _context = context;
     }
 
+    public static class FakerFactory
+    {
+        public static IReadOnlyCollection<EligibilityCheckOrganisation> GenerateFakeOrganisations(int count = 5)
+        {
+            var faker = new Faker<EligibilityCheckOrganisation>()
+                .CustomInstantiator(f => new EligibilityCheckOrganisation(
+                    Guid.NewGuid(),
+                    f.Company.CompanyName(),
+                    Guid.NewGuid(),
+                    f.Company.CompanySuffix()
+                ));
+
+            return faker.Generate(count);
+        }
+    }
+
     internal async Task TestMessage(CancellationToken ct)
     {
 #if DEBUG
@@ -35,7 +51,8 @@ public sealed class TestService
             faker.Random.Int(1, 72),
             faker.Random.Bool(),
             faker.Random.Bool(),
-            faker.Random.Int(0, 5)
+            faker.Random.Int(0, 5),
+            FakerFactory.GenerateFakeOrganisations(1)
         );
 
         await _publishEndpoint.Publish(message, ct).ConfigureAwait(false);

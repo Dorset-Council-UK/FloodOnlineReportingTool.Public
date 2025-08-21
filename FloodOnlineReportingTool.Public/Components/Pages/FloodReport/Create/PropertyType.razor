@@ -17,13 +17,20 @@
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Address
+                    Location
                 </dt>
                 <dd class="govuk-summary-list__value">
                     @_addressPreview
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Address.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                    @if (Model.IsAddress)
+                    {
+                        <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Address.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                    } else
+                    {
+                        <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Location.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
+                    }
+                    
                 </dd>
             </div>
         </dl>
@@ -57,7 +64,7 @@
                         <div>Select one option.</div>
                         @if (!string.IsNullOrWhiteSpace(_classification))
                         {
-                            <div>The selected address is listed as @_classification. Select a different property type if this is incorrect.</div>
+                            <div>The selected address/location is listed as @_classification. Select a different property type if this is incorrect.</div>
                         }
                     </GdsHint>
                     <GdsErrorMessage />

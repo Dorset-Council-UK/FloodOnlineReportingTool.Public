@@ -44,6 +44,8 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
+
     protected override void OnInitialized()
     {
         // Setup model and edit context
@@ -63,12 +65,14 @@ public partial class Location(
             Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
             Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.Postcode = createExtraData.Postcode;
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            Model.LocationDesc = eligibilityCheck.LocationDesc;
 
             await LoadJavaScriptAndMap();
 
             _isLoading = false;
             StateHasChanged();
-        }
+        } 
     }
 
     private async Task LoadJavaScriptAndMap()
@@ -88,6 +92,11 @@ public partial class Location(
                 return;
             }
 
+            // Pass the OS key to JavaScript
+            var apiKey = Configuration["GIS:OSApiKey"];
+            await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
+
+            //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();
             var (startingEasting, startingNorthing) = StartingLocation();
             await _module.InvokeVoidAsync("setupMap", _cts.Token, _map, centreEasting, centreNorthing, startingEasting, startingNorthing);
@@ -192,33 +201,72 @@ public partial class Location(
 
     private async Task OnValidSubmit()
     {
-        Model.Postcode = await GetPostcodeFromLocation();
+        var createExtraData = await GetCreateExtraData();
+        var eligibilityCheck = await GetEligibilityCheck();
+        ExtraData? updatedExtraData = null;
+        bool propertyTypeReset = false;
+        if ( Model.IsAddress)
+        {
+            Model.Postcode = await GetPostcodeFromLocation();
+
+            updatedExtraData = createExtraData with
+            {
+                Postcode = Model.Postcode,
+                //PrimaryClassification = apiAddress.PrimaryClassification,
+                //SecondaryClassification = apiAddress.SecondaryClassification,
+            };
+            propertyTypeReset = true;
+
+        } else if((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
+        {
+            //They changed the location so we reset the property type option
+            updatedExtraData = createExtraData with
+            {
+                Postcode = null,
+                PrimaryClassification = null,
+                SecondaryClassification = null,
+                PropertyType = null,
+            };
+            propertyTypeReset = true;
+        }
+        if (updatedExtraData != null)
+        {
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+        }
 
         // Remember the entered postcode
-        var eligibilityCheck = await GetEligibilityCheck();
-        var createExtraData = await GetCreateExtraData();
-
         var updatedEligibilityCheck = eligibilityCheck with
         {
             //Uprn = apiAddress.UPRN,
             Easting = Model.Easting.Value,
             Northing = Model.Northing.Value,
-            //LocationDesc = apiAddress.ConcatenatedAddress,
+            LocationDesc = Model.LocationDesc,
+            
         };
-
-        var updatedExtraData = createExtraData with
-        {
-            Postcode = Model.Postcode,
-            //PrimaryClassification = apiAddress.PrimaryClassification,
-            //SecondaryClassification = apiAddress.SecondaryClassification,
-        };
-
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Address;
-        navigationManager.NavigateTo(nextPage.Url);
+        // Go to the next page or pass back to the summary (user must return from property type page if reset)
+        var nextPage = GetNextPage(propertyTypeReset);
+        var nextPageUrl = nextPage.Url;
+        if (propertyTypeReset && FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
+    }
+    private PageInfo GetNextPage(bool propertyTypeReset)
+    {
+        if (propertyTypeReset == false && FromSummary)
+        {
+            return FloodReportCreatePages.Summary;
+        }
+
+        if (Model.IsAddress == true)
+        {
+            return FloodReportCreatePages.Address;
+        }
+        
+        return FloodReportCreatePages.PropertyType;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -308,4 +356,5 @@ public partial class Location(
 
         return null;
     }
+
 }

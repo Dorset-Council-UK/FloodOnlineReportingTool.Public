@@ -1,10 +1,13 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts;
+using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Settings;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
@@ -12,6 +15,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     PublicDbContext context,
+    ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
     IOptions<GISSettings> options
 ) : IFloodReportRepository
@@ -140,6 +144,7 @@ public class FloodReportRepository(
                 CreatedUtc = now,
                 TermsAgreed = now,
 
+                IsAddress = dto.IsAddress,
                 Uprn = dto.Uprn,
                 Easting = dto.Easting,
                 Northing = dto.Northing,
@@ -165,7 +170,15 @@ public class FloodReportRepository(
 
         // Publish mutiple messages to the message system
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference);
+        var responsibleOrganisations = await commonRepository.GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
+        if(responsibleOrganisations == null)
+        {
+            //Error
+            return floodReport;
+        }
+        var messageModel = floodReport.EligibilityCheck.ToMessageDto();
+        messageModel.Organisations = packageOrganisation(responsibleOrganisations);
+        var eligibilityCheckCreatedMessage = messageModel.ToMessageCreated(floodReport.Reference);
         await publishEndpoint
             .Publish(floodReportCreatedMessage, ct)
             .ConfigureAwait(false);
@@ -179,6 +192,22 @@ public class FloodReportRepository(
             .ConfigureAwait(false);
 
         return floodReport;
+    }
+
+    private IReadOnlyCollection<EligibilityCheckOrganisation> packageOrganisation(IList<Organisation> organisations)
+    {
+        List<EligibilityCheckOrganisation> packagedList = new();
+        foreach ( var organisation in organisations)
+        {
+            EligibilityCheckOrganisation organisationModel = new EligibilityCheckOrganisation(
+                organisation.Id, 
+                organisation.Name,
+                organisation.FloodAuthorityId,
+                organisation.FloodAuthority.AuthorityName);
+            packagedList.Add(organisationModel);
+        }
+
+        return packagedList;
     }
 
     public bool HasInvestigationStarted(Guid status)

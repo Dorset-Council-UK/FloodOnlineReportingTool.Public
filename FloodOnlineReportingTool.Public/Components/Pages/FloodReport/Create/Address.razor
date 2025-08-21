@@ -12,7 +12,7 @@
 
     <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Searching..." />
 
-    @if (!_isSearching && Model.AddressOptions.Count == 0)
+    @if (!_isSearching && Model.AddressOptions.Count == 0 && Model.IsAddress)
     {
         <p class="govuk-error-message">
             <span class="govuk-visually-hidden">Error:</span> <span>No addresses were found, please check the postcode and search again</span>
@@ -36,14 +36,23 @@
             }
         </InputSelect>
     </GdsFormGroup>
-
     <GdsFormGroup For="() => Model.Postcode">
         <GdsLabel Text="Postcode" />
-        <GdsHint>If the address is not showing you can search again with a different postcode.</GdsHint>
+        @{
+            if (Model.UPRN is null && (Model.Easting is not null || Model.Northing is not null))
+            {
+                <GdsHint>The postcode was added based on the location you selected.</GdsHint>
+            }
+            else
+            {
+                <GdsHint>If the address is not showing you can search again with a different postcode.</GdsHint>
+            }
+        }
         <GdsErrorMessage />
         <GdsInputText @bind-Value="Model.Postcode" class="govuk-input govuk-input--width-10" autocomplete="postal-code" />
         <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="SearchAgain">Search again</button>
     </GdsFormGroup>
+    
 
     <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
 

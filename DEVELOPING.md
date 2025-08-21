@@ -91,7 +91,8 @@ Example secrets file:
     "ApiKey": "YourApiKey",
     "AddressSearchUrl": "YourAddressUrl",
     "NearestAddressesUrl": "YourNearestAddressUrl",
-    "AccessTokenIssueDurationMonths": 6
+    "AccessTokenIssueDurationMonths": 6,
+    "OSApiKey": "Your OS Maps API Key here"
   },
   "RabbitMQ": {
     "Enabled": "false",

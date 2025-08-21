@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/location"
+@using Microsoft.JSInterop
 
 <HeadContent>
     <link rel="stylesheet" href="/css/leaflet.css">
@@ -16,16 +17,22 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <p @ref="_map" class="map"></p>
+    <div @ref="_map" class="map"></div>
 
-    @if (!_isLoading && !_editContext.GetValidationMessages().Any())
+    @if (!_isLoading)
     {
         <p>Where is the flood located?</p>
-        <p>Click the 'Choose a location' button below and click on the map to choose the location.</p>
+        <p>Click on the map to choose the location.</p>
 
-        <div>
-            <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="ChooseLocation">Choose a location</button>
-        </div>
+        @if (Model.IsAddress == false)
+        {
+            <GdsFormGroup For="() => Model.LocationDesc">
+                <GdsLabel Text="Describe the location selected" />
+                <GdsHint>For example: Barn in far field</GdsHint>
+                <GdsErrorMessage />
+                <GdsInputText @bind-Value=Model.LocationDesc class="govuk-input govuk-input--width-50" />
+            </GdsFormGroup>
+        }
 
         <div>
             <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
