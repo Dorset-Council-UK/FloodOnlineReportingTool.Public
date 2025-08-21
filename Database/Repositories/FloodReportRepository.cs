@@ -125,7 +125,7 @@ public class FloodReportRepository(
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
 
-        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration,  ct).ConfigureAwait(false);
+        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
         
         var floodReport = new FloodReport
         {
@@ -192,7 +192,7 @@ public class FloodReportRepository(
     ///     <para>If the flood duration is known, it will return the hours provided by the user.</para>
     ///     <para>Otherwise, it will try to get the duration hours from the flood problem in the database.</para>
     /// </summary>
-    private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours,  CancellationToken ct)
+    private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
     {
         // The flood is still happening, so there is no duration
         if (isOngoing)
@@ -219,7 +219,13 @@ public class FloodReportRepository(
             .FindAsync([durationKnownId], ct)
             .ConfigureAwait(false);
 
-        if (int.TryParse(floodProblem?.TypeName, CultureInfo.InvariantCulture, out var durationHours))
+        if (floodProblem == null)
+        {
+            logger.LogError("Flood problem with Id {Id} not found.", durationKnownId);
+            return 0;
+        }
+
+        if (!string.IsNullOrWhiteSpace(floodProblem.TypeName) && int.TryParse(floodProblem.TypeName, CultureInfo.InvariantCulture, out var durationHours))
         {
             logger.LogInformation("Impact duration is {Duration} hours.", durationHours);
             return durationHours;
