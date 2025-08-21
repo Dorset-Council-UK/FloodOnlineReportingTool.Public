@@ -5,6 +5,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Globalization;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -125,6 +126,8 @@ public class FloodReportRepository(
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
 
+        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
+        
         var floodReport = new FloodReport
         {
             Reference = CreateReference(),
@@ -143,7 +146,7 @@ public class FloodReportRepository(
                 Northing = dto.Northing,
                 LocationDesc = dto.LocationDesc,
                 ImpactStart = dto.ImpactStart,
-                ImpactDuration = dto.ImpactDuration ?? 0,
+                ImpactDuration = impactDuration,
                 OnGoing = dto.OnGoing,
                 Uninhabitable = dto.Uninhabitable == true,
                 VulnerablePeopleId = dto.VulnerablePeopleId,
@@ -180,5 +183,54 @@ public class FloodReportRepository(
     public bool HasInvestigationStarted(Guid status)
     {
         return status == RecordStatusIds.ActionNeeded;
+    }
+
+    /// <summary>
+    ///     <para>Calculates the impact duration hours.</para>
+    ///     <para>If the flood is still happening this will be zero.</para>
+    ///     <para>If the flood duration is known, it will return the hours provided by the user.</para>
+    ///     <para>Otherwise, it will try to get the duration hours from the flood problem in the database.</para>
+    /// </summary>
+    private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
+    {
+        // The flood is still happening, so there is no duration
+        if (isOngoing)
+        {
+            logger.LogInformation("Flood is ongoing, so impact duration is not known yet.");
+            return 0;
+        }
+
+        if (durationKnownId == null)
+        {
+            logger.LogError("Impact duration is not known, and no duration known Id was provided.");
+            return 0;
+        }
+
+        // The user has indicated that the flood duration is known
+        if (durationKnownId == FloodProblemIds.DurationKnown)
+        {
+            logger.LogInformation("Impact duration is known, using provided impact duration hours.");
+            return impactDurationHours ?? 0;
+        }
+
+        // Get the duration from the flood problem
+        var floodProblem = await context.FloodProblems
+            .FindAsync([durationKnownId], ct)
+            .ConfigureAwait(false);
+
+        if (floodProblem == null)
+        {
+            logger.LogError("Flood problem with Id {Id} not found.", durationKnownId);
+            return 0;
+        }
+
+        if (!string.IsNullOrWhiteSpace(floodProblem.TypeName) && int.TryParse(floodProblem.TypeName, CultureInfo.InvariantCulture, out var durationHours))
+        {
+            logger.LogInformation("Impact duration is {Duration} hours.", durationHours);
+            return durationHours;
+        }
+
+        logger.LogError("Could not parse impact duration from flood problem type name");
+        return 0;
     }
 }
