@@ -70,9 +70,26 @@ public partial class Summary(
             Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
             Model.StartDate = eligibilityCheck.ImpactStart;
             Model.IsOnGoing = eligibilityCheck.OnGoing;
-            Model.FloodDurationHours = eligibilityCheck.ImpactDuration;
+            Model.FloodDurationKnownId = eligibilityCheck.DurationKnownId;
             Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId;
             Model.NumberOfVulnerablePeople = eligibilityCheck.VulnerableCount;
+
+            // Build the flood lasted for message
+            Model.FloodingLasted = null;
+            var durationId = eligibilityCheck.DurationKnownId;
+            if (!eligibilityCheck.OnGoing && durationId != null)
+            {
+                if (durationId.Value == FloodProblemIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
+                {
+                    var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
+                    Model.FloodingLasted = duration.GdsReadable();
+                }
+                else
+                {
+                    var floodDuration = await commonRepository.GetFloodProblemByCategory(FloodProblemCategory.Duration, durationId.Value, _cts.Token);
+                    Model.FloodingLasted = floodDuration?.TypeDescription;
+                }
+            }
 
             _isLoading = false;
             StateHasChanged();
