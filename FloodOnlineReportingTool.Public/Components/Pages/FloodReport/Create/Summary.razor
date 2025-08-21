@@ -21,7 +21,7 @@
                     Postal Address
                 </dt>
                 <dd class="govuk-summary-list__value">
-                    @(Model.IsAddress.ToString())
+                    @(Model.IsAddress ? "Yes" : "No")
                 </dd>
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Home.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location type</span></a>

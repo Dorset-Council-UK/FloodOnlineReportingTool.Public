@@ -140,6 +140,7 @@ public class FloodReportRepository(
                 CreatedUtc = now,
                 TermsAgreed = now,
 
+                IsAddress = dto.IsAddress,
                 Uprn = dto.Uprn,
                 Easting = dto.Easting,
                 Northing = dto.Northing,
@@ -165,6 +166,7 @@ public class FloodReportRepository(
 
         // Publish mutiple messages to the message system
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
+        //TODO - fix contract as this will break for nullable UPRN
         var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference);
         await publishEndpoint
             .Publish(floodReportCreatedMessage, ct)
