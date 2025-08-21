@@ -25,6 +25,7 @@ public partial class Address(
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
         FloodReportCreatePages.Home.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
     ];
 
     [SupplyParameterFromQuery]
@@ -108,9 +109,14 @@ public partial class Address(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
-            navigationManager.NavigateTo(nextPage.Url);
+            // Go to the next page or pass back to the summary (user must return from property type page)
+            var nextPage = FloodReportCreatePages.PropertyType;
+            var nextPageUrl = nextPage.Url;
+            if (FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         } 
     }
 

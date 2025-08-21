@@ -5,7 +5,7 @@ namespace FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 
 public class PropertyType
 {
-    public bool FromLocation { get; set; }
+    public bool IsAddress { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Radio)]
     public Guid? Property { get; set; }

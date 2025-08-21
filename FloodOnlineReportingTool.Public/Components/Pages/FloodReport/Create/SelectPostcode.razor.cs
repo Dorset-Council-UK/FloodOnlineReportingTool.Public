@@ -91,18 +91,18 @@ public partial class SelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or back to the summary
+        // Go to the next page or pass back to the summary (user must return from property type page)
         var nextPage = GetNextPage();
-        navigationManager.NavigateTo(nextPage.Url);
+        var nextPageUrl = nextPage.Url;
+        if (FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private PageInfo GetNextPage()
     {
-        if (FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
         if (Model.PostcodeKnown == true)
         {
             return FloodReportCreatePages.Address;
@@ -124,20 +124,5 @@ public partial class SelectPostcode(
 
         logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
         return new();
-    }
-
-    private async Task<EligibilityCheckDto> GetEligibilityCheck()
-    {
-        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
-
-        logger.LogWarning("Eligibility Check was not found in the protected storage.");
-        return new EligibilityCheckDto();
     }
 }

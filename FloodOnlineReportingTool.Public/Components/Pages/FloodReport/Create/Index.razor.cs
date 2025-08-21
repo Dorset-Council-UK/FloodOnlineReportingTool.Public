@@ -87,18 +87,18 @@ public partial class Index(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or back to the summary
+        // Go to the next page or pass back to the summary
         var nextPage = GetNextPage();
-        navigationManager.NavigateTo(nextPage.Url);
+        var nextPageUrl = nextPage.Url;
+        if (FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private PageInfo GetNextPage()
     {
-        if (FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
         if (Model.IsAddress == true)
         {
             return FloodReportCreatePages.Postcode;

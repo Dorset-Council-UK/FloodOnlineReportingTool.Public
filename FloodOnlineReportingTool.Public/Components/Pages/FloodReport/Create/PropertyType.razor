@@ -23,12 +23,12 @@
                     @_addressPreview
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    @if (Model.FromLocation)
-                    {
-                        <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Location.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
-                    } else
+                    @if (Model.IsAddress)
                     {
                         <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Address.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                    } else
+                    {
+                        <a draggable="false" data-prevent-double-click="true" href="@FloodReportCreatePages.Location.Url" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
                     }
                     
                 </dd>

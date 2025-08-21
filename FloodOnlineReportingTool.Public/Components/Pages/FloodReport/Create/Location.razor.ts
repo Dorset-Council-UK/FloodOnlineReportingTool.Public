@@ -7,46 +7,58 @@ let helper: any = null;
 let markerEnabled: boolean = false;
 let marker: L.Marker | null = null;
 
+
+let apiKey: string | null = null;
+
+// This function is called on load
+export function receiveApiKey(key: string): void {
+    //console.log("receiveApiKey called with:", key);
+    apiKey = key;
+}
+
 /**
  * Settup a simple map using the OS Maps API and Leaflet, using the British National Grid projection.
  * @see https://labs.os.uk/public/os-data-hub-examples/os-maps-api/zxy-27700-basic-map#leaflet
  */
 export function setupMap(element: HTMLElement, centreEasting: Number, centreNorthing: Number, startingEasting: Number | undefined, startingNorthing: Number | undefined) {
-    destroyMap();
+    //console.log("setupMap is using:", apiKey);
+    if (!apiKey) {
+        destroyMap();
 
-    // Setup the EPSG:27700 (British National Grid) projection.
-    const resolutions: number[] = [896.0, 448.0, 224.0, 112.0, 56.0, 28.0, 14.0, 7.0, 3.5, 1.75];
-    const EPSG27700: L.CRS = new L.Proj.CRS('EPSG:27700', '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs', {
-        resolutions: resolutions,
-        origin: [-238375.0, 1376256.0]
-    });
 
-    const [lat, lng] = transformCoords([centreEasting, centreNorthing]);
-    const centre = new L.LatLng(lat, lng);
+        // Setup the EPSG:27700 (British National Grid) projection.
+        const resolutions: number[] = [896.0, 448.0, 224.0, 112.0, 56.0, 28.0, 14.0, 7.0, 3.5, 1.75, 0.875, 0.4375, 0.21875, 0.109375];
+        const EPSG27700: L.CRS = new L.Proj.CRS('EPSG:27700', '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs', {
+            resolutions: resolutions,
+            origin: [-238375.0, 1376256.0]
+        });
 
-    const mapOptions: L.MapOptions = {
-        crs: EPSG27700,
-        minZoom: 0,
-        maxZoom: resolutions.length - 1,
-        center: centre,
-        zoom: 4,
-        maxBounds: [
-            transformCoords([-238375.0, 0.0]),
-            transformCoords([900000.0, 1376256.0])
-        ],
-        attributionControl: false
-    };
+        const [lat, lng] = transformCoords([centreEasting, centreNorthing]);
+        const centre = new L.LatLng(lat, lng);
 
-    map = L.map(element, mapOptions);
+        const mapOptions: L.MapOptions = {
+            crs: EPSG27700,
+            minZoom: 0,
+            maxZoom: resolutions.length - 1,
+            center: centre,
+            zoom: 4,
+            maxBounds: [
+                transformCoords([-238375.0, 0.0]),
+                transformCoords([900000.0, 1376256.0])
+            ],
+            attributionControl: false
+        };
 
-    if (startingEasting && startingNorthing) {
-        const [startingLat, startingLng] = transformCoords([startingEasting, startingNorthing]);
-        setMarkerLocation(new L.LatLng(startingLat, startingLng), map);
+        map = L.map(element, mapOptions);
+
+        if (startingEasting && startingNorthing) {
+            const [startingLat, startingLng] = transformCoords([startingEasting, startingNorthing]);
+            setMarkerLocation(new L.LatLng(startingLat, startingLng), map);
+        }
+
+        L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Road_27700/{z}/{x}/{y}.png?key=${apiKey}`).addTo(map);
+        map.on('click', onMapClick);
     }
-
-    const apiKey = 'J3H6E7O9J3cZuUvkjdOASdbGDAmQxjZJ';
-    L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Road_27700/{z}/{x}/{y}.png?key=${apiKey}`).addTo(map);
-    map.on('click', onMapClick);
 }
 
 export function setHelper(helperRef: any) {

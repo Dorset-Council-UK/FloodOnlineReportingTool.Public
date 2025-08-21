@@ -18,13 +18,31 @@
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                    Postal Address
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    @(Model.IsAddress.ToString())
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Home.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location type</span></a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
                     Address or location
                 </dt>
                 <dd class="govuk-summary-list__value">
                     @(Model.AddressPreview ?? "Unknown")
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Address.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                    @if (Model.IsAddress)
+                    {
+                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Address.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
+                    }
+                    else
+                    {
+                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Location.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
+                    }
                 </dd>
             </div>
             <div class="govuk-summary-list__row">

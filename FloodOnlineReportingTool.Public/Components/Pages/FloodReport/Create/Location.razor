@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/location"
+@using Microsoft.JSInterop
 
 <HeadContent>
     <link rel="stylesheet" href="/css/leaflet.css">
@@ -18,7 +19,7 @@
 
     <p @ref="_map" class="map"></p>
 
-    @if (!_isLoading && !_editContext.GetValidationMessages().Any())
+    @if (!_isLoading)
     {
         <p>Where is the flood located?</p>
         <p>Click the 'Choose a location' button below and click on the map to choose the location.</p>

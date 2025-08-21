@@ -44,6 +44,8 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
+
     protected override void OnInitialized()
     {
         // Setup model and edit context
@@ -90,6 +92,11 @@ public partial class Location(
                 return;
             }
 
+            // Pass the OS key to JavaScript
+            var apiKey = Configuration["GIS:OSApiKey"];
+            await _module.InvokeVoidAsync("receiveApiKey", apiKey);
+
+            //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();
             var (startingEasting, startingNorthing) = StartingLocation();
             await _module.InvokeVoidAsync("setupMap", _cts.Token, _map, centreEasting, centreNorthing, startingEasting, startingNorthing);
@@ -197,6 +204,7 @@ public partial class Location(
         var createExtraData = await GetCreateExtraData();
         var eligibilityCheck = await GetEligibilityCheck();
         ExtraData? updatedExtraData = null;
+        bool propertyTypeReset = false;
         if ( Model.IsAddress)
         {
             Model.Postcode = await GetPostcodeFromLocation();
@@ -207,14 +215,19 @@ public partial class Location(
                 //PrimaryClassification = apiAddress.PrimaryClassification,
                 //SecondaryClassification = apiAddress.SecondaryClassification,
             };
-            
-        } else if(!string.Equals(Model.LocationDesc, eligibilityCheck.LocationDesc))
+            propertyTypeReset = true;
+
+        } else if((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
         {
+            //They changed the location so we reset the property type option
             updatedExtraData = createExtraData with
             {
                 Postcode = null,
-                PropertyType = null
+                PrimaryClassification = null,
+                SecondaryClassification = null,
+                PropertyType = null,
             };
+            propertyTypeReset = true;
         }
         if (updatedExtraData != null)
         {
@@ -232,13 +245,18 @@ public partial class Location(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or back to the summary
-        var nextPage = GetNextPage();
-        navigationManager.NavigateTo(nextPage.Url);
+        // Go to the next page or pass back to the summary (user must return from property type page if reset)
+        var nextPage = GetNextPage(propertyTypeReset);
+        var nextPageUrl = nextPage.Url;
+        if (propertyTypeReset && FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
-    private PageInfo GetNextPage()
+    private PageInfo GetNextPage(bool propertyTypeReset)
     {
-        if (FromSummary)
+        if (propertyTypeReset == false && FromSummary)
         {
             return FloodReportCreatePages.Summary;
         }
@@ -248,7 +266,7 @@ public partial class Location(
             return FloodReportCreatePages.Address;
         }
         
-        return FloodReportCreatePages.PropertyTypeFromLocation;
+        return FloodReportCreatePages.PropertyType;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -338,4 +356,5 @@ public partial class Location(
 
         return null;
     }
+
 }

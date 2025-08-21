@@ -20,8 +20,8 @@ public partial class Test(
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _floodReportCreatePages = [
         new (FloodReportCreatePages.Home),
-        new (FloodReportCreatePages.Location, "(optional)"),
-        new (FloodReportCreatePages.Address),
+        new (FloodReportCreatePages.Location, "(optional*)"),
+        new (FloodReportCreatePages.Address, "(optional*)"),
         new (FloodReportCreatePages.PropertyType),
         new (FloodReportCreatePages.FloodAreas),
         new (FloodReportCreatePages.Vulnerability),
