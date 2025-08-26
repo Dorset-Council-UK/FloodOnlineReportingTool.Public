@@ -14,8 +14,7 @@ public class FloodReportRepository(
     PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISSettings> options,
-    ICommonRepository commonRepository
+    IOptions<GISSettings> options
 ) : IFloodReportRepository
 {
     private readonly GISSettings _gisSettings = options.Value;
