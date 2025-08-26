@@ -55,7 +55,7 @@ public static class EligibilityCheckExtensions
         );
     }
 
-    public static EligibilityCheckDto ToDto(this EligibilityCheck eligibilityCheck)
+    internal static EligibilityCheckDto ToDto(this EligibilityCheck eligibilityCheck)
     {
         return new()
         {
@@ -101,7 +101,7 @@ public static class EligibilityCheckExtensions
     }
 
     // TODO: make a method for get score
-    public static int GetScore(this EligibilityCheck eligibilityCheck)
+    internal static int GetScore(this EligibilityCheck eligibilityCheck)
     {
         throw new NotImplementedException();
     }

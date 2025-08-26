@@ -2,7 +2,9 @@
 using FloodOnlineReportingTool.Public.Settings;
 using MassTransit;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class MessageSystemExtensions
 {
@@ -10,7 +12,7 @@ internal static class MessageSystemExtensions
     /// Add the message system. The Public project only needs to publish messages, not consume them
     /// </summary>
     /// <remarks>Even if messaging is disabled we still need to add MassTransit, so the database services work with the MassTransit interfaces.</remarks>
-    public static IServiceCollection AddMessageSystem(this IServiceCollection services, MessagingSettings messagingSettings)
+    internal static IServiceCollection AddMessageSystem(this IServiceCollection services, MessagingSettings messagingSettings)
     {
         if (!messagingSettings.Enabled)
         {

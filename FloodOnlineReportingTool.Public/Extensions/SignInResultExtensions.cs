@@ -1,7 +1,9 @@
 ﻿using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Identity;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class SignInResultExtensions
 {

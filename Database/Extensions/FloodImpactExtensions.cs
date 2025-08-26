@@ -1,8 +1,10 @@
-﻿namespace FloodOnlineReportingTool.Database.Models;
+﻿#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace FloodOnlineReportingTool.Database.Models;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
-public static class FloodImpactExtensions
+internal static class FloodImpactExtensions
 {
-    public static bool IsInternal(this FloodImpact? floodImpact)
+    internal static bool IsInternal(this FloodImpact? floodImpact)
     {
         if (string.IsNullOrWhiteSpace(floodImpact?.CategoryPriority))
         {
@@ -12,7 +14,7 @@ public static class FloodImpactExtensions
         return floodImpact.CategoryPriority.Equals(FloodImpactPriority.Internal, StringComparison.OrdinalIgnoreCase);
     }
 
-    public static bool IsExternal(this FloodImpact? floodImpact)
+    internal static bool IsExternal(this FloodImpact? floodImpact)
     {
         if (string.IsNullOrWhiteSpace(floodImpact?.CategoryPriority))
         {
