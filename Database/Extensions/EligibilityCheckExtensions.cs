@@ -59,6 +59,7 @@ public static class EligibilityCheckExtensions
     {
         return new()
         {
+            IsAddress = eligibilityCheck.IsAddress,
             Uprn = eligibilityCheck.Uprn,
             Easting = eligibilityCheck.Easting,
             Northing = eligibilityCheck.Northing,
