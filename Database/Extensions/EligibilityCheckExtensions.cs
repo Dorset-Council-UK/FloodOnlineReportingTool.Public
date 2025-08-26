@@ -1,12 +1,14 @@
 ﻿using FloodOnlineReportingTool.Contracts;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Database.Models;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class EligibilityCheckExtensions
 {
     internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference, IList<Organisation> organisations)
     {
-        return new EligibilityCheckCreated(
+        return new(
             eligibilityCheck.Id,
             reference,
             eligibilityCheck.CreatedUtc,
@@ -31,7 +33,7 @@ public static class EligibilityCheckExtensions
 
     internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck, IList<Organisation> organisations)
     {
-        return new EligibilityCheckUpdated(
+        return new(
             eligibilityCheck.Id,
             eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
             eligibilityCheck.Uprn,
@@ -55,7 +57,7 @@ public static class EligibilityCheckExtensions
 
     public static EligibilityCheckDto ToDto(this EligibilityCheck eligibilityCheck)
     {
-        return new EligibilityCheckDto
+        return new()
         {
             Uprn = eligibilityCheck.Uprn,
             Easting = eligibilityCheck.Easting,
