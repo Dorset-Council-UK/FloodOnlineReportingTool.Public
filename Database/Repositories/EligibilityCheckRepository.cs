@@ -67,58 +67,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             return null;
         }
 
-        // Step 1 - Update the fields we choose
-        var updatedCheck = existingCheck with
-        {
-            UpdatedUtc = DateTimeOffset.UtcNow,
-
-            Uprn = dto.Uprn,
-            Easting = dto.Easting,
-            Northing = dto.Northing,
-            LocationDesc = dto.LocationDesc,
-            ImpactStart = dto.ImpactStart,
-            ImpactDuration = dto.ImpactDuration ?? 0,
-            OnGoing = dto.OnGoing,
-            Uninhabitable = dto.Uninhabitable == true,
-            VulnerablePeopleId = dto.VulnerablePeopleId,
-            VulnerableCount = dto.VulnerableCount,
-
-            Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(existingCheck.Id, floodImpactId))],
-            Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(existingCheck.Id, floodImpactId))],
-            Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(existingCheck.Id, floodProblemId))],
-        };
-        context.EligibilityChecks.Update(updatedCheck);
-
-        // Step 5 - Publish a updated message to the message system
-        var message = updatedCheck.ToMessageUpdated();
-        await publishEndpoint
-            .Publish(message, ct)
-            .ConfigureAwait(false);
-
-        // Step 6 - Update the database with the eligibility check, message, flood impacts, and flood problems
-        await context
-            .SaveChangesAsync(ct)
-            .ConfigureAwait(false);
-
-        return updatedCheck;
-    }
-
-    public async Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
-    {
-        var existingCheck = await context.FloodReports
-            .AsNoTracking()
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.ReportedByUserId == userId)
-            .Select(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
-            .ConfigureAwait(false);
-
-        if (existingCheck == null)
-        {
-            throw new InvalidOperationException("No eligiblity check found");
-        }
-
-        // Step 1 - Update the fields we choose
+        // Update the fields we choose
         var updatedCheck = existingCheck with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
@@ -141,15 +90,62 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         context.EligibilityChecks.Update(updatedCheck);
 
         // Publish a updated message to the message system
-        var message = updatedCheck.ToMessageUpdated();
-        await publishEndpoint
-            .Publish(message, ct)
+        var responsibleOrganisations = await commonRepository
+            .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations);
+
+        await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 
         // Update the database with the eligibility check, message, flood impacts, and flood problems
-        await context
-            .SaveChangesAsync(ct)
+        await context.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        return updatedCheck;
+    }
+
+    public async Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
+    {
+        var existingCheck = await context.FloodReports
+            .AsNoTracking()
+            .Include(o => o.EligibilityCheck)
+            .Where(o => o.ReportedByUserId == userId)
+            .Select(o => o.EligibilityCheck)
+            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("No eligiblity check found");
+
+        // Update the fields we choose
+        var updatedCheck = existingCheck with
+        {
+            UpdatedUtc = DateTimeOffset.UtcNow,
+
+            Uprn = dto.Uprn,
+            Easting = dto.Easting,
+            Northing = dto.Northing,
+            LocationDesc = dto.LocationDesc,
+            ImpactStart = dto.ImpactStart,
+            ImpactDuration = dto.ImpactDuration ?? 0,
+            OnGoing = dto.OnGoing,
+            Uninhabitable = dto.Uninhabitable == true,
+            VulnerablePeopleId = dto.VulnerablePeopleId,
+            VulnerableCount = dto.VulnerableCount,
+
+            Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(existingCheck.Id, floodImpactId))],
+            Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(existingCheck.Id, floodImpactId))],
+            Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(existingCheck.Id, floodProblemId))],
+        };
+        context.EligibilityChecks.Update(updatedCheck);
+
+        // Publish a updated message to the message system
+        var responsibleOrganisations = await commonRepository
+            .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated( responsibleOrganisations);
+
+        await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
+
+        // Update the database with the eligibility check, message, flood impacts, and flood problems
+        await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return updatedCheck;
     }
