@@ -12,6 +12,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     PublicDbContext context,
+    ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
     IOptions<GISSettings> options,
     ICommonRepository commonRepository
@@ -140,6 +141,7 @@ public class FloodReportRepository(
                 CreatedUtc = now,
                 TermsAgreed = now,
 
+                IsAddress = dto.IsAddress,
                 Uprn = dto.Uprn,
                 Easting = dto.Easting,
                 Northing = dto.Northing,

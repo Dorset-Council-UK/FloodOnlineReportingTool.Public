@@ -15,7 +15,7 @@ internal static class EligibilityCheckExtensions
             CreatedUtc = eligibilityCheck.CreatedUtc,
             UpdatedUtc = eligibilityCheck.UpdatedUtc,
             UprnNumber = (int)eligibilityCheck.Uprn,
-            UprnText = eligibilityCheck.Uprn.ToString(CultureInfo.CurrentCulture),
+            UprnText = eligibilityCheck.Uprn?.ToString(CultureInfo.CurrentCulture),
             EastingNumber = (float)eligibilityCheck.Easting,
             EastingText = eligibilityCheck.Easting.ToString(CultureInfo.CurrentCulture),
             NorthingNumber = (float)eligibilityCheck.Northing,

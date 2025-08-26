@@ -7,4 +7,8 @@ public class Location
     public double? Northing { get; set; }
 
     public string? Postcode { get; set; }
+
+    public bool IsAddress { get; set; }
+
+    public string? LocationDesc { get; set; }
 }
