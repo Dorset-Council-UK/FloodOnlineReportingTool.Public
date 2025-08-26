@@ -1,13 +1,16 @@
-﻿namespace FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts;
+
+namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
 /// A data transfer object representing an eligibility check. Only the data which can be changed.
 /// </summary>
 public record EligibilityCheckDto
 {
-    public long Uprn { get; init; }
+    public long? Uprn { get; init; }
     public double Easting { get; init; }
     public double Northing { get; init; }
+    public bool IsAddress { get; init; } = true;
     public string? LocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public Guid? DurationKnownId { get; init; }

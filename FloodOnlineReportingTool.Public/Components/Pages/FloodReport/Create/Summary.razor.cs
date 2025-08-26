@@ -64,6 +64,7 @@ public partial class Summary(
             Model.PropertyTypeName = await GetPropertyTypeName(createExtraData);
 
             var eligibilityCheck = await GetEligibilityCheck();
+            Model.IsAddress = eligibilityCheck.IsAddress;
             Model.AddressPreview = eligibilityCheck.LocationDesc;
             Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
             Model.FloodSources = await GetFloodSources(eligibilityCheck);

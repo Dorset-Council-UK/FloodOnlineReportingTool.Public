@@ -1,4 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts;
+
+namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
 /// Represents an assessment to determine if a person qualifies for assistance, related to flood damage.
@@ -8,9 +10,10 @@ public record EligibilityCheck
     public Guid Id { get; init; } = Guid.CreateVersion7();
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
-    public long Uprn { get; init; }
+    public long? Uprn { get; init; }
     public double Easting { get; init; }
     public double Northing { get; init; }
+    public bool IsAddress { get; init; }
     public string? LocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public int ImpactDuration { get; init; } // In hours

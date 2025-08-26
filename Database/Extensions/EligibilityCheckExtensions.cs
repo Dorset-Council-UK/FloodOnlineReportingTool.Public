@@ -17,7 +17,8 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            []
         );
     }
 
@@ -33,7 +34,8 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.ImpactDuration,
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
-            eligibilityCheck.VulnerableCount
+            eligibilityCheck.VulnerableCount,
+            []
         );
     }
 
