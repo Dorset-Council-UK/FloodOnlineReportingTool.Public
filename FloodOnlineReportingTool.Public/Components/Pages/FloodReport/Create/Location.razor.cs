@@ -241,8 +241,8 @@ public partial class Location(
         var updatedEligibilityCheck = eligibilityCheck with
         {
             //Uprn = apiAddress.UPRN,
-            Easting = Model.Easting.Value,
-            Northing = Model.Northing.Value,
+            Easting = Model.Easting ?? 0,
+            Northing = Model.Northing ?? 0,
             LocationDesc = Model.LocationDesc,
             
         };
@@ -259,12 +259,12 @@ public partial class Location(
     }
     private PageInfo GetNextPage(bool propertyTypeReset)
     {
-        if (propertyTypeReset == false && FromSummary)
+        if (!propertyTypeReset && FromSummary)
         {
             return FloodReportCreatePages.Summary;
         }
 
-        if (Model.IsAddress == true)
+        if (Model.IsAddress)
         {
             return FloodReportCreatePages.Address;
         }
@@ -341,7 +341,7 @@ public partial class Location(
                 return null;
             }
 
-            var postcode = addresses[0].Postcode;
+            var postcode = addresses?[0]?.Postcode ?? "";
             return postcode.Trim().ToUpperInvariant();
         }
         catch (ConfigurationMissingException ex)
