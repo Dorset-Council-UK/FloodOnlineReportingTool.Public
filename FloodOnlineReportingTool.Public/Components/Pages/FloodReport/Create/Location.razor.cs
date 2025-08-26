@@ -1,6 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Database.Settings;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -8,6 +9,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using System.Net;
 using System.Text.Json;
@@ -20,7 +22,8 @@ public partial class Location(
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
     IGdsJsInterop gdsJs,
-    IJSRuntime JS
+    IJSRuntime JS,
+    IOptions<GISSettings> gisOptions
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -44,7 +47,7 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
-    [Inject] private IConfiguration Configuration { get; set; } = default!;
+    private readonly GISSettings _gisSettings = gisOptions.Value;
 
     protected override void OnInitialized()
     {
@@ -93,7 +96,7 @@ public partial class Location(
             }
 
             // Pass the OS key to JavaScript
-            var apiKey = Configuration["GIS:OSApiKey"];
+            var apiKey = _gisSettings.OSApiKey;
             await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
 
             //Setup the map
