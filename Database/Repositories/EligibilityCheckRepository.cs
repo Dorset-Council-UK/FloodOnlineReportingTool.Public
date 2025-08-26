@@ -74,6 +74,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
 
+            IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
             Easting = dto.Easting,
             Northing = dto.Northing,
@@ -121,6 +122,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
 
+            IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
             Easting = dto.Easting,
             Northing = dto.Northing,
