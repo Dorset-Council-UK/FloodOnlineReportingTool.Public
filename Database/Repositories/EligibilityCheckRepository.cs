@@ -141,7 +141,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        var updatedMessage = updatedCheck.ToMessageUpdated( responsibleOrganisations);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 
