@@ -39,12 +39,10 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             throw new InvalidOperationException("There is not currently an ongoing investigation for this flood report");
         }
 
-        var isInternal = floodReport.EligibilityCheck?.IsInternal() ?? false;
-        var investigationId = Guid.CreateVersion7();
-        var investigation = investigationDto.ToInvestigation(investigationId, isInternal) with
-        {
-            CreatedUtc = DateTimeOffset.UtcNow,
-        };
+        var investigation = CreateBaseInvestigation(investigationDto)
+            .ApplyInternalFields(investigationDto, floodReport.EligibilityCheck?.IsInternal() ?? false)
+            .ApplyPeakDepth(investigationDto)
+            .ApplyFloodlineWarnings(investigationDto);
 
         var updatedFloodReport = floodReport with
         {
@@ -79,5 +77,62 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .Select(o => o.Investigation)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates the base investigation entity from the DTO.
+    /// </summary>
+    private static Investigation CreateBaseInvestigation(InvestigationDto dto)
+    {
+        var investigationId = Guid.CreateVersion7();
+        return new Investigation
+        {
+            Id = investigationId,
+            CreatedUtc = DateTimeOffset.UtcNow,
+
+            // Water speed
+            BeginId = dto.BeginId!.Value,
+            WaterSpeedId = dto.WaterSpeedId!.Value,
+            AppearanceId = dto.AppearanceId!.Value,
+            MoreAppearanceDetails = dto.MoreAppearanceDetails,
+
+            // Water destination
+            Destinations = [.. dto.Destinations.Select(floodProblemId => new InvestigationDestination(investigationId, floodProblemId))],
+
+            // Damaged vehicles
+            WereVehiclesDamagedId = dto.WereVehiclesDamagedId!.Value,
+            NumberOfVehiclesDamaged = dto.NumberOfVehiclesDamaged,
+
+            // Internal (handled within ApplyInternalFields)
+
+            // Peak depth (handled with ApplyPeakDepth)
+            IsPeakDepthKnownId = Guid.Empty,
+
+            // Community impact
+            CommunityImpacts = [.. dto.CommunityImpacts.Select(floodImpactId => new InvestigationCommunityImpact(investigationId, floodImpactId))],
+
+            // Blockages
+            HasKnownProblems = dto.HasKnownProblems == true,
+            KnownProblemDetails = dto.KnownProblemDetails,
+
+            // Actions taken
+            ActionsTaken = [.. dto.ActionsTaken.Select(floodMitigationId => new InvestigationActionsTaken(investigationId, floodMitigationId))],
+            OtherAction = dto.OtherAction,
+
+            // Help received
+            HelpReceived = [.. dto.HelpReceived.Select(floodMitigationId => new InvestigationHelpReceived(investigationId, floodMitigationId))],
+
+            // Before the flooding - Warnings
+            FloodlineId = dto.FloodlineId!.Value,
+            WarningReceivedId = dto.WarningReceivedId!.Value,
+
+            // Warning sources
+            WarningSources = [.. dto.WarningSources.Select(floodMitigationId => new InvestigationWarningSource(investigationId, floodMitigationId))],
+            WarningSourceOther = dto.WarningSourceOther,
+
+            // History
+            HistoryOfFloodingId = dto.HistoryOfFloodingId!.Value,
+            HistoryOfFloodingDetails = dto.HistoryOfFloodingDetails,
+        };
     }
 }
