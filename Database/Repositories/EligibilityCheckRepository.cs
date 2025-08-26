@@ -90,7 +90,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         context.EligibilityChecks.Update(updatedCheck);
 
         // Step 5 - Publish a updated message to the message system
-        var message = updatedCheck.ToMessageDto().ToMessageUpdated();
+        var message = updatedCheck.ToMessageUpdated();
         await publishEndpoint
             .Publish(message, ct)
             .ConfigureAwait(false);
@@ -141,7 +141,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         context.EligibilityChecks.Update(updatedCheck);
 
         // Publish a updated message to the message system
-        var message = updatedCheck.ToMessageDto().ToMessageUpdated();
+        var message = updatedCheck.ToMessageUpdated();
         await publishEndpoint
             .Publish(message, ct)
             .ConfigureAwait(false);
