@@ -241,8 +241,8 @@ public partial class Location(
         var updatedEligibilityCheck = eligibilityCheck with
         {
             //Uprn = apiAddress.UPRN,
-            Easting = Model.Easting ?? 0,
-            Northing = Model.Northing ?? 0,
+            Easting = Model.Easting!.Value,
+            Northing = Model.Northing!.Value,
             LocationDesc = Model.LocationDesc,
             
         };
