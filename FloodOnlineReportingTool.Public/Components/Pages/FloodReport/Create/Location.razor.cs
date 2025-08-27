@@ -341,7 +341,7 @@ public partial class Location(
                 return null;
             }
 
-            var postcode = addresses?[0]?.Postcode ?? "";
+            var postcode = addresses?.FirstOrDefault()?.Postcode ?? "";
             return postcode.Trim().ToUpperInvariant();
         }
         catch (ConfigurationMissingException ex)
