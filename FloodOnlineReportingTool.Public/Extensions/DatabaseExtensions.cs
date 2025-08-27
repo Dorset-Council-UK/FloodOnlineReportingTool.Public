@@ -3,11 +3,13 @@ using FloodOnlineReportingTool.Database.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class DatabaseExtensions
 {
-    public static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString)
+    internal static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -42,7 +44,7 @@ internal static class DatabaseExtensions
         return services;
     }
 
-    public static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString)
+    internal static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -70,7 +72,7 @@ internal static class DatabaseExtensions
         return services;
     }
 
-    public static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString)
+    internal static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {

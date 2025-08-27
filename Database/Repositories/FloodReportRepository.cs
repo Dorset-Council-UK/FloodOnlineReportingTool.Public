@@ -134,7 +134,6 @@ public class FloodReportRepository(
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
             UserAccessUntilUtc = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
-
             EligibilityCheck = new()
             {
                 Id = eligibilityCheckId,
@@ -152,12 +151,8 @@ public class FloodReportRepository(
                 Uninhabitable = dto.Uninhabitable == true,
                 VulnerablePeopleId = dto.VulnerablePeopleId,
                 VulnerableCount = dto.VulnerableCount,
-
-                // Add the related residential flood impacts
                 Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(eligibilityCheckId, floodImpactId))],
-                // Add the related commercial flood impacts
                 Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(eligibilityCheckId, floodImpactId))],
-                // Add the related source flood problems
                 Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(eligibilityCheckId, floodProblemId))],
             },
         };
@@ -166,19 +161,17 @@ public class FloodReportRepository(
         context.FloodReports.Add(floodReport);
 
         // Publish mutiple messages to the message system
+        var responsibleOrganisations = await commonRepository
+            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
+            .ConfigureAwait(false);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint
-            .Publish(floodReportCreatedMessage, ct)
-            .ConfigureAwait(false);
-        await publishEndpoint
-            .Publish(eligibilityCheckCreatedMessage, ct)
-            .ConfigureAwait(false);
+        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations);
+
+        await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);
+        await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct).ConfigureAwait(false);
 
         // Save the flood report, eligibility check, and messages to the database
-        await context
-            .SaveChangesAsync(ct)
-            .ConfigureAwait(false);
+        await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return floodReport;
     }
@@ -194,6 +187,7 @@ public class FloodReportRepository(
     ///     <para>If the flood duration is known, it will return the hours provided by the user.</para>
     ///     <para>Otherwise, it will try to get the duration hours from the flood problem in the database.</para>
     /// </summary>
+    /// <remarks>This logic is currently in 2 places the FloodReportRepository and the EligibilityCheckRespository.</remarks>
     private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
     {
         // The flood is still happening, so there is no duration

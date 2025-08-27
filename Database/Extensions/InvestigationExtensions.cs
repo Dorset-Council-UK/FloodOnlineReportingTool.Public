@@ -1,8 +1,10 @@
 ﻿using FloodOnlineReportingTool.Contracts;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Database.Models;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
-public static class InvestigationExtensions
+internal static class InvestigationExtensions
 {
     internal static InvestigationCreated ToMessageCreated(this Investigation investigation, string floodReportReference)
     {
@@ -37,7 +39,7 @@ public static class InvestigationExtensions
         };
     }
 
-    public static InvestigationDto ToDto(this Investigation investigation)
+    internal static InvestigationDto ToDto(this Investigation investigation)
     {
         return new InvestigationDto
         {
@@ -96,6 +98,71 @@ public static class InvestigationExtensions
             // Floodline warnings fields
             WarningTimelyId = investigation.WarningTimelyId,
             WarningAppropriateId = investigation.WarningAppropriateId,
+        };
+    }
+
+    /// <summary>
+    /// Applies internal fields to the investigation only if it is internal.
+    /// </summary>
+    internal static Investigation ApplyInternalFields(this Investigation investigation, InvestigationDto dto, bool isInternal)
+    {
+        if (!isInternal)
+        {
+            return investigation;
+        }
+
+        return investigation with
+        {
+            // Internal - How it entered - Water entry
+            Entries = [.. dto.Entries.Select(floodProblemId => new InvestigationEntry(investigation.Id, floodProblemId))],
+            WaterEnteredOther = dto.WaterEnteredOther,
+
+            // Internal - When it entered
+            WhenWaterEnteredKnownId = dto.WhenWaterEnteredKnownId!.Value,
+            FloodInternalUtc = dto.FloodInternalUtc,
+        };
+    }
+
+    /// <summary>
+    /// Applies peak depth fields to the investigation only if it is known.
+    /// </summary>
+    internal static Investigation ApplyPeakDepth(this Investigation investigation, InvestigationDto dto)
+    {
+        if (dto.IsPeakDepthKnownId == null)
+        {
+            return investigation;
+        }
+
+        if (dto.IsPeakDepthKnownId != RecordStatusIds.Yes)
+        {
+            return investigation with
+            {
+                IsPeakDepthKnownId = dto.IsPeakDepthKnownId.Value,
+            };
+        }
+
+        return investigation with
+        {
+            IsPeakDepthKnownId = dto.IsPeakDepthKnownId.Value,
+            PeakInsideCentimetres = dto.PeakInsideCentimetres!.Value,
+            PeakOutsideCentimetres = dto.PeakOutsideCentimetres!.Value,
+        };
+    }
+
+    /// <summary>
+    /// Applies floodline warnings to the investigation only if the floodline warning source is present.
+    /// </summary>
+    internal static Investigation ApplyFloodlineWarnings(this Investigation investigation, InvestigationDto dto)
+    {
+        if (!dto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
+        {
+            return investigation;
+        }
+
+        return investigation with
+        {
+            WarningTimelyId = dto.WarningTimelyId,
+            WarningAppropriateId = dto.WarningAppropriateId,
         };
     }
 }

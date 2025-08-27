@@ -1,12 +1,14 @@
 ﻿using FloodOnlineReportingTool.Contracts;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Database.Models;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class EligibilityCheckExtensions
 {
-    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference)
+    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference, IList<Organisation> organisations)
     {
-        return new EligibilityCheckCreated(
+        return new(
             eligibilityCheck.Id,
             reference,
             eligibilityCheck.CreatedUtc,
@@ -18,13 +20,20 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
             eligibilityCheck.VulnerableCount,
-            []
+            [..
+                organisations.Select(o => new EligibilityCheckOrganisation(
+                    o.Id,
+                    o.Name,
+                    o.FloodAuthorityId,
+                    o.FloodAuthority.AuthorityName
+                )),
+            ]
         );
     }
 
-    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck)
+    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck, IList<Organisation> organisations)
     {
-        return new EligibilityCheckUpdated(
+        return new(
             eligibilityCheck.Id,
             eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
             eligibilityCheck.Uprn,
@@ -35,14 +44,22 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
             eligibilityCheck.VulnerableCount,
-            []
+            [..
+                organisations.Select(o => new EligibilityCheckOrganisation(
+                    o.Id,
+                    o.Name,
+                    o.FloodAuthorityId,
+                    o.FloodAuthority.AuthorityName
+                )),
+            ]
         );
     }
 
-    public static EligibilityCheckDto ToDto(this EligibilityCheck eligibilityCheck)
+    internal static EligibilityCheckDto ToDto(this EligibilityCheck eligibilityCheck)
     {
-        return new EligibilityCheckDto
+        return new()
         {
+            IsAddress = eligibilityCheck.IsAddress,
             Uprn = eligibilityCheck.Uprn,
             Easting = eligibilityCheck.Easting,
             Northing = eligibilityCheck.Northing,
@@ -67,18 +84,8 @@ public static class EligibilityCheckExtensions
     public static bool IsInternal(this EligibilityCheck eligibilityCheck)
     {
         return
-            eligibilityCheck.Residentials.Any(o => IsInternal(o.FloodImpact)) ||
-            eligibilityCheck.Commercials.Any(o => IsInternal(o.FloodImpact));
-    }
-
-    private static bool IsInternal(FloodImpact floodImpact)
-    {
-        if (floodImpact.CategoryPriority is null)
-        {
-            return false;
-        }
-
-        return floodImpact.CategoryPriority.Equals(FloodImpactPriority.Internal, StringComparison.OrdinalIgnoreCase);
+            eligibilityCheck.Residentials.Any(o => o.FloodImpact.IsInternal()) ||
+            eligibilityCheck.Commercials.Any(o => o.FloodImpact.IsInternal());
     }
 
     /// <summary>
@@ -90,22 +97,12 @@ public static class EligibilityCheckExtensions
     public static bool IsExternal(this EligibilityCheck eligibilityCheck)
     {
         return
-            eligibilityCheck.Residentials.Any(o => IsExternal(o.FloodImpact)) ||
-            eligibilityCheck.Commercials.Any(o => IsExternal(o.FloodImpact));
-    }
-
-    private static bool IsExternal(FloodImpact floodImpact)
-    {
-        if (floodImpact.CategoryPriority is null)
-        {
-            return false;
-        }
-
-        return floodImpact.CategoryPriority.Equals(FloodImpactPriority.External, StringComparison.OrdinalIgnoreCase);
+            eligibilityCheck.Residentials.Any(o => o.FloodImpact.IsExternal()) ||
+            eligibilityCheck.Commercials.Any(o => o.FloodImpact.IsExternal());
     }
 
     // TODO: make a method for get score
-    public static int GetScore(this EligibilityCheck eligibilityCheck)
+    internal static int GetScore(this EligibilityCheck eligibilityCheck)
     {
         throw new NotImplementedException();
     }
