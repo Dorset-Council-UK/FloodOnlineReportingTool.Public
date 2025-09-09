@@ -165,7 +165,12 @@ public class FloodReportRepository(
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
             .ConfigureAwait(false);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations);
+        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => floodReport.EligibilityCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
+        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
+            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
+            sourcesToFilter,
+            ct).ConfigureAwait(false);
+        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, floodSources);
 
         await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);
         await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct).ConfigureAwait(false);

@@ -8,6 +8,7 @@ namespace FloodOnlineReportingTool.Database.Models;
 public record EligibilityCheckDto
 {
     public long? Uprn { get; init; }
+    public long? Usrn { get; init; }
     public double Easting { get; init; }
     public double Northing { get; init; }
     public bool IsAddress { get; init; } = true;

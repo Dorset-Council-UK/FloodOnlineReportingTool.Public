@@ -30,11 +30,18 @@ public sealed class TestService
                 f.Commerce.ProductName()
             ));
 
+        var eligibilityCheckSourceFaker = new Faker<EligibilityCheckFloodSource>("en_GB")
+            .CustomInstantiator(f => new(
+                f.Random.Uuid(),
+                f.Company.CompanyName()
+            ));
+
         var eligibilityCheckCreatedFaker = new Faker<EligibilityCheckCreated>("en_GB")
             .CustomInstantiator(f => new(
                 f.Random.Uuid(),
                 f.Random.Hexadecimal(8, "").ToUpperInvariant(),
                 f.Date.RecentOffset(),
+                f.Random.Long(1, 9999999999),
                 f.Random.Long(1, 9999999999),
                 f.Random.Double(0, 700000),
                 f.Random.Double(0, 1300000),
@@ -43,7 +50,8 @@ public sealed class TestService
                 f.Random.Bool(),
                 f.Random.Bool(),
                 f.Random.Int(0, 5),
-                eligibilityCheckOrganisationFaker.GenerateBetween<EligibilityCheckOrganisation>(1, 3)
+                eligibilityCheckOrganisationFaker.GenerateBetween<EligibilityCheckOrganisation>(1, 3),
+                eligibilityCheckSourceFaker.GenerateBetween<EligibilityCheckFloodSource>(1, 3)
             ));
 
         var message = eligibilityCheckCreatedFaker.Generate();

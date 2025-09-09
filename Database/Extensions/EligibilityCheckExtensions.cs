@@ -6,13 +6,14 @@ namespace FloodOnlineReportingTool.Database.Models;
 
 public static class EligibilityCheckExtensions
 {
-    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference, IList<Organisation> organisations)
+    internal static EligibilityCheckCreated ToMessageCreated(this EligibilityCheck eligibilityCheck, string reference, IList<Organisation> organisations, IList<FloodProblem> floodProblems)
     {
         return new(
             eligibilityCheck.Id,
             reference,
             eligibilityCheck.CreatedUtc,
             eligibilityCheck.Uprn,
+            eligibilityCheck.Usrn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,
@@ -27,16 +28,22 @@ public static class EligibilityCheckExtensions
                     o.FloodAuthorityId,
                     o.FloodAuthority.AuthorityName
                 )),
+            ], [..
+                floodProblems.Select(p => new EligibilityCheckFloodSource(
+                    p.Id,
+                    p.TypeName
+                )),
             ]
         );
     }
 
-    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck, IList<Organisation> organisations)
+    internal static EligibilityCheckUpdated ToMessageUpdated(this EligibilityCheck eligibilityCheck, IList<Organisation> organisations, IList<FloodProblem> floodProblems)
     {
         return new(
             eligibilityCheck.Id,
             eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
             eligibilityCheck.Uprn,
+            eligibilityCheck.Usrn,
             eligibilityCheck.Easting,
             eligibilityCheck.Northing,
             eligibilityCheck.ImpactStart,
@@ -50,6 +57,11 @@ public static class EligibilityCheckExtensions
                     o.Name,
                     o.FloodAuthorityId,
                     o.FloodAuthority.AuthorityName
+                )),
+            ], [..
+                floodProblems.Select(p => new EligibilityCheckFloodSource(
+                    p.Id,
+                    p.TypeName
                 )),
             ]
         );
@@ -61,6 +73,7 @@ public static class EligibilityCheckExtensions
         {
             IsAddress = eligibilityCheck.IsAddress,
             Uprn = eligibilityCheck.Uprn,
+            Usrn = eligibilityCheck.Usrn,
             Easting = eligibilityCheck.Easting,
             Northing = eligibilityCheck.Northing,
             LocationDesc = eligibilityCheck.LocationDesc,

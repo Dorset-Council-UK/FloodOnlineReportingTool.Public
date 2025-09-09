@@ -1,9 +1,11 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Linq;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -95,7 +97,12 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations);
+        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => updatedCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
+        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
+            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
+            sourcesToFilter,
+            ct).ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, floodSources);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 
@@ -143,7 +150,12 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations);
+        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => updatedCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
+        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
+            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
+            sourcesToFilter,
+            ct).ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, floodSources);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 

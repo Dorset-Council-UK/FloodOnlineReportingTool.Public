@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
+using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
@@ -51,6 +52,14 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .OrderBy(o => o.OptionOrder)
             .ToListAsync(ct)
             .ConfigureAwait(false);
+    }
+
+    public async Task<IList<FloodProblem>> FilterFloodProblemsByCategories(string[] categories, IList<FloodProblem> problemList, CancellationToken ct)
+    {
+        var filterHashSet = (await GetFloodProblemsByCategories(categories, ct).ConfigureAwait(false))
+            .Select(f => f.Id)
+            .ToHashSet();
+        return problemList.Where(p => filterHashSet.Contains(p.Id)).ToList();
     }
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategory(string category, CancellationToken ct)
