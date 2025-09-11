@@ -231,7 +231,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         }
 
         // The user has indicated that the flood duration is known
-        if (durationKnownId == FloodProblemIds.DurationKnown)
+        if (durationKnownId == Models.FloodProblemIds.FloodDurationIds.DurationKnown)
         {
             logger.LogInformation("Impact duration is known, using provided impact duration hours.");
             return impactDurationHours ?? 0;

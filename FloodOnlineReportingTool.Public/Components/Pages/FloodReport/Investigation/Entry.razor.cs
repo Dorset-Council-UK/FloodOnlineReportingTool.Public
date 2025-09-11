@@ -76,8 +76,8 @@ public partial class Entry(
 
     private async Task OnValidSubmit()
     {
-        var otherEntrySelected = Model.EntryOptions.Any(option => option.Selected && option.Value.Equals(FloodProblemIds.EntryOther));
-        var hasOther = Model.EntryOptions.Any(option => option.Value.Equals(FloodProblemIds.EntryOther));
+        var otherEntrySelected = Model.EntryOptions.Any(option => option.Selected && option.Value.Equals(Database.Models.FloodProblemIds.FloodEntryIds.Other));
+        var hasOther = Model.EntryOptions.Any(option => option.Value.Equals(Database.Models.FloodProblemIds.FloodEntryIds.Other));
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
@@ -117,7 +117,7 @@ public partial class Entry(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodProblemIds.EntryNotSure;
+        var isExclusive = floodProblem.Id == Database.Models.FloodProblemIds.FloodEntryIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

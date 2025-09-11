@@ -1,3 +1,4 @@
+﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
@@ -6,12 +7,12 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.Globalization;
+using System.Reflection;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
-public partial class Vulnerability(
-    ILogger<Vulnerability> logger,
+public partial class FloodSecondarySource(
+    ILogger<FloodSecondarySource> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
@@ -19,22 +20,18 @@ public partial class Vulnerability(
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.Vulnerability.Title;
+    public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodAreas.ToGdsBreadcrumb(),
+        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb()
     ];
 
-    [SupplyParameterFromQuery]
-    private bool FromSummary { get; set; }
-
-    private Models.FloodReport.Create.Vulnerability Model { get; set; } = default!;
+    private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _vulnerableOptions { get; set; } = [];
 
     protected override void OnInitialized()
     {
@@ -63,41 +60,39 @@ public partial class Vulnerability(
         if (firstRender)
         {
             var eligibilityCheck = await GetEligibilityCheck();
-            Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId == Guid.Empty ? null : eligibilityCheck.VulnerablePeopleId;
-            Model.VulnerablePeopleNumber = eligibilityCheck.VulnerableCount;
-            Model.VulnerablePeopleText = eligibilityCheck.VulnerableCount?.ToString(CultureInfo.CurrentCulture);
-            _vulnerableOptions = await CreateVulnerabilityOptions();
+
+            var previousCrumb = eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
+            Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
+
+            Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
 
             _isLoading = false;
             StateHasChanged();
-
+            
             await gdsJs.InitGds(_cts.Token);
         }
     }
 
     private async Task OnValidSubmit()
     {
-        // safety check
-        if (Model.VulnerablePeopleId == null || Model.VulnerablePeopleId == Guid.Empty)
-        {
-            logger.LogWarning("VulnerablePeopleId is null, cannot proceed with submission. Check the FluentValidation rules.");
-            return;
-        }
-
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-        // TODO - resolve numbers as text written in using VulnerablePeopleText
+        //This one is a little odd, we should already have the primary source of flooding and 
+        //we are adding the secondary source. As such, we must preserve primary options
+
+        var primaryGuidsFilter = await commonRepository.GetClassHash(typeof(PrimaryCauseIds), _cts.Token);
+        IEnumerable<Guid> primaryGuids = eligibilityCheck.Sources.Where(s => primaryGuidsFilter.Contains(s));
+        IEnumerable<Guid> secondaryGuids = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value).ToList();
+        IEnumerable<Guid> combinedGuids = primaryGuids.Concat(secondaryGuids);
         var updated = eligibilityCheck with
         {
-            VulnerablePeopleId = Model.VulnerablePeopleId.Value,
-            VulnerableCount = Model.VulnerablePeopleId == RecordStatusIds.Yes ? Model.VulnerablePeopleNumber : null,
+            Sources = combinedGuids.ToList(),
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
-        navigationManager.NavigateTo(nextPage.Url);
+        // Go to the next page, which is always the summary
+        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -115,21 +110,21 @@ public partial class Vulnerability(
         return new();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateVulnerabilityOptions()
+    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateFloodSourceOptions(IList<Guid> selectedValues)
     {
-        const string idPrefix = "vulnerability-known";
-        var vulnerabilityOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        return [.. vulnerabilityOptions.Select((o, idx) => CreateOption(o, idPrefix, Model.VulnerablePeopleId))];
+        const string idPrefix = "flood-source";
+        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
+        return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
     }
 
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
+    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
     {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
+        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
+        var label = floodProblem.TypeName.AsSpan();
+        var selected = selectedValues.Contains(floodProblem.Id);
+        var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
 
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
+        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }
 }
 

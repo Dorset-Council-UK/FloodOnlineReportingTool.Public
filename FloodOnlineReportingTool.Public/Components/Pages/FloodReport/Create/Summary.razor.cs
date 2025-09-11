@@ -80,7 +80,7 @@ public partial class Summary(
             var durationId = eligibilityCheck.DurationKnownId;
             if (!eligibilityCheck.OnGoing && durationId != null)
             {
-                if (durationId.Value == FloodProblemIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
+                if (durationId.Value == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
                 {
                     var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
                     Model.FloodingLasted = duration.GdsReadable();

@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -74,15 +75,27 @@ public partial class FloodSource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
+        //We need to maintain secondary causes if set
+        var secondaryGuidsFilter = await commonRepository.GetClassHash(typeof(SecondaryCauseIds), _cts.Token);
+        IEnumerable<Guid> secondaryGuids = eligibilityCheck.Sources.Where(s => secondaryGuidsFilter.Contains(s));
+        IEnumerable<Guid> primaryGuids = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value).ToList();
+        IEnumerable<Guid> combinedGuids = secondaryGuids.Concat(primaryGuids);
         var updated = eligibilityCheck with
         {
-            Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
+            Sources = combinedGuids.ToList(),
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page, which is always the summary
-        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            // We need to know more if they have selected this option
+            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
+        } else
+        {
+            // Go to the next page, which is always the summary
+            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        }   
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -112,7 +125,7 @@ public partial class FloodSource(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodProblemIds.PrimaryCauseNotSure;
+        var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

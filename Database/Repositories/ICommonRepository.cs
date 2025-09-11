@@ -4,6 +4,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public interface ICommonRepository
 {
+    Task<HashSet<Guid>> GetClassHash(Type T, CancellationToken ct);
     Task<FloodImpact?> GetFloodImpact(Guid id, CancellationToken ct);
     Task<IList<FloodImpact>> GetFloodImpactsByCategory(string category, CancellationToken ct);
     Task<FloodProblem?> GetFloodProblemByCategory(string category, Guid id, CancellationToken ct);
