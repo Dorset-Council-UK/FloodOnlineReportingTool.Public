@@ -1,4 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Models.FloodProblemIds;
+﻿using System.Collections.Immutable;
+
+namespace FloodOnlineReportingTool.Database.Models.FloodProblemIds;
 
 public static class FloodEntryIds
 {
@@ -11,4 +13,15 @@ public static class FloodEntryIds
     public readonly static Guid ExternalOnly = new("018fe1d9-d2e0-763d-9459-6aa643c1470b");
     public readonly static Guid Other = new("018fe1da-bd40-7c13-842c-901f01c9158f");
     public readonly static Guid NotSure = new("018fe1db-a7a0-7c33-a15d-a4b6fc1ad57e");
+
+    public readonly static ImmutableHashSet<Guid> All = [
+        Door,
+        Windows,
+        Airbrick,
+        Walls,
+        ThroughFloor,
+        ExternalOnly,
+        Other,
+        NotSure,
+    ];
 }

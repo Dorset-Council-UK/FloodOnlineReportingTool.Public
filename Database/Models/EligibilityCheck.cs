@@ -1,6 +1,4 @@
-﻿using FloodOnlineReportingTool.Contracts;
-
-namespace FloodOnlineReportingTool.Database.Models;
+﻿namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
 /// Represents an assessment to determine if a person qualifies for assistance, related to flood damage.

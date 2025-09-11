@@ -1,4 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Models.FloodProblemIds;
+﻿using System.Collections.Immutable;
+
+namespace FloodOnlineReportingTool.Database.Models.FloodProblemIds;
 
 public static class FloodDurationIds
 {
@@ -9,4 +11,13 @@ public static class FloodDurationIds
     public readonly static Guid Duration744 = new("018fe1a1-0fa0-73d6-aa9b-495404a336f1");
     public readonly static Guid DurationKnown = new("018fe1a1-fa00-76e6-929f-c87588a3853b");
     public readonly static Guid DurationNotSure = new("018fe1a2-e460-76f0-b29d-663d0a19ddd8");
+
+    public readonly static ImmutableHashSet<Guid> All = [
+        Duration1,
+        Duration24,
+        Duration168,
+        Duration744,
+        DurationKnown,
+        DurationNotSure,
+    ];
 }

@@ -7,7 +7,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.Reflection;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 

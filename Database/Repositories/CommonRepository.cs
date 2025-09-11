@@ -1,9 +1,7 @@
-﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
 using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
