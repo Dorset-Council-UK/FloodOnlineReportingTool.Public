@@ -12,7 +12,7 @@ public class FloodDurationValidator : AbstractValidator<FloodDuration>
             .NotEmpty()
             .WithMessage("Select the duration of the flooding");
 
-        When(o => o.DurationKnownId == FloodProblemIds.DurationKnown, () =>
+        When(o => o.DurationKnownId == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown, () =>
         {
             RuleFor(o => o.DurationDaysText)
                 .NotEmpty()

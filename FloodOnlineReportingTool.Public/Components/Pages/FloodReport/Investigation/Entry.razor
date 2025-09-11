@@ -37,7 +37,7 @@
                         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                             @foreach (var option in Model.EntryOptions)
                             {
-                                var conditionalId = option.Value == FloodProblemIds.EntryOther ? "conditional-other" : null;
+                                var conditionalId = option.Value == Database.Models.FloodProblemIds.FloodEntryIds.Other ? "conditional-other" : null;
                                 <GdsCheckbox Option="option" ConditionalId="@conditionalId" />
                                 if (conditionalId != null)
                                 {

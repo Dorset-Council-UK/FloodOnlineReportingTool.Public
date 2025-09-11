@@ -1,0 +1,32 @@
+﻿@page "/floodreport/create/floodsecondarysource"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-xl">@Title</h1>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodSecondarySource">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFormGroup For="() => Model.FloodSecondarySourceOptions" Show="!_isLoading">
+        <GdsFieldsetGroup>
+            <Heading>
+                <h2 class="govuk-fieldset__heading">Do you know where the water was running off from?</h2>
+            </Heading>
+            <Content>
+                <GdsHint>Select all that apply</GdsHint>
+                <GdsErrorMessage />
+                <GdsCheckboxes Options="Model.FloodSecondarySourceOptions" />
+            </Content>
+        </GdsFieldsetGroup>
+    </GdsFormGroup>
+
+    @if (!_isLoading)
+    {
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    }
+</EditForm>

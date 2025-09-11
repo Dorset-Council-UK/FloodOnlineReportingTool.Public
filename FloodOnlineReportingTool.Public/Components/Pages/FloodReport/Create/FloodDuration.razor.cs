@@ -71,7 +71,7 @@ public partial class FloodDuration(
             _isFloodOngoing = eligibilityCheck.OnGoing;
 
             Model.DurationKnownId = eligibilityCheck.DurationKnownId;
-            if (Model.DurationKnownId == FloodProblemIds.DurationKnown)
+            if (Model.DurationKnownId == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown)
             {
                 if (eligibilityCheck.ImpactDuration != null)
                 {
@@ -114,7 +114,7 @@ public partial class FloodDuration(
         var updated = eligibilityCheck with
         {
             DurationKnownId = Model.DurationKnownId,
-            ImpactDuration = Model.DurationKnownId == FloodProblemIds.DurationKnown
+            ImpactDuration = Model.DurationKnownId == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown
                 ? (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0)
                 : null,
         };
@@ -138,7 +138,7 @@ public partial class FloodDuration(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeDescription.AsSpan();
         var selected = floodProblem.Id == selectedValue;
-        var isExclusive = floodProblem.Id == FloodProblemIds.DurationNotSure;
+        var isExclusive = floodProblem.Id == Database.Models.FloodProblemIds.FloodDurationIds.DurationNotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

@@ -46,28 +46,28 @@ internal static class InitialData
             .. leadLocalFloodAuthorityProblems,
 
             // Environment Agency flood problems
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, FloodProblemIds.PrimaryCauseRiver),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, FloodProblemIds.PrimaryCauseStreamOrWatercourse),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, FloodProblemIds.LakeOrReservoir),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, FloodProblemIds.PrimaryCauseTheSea),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, FloodProblemIds.WaterRisingOutOfTheGround),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, PrimaryCauseIds.River),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, PrimaryCauseIds.StreamOrWatercourse),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, PrimaryCauseIds.LakeOrReservoir),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, PrimaryCauseIds.TheSea),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.EnvironmentAgency, PrimaryCauseIds.WaterRisingOutOfTheGround),
 
             // Water Authority flood problems
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.WaterAuthority, FloodProblemIds.FoulDrainageSewerage),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.WaterAuthority, FloodProblemIds.SurfaceWaterDrainage),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.WaterAuthority, PrimaryCauseIds.FoulDrainageSewerage),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.WaterAuthority, PrimaryCauseIds.SurfaceWaterDrainage),
 
             // Gas Board flood problems
             // Gas and Electric are notified for groundwater due to risks to equipment / longer term nature of flooding but they have no direct inferred responsibility
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.GasBoard, FloodProblemIds.WaterRisingOutOfTheGround),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.GasBoard, PrimaryCauseIds.WaterRisingOutOfTheGround),
 
             // Electricity Board flood problems
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.ElectricityBoard, FloodProblemIds.WaterRisingOutOfTheGround),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.ElectricityBoard, PrimaryCauseIds.WaterRisingOutOfTheGround),
 
             // CAT Respond flood problems
             // CAT responders are notified for rivers / lakes / reservoirs in case it is a larger breach.
             // These can cause larger incidents but others should be maually assigned where it is appropriate to escalate an incident to a multi-agency response or debrief. 
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.CATRespond, FloodProblemIds.PrimaryCauseRiver),
-            new FloodAuthorityFloodProblem(FloodAuthorityIds.CATRespond, FloodProblemIds.LakeOrReservoir),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.CATRespond, PrimaryCauseIds.River),
+            new FloodAuthorityFloodProblem(FloodAuthorityIds.CATRespond, PrimaryCauseIds.LakeOrReservoir),
         ];
     }
 
@@ -189,67 +189,67 @@ internal static class InitialData
     {
         return [
             // Primary Cause
-            new FloodProblem(FloodProblemIds.PrimaryCauseRiver, FloodProblemCategory.PrimaryCause, "River", "Caused by an overflowing main river", 1),
-            new FloodProblem(FloodProblemIds.PrimaryCauseStreamOrWatercourse, FloodProblemCategory.PrimaryCause, "Stream / Watercourse", "Caused by an overflowing stream or watercourse (not a main river)", 2),
-            new FloodProblem(FloodProblemIds.LakeOrReservoir, FloodProblemCategory.PrimaryCause, "Lake / Reservoirs", "Caused by an overflowing lake or reservoir", 3),
-            new FloodProblem(FloodProblemIds.PrimaryCauseTheSea, FloodProblemCategory.PrimaryCause, "The Sea", "Caused by sea water including high tides", 4),
-            new FloodProblem(FloodProblemIds.PrimaryCauseDitchesAndDrainageChannels, FloodProblemCategory.PrimaryCause, "Ditches and drainage channels", "Caused by blocked ditches or channels", 5),
-            new FloodProblem(FloodProblemIds.WaterRisingOutOfTheGround, FloodProblemCategory.PrimaryCause, "Water rising out of the ground", "The water is coming out of the ground (groundwater)", 6),
-            new FloodProblem(FloodProblemIds.FoulDrainageSewerage, FloodProblemCategory.PrimaryCause, "Foul drainage (Sewerage)", "Caused by overwhelmed foul sewer", 7),
-            new FloodProblem(FloodProblemIds.SurfaceWaterDrainage, FloodProblemCategory.PrimaryCause, "Surface water drainage", "Caused by overwhelmed drains (not foul/sewer water)", 8),
-            new FloodProblem(FloodProblemIds.BlockedRoadDrainage, FloodProblemCategory.PrimaryCause, "Blocked road drainage", "Caused by blocked road drainage", 9),
-            new FloodProblem(FloodProblemIds.BridgeOrCulvert, FloodProblemCategory.PrimaryCause, "Bridge / culvert", "Caused by an issue with a bridge or underground water channel (culvert)", 10),
-            new FloodProblem(FloodProblemIds.WavesCausedByVehicles, FloodProblemCategory.PrimaryCause, "Waves caused by vehicles", "Waves caused by vehicles", 11),
-            new FloodProblem(FloodProblemIds.RainwaterFlowingOverTheGround, FloodProblemCategory.PrimaryCause, "Rainwater flowing over the ground", "Rainwater flowing over the ground", 12),
-            new FloodProblem(FloodProblemIds.PrimaryCauseNotSure, FloodProblemCategory.PrimaryCause, "Not Sure", "I don't know where the water came from", 99),
+            new FloodProblem(PrimaryCauseIds.River, FloodProblemCategory.PrimaryCause, "River", "Caused by an overflowing main river", 1),
+            new FloodProblem(PrimaryCauseIds.StreamOrWatercourse, FloodProblemCategory.PrimaryCause, "Stream / Watercourse", "Caused by an overflowing stream or watercourse (not a main river)", 2),
+            new FloodProblem(PrimaryCauseIds.LakeOrReservoir, FloodProblemCategory.PrimaryCause, "Lake / Reservoirs", "Caused by an overflowing lake or reservoir", 3),
+            new FloodProblem(PrimaryCauseIds.TheSea, FloodProblemCategory.PrimaryCause, "The Sea", "Caused by sea water including high tides", 4),
+            new FloodProblem(PrimaryCauseIds.DitchesAndDrainageChannels, FloodProblemCategory.PrimaryCause, "Ditches and drainage channels", "Caused by blocked ditches or channels", 5),
+            new FloodProblem(PrimaryCauseIds.WaterRisingOutOfTheGround, FloodProblemCategory.PrimaryCause, "Water rising out of the ground", "The water is coming out of the ground (groundwater)", 6),
+            new FloodProblem(PrimaryCauseIds.FoulDrainageSewerage, FloodProblemCategory.PrimaryCause, "Foul drainage (Sewerage)", "Caused by overwhelmed foul sewer", 7),
+            new FloodProblem(PrimaryCauseIds.SurfaceWaterDrainage, FloodProblemCategory.PrimaryCause, "Surface water drainage", "Caused by overwhelmed drains (not foul/sewer water)", 8),
+            new FloodProblem(PrimaryCauseIds.BlockedRoadDrainage, FloodProblemCategory.PrimaryCause, "Blocked road drainage", "Caused by blocked road drainage", 9),
+            new FloodProblem(PrimaryCauseIds.BridgeOrCulvert, FloodProblemCategory.PrimaryCause, "Bridge / culvert", "Caused by an issue with a bridge or underground water channel (culvert)", 10),
+            new FloodProblem(PrimaryCauseIds.WavesCausedByVehicles, FloodProblemCategory.PrimaryCause, "Waves caused by vehicles", "Waves caused by vehicles", 11),
+            new FloodProblem(PrimaryCauseIds.RainwaterFlowingOverTheGround, FloodProblemCategory.PrimaryCause, "Rainwater flowing over the ground", "Rainwater flowing over the ground", 12),
+            new FloodProblem(PrimaryCauseIds.NotSure, FloodProblemCategory.PrimaryCause, "Not Sure", "I don't know where the water came from", 99),
 
             // Secondary Cause
-            new FloodProblem(FloodProblemIds.RunoffFromRoad, FloodProblemCategory.SecondaryCause, "Runoff from road", "Water flowing from an council maintained road", 1),
-            new FloodProblem(FloodProblemIds.RunoffFromPrivateRoad, FloodProblemCategory.SecondaryCause, "Runoff from private road", "Water flowing from a private road", 2),
-            new FloodProblem(FloodProblemIds.RunoffFromTrackOrPath, FloodProblemCategory.SecondaryCause, "Runoff from track/path", "Water flowing from a track or footpath", 3),
-            new FloodProblem(FloodProblemIds.RunoffFromAgriculturalLand, FloodProblemCategory.SecondaryCause, "Runoff from agricultural land", "Water flowing from agricultural land (fields)", 4),
-            new FloodProblem(FloodProblemIds.RunoffFromOtherProperty, FloodProblemCategory.SecondaryCause, "Runoff from other property", "Water flowing from a neighbouring property", 5),
-            new FloodProblem(FloodProblemIds.SecondaryCauseNotSure, FloodProblemCategory.SecondaryCause, "Not Sure", "I don't know which option is right", 99),
+            new FloodProblem(SecondaryCauseIds.RunoffFromRoad, FloodProblemCategory.SecondaryCause, "Runoff from road", "Water flowing from an council maintained road", 1),
+            new FloodProblem(SecondaryCauseIds.RunoffFromPrivateRoad, FloodProblemCategory.SecondaryCause, "Runoff from private road", "Water flowing from a private road", 2),
+            new FloodProblem(SecondaryCauseIds.RunoffFromTrackOrPath, FloodProblemCategory.SecondaryCause, "Runoff from track/path", "Water flowing from a track or footpath", 3),
+            new FloodProblem(SecondaryCauseIds.RunoffFromAgriculturalLand, FloodProblemCategory.SecondaryCause, "Runoff from agricultural land", "Water flowing from agricultural land (fields)", 4),
+            new FloodProblem(SecondaryCauseIds.RunoffFromOtherProperty, FloodProblemCategory.SecondaryCause, "Runoff from other property", "Water flowing from a neighbouring property", 5),
+            new FloodProblem(SecondaryCauseIds.NotSure, FloodProblemCategory.SecondaryCause, "Not Sure", "I don't know which option is right", 99),
 
             // Investigation form, appearance
-            new FloodProblem(FloodProblemIds.Clear, FloodProblemCategory.Appearance, "Clear", "The water was clear / clean", 1),
-            new FloodProblem(FloodProblemIds.Muddy, FloodProblemCategory.Appearance, "Muddy", "The water was muddy / cloudy", 2),
-            new FloodProblem(FloodProblemIds.PollutedWithSewage, FloodProblemCategory.Appearance, "Polluted with sewage", "The water had sewage in it", 3),
+            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.Clear, FloodProblemCategory.Appearance, "Clear", "The water was clear / clean", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.Muddy, FloodProblemCategory.Appearance, "Muddy", "The water was muddy / cloudy", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.PollutedWithSewage, FloodProblemCategory.Appearance, "Polluted with sewage", "The water had sewage in it", 3),
 
             // Investigation form, flood water onset
-            new FloodProblem(FloodProblemIds.Suddenly, FloodProblemCategory.WaterOnset, "Suddenly", "The water came rapidly (flash flooding)", 1),
-            new FloodProblem(FloodProblemIds.Gradually, FloodProblemCategory.WaterOnset, "Gradually", "The water rose gradually", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodOnsetIds.Suddenly, FloodProblemCategory.WaterOnset, "Suddenly", "The water came rapidly (flash flooding)", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodOnsetIds.Gradually, FloodProblemCategory.WaterOnset, "Gradually", "The water rose gradually", 2),
 
             // Investigation form, water speed
-            new FloodProblem(FloodProblemIds.Fast, FloodProblemCategory.Speed, "Fast", "The water was flowing fast", 1),
-            new FloodProblem(FloodProblemIds.Slow, FloodProblemCategory.Speed, "Slow (walking pace)", "The water was flowing slowly", 2),
-            new FloodProblem(FloodProblemIds.Still, FloodProblemCategory.Speed, "Still", "The water was not flowing / still", 3),
+            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Fast, FloodProblemCategory.Speed, "Fast", "The water was flowing fast", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Slow, FloodProblemCategory.Speed, "Slow (walking pace)", "The water was flowing slowly", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Still, FloodProblemCategory.Speed, "Still", "The water was not flowing / still", 3),
 
             // Duration - Water duration replaced with int for number of days and boolean for ongoing however we still use the radios as a helper
-            new FloodProblem(FloodProblemIds.Duration1, FloodProblemCategory.Duration, "1", "Less than 1 hour", 1),
-            new FloodProblem(FloodProblemIds.Duration24, FloodProblemCategory.Duration, "24", "1 hour to 24 hours", 2),
-            new FloodProblem(FloodProblemIds.Duration168, FloodProblemCategory.Duration, "168", "24 hours to 1 week", 3),
-            new FloodProblem(FloodProblemIds.Duration744, FloodProblemCategory.Duration, "744", "More than 1 week", 4),
-            new FloodProblem(FloodProblemIds.DurationKnown, FloodProblemCategory.Duration, null, "I know how many days/hours", 5),
-            new FloodProblem(FloodProblemIds.DurationNotSure, FloodProblemCategory.Duration, "48", "Not Sure", 99),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration1, FloodProblemCategory.Duration, "1", "Less than 1 hour", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration24, FloodProblemCategory.Duration, "24", "1 hour to 24 hours", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration168, FloodProblemCategory.Duration, "168", "24 hours to 1 week", 3),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration744, FloodProblemCategory.Duration, "744", "More than 1 week", 4),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.DurationKnown, FloodProblemCategory.Duration, null, "I know how many days/hours", 5),
+            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.DurationNotSure, FloodProblemCategory.Duration, "48", "Not Sure", 99),
 
             // Water Entry
-            new FloodProblem(FloodProblemIds.Door, FloodProblemCategory.Entry, "Door", "The water came through a door", 1),
-            new FloodProblem(FloodProblemIds.Windows, FloodProblemCategory.Entry, "Windows", "The water came through a window", 2),
-            new FloodProblem(FloodProblemIds.Airbrick, FloodProblemCategory.Entry, "Airbrick", "The water came through an airbrick or vent", 3),
-            new FloodProblem(FloodProblemIds.Walls, FloodProblemCategory.Entry, "Walls", "The water came through the walls", 4),
-            new FloodProblem(FloodProblemIds.ThroughFloor, FloodProblemCategory.Entry, "Through Floor", "The water came up through the floor", 5),
-            new FloodProblem(FloodProblemIds.ExternalOnly, FloodProblemCategory.Entry, "External Only", "The water came up to the property but did not enter", 6),
-            new FloodProblem(FloodProblemIds.EntryOther, FloodProblemCategory.Entry, "Other", "None of the options are correct", 7),
-            new FloodProblem(FloodProblemIds.EntryNotSure, FloodProblemCategory.Entry, "Not Sure", "I don't know which option is right", 99),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Door, FloodProblemCategory.Entry, "Door", "The water came through a door", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Windows, FloodProblemCategory.Entry, "Windows", "The water came through a window", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Airbrick, FloodProblemCategory.Entry, "Airbrick", "The water came through an airbrick or vent", 3),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Walls, FloodProblemCategory.Entry, "Walls", "The water came through the walls", 4),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.ThroughFloor, FloodProblemCategory.Entry, "Through Floor", "The water came up through the floor", 5),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.ExternalOnly, FloodProblemCategory.Entry, "External Only", "The water came up to the property but did not enter", 6),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Other, FloodProblemCategory.Entry, "Other", "None of the options are correct", 7),
+            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.NotSure, FloodProblemCategory.Entry, "Not Sure", "I don't know which option is right", 99),
 
             // Water Destination
-            new FloodProblem(FloodProblemIds.DestinationRiver, FloodProblemCategory.Destination, "River", "The flood water was flowing into a main river", 1),
-            new FloodProblem(FloodProblemIds.DestinationStreamOrWatercourse, FloodProblemCategory.Destination, "Stream / Watercourse", "The flood water was flowing into a stream of watercourse (not a main river)", 2),
-            new FloodProblem(FloodProblemIds.DestinationTheSea, FloodProblemCategory.Destination, "The Sea", "The flood water was flowing into the sea", 3),
-            new FloodProblem(FloodProblemIds.DestinationDitchesAndDrainageChannels, FloodProblemCategory.Destination, "Ditches and drainage channels", "The flood water was flowing into a ditch or channel", 4),
-            new FloodProblem(FloodProblemIds.RoadDrainage, FloodProblemCategory.Destination, "Road drainage", "The flood water was flowing into road drains", 5),
-            new FloodProblem(FloodProblemIds.DestinationNotSure, FloodProblemCategory.Destination, "Not Sure", "I don't know which option is right", 99),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.River, FloodProblemCategory.Destination, "River", "The flood water was flowing into a main river", 1),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.StreamOrWatercourse, FloodProblemCategory.Destination, "Stream / Watercourse", "The flood water was flowing into a stream of watercourse (not a main river)", 2),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.TheSea, FloodProblemCategory.Destination, "The Sea", "The flood water was flowing into the sea", 3),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.DitchesAndDrainageChannels, FloodProblemCategory.Destination, "Ditches and drainage channels", "The flood water was flowing into a ditch or channel", 4),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.RoadDrainage, FloodProblemCategory.Destination, "Road drainage", "The flood water was flowing into road drains", 5),
+            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.NotSure, FloodProblemCategory.Destination, "Not Sure", "I don't know which option is right", 99),
         ];
     }
 

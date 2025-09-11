@@ -26,6 +26,13 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .ConfigureAwait(false);
     }
 
+    public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
+    {
+        return await context.FloodProblems
+            .FindAsync([id], ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<FloodProblem?> GetFloodProblemByCategory(string category, Guid id, CancellationToken ct)
     {
         return await context.FloodProblems

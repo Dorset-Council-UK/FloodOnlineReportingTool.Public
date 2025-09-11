@@ -1,6 +1,4 @@
-﻿using FloodOnlineReportingTool.Contracts;
-
-namespace FloodOnlineReportingTool.Database.Models;
+﻿namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
 /// A data transfer object representing an eligibility check. Only the data which can be changed.
@@ -23,4 +21,5 @@ public record EligibilityCheckDto
     public IList<Guid> Residentials { get; init; } = [];
     public IList<Guid> Commercials { get; init; } = [];
     public IList<Guid> Sources { get; init; } = [];
+    public IList<Guid> SecondarySources { get; init; } = [];
 }

@@ -33,7 +33,12 @@ internal class EligibilityCheckConfiguration : IEntityTypeConfiguration<Eligibil
             .AutoInclude();
 
         builder
+            .Navigation(o => o.SecondarySources)
+            .AutoInclude();
+
+        builder
             .Navigation(o => o.VulnerablePeople)
             .AutoInclude();
+
     }
 }
