@@ -7,7 +7,7 @@ public class FloodSecondarySourceValidator : AbstractValidator<FloodSecondarySou
 {
     public FloodSecondarySourceValidator()
     {
-        RuleFor(o => o.FloodSourceOptions)
+        RuleFor(o => o.FloodSecondarySourceOptions)
             .Must(o => o.Any(x => x.Selected))
             .WithMessage("Select where the water was running off from or select 'Not sure'");
     }

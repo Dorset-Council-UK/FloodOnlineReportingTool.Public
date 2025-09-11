@@ -11,15 +11,6 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 {
     private const string SqlAllCounties = @"SELECT name, area_description, admin_unit_id FROM dc_boundaries.uk_county WHERE public.ST_Contains(geom, public.ST_SetSRID(public.ST_MakePoint({0}, {1}), 27700)) ORDER BY name";
 
-    public async Task<HashSet<Guid>> GetClassHash(Type T, CancellationToken ct)
-    {
-        // HashSet for fast lookup
-        return T.GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(Guid))
-            .Select(f => (Guid)f.GetValue(null))
-            .ToHashSet();
-    }
-
     public async Task<FloodImpact?> GetFloodImpact(Guid id, CancellationToken ct)
     {
         return await context.FloodImpacts
@@ -34,6 +25,13 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .Where(o => o.Category == category)
             .OrderBy(o => o.OptionOrder)
             .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
+    {
+        return await context.FloodProblems
+            .FindAsync([id], ct)
             .ConfigureAwait(false);
     }
 

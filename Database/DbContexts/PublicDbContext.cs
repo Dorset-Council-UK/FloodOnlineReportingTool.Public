@@ -31,6 +31,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
 
         modelBuilder.HasDefaultSchema(SchemaNames.FortPublic);
 
+
         // Add the inbox and outbox pattern messaging tables
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxStateEntity();

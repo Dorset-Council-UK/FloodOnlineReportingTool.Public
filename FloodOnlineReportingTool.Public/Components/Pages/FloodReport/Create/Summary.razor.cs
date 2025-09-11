@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -68,6 +69,8 @@ public partial class Summary(
             Model.AddressPreview = eligibilityCheck.LocationDesc;
             Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
             Model.FloodSources = await GetFloodSources(eligibilityCheck);
+            bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);
+            Model.FloodSecondarySources = runoff ? await GetFloodSecondarySources(eligibilityCheck) : null;
             Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
             Model.StartDate = eligibilityCheck.ImpactStart;
             Model.IsOnGoing = eligibilityCheck.OnGoing;
@@ -202,6 +205,21 @@ public partial class Summary(
 
         var query = floodProblems
             .Where(o => eligibilityCheck.Sources.Contains(o.Id))
+            .Select(o => o.TypeName ?? "");
+
+        return [.. query];
+    }
+
+    private async Task<IReadOnlyCollection<string>> GetFloodSecondarySources(EligibilityCheckDto eligibilityCheck)
+    {
+        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
+        if (floodProblems.Count == 0)
+        {
+            return [];
+        }
+
+        var query = floodProblems
+            .Where(o => eligibilityCheck.SecondarySources.Contains(o.Id))
             .Select(o => o.TypeName ?? "");
 
         return [.. query];

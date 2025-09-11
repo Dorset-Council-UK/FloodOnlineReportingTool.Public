@@ -23,4 +23,5 @@ public record EligibilityCheckDto
     public IList<Guid> Residentials { get; init; } = [];
     public IList<Guid> Commercials { get; init; } = [];
     public IList<Guid> Sources { get; init; } = [];
+    public IList<Guid> SecondarySources { get; init; } = [];
 }

@@ -27,4 +27,5 @@ public record EligibilityCheck
     public IList<EligibilityCheckResidential> Residentials { get; init; } = [];
     public IList<EligibilityCheckCommercial> Commercials { get; init; } = [];
     public IList<EligibilityCheckSource> Sources { get; init; } = [];
+    public IList<EligibilityCheckRunoffSource> SecondarySources { get; init; } = [];
 }

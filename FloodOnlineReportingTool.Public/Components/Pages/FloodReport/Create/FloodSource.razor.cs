@@ -7,6 +7,8 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -75,14 +77,18 @@ public partial class FloodSource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-        //We need to maintain secondary causes if set
-        var secondaryGuidsFilter = await commonRepository.GetClassHash(typeof(SecondaryCauseIds), _cts.Token);
-        IEnumerable<Guid> secondaryGuids = eligibilityCheck.Sources.Where(s => secondaryGuidsFilter.Contains(s));
-        IEnumerable<Guid> primaryGuids = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value).ToList();
-        IEnumerable<Guid> combinedGuids = secondaryGuids.Concat(primaryGuids);
+
+        var selectedOptions = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value);
+        IList<Guid> secondarySources = eligibilityCheck.SecondarySources;
+        if (!selectedOptions.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            // We need to remove any run off options as it has not been selected
+            secondarySources = [];
+        }
         var updated = eligibilityCheck with
         {
-            Sources = combinedGuids.ToList(),
+            Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
+            SecondarySources = secondarySources
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);

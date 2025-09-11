@@ -20,7 +20,7 @@ public partial class FloodSecondarySource(
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
+    public string Title { get; set; } = FloodReportCreatePages.FloodSecondarySource.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
@@ -61,10 +61,7 @@ public partial class FloodSecondarySource(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            var previousCrumb = eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
-            Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
-
-            Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
+            Model.FloodSecondarySourceOptions = await CreateFloodSourceOptions(eligibilityCheck.SecondarySources);
 
             _isLoading = false;
             StateHasChanged();
@@ -77,16 +74,9 @@ public partial class FloodSecondarySource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-        //This one is a little odd, we should already have the primary source of flooding and 
-        //we are adding the secondary source. As such, we must preserve primary options
-
-        var primaryGuidsFilter = await commonRepository.GetClassHash(typeof(PrimaryCauseIds), _cts.Token);
-        IEnumerable<Guid> primaryGuids = eligibilityCheck.Sources.Where(s => primaryGuidsFilter.Contains(s));
-        IEnumerable<Guid> secondaryGuids = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value).ToList();
-        IEnumerable<Guid> combinedGuids = primaryGuids.Concat(secondaryGuids);
         var updated = eligibilityCheck with
         {
-            Sources = combinedGuids.ToList(),
+            SecondarySources = [.. Model.FloodSecondarySourceOptions.Where(o => o.Selected).Select(o => o.Value)],
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
@@ -112,7 +102,7 @@ public partial class FloodSecondarySource(
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateFloodSourceOptions(IList<Guid> selectedValues)
     {
-        const string idPrefix = "flood-source";
+        const string idPrefix = "flood--secondary-source";
         var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
         return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
     }
