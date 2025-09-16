@@ -89,6 +89,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
             Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
             Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
+            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))]
         };
         context.EligibilityChecks.Update(updatedCheck);
 
@@ -142,6 +143,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
             Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
             Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
+            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))]
         };
         context.EligibilityChecks.Update(updatedCheck);
 
