@@ -144,6 +144,7 @@ public class FloodReportRepository(
 
                 IsAddress = dto.IsAddress,
                 Uprn = dto.Uprn,
+                Usrn = dto.Usrn,
                 Easting = dto.Easting,
                 Northing = dto.Northing,
                 LocationDesc = dto.LocationDesc,
@@ -169,10 +170,9 @@ public class FloodReportRepository(
             .ConfigureAwait(false);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
 
-        IList<FloodProblem> fullFloodSource = context.FloodProblems.Where(f =>
-                floodReport.EligibilityCheck.Sources.Select(s => new EligibilityCheckSourceDto(s.EligibilityCheckId, s.FloodProblemId)).Concat(floodReport.EligibilityCheck.SecondarySources.Select(r => new EligibilityCheckSourceDto(r.EligibilityCheckId, r.FloodProblemId)))
-                .Select(s => s.FloodProblemId).ToList().Contains(f.Id)
-            ).ToList();
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct)
+            .ConfigureAwait(false);
         var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);

@@ -76,6 +76,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
             IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
+            Usrn = dto.Usrn,
             Easting = dto.Easting,
             Northing = dto.Northing,
             LocationDesc = dto.LocationDesc,
@@ -95,10 +96,10 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        IList<FloodProblem> fullFloodSource = context.FloodProblems.Where(f =>
-                updatedCheck.Sources.Select(s => new EligibilityCheckSourceDto(s.EligibilityCheckId, s.FloodProblemId)).Concat(updatedCheck.SecondarySources.Select(r => new EligibilityCheckSourceDto(r.EligibilityCheckId, r.FloodProblemId)))
-                .Select(s => s.FloodProblemId).ToList().Contains(f.Id)
-            ).ToList();
+
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
+            .ConfigureAwait(false);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
@@ -128,6 +129,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
             IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
+            Usrn = dto.Usrn,
             Easting = dto.Easting,
             Northing = dto.Northing,
             LocationDesc = dto.LocationDesc,
@@ -147,10 +149,10 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        IList<FloodProblem> fullFloodSource = context.FloodProblems.Where(f =>
-                updatedCheck.Sources.Select(s => new EligibilityCheckSourceDto(s.EligibilityCheckId, s.FloodProblemId)).Concat(updatedCheck.SecondarySources.Select(r => new EligibilityCheckSourceDto(r.EligibilityCheckId, r.FloodProblemId)))
-                .Select(s => s.FloodProblemId).ToList().Contains(f.Id)
-            ).ToList();
+
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
+            .ConfigureAwait(false);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
