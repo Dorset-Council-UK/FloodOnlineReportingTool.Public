@@ -1,9 +1,9 @@
 ﻿namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
-/// Represents the one-to-many relationship between an eligibility check and source flood problems.
+/// Represents the one-to-many relationship between an eligibility check and secondary source flood problems.
 /// </summary>
-public record EligibilityCheckSource(Guid EligibilityCheckId, Guid FloodProblemId)
+public record EligibilityCheckRunoffSource(Guid EligibilityCheckId, Guid FloodProblemId)
 {
     public Guid EligibilityCheckId { get; init; } = EligibilityCheckId;
     public Guid FloodProblemId { get; init; } = FloodProblemId;

@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
-public partial class FloodSource(
-    ILogger<FloodSource> logger,
+public partial class FloodSecondarySource(
+    ILogger<FloodSecondarySource> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
@@ -19,13 +19,14 @@ public partial class FloodSource(
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
+    public string Title { get; set; } = FloodReportCreatePages.FloodSecondarySource.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
+        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb()
     ];
 
-    private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
+    private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -59,10 +60,7 @@ public partial class FloodSource(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            var previousCrumb = eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
-            Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
-
-            Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
+            Model.FloodSecondarySourceOptions = await CreateFloodSourceOptions(eligibilityCheck.SecondarySources);
 
             _isLoading = false;
             StateHasChanged();
@@ -75,31 +73,15 @@ public partial class FloodSource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-
-        var selectedOptions = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value);
-        IList<Guid> secondarySources = eligibilityCheck.SecondarySources;
-        if (!selectedOptions.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
-        {
-            // We need to remove any run off options as it has not been selected
-            secondarySources = [];
-        }
         var updated = eligibilityCheck with
         {
-            Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
-            SecondarySources = secondarySources
+            SecondarySources = [.. Model.FloodSecondarySourceOptions.Where(o => o.Selected).Select(o => o.Value)],
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
-        {
-            // We need to know more if they have selected this option
-            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
-        } else
-        {
-            // Go to the next page, which is always the summary
-            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
-        }   
+        // Go to the next page, which is always the summary
+        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -119,8 +101,8 @@ public partial class FloodSource(
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateFloodSourceOptions(IList<Guid> selectedValues)
     {
-        const string idPrefix = "flood-source";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.PrimaryCause, _cts.Token);
+        const string idPrefix = "flood--secondary-source";
+        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
         return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
     }
 
@@ -129,7 +111,7 @@ public partial class FloodSource(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
+        var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

@@ -5,7 +5,9 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -142,6 +144,7 @@ public class FloodReportRepository(
 
                 IsAddress = dto.IsAddress,
                 Uprn = dto.Uprn,
+                Usrn = dto.Usrn,
                 Easting = dto.Easting,
                 Northing = dto.Northing,
                 LocationDesc = dto.LocationDesc,
@@ -154,6 +157,7 @@ public class FloodReportRepository(
                 Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(eligibilityCheckId, floodImpactId))],
                 Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(eligibilityCheckId, floodImpactId))],
                 Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(eligibilityCheckId, floodProblemId))],
+                SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(eligibilityCheckId, floodProblemId))]
             },
         };
 
@@ -165,12 +169,11 @@ public class FloodReportRepository(
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
             .ConfigureAwait(false);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
-        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => floodReport.EligibilityCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
-        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
-            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
-            sourcesToFilter,
-            ct).ConfigureAwait(false);
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, floodSources);
+
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct)
+            .ConfigureAwait(false);
+        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);
         await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct).ConfigureAwait(false);
@@ -209,7 +212,7 @@ public class FloodReportRepository(
         }
 
         // The user has indicated that the flood duration is known
-        if (durationKnownId == FloodProblemIds.DurationKnown)
+        if (durationKnownId == Models.FloodProblemIds.FloodDurationIds.DurationKnown)
         {
             logger.LogInformation("Impact duration is known, using provided impact duration hours.");
             return impactDurationHours ?? 0;

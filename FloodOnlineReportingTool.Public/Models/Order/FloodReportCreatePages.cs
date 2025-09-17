@@ -12,6 +12,7 @@ internal static class FloodReportCreatePages
     public static readonly PageInfo FloodAreas = new(BaseUrl, "/floodareas", "Flood impact");
     public static readonly PageInfo FloodDuration = new(BaseUrl, "/floodduration", "Flooding duration");
     public static readonly PageInfo FloodSource = new(BaseUrl, "/floodsource", "Source of the flooding");
+    public static readonly PageInfo FloodSecondarySource = new(BaseUrl, "/floodsecondarysource", "Source of the flooding");
     public static readonly PageInfo FloodStarted = new(BaseUrl, "/floodstarted", "Flooding started");
     public static readonly PageInfo Location = new(BaseUrl, "/location", "Choose a location");
     public static readonly PageInfo Summary = new(BaseUrl, "/summary", "Check your answers");

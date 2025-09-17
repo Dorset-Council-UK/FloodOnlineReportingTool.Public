@@ -115,7 +115,7 @@ public partial class FloodDestination(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodProblemIds.DestinationNotSure;
+        var isExclusive = floodProblem.Id == Database.Models.FloodProblemIds.FloodDestinationIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

@@ -1,11 +1,9 @@
-﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using System.Linq;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -78,6 +76,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
             IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
+            Usrn = dto.Usrn,
             Easting = dto.Easting,
             Northing = dto.Northing,
             LocationDesc = dto.LocationDesc,
@@ -90,6 +89,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
             Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
             Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
+            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))]
         };
         context.EligibilityChecks.Update(updatedCheck);
 
@@ -97,12 +97,11 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => updatedCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
-        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
-            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
-            sourcesToFilter,
-            ct).ConfigureAwait(false);
-        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, floodSources);
+
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
+            .ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 
@@ -131,6 +130,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
             IsAddress = dto.IsAddress,
             Uprn = dto.Uprn,
+            Usrn = dto.Usrn,
             Easting = dto.Easting,
             Northing = dto.Northing,
             LocationDesc = dto.LocationDesc,
@@ -143,6 +143,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
             Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
             Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
+            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))]
         };
         context.EligibilityChecks.Update(updatedCheck);
 
@@ -150,12 +151,11 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
             .ConfigureAwait(false);
-        IList<FloodProblem> sourcesToFilter = context.FloodProblems.Where(e => updatedCheck.Sources.Select(s => s.FloodProblemId).ToList().Contains(e.Id)).ToList();
-        var floodSources = await commonRepository.FilterFloodProblemsByCategories(
-            [FloodProblemCategory.PrimaryCause, FloodProblemCategory.SecondaryCause],
-            sourcesToFilter,
-            ct).ConfigureAwait(false);
-        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, floodSources);
+
+        var fullFloodSource = await commonRepository
+            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
+            .ConfigureAwait(false);
+        var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
         await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
 
@@ -231,7 +231,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         }
 
         // The user has indicated that the flood duration is known
-        if (durationKnownId == FloodProblemIds.DurationKnown)
+        if (durationKnownId == Models.FloodProblemIds.FloodDurationIds.DurationKnown)
         {
             logger.LogInformation("Impact duration is known, using provided impact duration hours.");
             return impactDurationHours ?? 0;

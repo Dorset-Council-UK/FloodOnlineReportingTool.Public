@@ -26,6 +26,13 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .ConfigureAwait(false);
     }
 
+    public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
+    {
+        return await context.FloodProblems
+            .FindAsync([id], ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<FloodProblem?> GetFloodProblemByCategory(string category, Guid id, CancellationToken ct)
     {
         return await context.FloodProblems
@@ -60,6 +67,28 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .Select(f => f.Id)
             .ToHashSet();
         return problemList.Where(p => filterHashSet.Contains(p.Id)).ToList();
+    }
+
+    public async Task<IList<FloodProblem>> GetFullEligibilityFloodProblemSourceList(EligibilityCheck eligibilityCheck, CancellationToken ct)
+    {
+        IList<Guid> primarySources =
+            eligibilityCheck.Sources
+            .Select(r => r.FloodProblemId)
+            .ToList();
+        IList<Guid> secondarySources =
+            eligibilityCheck.SecondarySources
+            .Select(r => r.FloodProblemId)
+            .ToList();
+
+        var allSources = primarySources.Concat(secondarySources);
+
+        IList<FloodProblem> fullFloodSource = await context.FloodProblems.Where(f =>
+                allSources
+                .Contains(f.Id)
+            ).ToListAsync(ct)
+            .ConfigureAwait(false);
+
+        return fullFloodSource;
     }
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategory(string category, CancellationToken ct)
