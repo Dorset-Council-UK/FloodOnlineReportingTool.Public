@@ -50,6 +50,7 @@ public sealed class TestService
                 f.Random.Bool(),
                 f.Random.Bool(),
                 f.Random.Int(0, 5),
+                f.Company.CompanyName(),
                 eligibilityCheckOrganisationFaker.GenerateBetween<EligibilityCheckOrganisation>(1, 3),
                 eligibilityCheckSourceFaker.GenerateBetween<EligibilityCheckFloodSource>(1, 3)
             ));
