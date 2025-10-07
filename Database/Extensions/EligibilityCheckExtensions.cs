@@ -22,6 +22,7 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
             eligibilityCheck.VulnerableCount,
+            eligibilityCheck.LocationDesc,
             [..
                 organisations.Select(o => new EligibilityCheckOrganisation(
                     o.Id,
@@ -52,6 +53,7 @@ public static class EligibilityCheckExtensions
             eligibilityCheck.OnGoing,
             eligibilityCheck.Uninhabitable,
             eligibilityCheck.VulnerableCount,
+            eligibilityCheck.LocationDesc,
             [..
                 organisations.Select(o => new EligibilityCheckOrganisation(
                     o.Id,
