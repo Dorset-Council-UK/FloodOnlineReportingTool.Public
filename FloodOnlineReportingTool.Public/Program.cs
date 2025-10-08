@@ -46,6 +46,7 @@ builder.Services
     })
     .AddEntityFrameworkStores<UserDbContext>()
     .AddApiEndpoints();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Add Blazor services
