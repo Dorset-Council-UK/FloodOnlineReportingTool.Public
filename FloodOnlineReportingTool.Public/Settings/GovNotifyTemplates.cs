@@ -1,31 +1,30 @@
 ﻿namespace FloodOnlineReportingTool.Public.Settings;
 
 public class GovNotifyTemplates
-{ 
+{
+    /// <summary>
+    ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
+    ///     <para>This template is used to send the test notification only</para>
+    /// </summary>
+    public required string TestNotification { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used to send the user thier password to allow them to edit the record</para>
     /// </summary>
-    public required string EnableRecordEditingAccount { get; init; }
+    public required string AccountActivationNotification { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used to send the user thier password following a password reset</para>
     /// </summary>
-    public required string ResetRecordEditingAccount { get; init; }
+    public required string AccountResetNotification { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used to confirm that the user is no longer able to edit the record (for example at the end of the retention period)</para>
     /// </summary>
-    public required string DisableRecordEditingAccount { get; init; }
-
-    /// <summary>
-    ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
-    ///     <para>This template is used to confirm that the user will not get notifications but can still edit and change the notification settings</para>
-    /// </summary>
-    public required string Unsubscribe { get; init; }
+    public required string AccountDisabledNotification { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
@@ -33,6 +32,12 @@ public class GovNotifyTemplates
     ///     <para>(nomrally this would follow an update to the terms and conditions)</para>
     /// </summary>
     public required string RequestDpaUpdate { get; init; }
+
+    /// <summary>
+    ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
+    ///     <para>This template is used to confirm that the user will not get notifications but can still edit and change the notification settings</para>
+    /// </summary>
+    public required string Unsubscribe { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>

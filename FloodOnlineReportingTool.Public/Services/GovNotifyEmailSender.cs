@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
+using System.Net.Mail;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
@@ -66,6 +67,17 @@ internal class GovNotifyEmailSender(
         return "";
     }
 
+    public async Task<string> SendTestNotification(string targetEmail, string testMessage, CancellationToken ct)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "test_message", testMessage },
+        };
+
+        return await SendEmail(targetEmail, _govNotifySettings.Templates.TestNotification, personalisation).ConfigureAwait(false);
+    }
+
     public async Task<string> SendAccountActivationNotification(Guid recordId, string recordReference, string recordPassword, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
     {
         var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
@@ -84,6 +96,6 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.EnableRecordEditingAccount, personalisation).ConfigureAwait(false);
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.AccountActivationNotification, personalisation).ConfigureAwait(false);
     }
 }

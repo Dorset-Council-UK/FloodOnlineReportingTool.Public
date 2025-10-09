@@ -11,7 +11,9 @@ namespace FloodOnlineReportingTool.Public.Components.Pages;
 public partial class Test(
     ProtectedSessionStorage protectedSessionStorage,
     IGdsJsInterop gdsJs,
-    TestService testService
+    TestService testService,
+    IGovNotifyEmailSender govNotifyEmailSender,
+    IConfiguration Configuration
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -108,6 +110,17 @@ public partial class Test(
     {
         var data = await protectedSessionStorage.GetAsync<InvestigationDto?>(SessionConstants.Investigation);
         return data.Success && data.Value != null;
+    }
+
+    private async Task<bool> TestNotifcation()
+    {
+        var testEmail = Configuration["GovNotify:TestEmail"];
+        if (testEmail == null)
+        {
+            return false;
+        }
+        var result = await govNotifyEmailSender.SendTestNotification(testEmail, "This is a test of the FORT notification system - public reporting project.", _cts.Token).ConfigureAwait(false);
+        return String.IsNullOrEmpty(result)!;
     }
 
     private async Task TestMessage()
