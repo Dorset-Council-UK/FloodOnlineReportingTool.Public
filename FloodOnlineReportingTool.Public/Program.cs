@@ -33,19 +33,20 @@ builder.Services
 builder.Services.AddFloodReportingHealthChecks();
 
 // Setup identity
-builder.Services
-    .AddIdentityCore<FortUser>(options =>
-    {
-        options.SignIn.RequireConfirmedEmail = false;
-        options.Password.RequireDigit = false;
-        options.Password.RequiredLength = 14;
-        options.Password.RequiredUniqueChars = 0;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
-    })
-    .AddEntityFrameworkStores<UserDbContext>()
-    .AddApiEndpoints();
+
+//builder.Services
+//    .AddIdentityCore<FortUser>(options =>
+//    {
+//        options.SignIn.RequireConfirmedEmail = false;
+//        options.Password.RequireDigit = false;
+//        options.Password.RequiredLength = 14;
+//        options.Password.RequiredUniqueChars = 0;
+//        options.Password.RequireLowercase = false;
+//        options.Password.RequireNonAlphanumeric = false;
+//        options.Password.RequireUppercase = false;
+//    })
+//    .AddEntityFrameworkStores<UserDbContext>()
+//    .AddApiEndpoints();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 

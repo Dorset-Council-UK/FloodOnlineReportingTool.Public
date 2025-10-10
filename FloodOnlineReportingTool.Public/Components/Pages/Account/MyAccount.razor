@@ -1,0 +1,68 @@
+﻿@page "/account/myaccount"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        @if (user != null)
+        {
+            <table class="govuk-table">
+                <caption class="govuk-table__caption govuk-table__caption--m">Manage your account</caption>
+                <thead class="govuk-table__head">
+                    <tr class="govuk-table__row">
+                        <th scope="col" class="govuk-table__header">User Data</th>
+                        <th scope="col" class="govuk-table__header">Value</th>
+                    </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                    <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header">Display Name</th>
+                        <td class="govuk-table__cell">@displayName</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header">Email</th>
+                        <td class="govuk-table__cell">@email</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header">Identity Provider</th>
+                        <td class="govuk-table__cell">@identityProvider</td>
+                    </tr>
+                    <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header">User ID</th>
+                        <td class="govuk-table__cell">@userId</td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to view this content.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private ClaimsPrincipal? user;
+    private string? displayName;
+    private string? email;
+    private string? identityProvider;
+    private string? userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            displayName = user.FindFirst("name")?.Value ?? user.Identity.Name;
+            email = user.FindFirst(ClaimTypes.Email)?.Value ?? user.FindFirst("email")?.Value;
+            identityProvider = user.FindFirst("idp")?.Value ?? "Unknown";
+            userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
+        }
+    }
+}
+

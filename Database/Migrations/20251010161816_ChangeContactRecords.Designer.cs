@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251010161816_ChangeContactRecords")]
+    partial class ChangeContactRecords
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Azure.Amqp.Framing;
+using System.Reflection.Emit;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
@@ -34,6 +35,7 @@ public partial class Create(
 
     private ContactModel? _contactModel;
     private EditContext _editContext = default!;
+    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> _contactTypes = [];
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
 
@@ -51,7 +53,7 @@ public partial class Create(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
         if (_contactModel == null)
@@ -60,7 +62,66 @@ public partial class Create(
             _editContext = new(_contactModel);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
+            _contactTypes = await CreateContactTypeOptions();
         }
+
+
+        // Check if user is authenticated
+        if (AuthenticationState is not null)
+        {
+
+            var authState = await AuthenticationState;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                // Populate model with known user info
+                _contactModel.ContactName = string.IsNullOrWhiteSpace(_contactModel.ContactName) ? user.Identity.Name : _contactModel.ContactName;
+                var oidClaim = user.FindFirst("oid")?.Value;
+                _contactModel.Oid = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
+
+                // Example: populate email if available
+                var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    _contactModel.EmailAddress = string.IsNullOrWhiteSpace(_contactModel.EmailAddress) ? email : _contactModel.EmailAddress ;
+                }
+
+            }
+
+        }
+    }
+
+    private async Task<IReadOnlyCollection<GdsOptionItem<ContactRecordType>>> CreateContactTypeOptions()
+    {
+        ContactRecordType contactRecordType = ContactRecordType.All
+        var id = contactRecordType.ToString().AsSpan();
+        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
+        var selected = contactRecordType == Contact!.ContactType;
+
+        new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected)
+
+        var userId = await AuthenticationState.IdentityUserId();
+        if (userId == null)
+        {
+            return [];
+        }
+
+        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(userId.Value, _cts.Token);
+        if (Contact.Id != null)
+        {
+            unusedRecordTypes.Add(Contact.ContactType.Value);
+        }
+        return [.. unusedRecordTypes.Select(CreateOption)];
+    }
+
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
+    {
+        var id = contactRecordType.ToString().AsSpan();
+        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
+        var selected = contactRecordType == Contact!.ContactType;
+
+        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

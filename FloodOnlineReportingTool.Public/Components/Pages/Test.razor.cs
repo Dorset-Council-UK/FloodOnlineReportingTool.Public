@@ -56,13 +56,9 @@ public partial class Test(
     ];
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _accountPages = [
-        new (new($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignIn.Title)),
+        new (AccountPages.SignIn),
         new (new($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignOut.Title)),
-        new (AccountPages.Register),
-        new (AccountPages.RegisterConfirmation),
-        new (AccountPages.EmailConfirm),
-        new (AccountPages.EmailResendConfirm),
-        new (AccountPages.PasswordForgot),
+        new (AccountPages.MyAccount)
     ];
 
     private readonly CancellationTokenSource _cts = new();

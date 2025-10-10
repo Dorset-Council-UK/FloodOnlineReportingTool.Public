@@ -18,4 +18,6 @@ public class ContactModel
     public string? PhoneNumber { get; set; }
 
     public Guid? Id { get; set; }
+
+    public Guid? Oid { get; set; }
 }

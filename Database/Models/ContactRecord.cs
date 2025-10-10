@@ -5,13 +5,13 @@
 ///     <para>This can represent different types of contact records, for example temporary contact details.</para>
 /// </summary>
 /// <remarks>
-///     <para>Do we need fields to handle Oauth2 logins via B2C or do we just handle it with roles?</para>
-///     <para>It would be good to know if this record is linked to a user though!</para>
+///     <para>We are setting Oauth to be optional but if the Oid is set then the user details are coming from an account.</para>
 /// </remarks>
 public record ContactRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
-    public Guid FloodReportId { get; set; }
+    public Guid? Oid { get; set; }
+    public ICollection<Guid> FloodReportIds { get; set; } = new List<Guid>();
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }

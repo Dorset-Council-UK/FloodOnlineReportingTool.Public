@@ -100,7 +100,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
 
         var contactRecord = await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.FloodReportId == floodReport.Id)
+            .Where(o => o.FloodReportIds.Contains(floodReport.Id))
             .FirstOrDefaultAsync(o => o.Id == id, ct)
             .ConfigureAwait(false);
 
@@ -156,7 +156,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         var contactRecord = await context.ContactRecords
-            .Where(o => o.FloodReportId == floodReport.Id)
+            .Where(o => o.FloodReportIds.Contains(floodReport.Id))
             .FirstOrDefaultAsync(o => o.Id == id, ct)
             .ConfigureAwait(false);
 
