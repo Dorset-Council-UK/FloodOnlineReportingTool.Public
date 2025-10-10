@@ -360,3 +360,5 @@ healthchecksdb
 **/wwwroot/assets/images/logos/*.webp
 # ignore our favicons
 **/wwwroot/favicons/*.*
+*.dtmp
+*.bkp
