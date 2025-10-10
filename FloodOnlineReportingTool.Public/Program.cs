@@ -19,6 +19,7 @@ builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddFloodReportingAuthentication(builder.Configuration);
 builder.Services.AddFloodReportingVersioning();
 builder.Services.AddFloodReportingOpenApi(identityOptions);
+builder.AddGovNotify();
 
 // Add the HttpClient and configure it with the standard policies
 builder.Services
@@ -45,6 +46,7 @@ builder.Services
     })
     .AddEntityFrameworkStores<UserDbContext>()
     .AddApiEndpoints();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Add Blazor services
