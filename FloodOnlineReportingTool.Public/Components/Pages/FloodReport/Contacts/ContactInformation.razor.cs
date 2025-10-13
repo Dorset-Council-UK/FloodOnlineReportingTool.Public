@@ -18,10 +18,11 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     [Parameter]
     public bool ViewOnly { get; set; } = false;
 
+    [Parameter]
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; set; } = [];
+
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
-
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> _contactTypes = [];
     private readonly CancellationTokenSource _cts = new();
 
     public async ValueTask DisposeAsync()
@@ -42,7 +43,10 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     {
         if (!SummaryCard && !ViewOnly)
         {
-            _contactTypes = await CreateContactTypeOptions();
+            if (ContactTypes.Count == 0)
+            {
+                ContactTypes = await CreateContactTypeOptions();
+            }
         }
     }
 

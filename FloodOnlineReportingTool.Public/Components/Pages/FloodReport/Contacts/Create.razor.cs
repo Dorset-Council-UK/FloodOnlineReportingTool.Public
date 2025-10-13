@@ -3,12 +3,9 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Azure.Amqp.Framing;
-using System.Reflection.Emit;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -16,6 +13,7 @@ public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    IEligibilityCheckRepository eligibilityRepository,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -27,15 +25,22 @@ public partial class Create(
         ContactPages.Home.ToGdsBreadcrumb(),
     ];
 
+    [SupplyParameterFromQuery]
+    private string? Reference { get; set; }
+
     [CascadingParameter]
     public EditContext EditContext { get; set; } = default!;
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+
     private ContactModel? _contactModel;
+    private bool _isLoading = true;
+    private bool _loadingError;
+    private Guid? _reportId;
     private EditContext _editContext = default!;
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> _contactTypes = [];
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
 
@@ -62,7 +67,22 @@ public partial class Create(
             _editContext = new(_contactModel);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
-            _contactTypes = await CreateContactTypeOptions();
+            ContactTypes = CreateContactTypeOptions();
+        }
+        // TODO - how were we passing the flood report reference here? Pick this up tomorrow
+        if (!string.IsNullOrWhiteSpace(Reference))
+        {
+            try
+            {
+               var result = await eligibilityRepository.CalculateEligibilityWithReference(Reference, _cts.Token);
+               ContextBoundObject.
+               _reportId = result.f; 
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex, "There was a problem getting the eligibility check from the database");
+                _loadingError = true;
+            }
         }
 
 
@@ -92,36 +112,20 @@ public partial class Create(
         }
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<ContactRecordType>>> CreateContactTypeOptions()
+    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
     {
-        ContactRecordType contactRecordType = ContactRecordType.All
-        var id = contactRecordType.ToString().AsSpan();
-        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
-        var selected = contactRecordType == Contact!.ContactType;
 
-        new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected)
+        var allTypes = Enum.GetValues<ContactRecordType>();
 
-        var userId = await AuthenticationState.IdentityUserId();
-        if (userId == null)
-        {
-            return [];
-        }
-
-        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(userId.Value, _cts.Token);
-        if (Contact.Id != null)
-        {
-            unusedRecordTypes.Add(Contact.ContactType.Value);
-        }
-        return [.. unusedRecordTypes.Select(CreateOption)];
+        return [.. allTypes.Select(CreateOption)];
     }
 
     private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();
         var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
-        var selected = contactRecordType == Contact!.ContactType;
 
-        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected);
+        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -152,12 +156,13 @@ public partial class Create(
             var userId = await AuthenticationState.IdentityUserId();
             ContactRecordDto dto = new()
             {
+                UserId = userId.Value,
                 ContactType = _contactModel.ContactType.Value,
                 ContactName = _contactModel.ContactName,
                 EmailAddress = _contactModel.EmailAddress,
                 PhoneNumber = _contactModel.PhoneNumber,
             };
-            await contactRepository.CreateForUser(userId.Value, dto, _cts.Token);
+            await contactRepository.CreateForReport(, dto, _cts.Token);
             logger.LogInformation("Contact information created successfully for user {UserId}", userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

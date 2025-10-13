@@ -15,12 +15,15 @@ public record FloodReport
     public EligibilityCheck? EligibilityCheck { get; init; }
     public Guid? InvestigationId { get; init; }
     public Investigation? Investigation { get; init; }
-    public IList<ContactRecord> ContactRecords { get; init; } = [];
+
+    // Lookup to contact records this is many to many
+    public ICollection<FloodReportContact> ContactRecords { get; init; } = [];
 
     /// <summary>
     /// User ID from Identity. Nullable to allow for anonymous reports
     /// </summary>
     /// <remarks>Don't use email address, use the ID</remarks>
     public Guid? ReportedByUserId { get; init; }
+    public ContactRecordType? ReportedByContactType { get; init; }
     public DateTimeOffset? UserAccessUntilUtc { get; init; } // was AccessToken.ExpirationUtc in a previous version
 }

@@ -17,7 +17,7 @@ public interface IContactRecordRepository
     /// <summary>
     /// Create a contact record for the user, going via the flood report
     /// </summary>
-    Task<ContactRecord> CreateForUser(Guid userId, ContactRecordDto dto, CancellationToken ct);
+    Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Update the contact record, going via the flood report
@@ -27,7 +27,7 @@ public interface IContactRecordRepository
     /// <summary>
     /// Delete the contact record, going via the flood report
     /// </summary>
-    Task DeleteForUser(Guid userId, Guid id, CancellationToken ct);
+    Task DeleteForUser(Guid userId, Guid id, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report

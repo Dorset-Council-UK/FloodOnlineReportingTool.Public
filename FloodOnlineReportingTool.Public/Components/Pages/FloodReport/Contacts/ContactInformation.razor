@@ -58,7 +58,7 @@ else if (ViewOnly)
         }
     </dl>
 }
-else if (_contactTypes.Count == 0)
+else if (ContactTypes.Count == 0)
 {
     <GdsWarning Text="There are no more contact types available" />
 }
@@ -73,7 +73,7 @@ else
                 <Content>
                     <GdsHint>Select one option.</GdsHint>
                     <GdsErrorMessage />
-                    <GdsRadios Options="_contactTypes" />
+                    <GdsRadios Options="ContactTypes" />
                 </Content>
             </GdsFieldsetGroup>
         </InputRadioGroup>

@@ -17,6 +17,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<FloodMitigation> FloodMitigations { get; set; }
     public DbSet<FloodProblem> FloodProblems { get; set; }
     public DbSet<FloodReport> FloodReports { get; set; }
+    public DbSet<FloodReportContact> FloodReportContacts { get; set; } // Relationship table
     public DbSet<FloodResponsibility> FloodResponsibilities { get; set; }
     public DbSet<Investigation> Investigations { get; set; }
     public DbSet<InvestigationDestination> InvestigationDestinations { get; set; } // Relationship table
@@ -31,6 +32,21 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
 
         modelBuilder.HasDefaultSchema(SchemaNames.FortPublic);
 
+        // Define a many-to-many relationship
+        modelBuilder.Entity<FloodReportContact>()
+                .HasOne(fc => fc.FloodReport)
+                .WithMany(fr => fr.ContactRecords)
+                .HasForeignKey(fc => fc.FloodReportId);
+
+        modelBuilder.Entity<FloodReportContact>()
+            .HasOne(fc => fc.ContactRecord)
+            .WithMany(cr => cr.FloodReports)
+            .HasForeignKey(fc => fc.ContactRecordId);
+
+        // Enforce one ContactType per FloodReport
+        modelBuilder.Entity<FloodReportContact>()
+            .HasIndex(fc => new { fc.FloodReportId, fc.ContactType })
+            .IsUnique();
 
         // Add the inbox and outbox pattern messaging tables
         modelBuilder.AddInboxStateEntity();

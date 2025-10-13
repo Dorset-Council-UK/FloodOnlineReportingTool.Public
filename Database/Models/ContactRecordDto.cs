@@ -5,7 +5,7 @@
 /// </summary>
 public record ContactRecordDto
 {
-    public Guid? Oid { get; init; }
+    public Guid? UserId { get; init; }
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public string ContactName { get; init; } = "";
     public string EmailAddress { get; init; } = "";

@@ -10,8 +10,8 @@
 public record ContactRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
-    public Guid? Oid { get; set; }
-    public ICollection<Guid> FloodReportIds { get; set; } = new List<Guid>();
+    public Guid? UserId { get; set; }
+    
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
@@ -19,4 +19,7 @@ public record ContactRecord
     public string EmailAddress { get; init; } = "";
     public string? PhoneNumber { get; init; }
     public DateTimeOffset RedactionDate { get; init; }
+
+    // Look to flood reports this is many to many
+    public ICollection<FloodReportContact> FloodReports { get; init; } = [];
 }
