@@ -11,6 +11,7 @@ internal static class ContactRecordExtensions
         return new()
         {
             Id = contactRecord.Id,
+            
             ContactType = contactRecord.ContactType,
             ContactName = contactRecord.ContactName,
             EmailAddress = contactRecord.EmailAddress,

@@ -10,16 +10,16 @@
 public record ContactRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
-    public Guid? UserId { get; set; }
     
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
-    public string ContactName { get; init; } = "";
-    public string EmailAddress { get; init; } = "";
-    public string? PhoneNumber { get; init; }
+    public string ContactName { get; set; } = "";
+    public string EmailAddress { get; set; } = "";
+    public string? PhoneNumber { get; set; }
     public DateTimeOffset RedactionDate { get; init; }
+    public Guid? ContactUserId { get; set; }
 
-    // Look to flood reports this is many to many
-    public ICollection<FloodReportContact> FloodReports { get; init; } = [];
+    // Navigation properties
+    public ICollection<FloodReport> FloodReports { get; set; } = [];
 }

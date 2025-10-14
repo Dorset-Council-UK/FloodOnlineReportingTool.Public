@@ -48,8 +48,8 @@ public partial class Index(
         var userId = await AuthenticationState.IdentityUserId();
         if (userId != null)
         {
-            var _contactRecords = await contactRepository.AllReportedByUser(userId.Value, _cts.Token).ConfigureAwait(false);
-            _contactModels = [.. _contactRecords.Select(o => o.ToContactModel())];
+            var _floodReports = await contactRepository.AllReportedByUser(userId.Value, _cts.Token).ConfigureAwait(false);
+            _contactModels = [.. _floodReports.SelectMany(fc => fc.ExtraContactRecords).Select(o => o.ToContactModel())];
             _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(userId.Value, _cts.Token).ConfigureAwait(false);
         }
     }

@@ -1,15 +1,20 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using static MassTransit.ValidationResultExtensions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
 public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
+    ProtectedSessionStorage protectedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -26,7 +31,7 @@ public partial class Confirmation(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private bool _loadingError;
-
+    private Guid _FloodReportId;
     private bool _hasContactInformation;
     private EligibilityOptions _floodInvestigation;
     private IList<Organisation> _leadLocalFloodAuthorities = [];
@@ -47,6 +52,7 @@ public partial class Confirmation(
             {
                 var result = await eligibilityRepository.CalculateEligibilityWithReference(Reference, _cts.Token);
 
+                _FloodReportId = result.FloodReportId;
                 _hasContactInformation = result.HasContactInformation;
                 _floodInvestigation = result.FloodInvestigation;
                 _leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
@@ -89,5 +95,8 @@ public partial class Confirmation(
         {
             await gdsJs.InitGds(_cts.Token);
         }
+
+        // Store the current flood report to session storage
+        await protectedSessionStorage.SetAsync(SessionConstants.FloodReportId, _FloodReportId);
     }
 }

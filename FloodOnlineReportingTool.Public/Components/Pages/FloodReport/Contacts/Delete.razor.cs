@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -79,12 +80,12 @@ public partial class Delete(
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactRecord = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token);
-        if (contactRecord == null)
+        var floodReport = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token).ConfigureAwait(false);
+        if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;
         }
-        return contactRecord.ToContactModel();
+        return floodReport.ReportOwner.ToContactModel();
     }
 
     private async Task OnValidSubmit()
@@ -98,7 +99,7 @@ public partial class Delete(
 
         try
         {
-            await contactRepository.DeleteForUser(_userId, _contactModel.Id!.Value, _cts.Token);
+            await contactRepository.DeleteForUser(_userId, _contactModel.Id!.Value,_contactModel.ContactType!.Value , _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

@@ -28,9 +28,9 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
+            .Include(o => o.ExtraContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportedByUserId == userId, ct)
+            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
             .ConfigureAwait(false);
     }
 
@@ -51,7 +51,7 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
+            .Include(o => o.ExtraContactRecords)
             .Include(o => o.Status)
             .FirstOrDefaultAsync(o => o.Reference == reference, ct)
             .ConfigureAwait(false);
@@ -66,7 +66,7 @@ public class FloodReportRepository(
 
         var result = await context.FloodReports
             .AsNoTracking()
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => new
             {
                 o.StatusId,
@@ -102,7 +102,7 @@ public class FloodReportRepository(
             Reference = CreateReference(),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
-            UserAccessUntilUtc = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
+            ReportOwnerAccessUntil = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
         };
 
         context.FloodReports.Add(floodReport);
@@ -135,7 +135,7 @@ public class FloodReportRepository(
             Reference = CreateReference(),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
-            UserAccessUntilUtc = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
+            ReportOwnerAccessUntil = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
             EligibilityCheck = new()
             {
                 Id = eligibilityCheckId,

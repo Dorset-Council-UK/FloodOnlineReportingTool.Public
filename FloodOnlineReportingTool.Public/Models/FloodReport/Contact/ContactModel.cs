@@ -19,5 +19,5 @@ public class ContactModel
 
     public Guid? Id { get; set; }
 
-    public Guid? Oid { get; set; }
+    public Guid? ContactUserId { get; set; }
 }

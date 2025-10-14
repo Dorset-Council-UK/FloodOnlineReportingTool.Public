@@ -13,6 +13,11 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
             .ValueGeneratedNever();
 
         builder
+            .HasMany(fr => fr.FloodReports)
+            .WithOne()
+            .OnDelete(DeleteBehavior.NoAction); // Optional: define delete behavior
+
+        builder
             .ToTable(o => o.HasComment("Contact information for individuals reporting flood incidents and seeking assistance"));
     }
 }

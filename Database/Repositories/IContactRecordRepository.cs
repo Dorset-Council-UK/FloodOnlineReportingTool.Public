@@ -7,12 +7,12 @@ public interface IContactRecordRepository
     /// <summary>
     /// Get the contact record, for the given user, going via the flood report
     /// </summary>
-    Task<ContactRecord?> ReportedByUser(Guid userId, Guid id, CancellationToken ct);
+    Task<FloodReport?> ReportedByUser(Guid contactUserId, Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Get all contact records for the given user, going via the flood report
     /// </summary>
-    Task<IReadOnlyCollection<ContactRecord>> AllReportedByUser(Guid userId, CancellationToken ct);
+    Task<IReadOnlyCollection<FloodReport>> AllReportedByUser(Guid contactUserId, CancellationToken ct);
 
     /// <summary>
     /// Create a contact record for the user, going via the flood report

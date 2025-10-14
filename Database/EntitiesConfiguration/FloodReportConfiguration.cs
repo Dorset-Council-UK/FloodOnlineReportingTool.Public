@@ -1,6 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 
 namespace FloodOnlineReportingTool.Database.EntitiesConfiguration;
 
@@ -32,8 +33,19 @@ internal class FloodReportConfiguration : IEntityTypeConfiguration<FloodReport>
             .HasDefaultValue(RecordStatusIds.New);
 
         builder
-            .HasIndex(o => o.ReportedByUserId)
+            .HasIndex(o => o.ReportOwnerId)
             .IsUnique();
+
+        builder
+            .HasOne(fr => fr.ReportOwner)
+            .WithOne()
+            .HasForeignKey<FloodReport>(fr => fr.ReportOwnerId)
+            .OnDelete(DeleteBehavior.SetNull); // Optional: define delete behavior
+
+        builder
+            .HasMany(fr => fr.ExtraContactRecords)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade); // Optional: define delete behavior
 
         // Soft deletion filter
         builder

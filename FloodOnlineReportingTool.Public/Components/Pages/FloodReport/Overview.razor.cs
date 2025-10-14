@@ -62,9 +62,9 @@ public partial class Overview(
             if (_floodReport != null)
             {
                 // Check if the users access has expired
-                if (_floodReport.UserAccessUntilUtc != null)
+                if (_floodReport.ReportOwnerAccessUntil != null)
                 {
-                    _accessTimeLeft = _floodReport.UserAccessUntilUtc.Value - DateTimeOffset.UtcNow;
+                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
                     _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
                 }
             }

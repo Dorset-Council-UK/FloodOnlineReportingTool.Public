@@ -1,11 +1,15 @@
 ﻿using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -14,6 +18,7 @@ public partial class Create(
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
     IEligibilityCheckRepository eligibilityRepository,
+    ProtectedSessionStorage protectedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -24,9 +29,6 @@ public partial class Create(
         FloodReportPages.Overview.ToGdsBreadcrumb(),
         ContactPages.Home.ToGdsBreadcrumb(),
     ];
-
-    [SupplyParameterFromQuery]
-    private string? Reference { get; set; }
 
     [CascadingParameter]
     public EditContext EditContext { get; set; } = default!;
@@ -39,7 +41,7 @@ public partial class Create(
     private ContactModel? _contactModel;
     private bool _isLoading = true;
     private bool _loadingError;
-    private Guid? _reportId;
+    private Guid _floodReportId;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -68,23 +70,8 @@ public partial class Create(
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
             ContactTypes = CreateContactTypeOptions();
+            _floodReportId = await GetFloodReportID();
         }
-        // TODO - how were we passing the flood report reference here? Pick this up tomorrow
-        if (!string.IsNullOrWhiteSpace(Reference))
-        {
-            try
-            {
-               var result = await eligibilityRepository.CalculateEligibilityWithReference(Reference, _cts.Token);
-               ContextBoundObject.
-               _reportId = result.f; 
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.LogError(ex, "There was a problem getting the eligibility check from the database");
-                _loadingError = true;
-            }
-        }
-
 
         // Check if user is authenticated
         if (AuthenticationState is not null)
@@ -98,7 +85,7 @@ public partial class Create(
                 // Populate model with known user info
                 _contactModel.ContactName = string.IsNullOrWhiteSpace(_contactModel.ContactName) ? user.Identity.Name : _contactModel.ContactName;
                 var oidClaim = user.FindFirst("oid")?.Value;
-                _contactModel.Oid = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
+                _contactModel.ContactUserId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
 
                 // Example: populate email if available
                 var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
@@ -110,6 +97,12 @@ public partial class Create(
             }
 
         }
+    }
+
+    private async Task<Guid> GetFloodReportID()
+    {
+        var storedId = await protectedSessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId).ConfigureAwait(false);
+        return storedId.Value;
     }
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
@@ -156,13 +149,13 @@ public partial class Create(
             var userId = await AuthenticationState.IdentityUserId();
             ContactRecordDto dto = new()
             {
-                UserId = userId.Value,
+                UserId = null,
                 ContactType = _contactModel.ContactType.Value,
                 ContactName = _contactModel.ContactName,
                 EmailAddress = _contactModel.EmailAddress,
                 PhoneNumber = _contactModel.PhoneNumber,
             };
-            await contactRepository.CreateForReport(, dto, _cts.Token);
+            await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
             logger.LogInformation("Contact information created successfully for user {UserId}", userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

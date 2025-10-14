@@ -14,7 +14,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         // TODO: Might need to check a status on the flood report
         return await context.FloodReports
             .AsNoTracking()
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
@@ -25,7 +25,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         // TODO: Might need to check a status on the flood report
         return await context.FloodReports
             .AsNoTracking()
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
             .ConfigureAwait(false);
@@ -116,7 +116,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var eligibilityCheck = await context.FloodReports
             .AsNoTracking()
             .Include(o => o.EligibilityCheck)
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
             .ConfigureAwait(false)
@@ -171,7 +171,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
         var floodReport = await context.FloodReports
             .AsNoTracking()
-            .Include(o => o.ContactRecords)
+            .Include(o => o.ExtraContactRecords)
             .Include(o => o.EligibilityCheck)
             .Where(o => o.Reference == reference)
             .FirstOrDefaultAsync(ct)
@@ -195,9 +195,10 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
         return new EligibilityResult
         {
-            HasContactInformation = floodReport.ContactRecords.Any(),
+            HasContactInformation = floodReport.ExtraContactRecords.Any(),
             FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
             ResponsibleOrganisations = responsibleOrganisations,
+            FloodReportId = floodReport.Id,
 
             // These don't have any logic yet
             IsEmergencyResponse = false,

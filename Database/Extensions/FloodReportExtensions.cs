@@ -14,7 +14,7 @@ internal static class FloodReportExtensions
             floodReport.CreatedUtc,
             floodReport.EligibilityCheck is not null,
             floodReport.Investigation is not null,
-            floodReport.ContactRecords.Count
+            floodReport.ExtraContactRecords.Count
         );
     }
 }
