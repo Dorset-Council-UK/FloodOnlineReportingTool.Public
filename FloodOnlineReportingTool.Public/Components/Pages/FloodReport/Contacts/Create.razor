@@ -6,33 +6,39 @@
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
 <h1 class="govuk-heading-l">@Title</h1>
-<AuthorizeView Context="authContext">
-    <NotAuthorized>
-        @* TODO add this as a component *@
-        <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-            <div class="govuk-notification-banner__header">
-                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                    Important
-                </h2>
-            </div>
-            <div class="govuk-notification-banner__content">
-                <p class="govuk-notification-banner__heading">
+
+<GdsSpinner Show="_isLoading" />
+
+@if (!_isLoading)
+{
+    if(_floodReportId == Guid.Empty)
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>Sorry there was a problem setting up contacts. Please try again but if this issue happens again then please report a bug.</span>
+        </p>
+    } else
+    {
+        <AuthorizeView Context="authContext">
+            <NotAuthorized>
+                <GdsNotificationBanner NotificationType="GdsNotificationBanner.NotificationTypeOption.info"
+                                       BannerTitleSize="GdsNotificationBanner.BannerSizeOption.small"
+                                       BannerTitle="Important">
                     You must sign up to edit records after they are sent.
                     <a class="govuk-notification-banner__link" href="#">Register / Sign in</a>.
-                </p>
+                </GdsNotificationBanner>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact">
+            <FluentValidationValidator />
+            <GdsErrorSummary />
+
+            <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+
+            <div class="govuk-button-group">
+                <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Home.Url">Cancel</a>
             </div>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
-
-<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact">
-    <FluentValidationValidator />
-    <GdsErrorSummary />
-
-    <ContactInformation Contact="_contactModel" ContactTypes="ContactTypes" />
-
-    <div class="govuk-button-group">
-        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
-        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Home.Url">Cancel</a>
-    </div>
-</EditForm>
+        </EditForm>
+    }
+}

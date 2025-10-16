@@ -8,6 +8,25 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IContactRecordRepository
 {
+    public async Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct)
+    {
+        return await context.ContactRecords
+            .Where(cr => cr.Id == contactRecordId)
+            .Include(cr => cr.FloodReports)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct)
+    {
+
+        return await context.FloodReports
+            .Where(fr => fr.Id == floodReportId)
+            .SelectMany(fr => fr.ExtraContactRecords)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<FloodReport?> ReportedByUser(Guid contactUserId, Guid floodReportId, CancellationToken ct)
     {
 
@@ -72,7 +91,8 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
                 ContactType = dto.ContactType,
                 ContactName = dto.ContactName,
                 EmailAddress = dto.EmailAddress,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                FloodReports = new List<FloodReport> { floodReport },
             };
             context.ContactRecords.Add(contactRecord);
             await context.SaveChangesAsync().ConfigureAwait(false);
@@ -155,11 +175,10 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         return contactRecord;
     }
 
-    public async Task DeleteForUser(Guid userId, Guid id, ContactRecordType contactType, CancellationToken ct)
+    public async Task DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct)
     {
         var contactRecord = await context.ContactRecords
-            .Where(fc => fc.ContactUserId == userId &&
-                        fc.Id == id &&
+            .Where(fc => fc.Id == contactRecordId &&
                         fc.ContactType == contactType)
             .Include(fc => fc.FloodReports)
             .FirstOrDefaultAsync(ct)

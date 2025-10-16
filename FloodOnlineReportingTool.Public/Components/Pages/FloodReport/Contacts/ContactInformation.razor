@@ -1,12 +1,18 @@
-﻿@if (SummaryCard)
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@if (SummaryCard)
 {
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
             <h2 class="govuk-summary-card__title">@Contact.ContactType</h2>
             <ul class="govuk-summary-card__actions">
-                <li class="govuk-summary-card__action">
-                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Change.Url}/{Contact.Id}")">Change<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
-                </li>
+                <AuthorizeView Context="authContext">
+                    <Authorized>
+                        <li class="govuk-summary-card__action">
+                            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Change.Url}/{Contact.Id}")">Change<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
+                        </li>
+                    </Authorized>
+                </AuthorizeView>
                 <li class="govuk-summary-card__action">
                     <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Delete.Url}/{Contact.Id}")">Delete<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
                 </li>

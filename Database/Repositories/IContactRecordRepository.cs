@@ -5,6 +5,18 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public interface IContactRecordRepository
 {
     /// <summary>
+    /// Gets a contact record by its ID value
+    /// </summary>
+    /// <returns></returns>
+    Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct);
+
+    /// <summary>
+    /// Get all contact records associated with a flood report
+    /// </summary>
+    /// <returns></returns>
+    Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
+
+    /// <summary>
     /// Get the contact record, for the given user, going via the flood report
     /// </summary>
     Task<FloodReport?> ReportedByUser(Guid contactUserId, Guid floodReportId, CancellationToken ct);
@@ -25,9 +37,9 @@ public interface IContactRecordRepository
     Task<ContactRecord> UpdateForUser(Guid userId, Guid id, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
-    /// Delete the contact record, going via the flood report
+    /// Delete the contact record by ID
     /// </summary>
-    Task DeleteForUser(Guid userId, Guid id, ContactRecordType contactType, CancellationToken ct);
+    Task DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report

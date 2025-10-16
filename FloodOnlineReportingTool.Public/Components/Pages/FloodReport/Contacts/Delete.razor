@@ -7,11 +7,12 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
-<AuthorizeView Context="authContext">
-    <NotAuthorized>
-        <AccessDenied />
-    </NotAuthorized>
-    <Authorized>
+<GdsSpinner Show="_isLoading" />
+
+@if (!_isLoading)
+{
+    if (_deletePermited)
+    {
         @if (_contactModel == null)
         {
             <GdsWarning Text="Contact information not found" />
@@ -23,8 +24,15 @@
                 <FluentValidationValidator />
                 <GdsErrorSummary />
 
-                <ContactInformation Contact="@_contactModel" ViewOnly="true" />
-
+                <AuthorizeView Context="authContext">
+                    <NotAuthorized>
+                        <p>Contact Type = @_contactModel.ContactType.ToString()</p>
+                    </NotAuthorized>
+                    <Authorized>
+                        <ContactInformation Contact="@_contactModel" ViewOnly="true" />
+                    </Authorized>
+                </AuthorizeView>
+                
                 <GdsWarning Text="Are you sure you want to delete this contact" Icon="?" />
 
                 <div class="govuk-button-group">
@@ -33,5 +41,10 @@
                 </div>
             </EditForm>
         }
-    </Authorized>
-</AuthorizeView>
+    } else
+    {
+        <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> <span>Sorry you can't delete this contact, it may be linked to multiple reports.</span>
+        </p>
+    }
+}

@@ -2,19 +2,19 @@
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using System.Linq;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Delete(
     ILogger<Delete> logger,
     NavigationManager navigationManager,
+    SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
@@ -36,6 +36,9 @@ public partial class Delete(
     private ContactModel? _contactModel;
 
     private EditContext _editContext = default!;
+    private Guid _floodReportId = Guid.Empty;
+    private bool _isLoading = true;
+    private bool _deletePermited = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
@@ -56,18 +59,7 @@ public partial class Delete(
 
     protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        if (_contactModel == null)
-        {
-            _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _contactModel = await GetContact();
-
-            if (_contactModel != null)
-            {
-                _editContext = new(_contactModel);
-                _messageStore = new(_editContext);
-            }
-        }
+        
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -75,17 +67,39 @@ public partial class Delete(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            // Setup model and edit context
+            if (_contactModel == null)
+            {
+                _contactModel = await GetContact();
+
+                if (_contactModel != null)
+                {
+                    _editContext = new(_contactModel);
+                    _messageStore = new(_editContext);
+                }
+            }
+
+            _isLoading = false;
+            //Due to time taken to reach this we need to use the bigger push to ensure the page re-renders now
+            await InvokeAsync(StateHasChanged);
         }
     }
 
     private async Task<ContactModel?> GetContact()
     {
-        var floodReport = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token).ConfigureAwait(false);
-        if (floodReport == null || floodReport.ReportOwner == null)
+        var contactResult = await contactRepository.GetContactById(ContactId, _cts.Token).ConfigureAwait(false);
+        if (contactResult == null )
         {
             return null;
         }
-        return floodReport.ReportOwner.ToContactModel();
+        if (contactResult.FloodReports.Count > 1 || contactResult.FloodReports.Where(fr => fr.Id == _floodReportId).Count() == 0)
+        {
+            //You can only delete for the current flood report so we can't handle it for more one linked record
+            _deletePermited = false;
+        }
+        return contactResult.ToContactModel();
     }
 
     private async Task OnValidSubmit()
@@ -99,7 +113,7 @@ public partial class Delete(
 
         try
         {
-            await contactRepository.DeleteForUser(_userId, _contactModel.Id!.Value,_contactModel.ContactType!.Value , _cts.Token);
+            await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value , _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

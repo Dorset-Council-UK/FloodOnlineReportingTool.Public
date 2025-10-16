@@ -48,6 +48,7 @@ builder.Services.AddFloodReportingHealthChecks();
 //    .AddEntityFrameworkStores<UserDbContext>()
 //    .AddApiEndpoints();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<SessionStateService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Add Blazor services

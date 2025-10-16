@@ -1,15 +1,12 @@
 ﻿using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Azure.Amqp.Framing;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -18,7 +15,7 @@ public partial class Create(
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
     IEligibilityCheckRepository eligibilityRepository,
-    ProtectedSessionStorage protectedSessionStorage,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -39,8 +36,7 @@ public partial class Create(
     public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
 
     private ContactModel? _contactModel;
-    private bool _isLoading = true;
-    private bool _loadingError;
+    private bool _isLoading;
     private Guid _floodReportId;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
@@ -62,6 +58,8 @@ public partial class Create(
 
     protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
+
         // Setup model and edit context
         if (_contactModel == null)
         {
@@ -70,7 +68,6 @@ public partial class Create(
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
             ContactTypes = CreateContactTypeOptions();
-            _floodReportId = await GetFloodReportID();
         }
 
         // Check if user is authenticated
@@ -97,13 +94,11 @@ public partial class Create(
             }
 
         }
+
+        _isLoading = false;
     }
 
-    private async Task<Guid> GetFloodReportID()
-    {
-        var storedId = await protectedSessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId).ConfigureAwait(false);
-        return storedId.Value;
-    }
+    
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
     {
@@ -126,6 +121,14 @@ public partial class Create(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+
+            while (_isLoading)
+            {
+                await Task.Yield(); // Wait for next cycle
+            }
+
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            StateHasChanged();
         }
     }
 
@@ -156,7 +159,7 @@ public partial class Create(
                 PhoneNumber = _contactModel.PhoneNumber,
             };
             await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-            logger.LogInformation("Contact information created successfully for user {UserId}", userId);
+            logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)

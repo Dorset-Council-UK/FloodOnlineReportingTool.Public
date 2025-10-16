@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -14,7 +15,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
-    ProtectedSessionStorage protectedSessionStorage,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -29,7 +30,7 @@ public partial class Confirmation(
     private string? Reference { get; set; }
 
     private readonly CancellationTokenSource _cts = new();
-    private bool _isLoading = true;
+    private bool _isLoading;
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
@@ -46,6 +47,7 @@ public partial class Confirmation(
 
     protected async override Task OnInitializedAsync()
     {
+        _isLoading = true;
         if (!string.IsNullOrWhiteSpace(Reference))
         {
             try
@@ -71,7 +73,6 @@ public partial class Confirmation(
                 _loadingError = true;
             }
         }
-
         _isLoading = false;
     }
 
@@ -94,9 +95,16 @@ public partial class Confirmation(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+
+            while (_isLoading)
+            {
+                await Task.Yield(); // Wait for next cycle
+            }
+
+            // Store the current flood report to session storage
+            await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
         }
 
-        // Store the current flood report to session storage
-        await protectedSessionStorage.SetAsync(SessionConstants.FloodReportId, _FloodReportId);
+        
     }
 }
