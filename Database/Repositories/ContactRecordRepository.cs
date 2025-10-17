@@ -63,6 +63,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Only allow 1 instance of each type of contact to be created
+        var contactCount = floodReport.ExtraContactRecords.Count();
         if (floodReport.ExtraContactRecords.Any(o => o.ContactType == dto.ContactType))
         {
             throw new InvalidOperationException($"A contact record of type {dto.ContactType} already exists for the user");
@@ -95,6 +96,12 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
                 FloodReports = new List<FloodReport> { floodReport },
             };
             context.ContactRecords.Add(contactRecord);
+
+            if (contactCount == 0)
+            {
+                // The first contact added is marked as the report owner
+                floodReport.ReportOwnerId = contactRecord.Id;
+            }
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 

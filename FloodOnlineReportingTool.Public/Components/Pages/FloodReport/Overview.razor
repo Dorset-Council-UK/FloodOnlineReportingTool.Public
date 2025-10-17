@@ -18,7 +18,53 @@
 
 <AuthorizeView>
     <NotAuthorized>
-        <AccessDenied />
+        @if (_floodReport == null)
+        {
+            <div class="govuk-grid-column-full">
+                <GdsWarning Text="We cannot find your flood report." />
+            </div>
+        } else
+        {
+            <div class="govuk-grid-column-full">
+                <p class="govuk-body-l">
+                    <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown status")</strong>
+                    Flood reference <strong>@_floodReport.Reference</strong>
+                </p>
+            </div>
+
+            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+
+            <p>You will recieve update notifications about your report by email if you provided one.</p>
+
+            <p>You are not able to update or view your record online as you are not logged in.</p>
+
+            @if (_accessHasExpired)
+            {
+                <GdsWarning Text="Your access to this flood report has expired" />
+            }
+
+            @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+            {
+                <h2 class="govuk-heading-l">Tell us more</h2>
+                <p>There is currently an ongoing investigation.</p>
+                <p>We need some more information from you to help us complete the investigation.</p>
+                <p>This will include details about:</p>
+                <ul>
+                    <li>Information about how and when water entered your property</li>
+                    <li>Flood depths</li>
+                    <li>Warnings you recieved</li>
+                    <li>Any help you were provided with</li>
+                    <li>More information about the flood water itself</li>
+                </ul>
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button govuk-button--start" data-module="govuk-button" href="@InvestigationPages.FirstPage.Url">
+                    Start now
+                    <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+                    </svg>
+                </a>
+            }
+        }
+
     </NotAuthorized>
     <Authorized>
         <div class="govuk-grid-row">

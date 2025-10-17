@@ -41,6 +41,22 @@ public class FloodReportRepository(
         return reference;
     }
 
+    public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
+    {
+        logger.LogInformation("Getting flood report by id {Reference}.", reference);
+
+        // Include all related tables
+        return await context.FloodReports
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(o => o.EligibilityCheck)
+            .Include(o => o.Investigation)
+            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.Status)
+            .FirstOrDefaultAsync(o => o.Id == reference, ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report by reference number {Reference}.", reference);

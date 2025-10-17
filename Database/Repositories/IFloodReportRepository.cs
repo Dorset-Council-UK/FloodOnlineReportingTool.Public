@@ -10,6 +10,12 @@ public interface IFloodReportRepository
     Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct);
 
     /// <summary>
+    /// Flood report by ID.
+    /// </summary>
+    /// <returns></returns>
+    Task<FloodReport?> GetById(Guid reference, CancellationToken ct);
+
+    /// <summary>
     /// Flood report reference number, with no dashes.
     /// </summary>
     Task<FloodReport?> GetByReference(string reference, CancellationToken ct);

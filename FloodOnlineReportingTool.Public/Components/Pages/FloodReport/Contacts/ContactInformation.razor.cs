@@ -29,11 +29,6 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     public Task<AuthenticationState>? AuthenticationState { get; set; }
     private readonly CancellationTokenSource _cts = new();
 
-    private IReadOnlyCollection<GdsOptionItem<bool>> _isPrimaryOptions = [
-        new("is-primary-yes", "Yes", value: true),
-        new("is-primary-no", "No", value: false),
-    ];
-
     public async ValueTask DisposeAsync()
     {
         try

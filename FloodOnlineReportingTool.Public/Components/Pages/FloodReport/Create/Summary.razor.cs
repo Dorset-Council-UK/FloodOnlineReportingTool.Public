@@ -67,6 +67,7 @@ public partial class Summary(
             var eligibilityCheck = await GetEligibilityCheck();
             Model.IsAddress = eligibilityCheck.IsAddress;
             Model.AddressPreview = eligibilityCheck.LocationDesc;
+            Model.TemporaryAddressPreview = eligibilityCheck.TemporaryLocationDesc;
             Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
             Model.FloodSources = await GetFloodSources(eligibilityCheck);
             bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);

@@ -77,9 +77,9 @@ public partial class Change(
         {
             await gdsJs.InitGds(_cts.Token);
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            StateHasChanged();
         }
         _isLoading = false;
-        StateHasChanged();
     }
 
     private async Task OnSubmit()

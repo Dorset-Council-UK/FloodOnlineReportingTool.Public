@@ -44,10 +44,10 @@ public interface IContactRecordRepository
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report
     /// </summary>
-    Task<int> CountUnusedRecordTypes(Guid userId, CancellationToken ct);
+    Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Get the unused contact record types, going via the flood report
     /// </summary>
-    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid userId, CancellationToken ct);
+    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
 }

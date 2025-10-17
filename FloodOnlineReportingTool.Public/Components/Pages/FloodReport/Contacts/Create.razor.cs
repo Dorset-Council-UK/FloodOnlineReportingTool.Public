@@ -128,6 +128,8 @@ public partial class Create(
             }
 
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
+            ContactTypes = [.. allTypes.Select(CreateOption)];
             StateHasChanged();
         }
     }

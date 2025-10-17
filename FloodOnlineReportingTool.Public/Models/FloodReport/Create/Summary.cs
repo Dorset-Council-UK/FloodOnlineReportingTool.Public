@@ -10,6 +10,8 @@ public class Summary
 
     public string? AddressPreview { get; set; }
 
+    public string? TemporaryAddressPreview { get; set; }
+
     public string? PropertyTypeName { get; set; }
 
     public bool? IsUninhabitable { get; set; }

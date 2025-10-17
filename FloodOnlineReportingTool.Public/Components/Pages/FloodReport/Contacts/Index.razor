@@ -7,6 +7,19 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
+<AuthorizeView Context="authContext">
+    <NotAuthorized>
+        <GdsInsetText Text="You are not logged in so you can add further contacts but not edit after you leave the site."></GdsInsetText>
+    </NotAuthorized>
+</AuthorizeView>
+
+<p>You can choose add further contacts at this point but please note they will all recieve notifications about this report.</p>
+
+<p>
+    <a href="@FloodReportPages.Overview.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
+        Save your contacts
+    </a>
+</p>
 
 @if (_isLoading)
 {
@@ -24,15 +37,14 @@ else
         
     <AuthorizeView Context="authContext">
         <NotAuthorized>
-
-            <GdsInsetText Text="You are not logged in so you can add further contacts but not edit after you leave the site."></GdsInsetText>
-
             <h2 class="govuk-heading-m">Contacts</h2>
 
             @foreach (var contactModel in _contactModels)
             {
                 <ContactInformation Contact="@contactModel" SummaryCard="true" />
             }
+
+            
 
             <div class="govuk-grid-column-two-thirds">
                 @if (_numberOfUnusedRecordTypes > 0)
@@ -89,13 +101,5 @@ else
                 </div>
         </Authorized>
     </AuthorizeView>
-    <section class="govuk-grid-column-one-third related-navigation">
-        <h2 class="govuk-heading-s" id="related-content">Related content</h2>
-        <nav role="navigation" aria-labelledby="related-content">
-            <ul class="govuk-list govuk-body-s">
-                <li><a class="govuk-link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></li>
-            </ul>
-        </nav>
-    </section>
     </div>
 }
