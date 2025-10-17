@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using System.Net;
 using System.Text.Json;
+using static FloodOnlineReportingTool.Database.Repositories.SearchRepository;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -319,7 +320,7 @@ public partial class Location(
         {
             var referrer = navigationManager.ToAbsoluteUri("");
             var response = await repository
-                .GetNearestAddressResponse(easting, northing, referrer, _cts.Token)
+                .GetNearestAddressResponse(easting, northing, SearchArea.uk, referrer, _cts.Token)
                 .ConfigureAwait(false);
 
             if (response == null || response.StatusCode == HttpStatusCode.NotFound)

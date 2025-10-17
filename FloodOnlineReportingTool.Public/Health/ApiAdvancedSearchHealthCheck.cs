@@ -1,6 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using static FloodOnlineReportingTool.Database.Repositories.SearchRepository;
 
 namespace FloodOnlineReportingTool.Public.Health;
 
@@ -11,7 +12,7 @@ public class ApiAdvancedSearchHealthCheck(ISearchRepository searchRepository, IH
         try
         {
             await searchRepository
-                .IsAddressSearchAvailable(GetReferrer(), ct)
+                .IsAddressSearchAvailable(GetReferrer(), SearchArea.dorset, ct)
                 .ConfigureAwait(false);
 
             return HealthCheckResult.Healthy();

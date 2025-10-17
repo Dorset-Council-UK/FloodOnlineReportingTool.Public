@@ -9,4 +9,6 @@ public record ExtraData
     public string? SecondaryClassification { get; init; }
 
     public Guid? PropertyType { get; init; }
+
+    public string? TemporaryPostcode { get; set; }
 }

@@ -14,6 +14,8 @@ public record EligibilityCheck
     public double Northing { get; init; }
     public bool IsAddress { get; init; }
     public string? LocationDesc { get; init; }
+    public long? TemporaryUprn { get; init; }
+    public string? TemporaryLocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public int ImpactDuration { get; init; } // In hours
     public bool OnGoing { get; init; }

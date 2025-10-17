@@ -148,6 +148,8 @@ public class FloodReportRepository(
                 Easting = dto.Easting,
                 Northing = dto.Northing,
                 LocationDesc = dto.LocationDesc,
+                TemporaryUprn = dto.TemporaryUprn,
+                TemporaryLocationDesc = dto.TemporaryLocationDesc,
                 ImpactStart = dto.ImpactStart,
                 ImpactDuration = impactDuration,
                 OnGoing = dto.OnGoing,

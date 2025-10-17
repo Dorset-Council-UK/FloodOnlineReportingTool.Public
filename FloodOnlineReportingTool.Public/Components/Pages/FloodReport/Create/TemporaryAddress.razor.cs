@@ -12,8 +12,8 @@ using static FloodOnlineReportingTool.Database.Repositories.SearchRepository;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
-public partial class Address(
-    ILogger<Address> logger,
+public partial class TemporaryAddress(
+    ILogger<TemporaryAddress> logger,
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
@@ -21,7 +21,7 @@ public partial class Address(
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.Address.Title;
+    public string Title { get; set; } = FloodReportCreatePages.TemporaryAddress.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
@@ -69,12 +69,10 @@ public partial class Address(
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();
 
-            Model.Postcode = createExtraData.Postcode;
-            Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
-            Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
-            Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
-            Model.IsAddress = eligibilityCheck.IsAddress;
-            Model.LocationDesc = eligibilityCheck.LocationDesc;
+            Model.Postcode = createExtraData.TemporaryPostcode;
+            Model.UPRN = eligibilityCheck.TemporaryUprn == 0 ? null : eligibilityCheck.TemporaryUprn;
+            Model.IsAddress = true;
+            Model.LocationDesc = eligibilityCheck.TemporaryLocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
 
             StateHasChanged();
@@ -94,24 +92,20 @@ public partial class Address(
 
             var updatedEligibilityCheck = eligibilityCheck with
             {
-                Uprn = apiAddress.UPRN,
-                Easting = apiAddress.Easting,
-                Northing = apiAddress.Northing,
-                LocationDesc = apiAddress.ConcatenatedAddress,
+                TemporaryUprn = apiAddress.UPRN,
+                TemporaryLocationDesc = apiAddress.ConcatenatedAddress,
             };
 
             var updatedExtraData = createExtraData with
             {
-                Postcode = apiAddress.Postcode.ToUpperInvariant(),
-                PrimaryClassification = apiAddress.PrimaryClassification,
-                SecondaryClassification = apiAddress.SecondaryClassification,
+                TemporaryPostcode = apiAddress.Postcode.ToUpperInvariant(),
             };
 
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
             // Go to the next page or pass back to the summary (user must return from property type page)
-            var nextPage = FloodReportCreatePages.PropertyType;
+            var nextPage = FloodReportCreatePages.Vulnerability;
             var nextPageUrl = nextPage.Url;
             if (FromSummary)
             {
@@ -180,7 +174,7 @@ public partial class Address(
 
             _isSearching = true;
             var referer = navigationManager.ToAbsoluteUri("");
-            return await searchRepository.AddressSearch(Model.Postcode, SearchArea.dorset, referer, _cts.Token);
+            return await searchRepository.AddressSearch(Model.Postcode, SearchArea.uk, referer, _cts.Token);
         }
         catch (ConfigurationMissingException ex)
         {

@@ -26,6 +26,8 @@ public partial class Test(
         new (FloodReportCreatePages.Address, "(optional*)"),
         new (FloodReportCreatePages.PropertyType),
         new (FloodReportCreatePages.FloodAreas),
+        new (FloodReportCreatePages.TemporaryPostcode, "(optional*)"),
+        new (FloodReportCreatePages.TemporaryAddress, "(optional*)"),
         new (FloodReportCreatePages.Vulnerability),
         new (FloodReportCreatePages.FloodStarted),
         new (FloodReportCreatePages.FloodDuration, "(optional)"),
