@@ -16,11 +16,16 @@ public record FloodReport
     public Guid? InvestigationId { get; init; }
     public Investigation? Investigation { get; init; }
 
-    // Optional foreign key to Contact record
+    // Owner: single optional ContactRecord (can be null)
     public Guid? ReportOwnerId { get; set; }
+    public ContactRecord? ReportOwner { get; set; }
+
     public DateTimeOffset? ReportOwnerAccessUntil { get; init; } // was AccessToken.ExpirationUtc in a previous version
 
-    // Navigation properties
-    public ContactRecord? ReportOwner { get; set; } 
-    public IList<ContactRecord> ExtraContactRecords { get; set; } = []; // This is likely in addition to the report owner record
+    // Extra contacts (many-to-many)
+    public IList<ContactRecord> ExtraContactRecords { get; set; } = [];
+
+    // Contacts that are linked by a direct FK on ContactRecord (for non-user contacts)
+    // Optional navigation to see those single-associated contacts.
+    public IList<ContactRecord> SingleAssociatedContacts { get; set; } = [];
 }

@@ -12,10 +12,14 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
             .Property(o => o.Id)
             .ValueGeneratedNever();
 
+        // Partial unique index: when ContactUserId IS NULL (non-user contact),
+        // FloodReportId must be unique → enforces at most one FloodReport association for such contacts.
+        // This creates a PostgreSQL partial index.
         builder
-            .HasMany(fr => fr.FloodReports)
-            .WithOne()
-            .OnDelete(DeleteBehavior.NoAction); // Optional: define delete behavior
+            .HasIndex(cr => cr.FloodReportId)
+            .HasDatabaseName("IX_ContactRecords_FloodReportId_UniqueWhenNoUser")
+            .IsUnique()
+            .HasFilter("\"ContactUserId\" IS NULL");
 
         builder
             .ToTable(o => o.HasComment("Contact information for individuals reporting flood incidents and seeking assistance"));

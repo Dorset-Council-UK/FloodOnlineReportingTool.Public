@@ -32,20 +32,44 @@ internal class FloodReportConfiguration : IEntityTypeConfiguration<FloodReport>
             .Property(o => o.StatusId)
             .HasDefaultValue(RecordStatusIds.New);
 
-        builder
-            .HasIndex(o => o.ReportOwnerId)
-            .IsUnique();
-
+        // Owner: many FloodReports -> one ContactRecord
+        // NOTE: do NOT make ReportOwnerId unique if a ContactRecord can own multiple reports
         builder
             .HasOne(fr => fr.ReportOwner)
-            .WithOne()
-            .HasForeignKey<FloodReport>(fr => fr.ReportOwnerId)
-            .OnDelete(DeleteBehavior.SetNull); // Optional: define delete behavior
+            .WithMany(cr => cr.OwnedFloodReports)
+            .HasForeignKey(fr => fr.ReportOwnerId)
+            .OnDelete(DeleteBehavior.SetNull);
 
+        // ExtraContactRecords: explicit many-to-many
         builder
             .HasMany(fr => fr.ExtraContactRecords)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Cascade); // Optional: define delete behavior
+            .WithMany(cr => cr.FloodReports)
+            .UsingEntity<Dictionary<string, object>>(
+                "FloodReportContactRecord",
+                j => j
+                    .HasOne<ContactRecord>()
+                    .WithMany()
+                    .HasForeignKey("ContactRecordId")
+                    .HasConstraintName("FK_FloodReportContactRecord_ContactRecords_ContactRecordId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j => j
+                    .HasOne<FloodReport>()
+                    .WithMany()
+                    .HasForeignKey("FloodReportId")
+                    .HasConstraintName("FK_FloodReportContactRecord_FloodReports_FloodReportId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j =>
+                {
+                    j.ToTable("FloodReportContactRecords", "fortpublic");
+                    j.HasKey("FloodReportId", "ContactRecordId");
+                });
+
+        // Map SingleAssociatedContacts (reverse of ContactRecord.FloodReport)
+        builder
+            .HasMany(fr => fr.SingleAssociatedContacts)
+            .WithOne(cr => cr.FloodReport)
+            .HasForeignKey(cr => cr.FloodReportId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Soft deletion filter
         builder

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    [Migration("20250818035607_TypoFloodImpactd")]
-    partial class TypoFloodImpactd
+    [Migration("20251020145943_InitialPublic")]
+    partial class InitialPublic
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<int>("ContactType")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("ContactUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -45,7 +48,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("FloodReportId")
+                    b.Property<Guid?>("FloodReportId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PhoneNumber")
@@ -59,7 +62,10 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FloodReportId");
+                    b.HasIndex("FloodReportId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ContactRecords_FloodReportId_UniqueWhenNoUser")
+                        .HasFilter("\"ContactUserId\" IS NULL");
 
                     b.ToTable("ContactRecords", "fortpublic", t =>
                         {
@@ -84,6 +90,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<DateTimeOffset?>("ImpactStart")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsAddress")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LocationDesc")
                         .HasColumnType("text");
 
@@ -92,6 +101,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.Property<bool>("OnGoing")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("TemporaryLocationDesc")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("TemporaryUprn")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("TermsAgreed")
                         .HasColumnType("timestamp with time zone");
@@ -102,7 +117,10 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<DateTimeOffset?>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("Uprn")
+                    b.Property<long?>("Uprn")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("Usrn")
                         .HasColumnType("bigint");
 
                     b.Property<int?>("VulnerableCount")
@@ -156,6 +174,24 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.ToTable("EligibilityCheckResidentials", "fortpublic", t =>
                         {
                             t.HasComment("Relationships between eligibility checks and residential flood impacts");
+                        });
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.EligibilityCheckRunoffSource", b =>
+                {
+                    b.Property<Guid>("EligibilityCheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FloodProblemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("EligibilityCheckId", "FloodProblemId");
+
+                    b.HasIndex("FloodProblemId");
+
+                    b.ToTable("EligibilityCheckRunoffSource", "fortpublic", t =>
+                        {
+                            t.HasComment("Relationships between eligibility checks and source runoff flood problems");
                         });
                 });
 
@@ -1637,16 +1673,16 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("character varying(8)");
 
-                    b.Property<Guid?>("ReportedByUserId")
+                    b.Property<DateTimeOffset?>("ReportOwnerAccessUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReportOwnerId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("StatusId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValue(new Guid("018feb10-38e0-7f30-a546-37ce71f243ae"));
-
-                    b.Property<DateTimeOffset?>("UserAccessUntilUtc")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -1660,8 +1696,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.HasIndex("Reference")
                         .IsUnique();
 
-                    b.HasIndex("ReportedByUserId")
-                        .IsUnique();
+                    b.HasIndex("ReportOwnerId");
 
                     b.HasIndex("StatusId");
 
@@ -2324,6 +2359,21 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FloodReportContactRecord", b =>
+                {
+                    b.Property<Guid>("FloodReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ContactRecordId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("FloodReportId", "ContactRecordId");
+
+                    b.HasIndex("ContactRecordId");
+
+                    b.ToTable("FloodReportContactRecords", "fortpublic");
+                });
+
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
                 {
                     b.Property<long>("Id")
@@ -2494,11 +2544,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.ContactRecord", b =>
                 {
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.FloodReport", null)
-                        .WithMany("ContactRecords")
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.FloodReport", "FloodReport")
+                        .WithMany("SingleAssociatedContacts")
                         .HasForeignKey("FloodReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("FloodReport");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.EligibilityCheck", b =>
@@ -2546,6 +2597,23 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodImpact");
                 });
 
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.EligibilityCheckRunoffSource", b =>
+                {
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.EligibilityCheck", null)
+                        .WithMany("SecondarySources")
+                        .HasForeignKey("EligibilityCheckId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.FloodProblem", "FloodProblem")
+                        .WithMany()
+                        .HasForeignKey("FloodProblemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodProblem");
+                });
+
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.EligibilityCheckSource", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.EligibilityCheck", null)
@@ -2584,6 +2652,11 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .WithMany()
                         .HasForeignKey("InvestigationId");
 
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.ContactRecord", "ReportOwner")
+                        .WithMany("OwnedFloodReports")
+                        .HasForeignKey("ReportOwnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("FloodOnlineReportingTool.Database.Models.RecordStatus", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -2593,6 +2666,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("EligibilityCheck");
 
                     b.Navigation("Investigation");
+
+                    b.Navigation("ReportOwner");
 
                     b.Navigation("Status");
                 });
@@ -2808,6 +2883,23 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodAuthority");
                 });
 
+            modelBuilder.Entity("FloodReportContactRecord", b =>
+                {
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.ContactRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ContactRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_FloodReportContactRecord_ContactRecords_ContactRecordId");
+
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.FloodReport", null)
+                        .WithMany()
+                        .HasForeignKey("FloodReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_FloodReportContactRecord_FloodReports_FloodReportId");
+                });
+
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
                 {
                     b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
@@ -2820,18 +2912,25 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.ContactRecord", b =>
+                {
+                    b.Navigation("OwnedFloodReports");
+                });
+
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.EligibilityCheck", b =>
                 {
                     b.Navigation("Commercials");
 
                     b.Navigation("Residentials");
 
+                    b.Navigation("SecondarySources");
+
                     b.Navigation("Sources");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.FloodReport", b =>
                 {
-                    b.Navigation("ContactRecords");
+                    b.Navigation("SingleAssociatedContacts");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigation", b =>
