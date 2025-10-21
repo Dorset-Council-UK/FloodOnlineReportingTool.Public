@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "designs", "designs", "{5762
 		designs\flood reports.drawio = designs\flood reports.drawio
 		designs\investigation page order.drawio = designs\investigation page order.drawio
 		designs\investigation pages.drawio = designs\investigation pages.drawio
+		designs\tables.md = designs\tables.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{A427791D-89C4-4C61-98F5-795C098DE3B3}"
