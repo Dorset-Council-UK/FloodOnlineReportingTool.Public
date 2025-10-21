@@ -309,3 +309,14 @@ Investigations ||--o| RecordStatuses : hasWhenWaterEnteredKnown
 Organisations ||--o| FloodAuthorities : isPartOf
 
 ```
+
+## Simple Eligibility Checks relationship diagrams
+```mermaid
+erDiagram
+EligibilityChecks ||--o| VulnerablePeople : has
+EligibilityCheckCommercials ||--|{ EligibilityChecks : partOf
+EligibilityCheckResidentials ||--|{ EligibilityChecks : partOf
+EligibilityCheckRunoffSources ||--|{ EligibilityChecks : partOf
+EligibilityCheckSources ||--|{ EligibilityChecks : partOf
+FloodReports ||--o| EligibilityChecks : hasEligibilityCheck
+```
