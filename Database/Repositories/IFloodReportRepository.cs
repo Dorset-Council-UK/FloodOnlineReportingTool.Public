@@ -10,6 +10,16 @@ public interface IFloodReportRepository
     Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct);
 
     /// <summary>
+    /// Get the contact record, for the given user, going via the flood report
+    /// </summary>
+    Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct);
+
+    /// <summary>
+    /// Get all contact records for the given user, going via the flood report
+    /// </summary>
+    Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct);
+
+    /// <summary>
     /// Flood report by ID.
     /// </summary>
     /// <returns></returns>

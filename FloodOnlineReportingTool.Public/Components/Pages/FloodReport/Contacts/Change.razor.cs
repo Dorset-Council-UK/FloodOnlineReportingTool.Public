@@ -14,6 +14,7 @@ public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
@@ -120,7 +121,7 @@ public partial class Change(
 
     private async Task<ContactModel?> GetContact()
     {
-        var floodReport = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token).ConfigureAwait(false);
+        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token).ConfigureAwait(false);
         if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;

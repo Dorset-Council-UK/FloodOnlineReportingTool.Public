@@ -17,16 +17,6 @@ public interface IContactRecordRepository
     Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
-    /// Get the contact record, for the given user, going via the flood report
-    /// </summary>
-    Task<FloodReport?> ReportedByUser(Guid contactUserId, Guid floodReportId, CancellationToken ct);
-
-    /// <summary>
-    /// Get all contact records for the given user, going via the flood report
-    /// </summary>
-    Task<IReadOnlyCollection<FloodReport>> AllReportedByUser(Guid contactUserId, CancellationToken ct);
-
-    /// <summary>
     /// Create a contact record for the user, going via the flood report
     /// </summary>
     Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);

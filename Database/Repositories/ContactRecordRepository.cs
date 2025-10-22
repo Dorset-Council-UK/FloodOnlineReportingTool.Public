@@ -27,28 +27,6 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             .ConfigureAwait(false);
     }
 
-    public async Task<FloodReport?> ReportedByUser(Guid contactUserId, Guid floodReportId, CancellationToken ct)
-    {
-
-        return await context.FloodReports
-            .Where(fr => fr.ReportOwner != null &&
-                 fr.ReportOwner.ContactUserId == contactUserId &&
-                 fr.Id == floodReportId)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyCollection<FloodReport>> AllReportedByUser(Guid contactUserId, CancellationToken ct)
-    {
-
-        return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null &&
-                 fc.ReportOwner.ContactUserId == contactUserId)
-            .OrderByDescending(cr => cr.CreatedUtc)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-    }
-
     public async Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct)
     {
         var floodReport = await context.FloodReports

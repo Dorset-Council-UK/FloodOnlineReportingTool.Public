@@ -12,6 +12,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
 public partial class Index(
     IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
@@ -56,7 +57,7 @@ public partial class Index(
             var userId = await AuthenticationState.IdentityUserId();
             if (userId != null)
             {
-                var _floodReports = await contactRepository.AllReportedByUser(userId.Value, _cts.Token).ConfigureAwait(false);
+                var _floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token).ConfigureAwait(false);
                 _contactModels = [.. _floodReports.SelectMany(fc => fc.ExtraContactRecords).Select(o => o.ToContactModel())];
                 _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
             }
