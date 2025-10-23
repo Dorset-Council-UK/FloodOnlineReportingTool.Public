@@ -16,6 +16,7 @@ erDiagram
   EligibilityCheck {
     Guid Id PK
   }
+  FloodReport ||--o| EligibilityCheck : EligibilityCheckId
   EligibilityCheck ||--|| RecordStatus : "VulnerablePeopleId"
   EligibilityCheck ||--o{ EligibilityCheckCommercial : Commercials
   EligibilityCheck ||--o{ EligibilityCheckResidential : Residentials
