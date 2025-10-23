@@ -5,6 +5,14 @@
 The EligibilityCheck represents an assessment to determine if a person qualifies for assistance, related to flood damage.
 This is the information saved when someone completes the online flood report form.
 
+## Vulnerable people
+
+The VulnerablePeopleId field indicates whether there are vulnerable individuals involved in the eligibility check.
+It uses the RecordStatus entity to capture responses of:
+- Yes
+- No
+- Not Sure
+
 ## Simple relationships
 
 ```mermaid
@@ -15,9 +23,9 @@ config:
 erDiagram
   EligibilityCheck {
     Guid Id PK
+    Guid VulnerablePeopleId "RecordStatus"
   }
   FloodReport ||--o| EligibilityCheck : EligibilityCheckId
-  EligibilityCheck ||--|| RecordStatus : "VulnerablePeopleId"
   EligibilityCheck ||--o{ EligibilityCheckCommercial : Commercials
   EligibilityCheck ||--o{ EligibilityCheckResidential : Residentials
   EligibilityCheck ||--o{ EligibilityCheckRunoffSource : SecondarySources
