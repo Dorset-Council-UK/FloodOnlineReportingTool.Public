@@ -26,6 +26,6 @@ erDiagram
 
 ## Where it is used
 
-- [EligiblityCheck](EligiblityCheck.md)
+- [EligibilityCheck](EligibilityCheck.md)
 - [FloodAuthority](FloodAuthority.md)
 - [Investigation](Investigation.md)

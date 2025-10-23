@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Investigation represents investigations carried out by ??, for example grants.
+The Investigation represents investigations carried out by the relevant authority, for example grants.
 
 ## Simple relationships
 
