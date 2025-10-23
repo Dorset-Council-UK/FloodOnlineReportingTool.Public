@@ -13,14 +13,6 @@
     </NotAuthorized>
 </AuthorizeView>
 
-<p>You can choose add further contacts at this point but please note they will all recieve notifications about this report.</p>
-
-<p>
-    <a href="@FloodReportPages.Overview.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
-        Save your contacts
-    </a>
-</p>
-
 @if (_isLoading)
 {
     <GdsSpinner Show="_isLoading" />
@@ -33,6 +25,14 @@ else if (_floodReportId == Guid.Empty)
 }
 else
 {
+    <p>You can choose add further contacts at this point but please note they will all recieve notifications about this report.</p>
+
+    <p>
+        <a href="@FloodReportPages.Overview.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
+            Save your contacts
+        </a>
+    </p>
+
     <div class="govuk-grid-row">
         
     <AuthorizeView Context="authContext">
