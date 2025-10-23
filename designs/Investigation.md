@@ -14,18 +14,18 @@ config:
 erDiagram
   Investigation {
     Guid Id PK
+    Guid BeginId "FloodProblem"
+    Guid WaterSpeedId "FloodProblem"
+    Guid AppearanceId "FloodProblem"
+    Guid WereVehiclesDamagedId "RecordStatus"
+    Guid WhenWaterEnteredKnownId "RecordStatus"
+    Guid IsPeakDepthKnownId "RecordStatus"
+    Guid FloodlineId "RecordStatus"
+    Guid WarningReceivedId "RecordStatus"
+    Guid WarningTimelyId "RecordStatus"
+    Guid WarningAppropriateId "RecordStatus"
+    Guid HistoryOfFloodingId "RecordStatus"
   }
-  Investigation ||--|| FloodProblem : BeginId
-  Investigation ||--|| FloodProblem : WaterSpeedId
-  Investigation ||--|| FloodProblem : AppearanceId
-  Investigation ||--|| RecordStatus : WereVehiclesDamagedId
-  Investigation ||--o| RecordStatus : WhenWaterEnteredKnownId
-  Investigation ||--|| RecordStatus : IsPeakDepthKnownId
-  Investigation ||--|| RecordStatus : FloodlineId
-  Investigation ||--|| RecordStatus : WarningReceivedId
-  Investigation ||--o| RecordStatus : WarningTimelyId
-  Investigation ||--o| RecordStatus : WarningAppropriateId
-  Investigation ||--|| RecordStatus : HistoryOfFloodingId
   Investigation ||--o{ InvestigationDestination : Destinations
   Investigation ||--o{ InvestigationEntry : "Entries (how the water entered)"
   Investigation ||--o{ InvestigationCommunityImpact : CommunityImpacts
