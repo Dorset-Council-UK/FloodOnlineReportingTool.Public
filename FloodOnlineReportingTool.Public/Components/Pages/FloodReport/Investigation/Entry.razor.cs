@@ -1,4 +1,6 @@
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -76,8 +78,8 @@ public partial class Entry(
 
     private async Task OnValidSubmit()
     {
-        var otherEntrySelected = Model.EntryOptions.Any(option => option.Selected && option.Value.Equals(Database.Models.FloodProblemIds.FloodEntryIds.Other));
-        var hasOther = Model.EntryOptions.Any(option => option.Value.Equals(Database.Models.FloodProblemIds.FloodEntryIds.Other));
+        var otherEntrySelected = Model.EntryOptions.Any(option => option.Selected && option.Value.Equals(FloodEntryIds.Other));
+        var hasOther = Model.EntryOptions.Any(option => option.Value.Equals(FloodEntryIds.Other));
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
@@ -117,7 +119,7 @@ public partial class Entry(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == Database.Models.FloodProblemIds.FloodEntryIds.NotSure;
+        var isExclusive = floodProblem.Id == FloodEntryIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

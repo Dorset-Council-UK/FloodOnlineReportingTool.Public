@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Investigate;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 

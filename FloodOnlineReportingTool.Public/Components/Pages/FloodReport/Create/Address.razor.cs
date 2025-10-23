@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.API;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -8,7 +9,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using static FloodOnlineReportingTool.Database.Repositories.SearchRepository;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -181,7 +181,7 @@ public partial class Address(
 
             _isSearching = true;
             var referer = navigationManager.ToAbsoluteUri("");
-            return await searchRepository.AddressSearch(Model.Postcode, SearchArea.dorset, referer, _cts.Token);
+            return await searchRepository.AddressSearch(Model.Postcode, SearchAreaOptions.dorset, referer, _cts.Token);
         }
         catch (ConfigurationMissingException ex)
         {

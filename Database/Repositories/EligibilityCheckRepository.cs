@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -232,7 +233,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         }
 
         // The user has indicated that the flood duration is known
-        if (durationKnownId == Models.FloodProblemIds.FloodDurationIds.DurationKnown)
+        if (durationKnownId == FloodDurationIds.DurationKnown)
         {
             logger.LogInformation("Impact duration is known, using provided impact duration hours.");
             return impactDurationHours ?? 0;

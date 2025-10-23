@@ -1,5 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Status;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 

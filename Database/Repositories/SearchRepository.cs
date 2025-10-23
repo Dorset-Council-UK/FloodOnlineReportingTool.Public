@@ -1,5 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.API;
 using FloodOnlineReportingTool.Database.Settings;
 using Microsoft.Extensions.Options;
 using System.Globalization;
@@ -25,18 +25,12 @@ public class SearchRepository : ISearchRepository
         };
     }
 
-    public enum SearchArea
-    {
-        dorset,
-        uk,
-    };
-
     /// <summary>
     /// Create a search URI using the search term, URL and the API key from configuration.
     /// </summary>
     /// <param name="searchTerm">The search term, for instance postcode or UPRN</param>
     /// <exception cref="ConfigurationMissingException">If the search URI or API key are not set in the settings</exception>
-    private Uri CreateAddressSearchUri(string searchTerm, SearchArea searchArea)
+    private Uri CreateAddressSearchUri(string searchTerm, SearchAreaOptions searchArea)
     {
         // Throw an error if the search URI or API key are not set
         var searchUri = _settings.AddressSearchUrl
@@ -64,7 +58,7 @@ public class SearchRepository : ISearchRepository
     /// <param name="easting" />
     /// <param name="northing" />
     /// <exception cref="ConfigurationMissingException">If the nearest addresses URI or API key are not set in the settings</exception>
-    private Uri CreateNearestAddressUri(double easting, double northing, SearchArea searchArea)
+    private Uri CreateNearestAddressUri(double easting, double northing, SearchAreaOptions searchArea)
     {
         // Throw an error if the search URI or API key are not set
         var nearestAddressesUri = _settings.NearestAddressesUrl
@@ -99,7 +93,7 @@ public class SearchRepository : ISearchRepository
         return response;
     }
 
-    public async Task<IList<ApiAddress>> AddressSearch(string postcode, SearchArea searchArea, Uri? referer, CancellationToken ct)
+    public async Task<IList<ApiAddress>> AddressSearch(string postcode, SearchAreaOptions searchArea, Uri? referer, CancellationToken ct)
     {
         var response = await GetResponse(CreateAddressSearchUri(postcode, searchArea), referer, ct)
             .ConfigureAwait(false);
@@ -122,7 +116,7 @@ public class SearchRepository : ISearchRepository
     /// <summary>
     /// Get the nearest address response to the given easting and northing.
     /// </summary>
-    public async Task<HttpResponseMessage?> GetNearestAddressResponse(double easting, double northing, SearchArea searchArea, Uri? referer, CancellationToken ct)
+    public async Task<HttpResponseMessage?> GetNearestAddressResponse(double easting, double northing, SearchAreaOptions searchArea, Uri? referer, CancellationToken ct)
     {
         var response = await GetResponse(CreateNearestAddressUri(easting, northing, searchArea), referer, ct)
             .ConfigureAwait(false);
@@ -133,7 +127,7 @@ public class SearchRepository : ISearchRepository
     /// <summary>
     /// Health check to see if the address search is available.
     /// </summary>
-    public async Task IsAddressSearchAvailable(Uri? referer, SearchArea searchArea, CancellationToken ct)
+    public async Task IsAddressSearchAvailable(Uri? referer, SearchAreaOptions searchArea, CancellationToken ct)
     {
         var response = await GetResponse(CreateAddressSearchUri("", searchArea), referer, ct)
             .ConfigureAwait(false);
@@ -148,7 +142,7 @@ public class SearchRepository : ISearchRepository
     /// <summary>
     /// Health check to see if the nearest address is available.
     /// </summary>
-    public async Task IsNearestAddressAvailable(Uri? referer, SearchArea searchArea, CancellationToken ct)
+    public async Task IsNearestAddressAvailable(Uri? referer, SearchAreaOptions searchArea, CancellationToken ct)
     {
         var response = await GetResponse(CreateNearestAddressUri(0, 0, searchArea), referer, ct)
             .ConfigureAwait(false);

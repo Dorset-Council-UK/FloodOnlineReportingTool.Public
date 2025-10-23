@@ -1,5 +1,8 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Responsibilities;
+using FloodOnlineReportingTool.Database.Models.Status;
 
 namespace FloodOnlineReportingTool.Database.Seed;
 
@@ -212,44 +215,44 @@ internal static class InitialData
             new FloodProblem(SecondaryCauseIds.NotSure, FloodProblemCategory.SecondaryCause, "Not Sure", "I don't know which option is right", 99),
 
             // Investigation form, appearance
-            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.Clear, FloodProblemCategory.Appearance, "Clear", "The water was clear / clean", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.Muddy, FloodProblemCategory.Appearance, "Muddy", "The water was muddy / cloudy", 2),
-            new FloodProblem(Models.FloodProblemIds.FloodAppearanceIds.PollutedWithSewage, FloodProblemCategory.Appearance, "Polluted with sewage", "The water had sewage in it", 3),
+            new FloodProblem(FloodAppearanceIds.Clear, FloodProblemCategory.Appearance, "Clear", "The water was clear / clean", 1),
+            new FloodProblem(FloodAppearanceIds.Muddy, FloodProblemCategory.Appearance, "Muddy", "The water was muddy / cloudy", 2),
+            new FloodProblem(FloodAppearanceIds.PollutedWithSewage, FloodProblemCategory.Appearance, "Polluted with sewage", "The water had sewage in it", 3),
 
             // Investigation form, flood water onset
-            new FloodProblem(Models.FloodProblemIds.FloodOnsetIds.Suddenly, FloodProblemCategory.WaterOnset, "Suddenly", "The water came rapidly (flash flooding)", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodOnsetIds.Gradually, FloodProblemCategory.WaterOnset, "Gradually", "The water rose gradually", 2),
+            new FloodProblem(FloodOnsetIds.Suddenly, FloodProblemCategory.WaterOnset, "Suddenly", "The water came rapidly (flash flooding)", 1),
+            new FloodProblem(FloodOnsetIds.Gradually, FloodProblemCategory.WaterOnset, "Gradually", "The water rose gradually", 2),
 
             // Investigation form, water speed
-            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Fast, FloodProblemCategory.Speed, "Fast", "The water was flowing fast", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Slow, FloodProblemCategory.Speed, "Slow (walking pace)", "The water was flowing slowly", 2),
-            new FloodProblem(Models.FloodProblemIds.FloodSpeedIds.Still, FloodProblemCategory.Speed, "Still", "The water was not flowing / still", 3),
+            new FloodProblem(FloodSpeedIds.Fast, FloodProblemCategory.Speed, "Fast", "The water was flowing fast", 1),
+            new FloodProblem(FloodSpeedIds.Slow, FloodProblemCategory.Speed, "Slow (walking pace)", "The water was flowing slowly", 2),
+            new FloodProblem(FloodSpeedIds.Still, FloodProblemCategory.Speed, "Still", "The water was not flowing / still", 3),
 
             // Duration - Water duration replaced with int for number of days and boolean for ongoing however we still use the radios as a helper
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration1, FloodProblemCategory.Duration, "1", "Less than 1 hour", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration24, FloodProblemCategory.Duration, "24", "1 hour to 24 hours", 2),
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration168, FloodProblemCategory.Duration, "168", "24 hours to 1 week", 3),
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.Duration744, FloodProblemCategory.Duration, "744", "More than 1 week", 4),
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.DurationKnown, FloodProblemCategory.Duration, null, "I know how many days/hours", 5),
-            new FloodProblem(Models.FloodProblemIds.FloodDurationIds.DurationNotSure, FloodProblemCategory.Duration, "48", "Not Sure", 99),
+            new FloodProblem(FloodDurationIds.Duration1, FloodProblemCategory.Duration, "1", "Less than 1 hour", 1),
+            new FloodProblem(FloodDurationIds.Duration24, FloodProblemCategory.Duration, "24", "1 hour to 24 hours", 2),
+            new FloodProblem(FloodDurationIds.Duration168, FloodProblemCategory.Duration, "168", "24 hours to 1 week", 3),
+            new FloodProblem(FloodDurationIds.Duration744, FloodProblemCategory.Duration, "744", "More than 1 week", 4),
+            new FloodProblem(FloodDurationIds.DurationKnown, FloodProblemCategory.Duration, null, "I know how many days/hours", 5),
+            new FloodProblem(FloodDurationIds.DurationNotSure, FloodProblemCategory.Duration, "48", "Not Sure", 99),
 
             // Water Entry
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Door, FloodProblemCategory.Entry, "Door", "The water came through a door", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Windows, FloodProblemCategory.Entry, "Windows", "The water came through a window", 2),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Airbrick, FloodProblemCategory.Entry, "Airbrick", "The water came through an airbrick or vent", 3),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Walls, FloodProblemCategory.Entry, "Walls", "The water came through the walls", 4),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.ThroughFloor, FloodProblemCategory.Entry, "Through Floor", "The water came up through the floor", 5),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.ExternalOnly, FloodProblemCategory.Entry, "External Only", "The water came up to the property but did not enter", 6),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.Other, FloodProblemCategory.Entry, "Other", "None of the options are correct", 7),
-            new FloodProblem(Models.FloodProblemIds.FloodEntryIds.NotSure, FloodProblemCategory.Entry, "Not Sure", "I don't know which option is right", 99),
+            new FloodProblem(FloodEntryIds.Door, FloodProblemCategory.Entry, "Door", "The water came through a door", 1),
+            new FloodProblem(FloodEntryIds.Windows, FloodProblemCategory.Entry, "Windows", "The water came through a window", 2),
+            new FloodProblem(FloodEntryIds.Airbrick, FloodProblemCategory.Entry, "Airbrick", "The water came through an airbrick or vent", 3),
+            new FloodProblem(FloodEntryIds.Walls, FloodProblemCategory.Entry, "Walls", "The water came through the walls", 4),
+            new FloodProblem(FloodEntryIds.ThroughFloor, FloodProblemCategory.Entry, "Through Floor", "The water came up through the floor", 5),
+            new FloodProblem(FloodEntryIds.ExternalOnly, FloodProblemCategory.Entry, "External Only", "The water came up to the property but did not enter", 6),
+            new FloodProblem(FloodEntryIds.Other, FloodProblemCategory.Entry, "Other", "None of the options are correct", 7),
+            new FloodProblem(FloodEntryIds.NotSure, FloodProblemCategory.Entry, "Not Sure", "I don't know which option is right", 99),
 
             // Water Destination
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.River, FloodProblemCategory.Destination, "River", "The flood water was flowing into a main river", 1),
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.StreamOrWatercourse, FloodProblemCategory.Destination, "Stream / Watercourse", "The flood water was flowing into a stream of watercourse (not a main river)", 2),
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.TheSea, FloodProblemCategory.Destination, "The Sea", "The flood water was flowing into the sea", 3),
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.DitchesAndDrainageChannels, FloodProblemCategory.Destination, "Ditches and drainage channels", "The flood water was flowing into a ditch or channel", 4),
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.RoadDrainage, FloodProblemCategory.Destination, "Road drainage", "The flood water was flowing into road drains", 5),
-            new FloodProblem(Models.FloodProblemIds.FloodDestinationIds.NotSure, FloodProblemCategory.Destination, "Not Sure", "I don't know which option is right", 99),
+            new FloodProblem(FloodDestinationIds.River, FloodProblemCategory.Destination, "River", "The flood water was flowing into a main river", 1),
+            new FloodProblem(FloodDestinationIds.StreamOrWatercourse, FloodProblemCategory.Destination, "Stream / Watercourse", "The flood water was flowing into a stream of watercourse (not a main river)", 2),
+            new FloodProblem(FloodDestinationIds.TheSea, FloodProblemCategory.Destination, "The Sea", "The flood water was flowing into the sea", 3),
+            new FloodProblem(FloodDestinationIds.DitchesAndDrainageChannels, FloodProblemCategory.Destination, "Ditches and drainage channels", "The flood water was flowing into a ditch or channel", 4),
+            new FloodProblem(FloodDestinationIds.RoadDrainage, FloodProblemCategory.Destination, "Road drainage", "The flood water was flowing into road drains", 5),
+            new FloodProblem(FloodDestinationIds.NotSure, FloodProblemCategory.Destination, "Not Sure", "I don't know which option is right", 99),
         ];
     }
 

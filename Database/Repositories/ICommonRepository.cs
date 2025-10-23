@@ -1,4 +1,7 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Responsibilities;
+using FloodOnlineReportingTool.Database.Models.Status;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 

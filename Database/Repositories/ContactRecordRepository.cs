@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 

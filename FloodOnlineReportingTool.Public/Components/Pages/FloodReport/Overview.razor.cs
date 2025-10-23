@@ -22,7 +22,7 @@ public partial class Overview(
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
     private Guid _floodReportId = Guid.Empty;
-    private Database.Models.FloodReport? _floodReport;
+    private Database.Models.Flood.FloodReport? _floodReport;
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
 

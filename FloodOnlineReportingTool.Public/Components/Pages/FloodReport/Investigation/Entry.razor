@@ -1,5 +1,6 @@
 ﻿@page "/floodreport/investigation/entry"
 @using FloodOnlineReportingTool.Database.Models
+@using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
@@ -37,7 +38,7 @@
                         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                             @foreach (var option in Model.EntryOptions)
                             {
-                                var conditionalId = option.Value == Database.Models.FloodProblemIds.FloodEntryIds.Other ? "conditional-other" : null;
+                                var conditionalId = option.Value == FloodEntryIds.Other ? "conditional-other" : null;
                                 <GdsCheckbox Option="option" ConditionalId="@conditionalId" />
                                 if (conditionalId != null)
                                 {

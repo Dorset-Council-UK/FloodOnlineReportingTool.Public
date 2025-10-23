@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
