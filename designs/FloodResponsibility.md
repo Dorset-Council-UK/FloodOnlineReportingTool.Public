@@ -17,6 +17,16 @@ erDiagram
   FloodResponsibility ||--o{ Organisation : "OrganisationId"
 ```
 
+## Relationships overview
+
+```mermaid
+erDiagram
+  FloodResponsibility ||--o{ Organisation : "OrganisationId"
+  Organisation ||--|| FloodAuthority : "FloodAuthorityId"
+  FloodAuthority ||--o{ FloodAuthorityFloodProblem : ""
+  FloodAuthorityFloodProblem ||--|| FloodProblem : ""
+```
+
 ## Where it is used
 
 - CommonRepository > GetResponsibleOrganisations()

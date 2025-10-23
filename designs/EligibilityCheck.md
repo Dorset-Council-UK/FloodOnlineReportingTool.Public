@@ -8,6 +8,10 @@ This is the information saved when someone completes the online flood report for
 ## Simple relationships
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 erDiagram
   EligibilityCheck {
     Guid Id PK
