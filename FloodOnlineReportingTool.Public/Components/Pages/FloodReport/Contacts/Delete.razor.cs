@@ -7,7 +7,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Linq;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -59,7 +58,7 @@ public partial class Delete(
 
     protected override async Task OnInitializedAsync()
     {
-        
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -90,7 +89,7 @@ public partial class Delete(
     private async Task<ContactModel?> GetContact()
     {
         var contactResult = await contactRepository.GetContactById(ContactId, _cts.Token).ConfigureAwait(false);
-        if (contactResult == null )
+        if (contactResult == null)
         {
             return null;
         }
@@ -113,7 +112,7 @@ public partial class Delete(
 
         try
         {
-            await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value , _cts.Token);
+            await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value, _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

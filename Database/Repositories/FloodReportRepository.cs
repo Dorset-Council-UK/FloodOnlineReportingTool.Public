@@ -5,9 +5,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -169,7 +167,7 @@ public class FloodReportRepository(
         var now = DateTimeOffset.UtcNow;
 
         var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
-        
+
         var floodReport = new FloodReport
         {
             Reference = CreateReference(),

@@ -119,7 +119,7 @@ public partial class FloodAreas(
         var createExtraData = await GetCreateExtraData();
 
         // We need to clear any temporary address data that might be stored if they click No
-        bool runTemporaryAddress = Model.IsUninhabitable is null? false : (bool)Model.IsUninhabitable;
+        bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
         var updated = runTemporaryAddress ? eligibilityCheck with
         {
             Uninhabitable = Model.IsUninhabitable,
@@ -144,7 +144,7 @@ public partial class FloodAreas(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        
+
         var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
         navigationManager.NavigateTo(nextPage.Url);
     }

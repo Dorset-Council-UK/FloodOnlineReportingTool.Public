@@ -10,7 +10,7 @@ public static class FloodSpeedIds
     public readonly static Guid Still = new("018fe169-36c0-7e6d-ac4d-83265c6a3fa6");
 
     public readonly static ImmutableHashSet<Guid> All = [
-        Fast, 
+        Fast,
         Slow,
         Still
     ];

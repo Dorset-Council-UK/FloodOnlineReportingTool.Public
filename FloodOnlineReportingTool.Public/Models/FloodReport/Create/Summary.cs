@@ -6,7 +6,7 @@ public class Summary
 
     public IReadOnlyCollection<string> FloodSources { get; set; } = [];
     public IReadOnlyCollection<string>? FloodSecondarySources { get; set; } = [];
-    public bool IsAddress {  get; set; }
+    public bool IsAddress { get; set; }
 
     public string? AddressPreview { get; set; }
 

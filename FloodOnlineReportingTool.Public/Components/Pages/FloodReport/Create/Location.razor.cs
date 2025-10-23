@@ -76,7 +76,7 @@ public partial class Location(
 
             _isLoading = false;
             StateHasChanged();
-        } 
+        }
     }
 
     private async Task LoadJavaScriptAndMap()
@@ -209,7 +209,7 @@ public partial class Location(
         var eligibilityCheck = await GetEligibilityCheck();
         ExtraData? updatedExtraData = null;
         bool propertyTypeReset = false;
-        if ( Model.IsAddress)
+        if (Model.IsAddress)
         {
             Model.Postcode = await GetPostcodeFromLocation();
 
@@ -221,7 +221,8 @@ public partial class Location(
             };
             propertyTypeReset = true;
 
-        } else if((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
+        }
+        else if ((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
         {
             //They changed the location so we reset the property type option
             updatedExtraData = createExtraData with
@@ -245,7 +246,7 @@ public partial class Location(
             Easting = Model.Easting!.Value,
             Northing = Model.Northing!.Value,
             LocationDesc = Model.LocationDesc,
-            
+
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
@@ -269,7 +270,7 @@ public partial class Location(
         {
             return FloodReportCreatePages.Address;
         }
-        
+
         return FloodReportCreatePages.PropertyType;
     }
 

@@ -10,7 +10,7 @@
 public record ContactRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
-    
+
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }

@@ -1,9 +1,6 @@
 ﻿using FloodOnlineReportingTool.Public.Authentication;
-using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Web;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure

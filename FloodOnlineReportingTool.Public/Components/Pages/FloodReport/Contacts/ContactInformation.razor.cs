@@ -18,7 +18,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
 
     [Parameter]
     public bool SummaryCard { get; set; } = false;
-    
+
     [Parameter]
     public bool ViewOnly { get; set; } = false;
 

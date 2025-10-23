@@ -85,7 +85,8 @@ public partial class TemporarySelectPostcode(
             {
                 TemporaryPostcode = Model.Postcode?.ToUpperInvariant(),
             };
-        } else
+        }
+        else
         {
             updatedExtraData = createExtraData with
             {

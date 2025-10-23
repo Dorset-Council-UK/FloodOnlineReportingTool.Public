@@ -1,14 +1,10 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using static MassTransit.ValidationResultExtensions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -105,6 +101,6 @@ public partial class Confirmation(
             await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
         }
 
-        
+
     }
 }

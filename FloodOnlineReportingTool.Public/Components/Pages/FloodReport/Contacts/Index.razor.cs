@@ -6,7 +6,6 @@ using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -71,7 +70,7 @@ public partial class Index(
             //Due to time taken to reach this we need to use the bigger push to ensure the page re-renders now
             await InvokeAsync(StateHasChanged);
         }
-        
-        
+
+
     }
 }

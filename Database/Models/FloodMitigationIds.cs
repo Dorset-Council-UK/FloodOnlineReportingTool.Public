@@ -7,7 +7,7 @@
 public static class FloodMitigationIds
 {
     // Actions taken Id's
-    public readonly static Guid NoActionTaken =new("018fdb65-4c00-7552-bcf3-0a398a590464");
+    public readonly static Guid NoActionTaken = new("018fdb65-4c00-7552-bcf3-0a398a590464");
     public readonly static Guid Sandbags = new("018fdb66-3660-70ed-af58-61a95da37750");
     public readonly static Guid SandlessSandbag = new("018fdb67-20c0-7c09-8aa3-818bc80648f6");
     public readonly static Guid BoardsGate = new("018fdb68-0b20-7840-bbb4-4cc1120720ac");

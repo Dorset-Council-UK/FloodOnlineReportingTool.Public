@@ -20,7 +20,8 @@ public class SessionStateService
         {
             var storedId = await _sessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId).ConfigureAwait(false);
             return storedId.Success ? storedId.Value : Guid.Empty;
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex.Message);
             return Guid.Empty;

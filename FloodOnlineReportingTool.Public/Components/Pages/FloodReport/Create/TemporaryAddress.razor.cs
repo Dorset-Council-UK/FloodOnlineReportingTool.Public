@@ -112,7 +112,7 @@ public partial class TemporaryAddress(
                 nextPageUrl += "?fromsummary=true";
             }
             navigationManager.NavigateTo(nextPageUrl);
-        } 
+        }
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -161,7 +161,8 @@ public partial class TemporaryAddress(
             logger.LogDebug("Non address query so not searching");
             _isSearching = false;
             return [];
-        } else if (string.IsNullOrWhiteSpace(Model.Postcode))
+        }
+        else if (string.IsNullOrWhiteSpace(Model.Postcode))
         {
             logger.LogDebug("No postcode, not searching");
             _isSearching = false;

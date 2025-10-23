@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
-using System.Net.Mail;
 
 namespace FloodOnlineReportingTool.Public.Services;
 

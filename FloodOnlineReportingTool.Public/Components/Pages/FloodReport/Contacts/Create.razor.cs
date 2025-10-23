@@ -88,7 +88,7 @@ public partial class Create(
                 var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                 if (!string.IsNullOrWhiteSpace(email))
                 {
-                    _contactModel.EmailAddress = string.IsNullOrWhiteSpace(_contactModel.EmailAddress) ? email : _contactModel.EmailAddress ;
+                    _contactModel.EmailAddress = string.IsNullOrWhiteSpace(_contactModel.EmailAddress) ? email : _contactModel.EmailAddress;
                 }
 
             }
@@ -98,7 +98,7 @@ public partial class Create(
         _isLoading = false;
     }
 
-    
+
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
     {

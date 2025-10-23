@@ -2,7 +2,6 @@
 using FloodOnlineReportingTool.Database.Models;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using static MassTransit.ValidationResultExtensions;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -93,12 +92,13 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         if (existingLink == true)
         {
             throw new InvalidOperationException($"FloodReport already has a contact of type {dto.ContactType}.");
-        } else
+        }
+        else
         {
             // Link the contact to the flood report
             floodReport.ExtraContactRecords.Add(contactRecord);
             await context.SaveChangesAsync().ConfigureAwait(false);
-        } 
+        }
 
         // Publish a created message to the message system
         var message = contactRecord.ToMessageCreated(floodReport.Reference);
@@ -118,8 +118,8 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
     {
 
         var contactRecord = await context.ContactRecords
-            .Where(fc => fc.ContactUserId == userId && 
-                        fc.Id == id && 
+            .Where(fc => fc.ContactUserId == userId &&
+                        fc.Id == id &&
                         fc.ContactType == dto.ContactType)
             .Include(fc => fc.FloodReports)
             .FirstOrDefaultAsync(ct)
@@ -184,7 +184,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             await publishEndpoint
                 .Publish(message, ct)
                 .ConfigureAwait(false);
-        } 
+        }
 
         // Remove the contact record and add the message to the database
         await context
@@ -204,7 +204,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             .ToListAsync(ct)
             .ConfigureAwait(false);
 
-        return [..Enum.GetValues<ContactRecordType>().Where(o => o != ContactRecordType.Unknown && !usedRecordTypes.Contains(o))];
+        return [.. Enum.GetValues<ContactRecordType>().Where(o => o != ContactRecordType.Unknown && !usedRecordTypes.Contains(o))];
     }
 
     public async Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct)

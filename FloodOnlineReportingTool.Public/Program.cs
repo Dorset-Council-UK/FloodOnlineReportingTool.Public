@@ -1,4 +1,3 @@
-using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
@@ -93,7 +92,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler(GeneralPages.Error.Url, createScopeForErrors: true);
-    app.UseHsts(); 
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();

@@ -2,7 +2,6 @@
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -15,7 +14,7 @@ public partial class Overview(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportPages.Overview.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [ GeneralPages.Home.ToGdsBreadcrumb() ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [GeneralPages.Home.ToGdsBreadcrumb()];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }

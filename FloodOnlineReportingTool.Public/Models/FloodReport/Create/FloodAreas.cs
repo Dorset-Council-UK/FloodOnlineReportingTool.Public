@@ -7,7 +7,7 @@ public class FloodAreas
     public bool ShowResidential { get; set; }
 
     public bool ShowCommercial { get; set; }
-    
+
     [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
     public IReadOnlyCollection<GdsOptionItem<Guid>> ResidentialOptions { get; set; } = [];
 

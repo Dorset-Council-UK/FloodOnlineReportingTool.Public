@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
-using static FloodOnlineReportingTool.Database.Repositories.SearchRepository;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -26,7 +25,8 @@ public class SearchRepository : ISearchRepository
         };
     }
 
-    public enum SearchArea{
+    public enum SearchArea
+    {
         dorset,
         uk,
     };
@@ -41,7 +41,7 @@ public class SearchRepository : ISearchRepository
         // Throw an error if the search URI or API key are not set
         var searchUri = _settings.AddressSearchUrl
             ?? throw new ConfigurationMissingException("Missing configuration setting: The search URL is not set in the settings. Under GIS > AddressSearchUrl");
-        
+
         if (_settings.ApiKey is null)
         {
             throw new ConfigurationMissingException("Missing configuration setting: The GIS API key not set in the settings. Under GIS > ApiKey");
