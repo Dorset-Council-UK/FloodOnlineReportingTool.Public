@@ -1,7 +1,8 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
-using FloodOnlineReportingTool.Database.Models.Status;
+
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 

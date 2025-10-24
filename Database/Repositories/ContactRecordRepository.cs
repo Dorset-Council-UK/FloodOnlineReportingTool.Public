@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using MassTransit;
@@ -102,10 +103,11 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Publish a created message to the message system
-        var message = contactRecord.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint
-            .Publish(message, ct)
-            .ConfigureAwait(false);
+        // TODO: replace this function
+        //var message = contactRecord.ToMessageCreated(floodReport.Reference);
+        //await publishEndpoint
+        //    .Publish(message, ct)
+        //    .ConfigureAwait(false);
 
         // Add the contact record to the flood report and the message to the database
         await context
@@ -147,10 +149,11 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         // Publish a created message to the message system
         foreach (FloodReport floodReport in contactRecord.FloodReports)
         {
-            var message = contactRecord.ToMessageUpdated(floodReport.Reference);
-            await publishEndpoint
-                .Publish(message, ct)
-                .ConfigureAwait(false);
+            // TODO: replace this function
+            //var message = contactRecord.ToMessageUpdated(floodReport.Reference);
+            //await publishEndpoint
+            //    .Publish(message, ct)
+            //    .ConfigureAwait(false);
         }
 
         // Update the contact record and add the message to the database
@@ -181,10 +184,11 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         // Publish a deleted message to the message system
         foreach (FloodReport floodReport in contactRecord.FloodReports)
         {
-            var message = contactRecord.ToMessageDeleted(floodReport.Reference);
-            await publishEndpoint
-                .Publish(message, ct)
-                .ConfigureAwait(false);
+            // TODO: replace this function
+            //var message = contactRecord.ToMessageDeleted(floodReport.Reference);
+            //await publishEndpoint
+            //    .Publish(message, ct)
+            //    .ConfigureAwait(false);
         }
 
         // Remove the contact record and add the message to the database

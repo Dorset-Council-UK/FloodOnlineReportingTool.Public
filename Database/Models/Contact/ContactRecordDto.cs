@@ -1,4 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+
+namespace FloodOnlineReportingTool.Database.Models.Contact;
 
 /// <summary>
 ///  A data transfer object representing a contact record. Only the data which can be changed.
