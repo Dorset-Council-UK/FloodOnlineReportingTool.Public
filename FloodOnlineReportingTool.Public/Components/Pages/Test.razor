@@ -124,14 +124,15 @@
 <div>
     <h2 class="govuk-heading-l">Create flood report pages</h2>
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-        <ol class="govuk-breadcrumbs__list">
+        <ol style="display:flex; flex-wrap:wrap;" class="govuk-breadcrumbs__list">
             @foreach (var info in _floodReportCreatePages)
             {
-                <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @info.Note</a></li>
+                string MarkupNote = info.Note != null ? info.Note.ToString(): "";
+                <li class= "govuk-breadcrumbs__list-item"><a class= "govuk-breadcrumbs__link" href = "@info.Url"> @info.Title  @((MarkupString)MarkupNote)</a></li>
             }
         </ol>
     </nav>
-    <div class="govuk-inset-text">* User may pass through one or both pages</div>
+    <GdsInsetText Text="1. ^ User may pass through one or both pages"></GdsInsetText>
 </div>
 
 <div>

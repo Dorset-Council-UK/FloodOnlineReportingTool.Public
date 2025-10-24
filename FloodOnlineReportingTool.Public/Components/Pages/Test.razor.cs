@@ -23,12 +23,12 @@ public partial class Test(
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _floodReportCreatePages = [
         new (FloodReportCreatePages.Home),
-        new (FloodReportCreatePages.Location, "(optional*)"),
-        new (FloodReportCreatePages.Address, "(optional*)"),
+        new (FloodReportCreatePages.Location, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.Address, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.PropertyType),
         new (FloodReportCreatePages.FloodAreas),
-        new (FloodReportCreatePages.TemporaryPostcode, "(optional*)"),
-        new (FloodReportCreatePages.TemporaryAddress, "(optional*)"),
+        new (FloodReportCreatePages.TemporaryPostcode, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.TemporaryAddress, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.Vulnerability),
         new (FloodReportCreatePages.FloodStarted),
         new (FloodReportCreatePages.FloodDuration, "(optional)"),
