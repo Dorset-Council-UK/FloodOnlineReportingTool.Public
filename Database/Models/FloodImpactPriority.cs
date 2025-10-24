@@ -1,7 +1,7 @@
 ﻿namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
-/// Some of the flood impact category priorities.
+/// The flood impact category priorities.
 /// Helps ensure consistency.
 /// </summary>
 public static class FloodImpactPriority

@@ -15,16 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "designs", "designs", "{5762052E-024C-4F6B-89A6-493F6663D8A2}"
-	ProjectSection(SolutionItems) = preProject
-		designs\authentication flow.drawio = designs\authentication flow.drawio
-		designs\data.drawio = designs\data.drawio
-		designs\flood report pages.drawio = designs\flood report pages.drawio
-		designs\flood reports.drawio = designs\flood reports.drawio
-		designs\investigation page order.drawio = designs\investigation page order.drawio
-		designs\investigation pages.drawio = designs\investigation pages.drawio
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{A427791D-89C4-4C61-98F5-795C098DE3B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{420FB74F-314A-4A67-A505-D75DCA0541B6}"
@@ -78,9 +68,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{5762052E-024C-4F6B-89A6-493F6663D8A2} = {4FCBE61B-A312-4C99-9472-F42CA5D02A4A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CF772CD8-BC77-450F-9D1B-13D27ACCBFAA}

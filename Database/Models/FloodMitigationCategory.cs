@@ -1,7 +1,7 @@
 ﻿namespace FloodOnlineReportingTool.Database.Models;
 
 /// <summary>
-/// Some of the flood mitigation categories.
+/// The flood mitigation categories.
 /// Helps ensure consistency.
 /// </summary>
 public static class FloodMitigationCategory
