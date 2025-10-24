@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -66,7 +67,7 @@ public partial class FloodSource(
 
             _isLoading = false;
             StateHasChanged();
-            
+
             await gdsJs.InitGds(_cts.Token);
         }
     }
@@ -95,11 +96,12 @@ public partial class FloodSource(
         {
             // We need to know more if they have selected this option
             navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
-        } else
+        }
+        else
         {
             // Go to the next page, which is always the summary
             navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
-        }   
+        }
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

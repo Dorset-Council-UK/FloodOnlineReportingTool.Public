@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -116,17 +117,36 @@ public partial class FloodAreas(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-        var updated = eligibilityCheck with
+        var createExtraData = await GetCreateExtraData();
+
+        // We need to clear any temporary address data that might be stored if they click No
+        bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
+        var updated = runTemporaryAddress ? eligibilityCheck with
         {
             Uninhabitable = Model.IsUninhabitable,
             Residentials = [.. Model.ResidentialOptions.Where(o => o.Selected).Select(o => o.Value)],
             Commercials = [.. Model.CommercialOptions.Where(o => o.Selected).Select(o => o.Value)],
+        } : eligibilityCheck with
+        {
+            Uninhabitable = Model.IsUninhabitable,
+            Residentials = [.. Model.ResidentialOptions.Where(o => o.Selected).Select(o => o.Value)],
+            Commercials = [.. Model.CommercialOptions.Where(o => o.Selected).Select(o => o.Value)],
+            TemporaryLocationDesc = null,
+            TemporaryUprn = null
         };
-
+        if (runTemporaryAddress == false)
+        {
+            var updatedExtraData = createExtraData with
+            {
+                TemporaryPostcode = null,
+            };
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+        }
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Vulnerability;
+
+        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
         navigationManager.NavigateTo(nextPage.Url);
     }
 

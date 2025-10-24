@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -8,6 +9,22 @@ public interface IFloodReportRepository
     /// Get a flood report, for the given user
     /// </summary>
     Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct);
+
+    /// <summary>
+    /// Get the contact record, for the given user, going via the flood report
+    /// </summary>
+    Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct);
+
+    /// <summary>
+    /// Get all contact records for the given user, going via the flood report
+    /// </summary>
+    Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct);
+
+    /// <summary>
+    /// Flood report by ID.
+    /// </summary>
+    /// <returns></returns>
+    Task<FloodReport?> GetById(Guid reference, CancellationToken ct);
 
     /// <summary>
     /// Flood report reference number, with no dashes.

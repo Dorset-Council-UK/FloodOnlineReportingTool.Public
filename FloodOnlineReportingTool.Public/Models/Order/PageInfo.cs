@@ -21,5 +21,5 @@ internal record PageInfo
         Title = title.ToString();
     }
 
-    public GdsBreadcrumb ToGdsBreadcrumb() => new (Url, Title);
+    public GdsBreadcrumb ToGdsBreadcrumb() => new(Url, Title);
 }

@@ -1,8 +1,9 @@
 ﻿using FloodOnlineReportingTool.Contracts;
-using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Responsibilities;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace FloodOnlineReportingTool.Database.Models;
+namespace FloodOnlineReportingTool.Database.Models.Eligibility;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class EligibilityCheckExtensions
@@ -123,5 +124,5 @@ public static class EligibilityCheckExtensions
         throw new NotImplementedException();
     }
 
-    
+
 }

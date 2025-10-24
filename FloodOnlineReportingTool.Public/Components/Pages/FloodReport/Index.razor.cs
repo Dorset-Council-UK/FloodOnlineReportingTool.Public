@@ -7,7 +7,7 @@ public partial class Index(IGdsJsInterop gdsJs) : IPageOrder
 {
     // Page order properties
     public string Title { get; set; } = FloodReportPages.Home.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [ GeneralPages.Home.ToGdsBreadcrumb() ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [GeneralPages.Home.ToGdsBreadcrumb()];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

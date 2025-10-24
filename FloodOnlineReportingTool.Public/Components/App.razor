@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="@Assets["FloodOnlineReportingTool.Public.styles.css"]">
     <link rel="stylesheet" href="@Assets["css/app.css"]">
     <ImportMap />
-    <HeadOutlet @rendermode="PageRenderMode" />
+    <HeadOutlet @rendermode="@PageRenderMode" />
 </head>
 
 <body class="govuk-template__body">
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
-    <Routes @rendermode="PageRenderMode" />
+    <Routes @rendermode="@PageRenderMode" />
 
     <script src="_framework/blazor.web.js"></script>
     <script type="module" src="@Assets["js/app.js"]"></script>

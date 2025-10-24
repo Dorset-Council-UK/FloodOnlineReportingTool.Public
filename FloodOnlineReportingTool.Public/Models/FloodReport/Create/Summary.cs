@@ -6,9 +6,11 @@ public class Summary
 
     public IReadOnlyCollection<string> FloodSources { get; set; } = [];
     public IReadOnlyCollection<string>? FloodSecondarySources { get; set; } = [];
-    public bool IsAddress {  get; set; }
+    public bool IsAddress { get; set; }
 
     public string? AddressPreview { get; set; }
+
+    public string? TemporaryAddressPreview { get; set; }
 
     public string? PropertyTypeName { get; set; }
 

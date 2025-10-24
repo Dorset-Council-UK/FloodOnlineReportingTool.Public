@@ -1,27 +1,32 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-public partial class ContactInformation(IContactRecordRepository contactRepository) : IAsyncDisposable
+public partial class ContactInformation(IContactRecordRepository contactRepository, ProtectedSessionStorage protectedSessionStorage) : IAsyncDisposable
 {
     [Parameter, EditorRequired]
     public required ContactModel Contact { get; set; }
 
     [Parameter]
+    public required Guid FloodReportId { get; set; }
+
+    [Parameter]
     public bool SummaryCard { get; set; } = false;
-    
+
     [Parameter]
     public bool ViewOnly { get; set; } = false;
 
+    [Parameter]
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; set; } = [];
+
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
-
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> _contactTypes = [];
     private readonly CancellationTokenSource _cts = new();
 
     public async ValueTask DisposeAsync()
@@ -42,7 +47,10 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     {
         if (!SummaryCard && !ViewOnly)
         {
-            _contactTypes = await CreateContactTypeOptions();
+            if (ContactTypes.Count == 0)
+            {
+                ContactTypes = await CreateContactTypeOptions();
+            }
         }
     }
 
@@ -54,7 +62,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
             return [];
         }
 
-        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(userId.Value, _cts.Token);
+        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(FloodReportId, _cts.Token);
         if (Contact.Id != null)
         {
             unusedRecordTypes.Add(Contact.ContactType.Value);

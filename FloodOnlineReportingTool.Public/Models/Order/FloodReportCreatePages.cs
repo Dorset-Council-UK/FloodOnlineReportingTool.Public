@@ -11,6 +11,8 @@ internal static class FloodReportCreatePages
     public static readonly PageInfo Confirmation = new(BaseUrl, "/confirmation", "Flood report complete");
     public static readonly PageInfo FloodAreas = new(BaseUrl, "/floodareas", "Flood impact");
     public static readonly PageInfo FloodDuration = new(BaseUrl, "/floodduration", "Flooding duration");
+    public static readonly PageInfo TemporaryPostcode = new(BaseUrl, "/temporarypostcode", "Find temporary address");
+    public static readonly PageInfo TemporaryAddress = new(BaseUrl, "/temporaryaddress", "Temporary address");
     public static readonly PageInfo FloodSource = new(BaseUrl, "/floodsource", "Source of the flooding");
     public static readonly PageInfo FloodSecondarySource = new(BaseUrl, "/floodsecondarysource", "Source of the flooding");
     public static readonly PageInfo FloodStarted = new(BaseUrl, "/floodstarted", "Flooding started");

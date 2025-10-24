@@ -1,5 +1,4 @@
-using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
@@ -33,20 +32,22 @@ builder.Services
 builder.Services.AddFloodReportingHealthChecks();
 
 // Setup identity
-builder.Services
-    .AddIdentityCore<FortUser>(options =>
-    {
-        options.SignIn.RequireConfirmedEmail = false;
-        options.Password.RequireDigit = false;
-        options.Password.RequiredLength = 14;
-        options.Password.RequiredUniqueChars = 0;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
-    })
-    .AddEntityFrameworkStores<UserDbContext>()
-    .AddApiEndpoints();
+
+//builder.Services
+//    .AddIdentityCore<FortUser>(options =>
+//    {
+//        options.SignIn.RequireConfirmedEmail = false;
+//        options.Password.RequireDigit = false;
+//        options.Password.RequiredLength = 14;
+//        options.Password.RequiredUniqueChars = 0;
+//        options.Password.RequireLowercase = false;
+//        options.Password.RequireNonAlphanumeric = false;
+//        options.Password.RequireUppercase = false;
+//    })
+//    .AddEntityFrameworkStores<UserDbContext>()
+//    .AddApiEndpoints();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<SessionStateService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Add Blazor services
@@ -91,7 +92,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler(GeneralPages.Error.Url, createScopeForErrors: true);
-    app.UseHsts(); 
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();

@@ -1,28 +1,28 @@
 ﻿using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
-
-[Authorize]
 public partial class Overview(
     IFloodReportRepository floodReportRepository,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportPages.Overview.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [ GeneralPages.Home.ToGdsBreadcrumb() ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [GeneralPages.Home.ToGdsBreadcrumb()];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
-    private Database.Models.FloodReport? _floodReport;
+    private Guid _floodReportId = Guid.Empty;
+    private Database.Models.Flood.FloodReport? _floodReport;
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
 
@@ -45,6 +45,7 @@ public partial class Overview(
         // Setup model and edit context
         if (_floodReport == null)
         {
+
             if (AuthenticationState == null)
             {
                 return;
@@ -62,9 +63,9 @@ public partial class Overview(
             if (_floodReport != null)
             {
                 // Check if the users access has expired
-                if (_floodReport.UserAccessUntilUtc != null)
+                if (_floodReport.ReportOwnerAccessUntil != null)
                 {
-                    _accessTimeLeft = _floodReport.UserAccessUntilUtc.Value - DateTimeOffset.UtcNow;
+                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
                     _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
                 }
             }
@@ -76,6 +77,19 @@ public partial class Overview(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token).ConfigureAwait(false);
+            if (_floodReport != null)
+            {
+                // Check if the users access has expired
+                if (_floodReport.ReportOwnerAccessUntil != null)
+                {
+                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
+                    _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
+                }
+            }
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

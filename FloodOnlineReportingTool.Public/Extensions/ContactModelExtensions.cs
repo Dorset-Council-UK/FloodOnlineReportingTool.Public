@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Contact;

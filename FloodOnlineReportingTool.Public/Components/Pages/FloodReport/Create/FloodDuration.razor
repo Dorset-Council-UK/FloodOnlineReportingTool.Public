@@ -1,5 +1,6 @@
 ﻿@page "/floodreport/create/floodduration"
 @using FloodOnlineReportingTool.Database.Models
+@using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds
 
 <PageTitle>@Title</PageTitle>
 
@@ -58,7 +59,7 @@
                     <div class="govuk-radios" data-module="govuk-radios">
                         @foreach (var option in _durationOptions)
                         {
-                            var conditionalId = option.Value == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown ? "conditional-known" : null;
+                            var conditionalId = option.Value == FloodDurationIds.DurationKnown ? "conditional-known" : null;
                             <GdsRadio Option="option" ConditionalId="@conditionalId" />
                             if (conditionalId != null)
                             {

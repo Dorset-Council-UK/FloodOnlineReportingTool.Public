@@ -1,4 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -71,7 +73,7 @@ public partial class FloodDuration(
             _isFloodOngoing = eligibilityCheck.OnGoing;
 
             Model.DurationKnownId = eligibilityCheck.DurationKnownId;
-            if (Model.DurationKnownId == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown)
+            if (Model.DurationKnownId == FloodDurationIds.DurationKnown)
             {
                 if (eligibilityCheck.ImpactDuration != null)
                 {
@@ -114,7 +116,7 @@ public partial class FloodDuration(
         var updated = eligibilityCheck with
         {
             DurationKnownId = Model.DurationKnownId,
-            ImpactDuration = Model.DurationKnownId == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown
+            ImpactDuration = Model.DurationKnownId == FloodDurationIds.DurationKnown
                 ? (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0)
                 : null,
         };
@@ -138,7 +140,7 @@ public partial class FloodDuration(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeDescription.AsSpan();
         var selected = floodProblem.Id == selectedValue;
-        var isExclusive = floodProblem.Id == Database.Models.FloodProblemIds.FloodDurationIds.DurationNotSure;
+        var isExclusive = floodProblem.Id == FloodDurationIds.DurationNotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

@@ -1,13 +1,14 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Settings;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -28,17 +29,57 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
+            .Include(o => o.ExtraContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportedByUserId == userId, ct)
+            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
             .ConfigureAwait(false);
     }
+
+    public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
+    {
+
+        return await context.FloodReports
+            .Where(fr => fr.ReportOwner != null &&
+                 fr.ReportOwner.ContactUserId == contactUserId &&
+                 fr.Id == floodReportId)
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
+    {
+
+        return await context.FloodReports
+            .Where(fc => fc.ReportOwner != null &&
+                 fc.ReportOwner.ContactUserId == contactUserId)
+            .OrderByDescending(cr => cr.CreatedUtc)
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+    }
+
+
 
     private string CreateReference()
     {
         var reference = Guid.CreateVersion7().ToString("N")[..8].ToUpperInvariant();
         logger.LogInformation("Creating a new flood report reference number {Reference}.", reference);
         return reference;
+    }
+
+    public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
+    {
+        logger.LogInformation("Getting flood report by id {Reference}.", reference);
+
+        // Include all related tables
+        return await context.FloodReports
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(o => o.EligibilityCheck)
+            .Include(o => o.Investigation)
+            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.Status)
+            .FirstOrDefaultAsync(o => o.Id == reference, ct)
+            .ConfigureAwait(false);
     }
 
     public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
@@ -51,7 +92,7 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
+            .Include(o => o.ExtraContactRecords)
             .Include(o => o.Status)
             .FirstOrDefaultAsync(o => o.Reference == reference, ct)
             .ConfigureAwait(false);
@@ -66,7 +107,7 @@ public class FloodReportRepository(
 
         var result = await context.FloodReports
             .AsNoTracking()
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => new
             {
                 o.StatusId,
@@ -102,7 +143,7 @@ public class FloodReportRepository(
             Reference = CreateReference(),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
-            UserAccessUntilUtc = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
+            ReportOwnerAccessUntil = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
         };
 
         context.FloodReports.Add(floodReport);
@@ -129,13 +170,13 @@ public class FloodReportRepository(
         var now = DateTimeOffset.UtcNow;
 
         var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
-        
+
         var floodReport = new FloodReport
         {
             Reference = CreateReference(),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
-            UserAccessUntilUtc = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
+            ReportOwnerAccessUntil = now.AddMonths(_gisSettings.AccessTokenIssueDurationMonths),
             EligibilityCheck = new()
             {
                 Id = eligibilityCheckId,
@@ -148,6 +189,8 @@ public class FloodReportRepository(
                 Easting = dto.Easting,
                 Northing = dto.Northing,
                 LocationDesc = dto.LocationDesc,
+                TemporaryUprn = dto.TemporaryUprn,
+                TemporaryLocationDesc = dto.TemporaryLocationDesc,
                 ImpactStart = dto.ImpactStart,
                 ImpactDuration = impactDuration,
                 OnGoing = dto.OnGoing,
@@ -212,7 +255,7 @@ public class FloodReportRepository(
         }
 
         // The user has indicated that the flood duration is known
-        if (durationKnownId == Models.FloodProblemIds.FloodDurationIds.DurationKnown)
+        if (durationKnownId == FloodDurationIds.DurationKnown)
         {
             logger.LogInformation("Impact duration is known, using provided impact duration hours.");
             return impactDurationHours ?? 0;

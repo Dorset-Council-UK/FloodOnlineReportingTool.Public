@@ -1,5 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Status;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +14,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         return await context.FloodReports
             .AsNoTracking()
             .Include(o => o.Investigation)
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.Investigation)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
             .ConfigureAwait(false);
@@ -23,7 +25,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         var floodReport = await context.FloodReports
             .AsNoTracking()
             .Include(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o.ReportedByUserId == userId, ct)
+            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
             .ConfigureAwait(false);
 
         if (floodReport == null)
@@ -73,7 +75,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .Include(o => o.Investigation)
-            .Where(o => o.ReportedByUserId == userId)
+            .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.Investigation)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);

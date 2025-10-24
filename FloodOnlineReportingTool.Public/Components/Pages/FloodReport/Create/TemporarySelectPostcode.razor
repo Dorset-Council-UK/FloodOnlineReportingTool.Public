@@ -1,0 +1,48 @@
+﻿@page "/floodreport/create/temporarypostcode"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit" FormName="CreateFloodReport">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFormGroup For="() => Model.PostcodeKnown" Id="location-or-address" Show="!_isLoading">
+        <InputRadioGroup @bind-Value="Model.PostcodeKnown">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h1 class="govuk-fieldset__heading">(Optional) Would you like to log where you are staying?</h1>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option and provide a postcode if required.</GdsHint>
+                    <GdsErrorMessage />
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        @foreach (var option in _postcodeKnownOptions)
+                        {
+                            var conditionalId = option.Value ? "conditional-known" : null;
+                            <GdsRadio Option="option" ConditionalId="@conditionalId" />
+                            if (conditionalId != null)
+                            {
+                                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                    <GdsFormGroup For="@(() => Model.Postcode)">
+                                        <GdsLabel Text="Please provide the postcode for the property if known" />
+                                        <GdsErrorMessage />
+                                        <GdsInputText @bind-Value=Model.Postcode class="govuk-input govuk-input--width-10" autocomplete="postal-code" />
+                                    </GdsFormGroup>
+                                </div>
+                            }
+                        }
+                    </div>
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    @if (!_isLoading)
+    {
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    }
+</EditForm>

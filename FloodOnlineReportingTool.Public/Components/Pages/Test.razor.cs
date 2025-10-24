@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -22,10 +23,12 @@ public partial class Test(
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _floodReportCreatePages = [
         new (FloodReportCreatePages.Home),
-        new (FloodReportCreatePages.Location, "(optional*)"),
-        new (FloodReportCreatePages.Address, "(optional*)"),
+        new (FloodReportCreatePages.Location, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.Address, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.PropertyType),
         new (FloodReportCreatePages.FloodAreas),
+        new (FloodReportCreatePages.TemporaryPostcode, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.TemporaryAddress, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.Vulnerability),
         new (FloodReportCreatePages.FloodStarted),
         new (FloodReportCreatePages.FloodDuration, "(optional)"),
@@ -56,13 +59,9 @@ public partial class Test(
     ];
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _accountPages = [
-        new (new($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignIn.Title)),
+        new (AccountPages.SignIn),
         new (new($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignOut.Title)),
-        new (AccountPages.Register),
-        new (AccountPages.RegisterConfirmation),
-        new (AccountPages.EmailConfirm),
-        new (AccountPages.EmailResendConfirm),
-        new (AccountPages.PasswordForgot),
+        new (AccountPages.MyAccount)
     ];
 
     private readonly CancellationTokenSource _cts = new();

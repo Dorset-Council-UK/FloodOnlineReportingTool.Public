@@ -1,20 +1,21 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    IEligibilityCheckRepository eligibilityRepository,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -32,7 +33,11 @@ public partial class Create(
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+
     private ContactModel? _contactModel;
+    private bool _isLoading;
+    private Guid _floodReportId;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -51,8 +56,10 @@ public partial class Create(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
+
         // Setup model and edit context
         if (_contactModel == null)
         {
@@ -60,7 +67,53 @@ public partial class Create(
             _editContext = new(_contactModel);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
+            ContactTypes = CreateContactTypeOptions();
         }
+
+        // Check if user is authenticated
+        if (AuthenticationState is not null)
+        {
+
+            var authState = await AuthenticationState;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                // Populate model with known user info
+                _contactModel.ContactName = string.IsNullOrWhiteSpace(_contactModel.ContactName) ? user.Identity.Name : _contactModel.ContactName;
+                var oidClaim = user.FindFirst("oid")?.Value;
+                _contactModel.ContactUserId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
+
+                // Example: populate email if available
+                var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    _contactModel.EmailAddress = string.IsNullOrWhiteSpace(_contactModel.EmailAddress) ? email : _contactModel.EmailAddress;
+                }
+
+            }
+
+        }
+
+        _isLoading = false;
+    }
+
+
+
+    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
+    {
+
+        var allTypes = Enum.GetValues<ContactRecordType>();
+
+        return [.. allTypes.Select(CreateOption)];
+    }
+
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
+    {
+        var id = contactRecordType.ToString().AsSpan();
+        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
+
+        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -68,6 +121,16 @@ public partial class Create(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+
+            while (_isLoading)
+            {
+                await Task.Yield(); // Wait for next cycle
+            }
+
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
+            ContactTypes = [.. allTypes.Select(CreateOption)];
+            StateHasChanged();
         }
     }
 
@@ -91,13 +154,14 @@ public partial class Create(
             var userId = await AuthenticationState.IdentityUserId();
             ContactRecordDto dto = new()
             {
+                UserId = null,
                 ContactType = _contactModel.ContactType.Value,
                 ContactName = _contactModel.ContactName,
                 EmailAddress = _contactModel.EmailAddress,
                 PhoneNumber = _contactModel.PhoneNumber,
             };
-            await contactRepository.CreateForUser(userId.Value, dto, _cts.Token);
-            logger.LogInformation("Contact information created successfully for user {UserId}", userId);
+            await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+            logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)

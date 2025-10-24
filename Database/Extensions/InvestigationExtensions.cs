@@ -1,7 +1,10 @@
 ﻿using FloodOnlineReportingTool.Contracts;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Status;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace FloodOnlineReportingTool.Database.Models;
+namespace FloodOnlineReportingTool.Database.Models.Investigate;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class InvestigationExtensions
@@ -23,11 +26,11 @@ internal static class InvestigationExtensions
             FloodReportReference = floodReportReference,
             Id = investigation.Id,
             CreatedUtc = investigation.CreatedUtc,
-            HasEntries = investigation.Entries.Any(o => o.FloodProblemId != FloodProblemIds.FloodEntryIds.NotSure),
+            HasEntries = investigation.Entries.Any(o => o.FloodProblemId != FloodEntryIds.NotSure),
             HasHistory = investigation.HistoryOfFloodingId == RecordStatusIds.Yes,
             HasPeakDepth = investigation.IsPeakDepthKnownId == RecordStatusIds.Yes,
             HasInternalFlooding = investigation.WhenWaterEnteredKnownId == RecordStatusIds.Yes,
-            HasDestination = investigation.Destinations.Any(o => o.FloodProblemId != FloodProblemIds.FloodDestinationIds.NotSure),
+            HasDestination = investigation.Destinations.Any(o => o.FloodProblemId != FloodDestinationIds.NotSure),
             HasDamagedVehicles = investigation.WereVehiclesDamagedId == RecordStatusIds.Yes,
             HasImpactedTheCommunity = investigation.CommunityImpacts.Any(o => o.FloodImpactId != FloodImpactIds.CommunityImpactNotSure),
             HasBlockages = investigation.HasKnownProblems,

@@ -1,13 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Settings;
-using FloodOnlineReportingTool.Public.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using FloodOnlineReportingTool.Public.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using NSubstitute;
-using NuGet.Configuration;
-using System.Configuration;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Tests.Notifications;
 
@@ -24,16 +17,16 @@ public class GovUKNotifyTests
         // Arrange
         var floodReportService = Substitute.For<IGovNotifyEmailSender>();
         floodReportService.SendTestNotification(
-            Arg.Any<string>(), 
-            Arg.Any<string>(), 
+            Arg.Any<string>(),
+            Arg.Any<string>(),
             Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("ok"));
         string secretValue = settings["TestEmail"] ?? "Failure";
 
         // Act
         var result = await floodReportService.SendTestNotification(
-            secretValue, 
-            "This is a test of the FORT notification system - public reporting project.", 
+            secretValue,
+            "This is a test of the FORT notification system - public reporting project.",
             CancellationToken.None);
 
         // Assert

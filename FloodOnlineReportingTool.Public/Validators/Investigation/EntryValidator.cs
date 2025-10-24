@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
 using FluentValidation;
 
@@ -17,6 +17,6 @@ public class EntryValidator : AbstractValidator<Entry>
             .WithMessage("Enter other details of how the water entered")
             .MaximumLength(100)
             .WithMessage("Other details must be {MaxLength} characters or less")
-            .When(entry => entry.EntryOptions.Any(option => option.Selected && option.Value.Equals(Database.Models.FloodProblemIds.FloodEntryIds.Other)));
+            .When(entry => entry.EntryOptions.Any(option => option.Selected && option.Value.Equals(FloodEntryIds.Other)));
     }
 }

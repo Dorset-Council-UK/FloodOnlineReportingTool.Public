@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
 using GdsBlazorComponents;
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
@@ -17,5 +17,12 @@ public class ContactModel
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
     public string? PhoneNumber { get; set; }
 
+    [GdsFieldErrorClass(GdsFieldTypes.Radio)]
+    public bool PrimaryContactRecord { get; set; }
+
     public Guid? Id { get; set; }
+
+    public Guid? ContactUserId { get; set; }
+
+
 }

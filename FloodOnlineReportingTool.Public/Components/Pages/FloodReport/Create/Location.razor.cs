@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.API;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Database.Settings;
 using FloodOnlineReportingTool.Public.Models;
@@ -75,7 +76,7 @@ public partial class Location(
 
             _isLoading = false;
             StateHasChanged();
-        } 
+        }
     }
 
     private async Task LoadJavaScriptAndMap()
@@ -208,7 +209,7 @@ public partial class Location(
         var eligibilityCheck = await GetEligibilityCheck();
         ExtraData? updatedExtraData = null;
         bool propertyTypeReset = false;
-        if ( Model.IsAddress)
+        if (Model.IsAddress)
         {
             Model.Postcode = await GetPostcodeFromLocation();
 
@@ -220,7 +221,8 @@ public partial class Location(
             };
             propertyTypeReset = true;
 
-        } else if((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
+        }
+        else if ((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
         {
             //They changed the location so we reset the property type option
             updatedExtraData = createExtraData with
@@ -244,7 +246,7 @@ public partial class Location(
             Easting = Model.Easting!.Value,
             Northing = Model.Northing!.Value,
             LocationDesc = Model.LocationDesc,
-            
+
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
@@ -268,7 +270,7 @@ public partial class Location(
         {
             return FloodReportCreatePages.Address;
         }
-        
+
         return FloodReportCreatePages.PropertyType;
     }
 
@@ -319,7 +321,7 @@ public partial class Location(
         {
             var referrer = navigationManager.ToAbsoluteUri("");
             var response = await repository
-                .GetNearestAddressResponse(easting, northing, referrer, _cts.Token)
+                .GetNearestAddressResponse(easting, northing, SearchAreaOptions.uk, referrer, _cts.Token)
                 .ConfigureAwait(false);
 
             if (response == null || response.StatusCode == HttpStatusCode.NotFound)

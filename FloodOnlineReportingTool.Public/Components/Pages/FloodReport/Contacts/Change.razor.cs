@@ -2,19 +2,20 @@
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -34,6 +35,8 @@ public partial class Change(
 
     private ContactModel? _contactModel;
     private EditContext _editContext = default!;
+    private Guid _floodReportId = Guid.Empty;
+    private bool _isLoading = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
@@ -74,7 +77,10 @@ public partial class Change(
         if (firstRender)
         {
             await gdsJs.InitGds(_cts.Token);
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            StateHasChanged();
         }
+        _isLoading = false;
     }
 
     private async Task OnSubmit()
@@ -115,11 +121,11 @@ public partial class Change(
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactRecord = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token);
-        if (contactRecord == null)
+        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token).ConfigureAwait(false);
+        if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;
         }
-        return contactRecord.ToContactModel();
+        return floodReport.ReportOwner.ToContactModel();
     }
 }

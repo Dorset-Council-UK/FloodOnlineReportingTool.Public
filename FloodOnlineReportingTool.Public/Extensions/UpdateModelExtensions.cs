@@ -1,6 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿#pragma warning disable IDE0130 // Namespace does not match folder structure
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Update;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 

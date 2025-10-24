@@ -23,7 +23,7 @@ public partial class Confirmation(
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    private Database.Models.Investigation? _investigation;
+    private Database.Models.Investigate.Investigation? _investigation;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
 

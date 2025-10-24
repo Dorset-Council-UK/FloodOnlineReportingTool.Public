@@ -1,4 +1,9 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Responsibilities;
+using FloodOnlineReportingTool.Database.Models.Status;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +35,6 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasDefaultSchema(SchemaNames.FortPublic);
-
 
         // Add the inbox and outbox pattern messaging tables
         modelBuilder.AddInboxStateEntity();

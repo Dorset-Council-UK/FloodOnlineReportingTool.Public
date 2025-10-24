@@ -1,23 +1,25 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Contact;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
 public interface IContactRecordRepository
 {
     /// <summary>
-    /// Get the contact record, for the given user, going via the flood report
+    /// Gets a contact record by its ID value
     /// </summary>
-    Task<ContactRecord?> ReportedByUser(Guid userId, Guid id, CancellationToken ct);
+    /// <returns></returns>
+    Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct);
 
     /// <summary>
-    /// Get all contact records for the given user, going via the flood report
+    /// Get all contact records associated with a flood report
     /// </summary>
-    Task<IReadOnlyCollection<ContactRecord>> AllReportedByUser(Guid userId, CancellationToken ct);
+    /// <returns></returns>
+    Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Create a contact record for the user, going via the flood report
     /// </summary>
-    Task<ContactRecord> CreateForUser(Guid userId, ContactRecordDto dto, CancellationToken ct);
+    Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Update the contact record, going via the flood report
@@ -25,17 +27,17 @@ public interface IContactRecordRepository
     Task<ContactRecord> UpdateForUser(Guid userId, Guid id, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
-    /// Delete the contact record, going via the flood report
+    /// Delete the contact record by ID
     /// </summary>
-    Task DeleteForUser(Guid userId, Guid id, CancellationToken ct);
+    Task DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report
     /// </summary>
-    Task<int> CountUnusedRecordTypes(Guid userId, CancellationToken ct);
+    Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Get the unused contact record types, going via the flood report
     /// </summary>
-    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid userId, CancellationToken ct);
+    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
 }

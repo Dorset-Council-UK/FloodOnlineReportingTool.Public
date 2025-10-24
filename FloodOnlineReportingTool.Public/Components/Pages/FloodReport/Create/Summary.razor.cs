@@ -1,5 +1,8 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -67,6 +70,7 @@ public partial class Summary(
             var eligibilityCheck = await GetEligibilityCheck();
             Model.IsAddress = eligibilityCheck.IsAddress;
             Model.AddressPreview = eligibilityCheck.LocationDesc;
+            Model.TemporaryAddressPreview = eligibilityCheck.TemporaryLocationDesc;
             Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
             Model.FloodSources = await GetFloodSources(eligibilityCheck);
             bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);
@@ -83,7 +87,7 @@ public partial class Summary(
             var durationId = eligibilityCheck.DurationKnownId;
             if (!eligibilityCheck.OnGoing && durationId != null)
             {
-                if (durationId.Value == Database.Models.FloodProblemIds.FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
+                if (durationId.Value == FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
                 {
                     var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
                     Model.FloodingLasted = duration.GdsReadable();
@@ -254,7 +258,7 @@ public partial class Summary(
     /// <summary>
     /// Add the flood report, and eligibility check
     /// </summary>
-    private async Task<Database.Models.FloodReport?> CreateFloodReport()
+    private async Task<Database.Models.Flood.FloodReport?> CreateFloodReport()
     {
         var eligibilityCheck = await GetEligibilityCheck();
         var floodReport = await floodReportRepository.CreateWithEligiblityCheck(eligibilityCheck, _cts.Token);
