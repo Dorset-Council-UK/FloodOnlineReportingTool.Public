@@ -102,13 +102,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        // Publish a created message to the message system
-        // TODO: replace this function
-        //var message = contactRecord.ToMessageCreated(floodReport.Reference);
-        //await publishEndpoint
-        //    .Publish(message, ct)
-        //    .ConfigureAwait(false);
-
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Add the contact record to the flood report and the message to the database
         await context
             .SaveChangesAsync(ct)
@@ -146,16 +140,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         };
         await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
-        // Publish a created message to the message system
-        foreach (FloodReport floodReport in contactRecord.FloodReports)
-        {
-            // TODO: replace this function
-            //var message = contactRecord.ToMessageUpdated(floodReport.Reference);
-            //await publishEndpoint
-            //    .Publish(message, ct)
-            //    .ConfigureAwait(false);
-        }
-
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Update the contact record and add the message to the database
         await context
             .SaveChangesAsync(ct)
@@ -181,16 +166,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         // Remove the contact record from the flood report
         context.ContactRecords.Remove(contactRecord);
 
-        // Publish a deleted message to the message system
-        foreach (FloodReport floodReport in contactRecord.FloodReports)
-        {
-            // TODO: replace this function
-            //var message = contactRecord.ToMessageDeleted(floodReport.Reference);
-            //await publishEndpoint
-            //    .Publish(message, ct)
-            //    .ConfigureAwait(false);
-        }
-
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Remove the contact record and add the message to the database
         await context
             .SaveChangesAsync(ct)

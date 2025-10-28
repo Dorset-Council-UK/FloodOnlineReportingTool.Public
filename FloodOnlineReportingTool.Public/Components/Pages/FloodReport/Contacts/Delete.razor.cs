@@ -15,6 +15,7 @@ public partial class Delete(
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
+    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -36,6 +37,7 @@ public partial class Delete(
 
     private EditContext _editContext = default!;
     private Guid _floodReportId = Guid.Empty;
+    private string _floodReportReference = string.Empty;
     private bool _isLoading = true;
     private bool _deletePermited = true;
     private ValidationMessageStore _messageStore = default!;
@@ -97,7 +99,12 @@ public partial class Delete(
         {
             //You can only delete for the current flood report so we can't handle it for more one linked record
             _deletePermited = false;
+        } else
+        {
+            //If we have a valid match then we return the reference for the current flood report only
+            _floodReportReference = contactResult.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId)!.Reference;
         }
+
         return contactResult.ToContactModel();
     }
 
@@ -112,8 +119,13 @@ public partial class Delete(
 
         try
         {
+            // Send deletion confirmation email just before deleting (fire and forget)
+            _ = govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress, _contactModel!.ContactName, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+
             await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value, _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
+
+            // Navigate back to contacts home
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)

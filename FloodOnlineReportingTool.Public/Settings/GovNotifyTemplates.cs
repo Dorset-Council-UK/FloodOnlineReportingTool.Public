@@ -3,6 +3,12 @@
 public class GovNotifyTemplates
 {
     /// <summary>
+    /// This setting just allows us to create new template reference then link it to a further issue to be 
+    /// created in the GovNotify system.
+    /// </summary>
+    public string NotImplemented { get; init; } = "Not Implemented";
+
+    /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used to send the test notification only</para>
     /// </summary>

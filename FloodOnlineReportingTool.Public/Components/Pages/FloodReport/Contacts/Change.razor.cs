@@ -7,6 +7,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -16,6 +17,7 @@ public partial class Change(
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
+    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -36,6 +38,7 @@ public partial class Change(
     private ContactModel? _contactModel;
     private EditContext _editContext = default!;
     private Guid _floodReportId = Guid.Empty;
+    private string _floodReportReference = string.Empty;
     private bool _isLoading = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -109,6 +112,11 @@ public partial class Change(
             var dto = _contactModel.ToDto();
             await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
+
+            // Success - send confirmation email (fire and forget)
+            _ = govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress,_contactModel.PhoneNumber,_contactModel.ContactName, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+
+            // Navigate back to contacts home
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)
@@ -125,6 +133,11 @@ public partial class Change(
         if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;
+        }
+        else
+        {
+            //If we have a valid match then we return the reference for the current flood report only
+            _floodReportReference = floodReport!.Reference;
         }
         return floodReport.ReportOwner.ToContactModel();
     }
