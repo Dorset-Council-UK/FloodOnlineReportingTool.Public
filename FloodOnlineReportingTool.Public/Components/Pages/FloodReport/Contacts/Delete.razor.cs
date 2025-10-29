@@ -119,8 +119,8 @@ public partial class Delete(
 
         try
         {
-            // Send deletion confirmation email just before deleting (fire and forget)
-            _ = govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress, _contactModel!.ContactName, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            // Send deletion confirmation email just before deleting
+            var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
 
             await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value, _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);

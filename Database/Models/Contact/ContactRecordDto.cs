@@ -11,5 +11,6 @@ public record ContactRecordDto
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public string ContactName { get; init; } = "";
     public string EmailAddress { get; init; } = "";
+    public bool IsEmailVerified { get; init; }
     public string? PhoneNumber { get; init; }
 }

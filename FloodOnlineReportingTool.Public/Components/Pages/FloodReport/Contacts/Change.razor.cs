@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -39,6 +41,7 @@ public partial class Change(
     private EditContext _editContext = default!;
     private Guid _floodReportId = Guid.Empty;
     private string _floodReportReference = string.Empty;
+    private Database.Models.Flood.FloodReport? _floodReport;
     private bool _isLoading = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -101,8 +104,9 @@ public partial class Change(
     private async Task UpdateContact()
     {
         logger.LogDebug("Updating contact information");
+        _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
 
-        if (_contactModel == null)
+        if (_contactModel == null || _floodReport == null)
         {
             return;
         }
@@ -110,11 +114,29 @@ public partial class Change(
         try
         {
             var dto = _contactModel.ToDto();
-            await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
+            var resultingContact = await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
 
-            // Success - send confirmation email (fire and forget)
-            _ = govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress,_contactModel.PhoneNumber,_contactModel.ContactName, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            // Success - send confirmation email
+            var sentNotification = await govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress!, _contactModel.PhoneNumber!, _contactModel.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+
+            if (!resultingContact.IsEmailVerified)
+            {
+                // Resend verification email if it was changed
+                var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
+                _contactModel.ContactType!.Value.ToString(),
+                _contactModel.PrimaryContactRecord,
+                 true,
+                _contactModel.EmailAddress!,
+                _contactModel.PhoneNumber!,
+                _contactModel.ContactName!,
+                _floodReport.Reference,
+                _floodReport.EligibilityCheck!.LocationDesc ?? "",
+                _floodReport.EligibilityCheck!.Easting,
+                _floodReport.EligibilityCheck!.Northing,
+                _floodReport.CreatedUtc
+                );
+            }
 
             // Navigate back to contacts home
             navigationManager.NavigateTo(ContactPages.Home.Url);

@@ -3,12 +3,6 @@
 public class GovNotifyTemplates
 {
     /// <summary>
-    /// This setting just allows us to create new template reference then link it to a further issue to be 
-    /// created in the GovNotify system.
-    /// </summary>
-    public string NotImplemented { get; init; } = "Not Implemented";
-
-    /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used to send the test notification only</para>
     /// </summary>
@@ -16,21 +10,22 @@ public class GovNotifyTemplates
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
-    ///     <para>This template is used to send the user thier password to allow them to edit the record</para>
+    ///     <para>This template is used whenever an email address is added or changed.</para>
+    ///     <para>The reciepient is able to verify the email if not added in error and will be given the rights set out in the notification.</para>
     /// </summary>
-    public required string AccountActivationNotification { get; init; }
+    public required string VerifyEmailAddress { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
-    ///     <para>This template is used to send the user thier password following a password reset</para>
+    ///     <para>This template is used to confirm to the contact that their changes have been saved.</para>
     /// </summary>
-    public required string AccountResetNotification { get; init; }
+    public required string ConfirmContactUpdated { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
-    ///     <para>This template is used to confirm that the user is no longer able to edit the record (for example at the end of the retention period)</para>
+    ///     <para>This template is used to let the contact know that their details have been removed.</para>
     /// </summary>
-    public required string AccountDisabledNotification { get; init; }
+    public required string ConfirmContactDeleted { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>

@@ -15,8 +15,9 @@ public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
-    IEligibilityCheckRepository eligibilityRepository,
+    IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
+    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -39,6 +40,7 @@ public partial class Create(
     private ContactModel? _contactModel;
     private bool _isLoading;
     private Guid _floodReportId;
+    private Database.Models.Flood.FloodReport? _floodReport;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -152,16 +154,39 @@ public partial class Create(
         logger.LogDebug("Creating contact information");
         try
         {
+            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
+            if (_contactModel == null || _floodReport == null)
+            {
+                logger.LogError("There was a problem creating contact information");
+                return;
+            }
             var userId = await AuthenticationState.IdentityUserId();
             ContactRecordDto dto = new()
             {
-                UserId = null,
-                ContactType = _contactModel.ContactType.Value,
-                ContactName = _contactModel.ContactName,
-                EmailAddress = _contactModel.EmailAddress,
+                UserId = userId,
+                ContactType = _contactModel.ContactType!.Value,
+                ContactName = _contactModel.ContactName!,
+                EmailAddress = _contactModel.EmailAddress!,
+                IsEmailVerified = false,
                 PhoneNumber = _contactModel.PhoneNumber,
             };
             await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+
+            // Success - send confirmation email (fire and forget)
+            var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+                _contactModel.ContactType!.Value.ToString(), 
+                _contactModel.PrimaryContactRecord, 
+                userId == null ? true : false, 
+                _contactModel.EmailAddress!, 
+                _contactModel.PhoneNumber!, 
+                _contactModel.ContactName!,
+                _floodReport.Reference,
+                _floodReport.EligibilityCheck!.LocationDesc ?? "",
+                _floodReport.EligibilityCheck!.Easting,
+                _floodReport.EligibilityCheck!.Northing,
+                _floodReport.CreatedUtc
+                );
+
             logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }

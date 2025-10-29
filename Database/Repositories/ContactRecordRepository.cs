@@ -128,6 +128,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Update the fields we choose
+        bool emailNotChanged = string.Equals(contactRecord.EmailAddress, dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
         contactRecord = contactRecord with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
@@ -138,6 +139,15 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             EmailAddress = dto.EmailAddress,
             PhoneNumber = dto.PhoneNumber,
         };
+
+        if (!emailNotChanged)
+        {
+            contactRecord = contactRecord with
+            {
+                IsEmailVerified = false,
+            };
+        }
+
         await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
         // This system is fully responsible for all contact communication. No notifications are sent out at this point.

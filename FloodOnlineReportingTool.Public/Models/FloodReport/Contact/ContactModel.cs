@@ -15,6 +15,8 @@ public class ContactModel
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
     public string? EmailAddress { get; set; }
 
+    public bool IsEmailVerified { get; init; } // Read-only in this view model
+
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
     public string? PhoneNumber { get; set; }
 
