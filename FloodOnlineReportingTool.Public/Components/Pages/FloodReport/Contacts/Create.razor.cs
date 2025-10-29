@@ -174,11 +174,11 @@ public partial class Create(
 
             // Success - send confirmation email (fire and forget)
             var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-                _contactModel.ContactType!.Value.ToString(), 
-                _contactModel.PrimaryContactRecord, 
-                userId == null ? true : false, 
-                _contactModel.EmailAddress!, 
-                _contactModel.PhoneNumber!, 
+                _contactModel.ContactType!.Value.ToString(),
+                _contactModel.PrimaryContactRecord,
+                userId == null ? true : false,
+                _contactModel.EmailAddress!,
+                _contactModel.PhoneNumber!,
                 _contactModel.ContactName!,
                 _floodReport.Reference,
                 _floodReport.EligibilityCheck!.LocationDesc ?? "",

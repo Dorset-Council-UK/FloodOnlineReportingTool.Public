@@ -99,7 +99,8 @@ public partial class Delete(
         {
             //You can only delete for the current flood report so we can't handle it for more one linked record
             _deletePermited = false;
-        } else
+        }
+        else
         {
             //If we have a valid match then we return the reference for the current flood report only
             _floodReportReference = contactResult.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId)!.Reference;

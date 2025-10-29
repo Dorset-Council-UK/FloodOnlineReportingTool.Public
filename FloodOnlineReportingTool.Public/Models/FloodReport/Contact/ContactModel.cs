@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using GdsBlazorComponents;
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
