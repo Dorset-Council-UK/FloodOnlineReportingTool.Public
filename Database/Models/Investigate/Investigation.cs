@@ -1,7 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Status;
 
-
 namespace FloodOnlineReportingTool.Database.Models.Investigate;
 
 /// <summary>

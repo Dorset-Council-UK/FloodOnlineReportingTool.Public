@@ -1,5 +1,4 @@
-﻿
-using FloodOnlineReportingTool.Database.Models.Status;
+﻿using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FluentValidation;
 

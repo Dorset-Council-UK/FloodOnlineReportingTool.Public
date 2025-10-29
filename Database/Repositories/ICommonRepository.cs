@@ -3,7 +3,6 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
 
-
 namespace FloodOnlineReportingTool.Database.Repositories;
 
 public interface ICommonRepository
