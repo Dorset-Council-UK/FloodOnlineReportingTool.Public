@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 

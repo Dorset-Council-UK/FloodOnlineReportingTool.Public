@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Flood;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Flood;
 
 namespace FloodOnlineReportingTool.Database.Models.Contact;
 
@@ -18,6 +19,7 @@ public record ContactRecord
     public DateTimeOffset? UpdatedUtc { get; init; }
     public string ContactName { get; set; } = "";
     public string EmailAddress { get; set; } = "";
+    public bool IsEmailVerified { get; set; } = false;
     public string? PhoneNumber { get; set; }
     public DateTimeOffset RedactionDate { get; init; }
 

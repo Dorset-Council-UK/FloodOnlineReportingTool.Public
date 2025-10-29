@@ -1,6 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Flood;
-using FloodOnlineReportingTool.Database.Models.Status;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

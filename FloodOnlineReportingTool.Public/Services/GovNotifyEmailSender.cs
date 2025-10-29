@@ -77,14 +77,27 @@ internal class GovNotifyEmailSender(
         return await SendEmail(targetEmail, _govNotifySettings.Templates.TestNotification, personalisation).ConfigureAwait(false);
     }
 
-    public async Task<string> SendAccountActivationNotification(Guid recordId, string recordReference, string recordPassword, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
+    // Account notifications
+    // TODO: Update this notification template as required.
+    /// <summary>
+    /// This triggers an email to ask the user or contact to verify their email address.
+    /// If isPrimary then the user will have some permission level. 
+    /// For example, if temporaryAccessOnly is true then the email should explain that this access 
+    /// is limited to the current session. If false then the user is using a persistent account.
+    /// If isPrimary is false then the contact will recieve notifications if they verify their email.
+    /// </summary>
+    public async Task<string> SendEmailVerificationNotification(string contactType, bool isPrimary, bool temporaryAccessOnly, string contactEmail, string contactPhone, string contactDisplayName, string recordReference, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
     {
         var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
         {
             { "from_development", environment.IsDevelopment() },
             { "recordReference", recordReference },
-            { "recordPassword", recordPassword },
-            { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordId})" },
+            { "isPrimary", isPrimary },
+            { "temporaryAccessOnly", temporaryAccessOnly },
+            { "contactDisplayName", contactDisplayName },
+            { "contactPhone", contactPhone },
+            { "contactType", contactType },
+            { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
             { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },
             { "location_description", locationDescription},
             { "report_date", reportDate.GdsReadable() },
@@ -95,6 +108,53 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.AccountActivationNotification, personalisation).ConfigureAwait(false);
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.VerifyEmailAddress, personalisation).ConfigureAwait(false);
+    }
+
+    // Contact notifications
+    // TODO: Create / set notification template.
+    /// <summary>
+    /// This triggers an email to notify a contact that their details have been updated.
+    /// </summary>
+    public async Task<string> SendContactUpdatedNotification(string contactType, string contactEmail, string contactPhone, string contactDisplayName, string recordReference)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "recordReference", recordReference },
+            { "contactDisplayName", contactDisplayName },
+            { "contactPhone", contactPhone },
+            { "contactType", contactType },
+        };
+
+        var emailAddress = GetUsermailAddress();
+        if (emailAddress == null)
+        {
+            return string.Empty;
+        }
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactUpdated, personalisation).ConfigureAwait(false);
+    }
+
+    // TODO: Create / set notification template.
+    /// <summary>
+    /// This triggers an email to notify a contact that their details have been deleted.
+    /// The notification should include instructions in case this was not intended as deletion removes the ability to self fix.
+    /// </summary>
+    public async Task<string> SendContactDeletedNotification(string contactType, string contactEmail, string contactDisplayName, string recordReference)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "recordReference", recordReference },
+            { "contactDisplayName", contactDisplayName },
+            { "contactType", contactType },
+        };
+
+        var emailAddress = GetUsermailAddress();
+        if (emailAddress == null)
+        {
+            return string.Empty;
+        }
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactDeleted, personalisation).ConfigureAwait(false);
     }
 }

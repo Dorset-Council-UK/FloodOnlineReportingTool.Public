@@ -2,7 +2,6 @@
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
-using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -286,12 +285,12 @@ public partial class Summary(
         }
 
         var id = Model.VulnerablePeopleId.Value;
-        if (id == RecordStatusIds.No)
+        if (id == Database.Models.Status.RecordStatusIds.No)
         {
             return "No";
         }
 
-        if (id == RecordStatusIds.NotSure)
+        if (id == Database.Models.Status.RecordStatusIds.NotSure)
         {
             return "Not sure";
         }

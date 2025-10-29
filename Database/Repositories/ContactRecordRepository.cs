@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using MassTransit;
@@ -101,12 +102,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        // Publish a created message to the message system
-        var message = contactRecord.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint
-            .Publish(message, ct)
-            .ConfigureAwait(false);
-
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Add the contact record to the flood report and the message to the database
         await context
             .SaveChangesAsync(ct)
@@ -132,6 +128,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Update the fields we choose
+        bool emailNotChanged = string.Equals(contactRecord.EmailAddress, dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
         contactRecord = contactRecord with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
@@ -142,17 +139,18 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
             EmailAddress = dto.EmailAddress,
             PhoneNumber = dto.PhoneNumber,
         };
-        await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
-        // Publish a created message to the message system
-        foreach (FloodReport floodReport in contactRecord.FloodReports)
+        if (!emailNotChanged)
         {
-            var message = contactRecord.ToMessageUpdated(floodReport.Reference);
-            await publishEndpoint
-                .Publish(message, ct)
-                .ConfigureAwait(false);
+            contactRecord = contactRecord with
+            {
+                IsEmailVerified = false,
+            };
         }
 
+        await context.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Update the contact record and add the message to the database
         await context
             .SaveChangesAsync(ct)
@@ -178,15 +176,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         // Remove the contact record from the flood report
         context.ContactRecords.Remove(contactRecord);
 
-        // Publish a deleted message to the message system
-        foreach (FloodReport floodReport in contactRecord.FloodReports)
-        {
-            var message = contactRecord.ToMessageDeleted(floodReport.Reference);
-            await publishEndpoint
-                .Publish(message, ct)
-                .ConfigureAwait(false);
-        }
-
+        // This system is fully responsible for all contact communication. No notifications are sent out at this point.
         // Remove the contact record and add the message to the database
         await context
             .SaveChangesAsync(ct)

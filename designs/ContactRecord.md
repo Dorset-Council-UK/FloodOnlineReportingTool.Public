@@ -7,10 +7,11 @@ And in some specific cases allow the user to provide us additional information, 
 
 Where possible we should avoid duplicating information.
 
+Given that contact records can be created by the public and on behalf of others, we must ensure emails are verified.
+
 ## Types of contact records
 
 There are different types of contact records, each serving a specific purpose:
-- Temporary
 - Tenant
 - Owner
 - Non-Resident
