@@ -91,11 +91,11 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
 
         // Do we need to add this contact record to the flood report?
         var existingLink = floodReport.ExtraContactRecords.Contains(contactRecord);
-        if (existingLink == true)
-        {
-            throw new InvalidOperationException($"FloodReport already has a contact of type {dto.ContactType}.");
-        }
-        else
+        if (existingLink != true)
+        //{
+        //    throw new InvalidOperationException($"FloodReport already has a contact of type {dto.ContactType}.");
+        //}
+        //else
         {
             // Link the contact to the flood report
             floodReport.ExtraContactRecords.Add(contactRecord);

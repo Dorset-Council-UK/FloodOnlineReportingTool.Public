@@ -22,6 +22,7 @@ public partial class Overview(
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
     private Guid _floodReportId = Guid.Empty;
+    private bool _isLoading = true;
     private Database.Models.Flood.FloodReport? _floodReport;
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
@@ -42,44 +43,28 @@ public partial class Overview(
 
     protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        if (_floodReport == null)
+        if (AuthenticationState == null)
         {
-
-            if (AuthenticationState == null)
-            {
-                return;
-            }
-
-            // Get the user's ID and check if they have the admin role
-            var authState = await AuthenticationState.ConfigureAwait(false);
-            if (authState == null)
-            {
-                return;
-            }
-
-            _userId = authState.User.IdentityUserId() ?? Guid.Empty;
-            _floodReport = await floodReportRepository.ReportedByUser(_userId, _cts.Token).ConfigureAwait(false);
-            if (_floodReport != null)
-            {
-                // Check if the users access has expired
-                if (_floodReport.ReportOwnerAccessUntil != null)
-                {
-                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
-                    _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
-                }
-            }
+            return;
         }
+
+        // Get the user's ID and check if they have the admin role
+        var authState = await AuthenticationState.ConfigureAwait(false);
+        if (authState == null)
+        {
+            return;
+        }
+
+        _userId = authState.User.IdentityUserId() ?? Guid.Empty;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
-            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token).ConfigureAwait(false);
+            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
             if (_floodReport != null)
             {
                 // Check if the users access has expired
@@ -89,7 +74,10 @@ public partial class Overview(
                     _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
                 }
             }
-            await InvokeAsync(StateHasChanged);
+
+            _isLoading = false;
+            StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 }

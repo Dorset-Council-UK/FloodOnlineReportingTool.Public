@@ -38,7 +38,7 @@ public partial class Create(
     public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
 
     private ContactModel? _contactModel;
-    private bool _isLoading;
+    private bool _isLoading = true;
     private Guid _floodReportId;
     private Database.Models.Flood.FloodReport? _floodReport;
     private EditContext _editContext = default!;
@@ -61,8 +61,6 @@ public partial class Create(
 
     protected override async Task OnInitializedAsync()
     {
-        _isLoading = true;
-
         // Setup model and edit context
         if (_contactModel == null)
         {
@@ -97,8 +95,6 @@ public partial class Create(
             }
 
         }
-
-        _isLoading = false;
     }
 
 
@@ -122,18 +118,15 @@ public partial class Create(
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-        {
-            await gdsJs.InitGds(_cts.Token);
-
-            while (_isLoading)
-            {
-                await Task.Yield(); // Wait for next cycle
-            }
-
+        {           
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
+
+            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
             ContactTypes = [.. allTypes.Select(CreateOption)];
+
+            _isLoading = false;
             StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 
@@ -172,20 +165,21 @@ public partial class Create(
             };
             await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
 
-            // Success - send confirmation email (fire and forget)
-            var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-                _contactModel.ContactType!.Value.ToString(),
-                _contactModel.PrimaryContactRecord,
-                userId == null ? true : false,
-                _contactModel.EmailAddress!,
-                _contactModel.PhoneNumber!,
-                _contactModel.ContactName!,
-                _floodReport.Reference,
-                _floodReport.EligibilityCheck!.LocationDesc ?? "",
-                _floodReport.EligibilityCheck!.Easting,
-                _floodReport.EligibilityCheck!.Northing,
-                _floodReport.CreatedUtc
-                );
+            // Success - send confirmation email
+            // TODO - enable this once notification is available
+            //var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+            //    _contactModel.ContactType!.Value.ToString(),
+            //    _contactModel.PrimaryContactRecord,
+            //    userId == null ? true : false,
+            //    _contactModel.EmailAddress!,
+            //    _contactModel.PhoneNumber!,
+            //    _contactModel.ContactName!,
+            //    _floodReport.Reference,
+            //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
+            //    _floodReport.EligibilityCheck!.Easting,
+            //    _floodReport.EligibilityCheck!.Northing,
+            //    _floodReport.CreatedUtc
+            //    );
 
             logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Home.Url);

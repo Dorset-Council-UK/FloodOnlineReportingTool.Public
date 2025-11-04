@@ -58,16 +58,10 @@ public partial class Delete(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
             // Setup model and edit context
@@ -83,8 +77,8 @@ public partial class Delete(
             }
 
             _isLoading = false;
-            //Due to time taken to reach this we need to use the bigger push to ensure the page re-renders now
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
         }
     }
 
@@ -121,7 +115,8 @@ public partial class Delete(
         try
         {
             // Send deletion confirmation email just before deleting
-            var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            // TODO - enable this once notification is available
+            //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
 
             await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value, _cts.Token);
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);

@@ -50,25 +50,25 @@ public partial class Index(
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
-
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
             var userId = await AuthenticationState.IdentityUserId();
             if (userId != null)
             {
-                var _floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token).ConfigureAwait(false);
+                var _floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
                 _contactModels = [.. _floodReports.SelectMany(fc => fc.ExtraContactRecords).Select(o => o.ToContactModel())];
-                _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
+                _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
             }
             else
             {
-                var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token).ConfigureAwait(false);
+                var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
                 _contactModels = [.. _floodReports.Select(o => o.ToContactModel())];
-                _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token).ConfigureAwait(false);
+                _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
             }
+
             _isLoading = false;
-            //Due to time taken to reach this we need to use the bigger push to ensure the page re-renders now
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
         }
 
 

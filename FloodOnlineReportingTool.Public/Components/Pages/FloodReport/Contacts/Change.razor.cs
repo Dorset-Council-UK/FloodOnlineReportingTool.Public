@@ -79,11 +79,13 @@ public partial class Change(
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            _isLoading = false;
             StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
         }
-        _isLoading = false;
+        
     }
 
     private async Task OnSubmit()
@@ -115,25 +117,27 @@ public partial class Change(
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
 
             // Success - send confirmation email
-            var sentNotification = await govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress!, _contactModel.PhoneNumber!, _contactModel.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            // TODO - enable this once notification is available
+            //var sentNotification = await govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress!, _contactModel.PhoneNumber!, _contactModel.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
 
-            if (!resultingContact.IsEmailVerified)
-            {
-                // Resend verification email if it was changed
-                var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
-                _contactModel.ContactType!.Value.ToString(),
-                _contactModel.PrimaryContactRecord,
-                 true,
-                _contactModel.EmailAddress!,
-                _contactModel.PhoneNumber!,
-                _contactModel.ContactName!,
-                _floodReport.Reference,
-                _floodReport.EligibilityCheck!.LocationDesc ?? "",
-                _floodReport.EligibilityCheck!.Easting,
-                _floodReport.EligibilityCheck!.Northing,
-                _floodReport.CreatedUtc
-                );
-            }
+            // TODO - enable this once notification is available
+            //if (!resultingContact.IsEmailVerified)
+            //{
+            //    // Resend verification email if it was changed
+            //    var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
+            //    _contactModel.ContactType!.Value.ToString(),
+            //    _contactModel.PrimaryContactRecord,
+            //     true,
+            //    _contactModel.EmailAddress!,
+            //    _contactModel.PhoneNumber!,
+            //    _contactModel.ContactName!,
+            //    _floodReport.Reference,
+            //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
+            //    _floodReport.EligibilityCheck!.Easting,
+            //    _floodReport.EligibilityCheck!.Northing,
+            //    _floodReport.CreatedUtc
+            //    );
+            //}
 
             // Navigate back to contacts home
             navigationManager.NavigateTo(ContactPages.Home.Url);
