@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Status;
+﻿using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Status;
 
 namespace FloodOnlineReportingTool.Database.Models.Eligibility;
 
@@ -30,4 +31,7 @@ public record EligibilityCheck
     public IList<EligibilityCheckCommercial> Commercials { get; init; } = [];
     public IList<EligibilityCheckSource> Sources { get; init; } = [];
     public IList<EligibilityCheckRunoffSource> SecondarySources { get; init; } = [];
+
+    // Navigation properties
+    public FloodReport? FloodReport { get; init; }
 }

@@ -26,135 +26,111 @@
 
 @if (!_isLoading && !_loadingError)
 {
+
     <div class="govuk-panel govuk-panel--confirmation">
         <h1 class="govuk-panel__title">@Title</h1>
-        <div class="govuk-panel__body">Your report will be shared with the appropriate organisations that use this service.</div>
+        <div class="govuk-panel__body">Basic details of the flooding have been recorded.</div>
+    </div>
+
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Stage 1 - Report and check</h2>
+                <ul class="govuk-task-list">
+                    <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                        <div class="govuk-task-list__name-and-hint">
+                            <div aria-describedby="report-and-check-1-status">
+                                Report and check next steps
+                            </div>
+                            <div id="report-and-check-1-hint" class="govuk-task-list__hint">
+                                Your report will now be visible to the appropriate organisations and they will act on them according to thier policies.
+                            </div>
+                        </div>
+                        <div class="govuk-task-list__status" id="report-and-check-1-status">
+                            Completed
+                        </div>
+                    </li>
+                    <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                        <div class="govuk-task-list__name-and-hint">
+                            <a class="govuk-link govuk-task-list__link govuk-link--no-visited-state" href="@AccountPages.SignIn.Url" aria-describedby="report-and-check-2-contacts">
+                                Register or sign in to add ways to keep in touch
+                            </a>
+                        </div>
+                        <div class="govuk-task-list__status" id="report-and-check-2-contacts">
+                            <strong class="govuk-tag govuk-tag--blue">
+                                Incomplete
+                            </strong>
+                        </div>
+                    </li>
+                </ul>
+                    
+            </div>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Stage 2 - Investigation</h2>
+                <ul class="govuk-task-list">
+                    <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                        <div class="govuk-task-list__name-and-hint">
+                            <div aria-describedby="investigation-1-start">
+                                Submit full report for investigation
+                            </div>
+                            <div id="investigation-1-hint" class="govuk-task-list__hint">
+                                Will be requested if required and you provided an email.
+                            </div>
+                        </div>
+                        <div class="govuk-task-list__status govuk-task-list__status--cannot-start-yet" id="investigation-1-start">
+                            Cannot start yet
+                        </div>
+                    </li>
+                    <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                        <div class="govuk-task-list__name-and-hint">
+                            <div aria-describedby="investigation-2-result">
+                                Investigation status
+                            </div>
+                        </div>
+                        <div class="govuk-task-list__status govuk-task-list__status--cannot-start-yet" id="investigation-2-result">
+                                Cannot start yet
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
     </div>
 
     <section id="what-happens-next">
-        <h2 class="govuk-heading-l">What happens next</h2>
+        <main class="govuk-main-wrapper " id="main-content" role="main">
+            <h2 class="govuk-heading-l">What happens next</h2>
 
-        <p>Your report will be visible to the appropriate organisations and they will act on them according to thier policies.</p>
-
-        @if (_hasContactInformation)
-        {
-            <p>Your contact details will be used to provide you with updates if you are subscribed to get them</p>
-            <p>
-                <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">Change your contact information</a>
-            </p>
-        }
-        else
-        {
-            <h3 class="govuk-heading-s">Give us your contact details</h3>
-            <p>You need to give us contact details if want to:</p>
-            <ul class="govuk-list govuk-list--bullet">
-                <li>recieve updates</li>
-                <li>edit the information you have provided</li>
-            </ul>
-            <p>
-                <button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@AccountPages.SignIn.Url">Register / Sign in</button>          
-            </p>
-            <p>
-                If you don't wish to use an account you can 
-                <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Create.Url">add contact information</a>
-                only but this is will not allow you to provide edits. 
-            </p>
-            <p>If registered, you can edit your record and provide updates for 6 months after which editing will be closed.</p>
-            <p>Your contact details will then be removed after 18 months.</p>
-        }
-    </section>
-
-    <section id="eligibility-results">
-        <h2 class="govuk-heading-l">Eligibility results</h2>
-
-        @if (_isEmergencyResponse)
-        {
-            <p>This service does not trigger an emergency response please ring 999 and ask for the relevant service.</p>
-        }
-
-        @switch (_floodInvestigation)
-        {
-            case EligibilityOptions.Eligible:
-                <p>Your record is eligible for a property level flood investigation. Please complete a full flood report so the relevant organisations can complete this investigation.</p>
-                break;
-
-            case EligibilityOptions.Conditional:
-                <p>Because your property was flooded internally you may be eligible for additional support from you lead local flood authority. Eligibility is not automatic but if you are signed up for updates on this record the relevant organisation can let you know if they believe you are eligible.</p>
-                <p>If you want to discuss this further with the relevant organisations, use the reference number above to allow them to see the details of this flood event and this may help you to get a decision.</p>
-                break;
-
-            case EligibilityOptions.None:
-                <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
-                break;
-        }
-
-        @switch (_grantApplication)
-        {
-            case EligibilityOptions.Eligible:
-                <p>You have successfully applied for a grant in relation to this flood event.</p>
-                <p>For further details, refer to whichever system you used to apply for the grant.</p>
-                break;
-
-            case EligibilityOptions.Conditional:
-                <p>You may be eligible to apply for a grant. Use the link provided to submit an application.</p>
-                break;
-        }
-
-        @switch (_propertyProtection)
-        {
-            case EligibilityOptions.Eligible:
-                <p>You have successfully applied for help installing property level protection for your property.</p>
-                break;
-
-            case EligibilityOptions.Conditional:
-                <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
-                break;
-        }
-
-        @switch (_section19)
-        {
-            case EligibilityOptions.Eligible:
-                <p>The lead local flood authority responsible for your property has begun a section 19 flood investigation. To help with this process you can complete a full flood report to provide further information about this flood event. The details you provide will assist them in their investigations.</p>
-                break;
-
-            case EligibilityOptions.Completed:
-                <p>
-                    The lead local flood authority responsible for your property has completed a section 19 flood investigation for this flood event.
-                    @if (string.IsNullOrEmpty(_section19Url))
-                    {
-                        <span>The report is published and can be found by contacting the lead local flood authority.</span>
-                    }
-                    else
-                    {
-                        <span>The report is published and can be found at <a href="@_section19Url" target="_blank" class="govuk-link">@_section19Url</a>.</span>
-                    }
-                </p>
-                break;
-        }
-    </section>
-
-    @* <section id="responsible-organisations">
-        <h2 class="govuk-heading-l">Responsible organisations</h2>
-
-        @if (_leadLocalFloodAuthorities.Any())
-        {
-            <div class="govuk-inset-text">
-                @foreach (var org in _leadLocalFloodAuthorities)
-                {
-                    @((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))
-                }
-            </div>
-        }
-
-        @if (_otherFloodAuthorities.Any())
-        {
-            <p>Other responsible organisations include:</p>
-            @foreach (var org in _otherFloodAuthorities)
+            @if (_hasContactInformation)
             {
-                <p>@((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))</p>
+                <p>Your contact details will be used to provide you with updates if you are subscribed to get them</p>
+                <p>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">Change your contact information</a>
+                </p>
             }
-        }
-    </section> *@
+            else
+            {
+                <p>You need to give us contact details if want to:</p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>recieve updates</li>
+                    <li>speed up applications for any support that may be available</li>
+                </ul>
+                <p>Using an account is the best way to manage your record and allows you to edit the information you have provided.</p>
+                <p>
+                    <button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@AccountPages.SignIn.Url">Register / Sign in</button>          
+                </p>
+                <p>
+                    If you don't wish to use an account you can 
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Create.Url">add contact information</a>
+                    but <i>you can't edit your record once saved</i>.
+                </p>
+                <p>If registered, you can edit your record and provide updates for 6 months after which editing will be closed.</p>
+                <p>Your contact details will then be removed after 18 months.</p>
+            }
+        </main>
+    </section>
 
     <section id="further-information">
         <h2 class="govuk-heading-l">Further Information</h2>

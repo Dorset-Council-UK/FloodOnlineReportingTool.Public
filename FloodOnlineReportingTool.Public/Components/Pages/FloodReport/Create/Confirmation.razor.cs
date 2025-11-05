@@ -31,16 +31,6 @@ public partial class Confirmation(
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
-    private EligibilityOptions _floodInvestigation;
-    private IList<Organisation> _leadLocalFloodAuthorities = [];
-    private IList<Organisation> _otherFloodAuthorities = [];
-
-    // These don't have any logic yet in the repository
-    private bool _isEmergencyResponse;
-    private string? _section19Url;
-    private EligibilityOptions _grantApplication;
-    private EligibilityOptions _propertyProtection;
-    private EligibilityOptions _section19;
 
     protected async override Task OnInitializedAsync()
     {
@@ -69,27 +59,20 @@ public partial class Confirmation(
             {
                 try
                 {
-                    var result = await eligibilityRepository.CalculateEligibilityWithReference(Reference, _cts.Token);
+                    var result = await eligibilityRepository.GetByReference(Reference, _cts.Token);
 
-                    _FloodReportId = result.FloodReportId;
-                    // Store the current flood report to session storage
-                    if (_FloodReportId != Guid.Empty)
+                    if ( result?.FloodReport != null)
                     {
-                        //Never save a blank Guid, only a real one
-                        await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
+                        _FloodReportId = result.FloodReport.Id;
+                        // Store the current flood report to session storage
+                        if (_FloodReportId != Guid.Empty)
+                        {
+                            //Never save a blank Guid, only a real one
+                            await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
+                        }
+
+                        _hasContactInformation = result.FloodReport.ExtraContactRecords.Count > 0;
                     }
-
-                    _hasContactInformation = result.HasContactInformation;
-                    _floodInvestigation = result.FloodInvestigation;
-                    _leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
-                    _otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
-
-                    // These don't have any logic yet in the repository
-                    _isEmergencyResponse = result.IsEmergencyResponse;
-                    _section19Url = result.Section19Url;
-                    _section19 = result.Section19;
-                    _propertyProtection = result.PropertyProtection;
-                    _grantApplication = result.GrantApplication;
                 }
                 catch (InvalidOperationException ex)
                 {

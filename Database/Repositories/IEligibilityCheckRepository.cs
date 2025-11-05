@@ -22,6 +22,4 @@ public interface IEligibilityCheckRepository
     /// Update the eligibility check reported by the user
     /// </summary>
     Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct);
-
-    Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct);
 }

@@ -46,11 +46,10 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
     {
         logger.LogInformation("Getting eligibility check by flood report reference {Reference}", reference);
 
-        return await context.FloodReports
+        return await context.EligibilityChecks
             .AsNoTracking()
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
-            .Select(o => o.EligibilityCheck)
+            .Include(o => o.FloodReport)
+            .Where(o => o.FloodReport.Reference == reference)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
     }
@@ -164,50 +163,6 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         await context.SaveChangesAsync(ct).ConfigureAwait(false);
 
         return updatedCheck;
-    }
-
-    public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
-    {
-        logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
-
-        var floodReport = await context.FloodReports
-            .AsNoTracking()
-            .Include(o => o.ExtraContactRecords)
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
-
-        if (floodReport is null)
-        {
-            logger.LogWarning("No flood report found for reference {Reference}", reference);
-            throw new InvalidOperationException($"No flood report found for reference {reference}");
-        }
-
-        if (floodReport.EligibilityCheck is null)
-        {
-            logger.LogWarning("No eligibility check found for flood report reference {Reference}", reference);
-            throw new InvalidOperationException($"No eligibility check found for flood report reference {reference}");
-        }
-
-        var responsibleOrganisations = await commonRepository
-                .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
-                .ConfigureAwait(false);
-
-        return new EligibilityResult
-        {
-            HasContactInformation = floodReport.ExtraContactRecords.Any(),
-            FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
-            ResponsibleOrganisations = responsibleOrganisations,
-            FloodReportId = floodReport.Id,
-
-            // These don't have any logic yet
-            IsEmergencyResponse = false,
-            Section19Url = null,
-            Section19 = EligibilityOptions.None,
-            PropertyProtection = EligibilityOptions.None,
-            GrantApplication = EligibilityOptions.None,
-        };
     }
 
     /// <summary>

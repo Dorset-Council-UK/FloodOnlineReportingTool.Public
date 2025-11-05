@@ -1,10 +1,11 @@
 ﻿@page "/floodreport/overview"
 @using FloodOnlineReportingTool.Contracts.Shared
 @using FloodOnlineReportingTool.Database.Models
+@using FloodOnlineReportingTool.Database.Models.Eligibility
 @using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>@Title</PageTitle>
+@* <PageTitle>@Title</PageTitle> *@
 
 <GdsBreadcrumbs Items="@Breadcrumbs" />
 
@@ -28,22 +29,20 @@
             </div>
         } else
         {
-            <div class="govuk-grid-column-full">
-                <p class="govuk-body-l">
-                    <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown status")</strong>
+            <div class="govuk-panel govuk-panel--confirmation">
+                <h1 class="govuk-panel__title">Record Status: @(_floodReport.Status?.Text ?? "Unknown status")</h1>
+                <div class="govuk-panel__body">
                     Flood reference <strong>@_floodReport.Reference</strong>
-                </p>
+                </div>
             </div>
-
-            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
-
-            <p>You will recieve update notifications about your report by email if you provided one.</p>
-
-            <p>You are not able to update or view your record online as you are not logged in.</p>
 
             @if (_accessHasExpired)
             {
                 <GdsWarning Text="Your access to this flood report has expired" />
+            } else
+            {
+                <p>Please make a note of your flood reference but note you are not able to update or view your record online as you are not logged in.</p>
+                <p>You will recieve update notifications about your report by email if you provided one.</p>
             }
 
             @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
@@ -66,8 +65,9 @@
                     </svg>
                 </a>
             }
-        }
 
+            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+        }
     </NotAuthorized>
     <Authorized>
         <div class="govuk-grid-row">
@@ -163,5 +163,97 @@
                 }
             }
         </div>
+
+        <section id="eligibility-results">
+            <h2 class="govuk-heading-l">Eligibility results</h2>
+
+            @if (_isEmergencyResponse)
+            {
+                <p>This service does not trigger an emergency response please ring 999 and ask for the relevant service.</p>
+            }
+
+            @switch (_floodInvestigation)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>Your record is eligible for a property level flood investigation. Please complete a full flood report so the relevant organisations can complete this investigation.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>Because your property was flooded internally you may be eligible for additional support from you lead local flood authority. Eligibility is not automatic but if you are signed up for updates on this record the relevant organisation can let you know if they believe you are eligible.</p>
+                    <p>If you want to discuss this further with the relevant organisations, use the reference number above to allow them to see the details of this flood event and this may help you to get a decision.</p>
+                    break;
+
+                case EligibilityOptions.None:
+                    <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_grantApplication)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>You have successfully applied for a grant in relation to this flood event.</p>
+                    <p>For further details, refer to whichever system you used to apply for the grant.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>You may be eligible to apply for a grant. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_propertyProtection)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>You have successfully applied for help installing property level protection for your property.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_section19)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>The lead local flood authority responsible for your property has begun a section 19 flood investigation. To help with this process you can complete a full flood report to provide further information about this flood event. The details you provide will assist them in their investigations.</p>
+                    break;
+
+                case EligibilityOptions.Completed:
+                    <p>
+                        The lead local flood authority responsible for your property has completed a section 19 flood investigation for this flood event.
+                        @if (string.IsNullOrEmpty(_section19Url))
+                        {
+                            <span>The report is published and can be found by contacting the lead local flood authority.</span>
+                        }
+                        else
+                        {
+                            <span>The report is published and can be found at <a href="@_section19Url" target="_blank" class="govuk-link">@_section19Url</a>.</span>
+                        }
+                    </p>
+                    break;
+            }
+        </section>
+
+        @* <section id="responsible-organisations">
+        <h2 class="govuk-heading-l">Responsible organisations</h2>
+
+        @if (_leadLocalFloodAuthorities.Any())
+        {
+            <div class="govuk-inset-text">
+                @foreach (var org in _leadLocalFloodAuthorities)
+                {
+                    @((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))
+                }
+            </div>
+        }
+
+        @if (_otherFloodAuthorities.Any())
+        {
+            <p>Other responsible organisations include:</p>
+            @foreach (var org in _otherFloodAuthorities)
+            {
+                <p>@((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))</p>
+            }
+        }
+    </section> *@
     </Authorized>
 </AuthorizeView>

@@ -8,7 +8,7 @@ internal static class FloodReportCreatePages
     public static readonly PageInfo Postcode = new(BaseUrl, "/postcode", "Find postcode");
     public static readonly PageInfo Address = new(BaseUrl, "/address", "Affected property");
     public static readonly PageInfo PropertyType = new(BaseUrl, "/propertytype", "Property type");
-    public static readonly PageInfo Confirmation = new(BaseUrl, "/confirmation", "Flood report complete");
+    public static readonly PageInfo Confirmation = new(BaseUrl, "/confirmation", "Stage 1 complete");
     public static readonly PageInfo FloodAreas = new(BaseUrl, "/floodareas", "Flood impact");
     public static readonly PageInfo FloodDuration = new(BaseUrl, "/floodduration", "Flooding duration");
     public static readonly PageInfo TemporaryPostcode = new(BaseUrl, "/temporarypostcode", "Find temporary address");
