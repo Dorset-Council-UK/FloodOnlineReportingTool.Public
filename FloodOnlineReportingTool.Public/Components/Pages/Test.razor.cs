@@ -118,8 +118,8 @@ public partial class Test(
         {
             return false;
         }
-        var result = await govNotifyEmailSender.SendTestNotification(testEmail, "This is a test of the FORT notification system - public reporting project.", _cts.Token).ConfigureAwait(false);
-        return String.IsNullOrEmpty(result)!;
+        var result = await govNotifyEmailSender.SendTestNotification(testEmail, "This is a test of the FORT notification system - public reporting project.", _cts.Token);
+        return string.IsNullOrEmpty(result)!;
     }
 
     private async Task TestMessage()

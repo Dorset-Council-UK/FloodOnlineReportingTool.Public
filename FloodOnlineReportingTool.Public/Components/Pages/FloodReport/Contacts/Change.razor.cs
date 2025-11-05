@@ -152,7 +152,7 @@ public partial class Change(
 
     private async Task<ContactModel?> GetContact()
     {
-        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token).ConfigureAwait(false);
+        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);
         if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;

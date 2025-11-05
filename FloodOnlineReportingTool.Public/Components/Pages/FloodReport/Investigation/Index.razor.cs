@@ -48,7 +48,7 @@ public partial class Index(
         var userId = await AuthenticationState.IdentityUserId();
         if (userId.HasValue)
         {
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token).ConfigureAwait(false);
+            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
         }
     }
 

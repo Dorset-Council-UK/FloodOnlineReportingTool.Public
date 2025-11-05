@@ -320,9 +320,7 @@ public partial class Location(
         try
         {
             var referrer = navigationManager.ToAbsoluteUri("");
-            var response = await repository
-                .GetNearestAddressResponse(easting, northing, SearchAreaOptions.uk, referrer, _cts.Token)
-                .ConfigureAwait(false);
+            var response = await repository.GetNearestAddressResponse(easting, northing, SearchAreaOptions.uk, referrer, _cts.Token);
 
             if (response == null || response.StatusCode == HttpStatusCode.NotFound)
             {

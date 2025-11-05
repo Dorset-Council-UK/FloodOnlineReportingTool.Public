@@ -65,7 +65,7 @@ public partial class Overview(
         }
 
         // Get the user's ID and check if they have the admin role
-        var authState = await AuthenticationState.ConfigureAwait(false);
+        var authState = await AuthenticationState;
         if (authState == null)
         {
             return;

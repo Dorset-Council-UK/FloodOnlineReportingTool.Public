@@ -84,7 +84,7 @@ public partial class Delete(
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactResult = await contactRepository.GetContactById(ContactId, _cts.Token).ConfigureAwait(false);
+        var contactResult = await contactRepository.GetContactById(ContactId, _cts.Token);
         if (contactResult == null)
         {
             return null;
