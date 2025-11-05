@@ -35,6 +35,5 @@ erDiagram
   FloodReport ||--o| EligibilityCheck : EligibilityCheckId
   FloodReport ||--o| Investigation : InvestigationId
   FloodReport ||--o| ContactRecord : ReportOwnerId
-  FloodReport ||--o{ ContactRecord : ExtraContactRecords
-  FloodReport ||--o{ ContactRecord : SingleAssociatedContacts
+  FloodReport }o--o{ ContactRecord : ContactRecords
 ```
