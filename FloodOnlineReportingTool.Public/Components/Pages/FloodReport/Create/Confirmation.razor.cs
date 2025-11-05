@@ -71,7 +71,7 @@ public partial class Confirmation(
                             await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
                         }
 
-                        _hasContactInformation = result.FloodReport.ExtraContactRecords.Count > 0;
+                        _hasContactInformation = result.FloodReport.ContactRecords.Count > 0;
                     }
                 }
                 catch (InvalidOperationException ex)

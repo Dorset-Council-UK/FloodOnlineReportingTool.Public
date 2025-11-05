@@ -157,11 +157,9 @@ public partial class Change(
         {
             return null;
         }
-        else
-        {
-            //If we have a valid match then we return the reference for the current flood report only
-            _floodReportReference = floodReport!.Reference;
-        }
+
+        //If we have a valid match then we return the reference for the current flood report only
+        _floodReportReference = floodReport!.Reference;
         return floodReport.ReportOwner.ToContactModel();
     }
 }

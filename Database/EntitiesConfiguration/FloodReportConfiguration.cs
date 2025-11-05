@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -33,44 +32,13 @@ internal class FloodReportConfiguration : IEntityTypeConfiguration<FloodReport>
             .Property(o => o.StatusId)
             .HasDefaultValue(RecordStatusIds.New);
 
-        // Owner: many FloodReports -> one ContactRecord
-        // NOTE: do NOT make ReportOwnerId unique if a ContactRecord can own multiple reports
+        // Explicitly configure the ReportOwner relationship
         builder
-            .HasOne(fr => fr.ReportOwner)
-            .WithMany(cr => cr.OwnedFloodReports)
-            .HasForeignKey(fr => fr.ReportOwnerId)
+            .HasOne(o => o.ReportOwner)
+            .WithMany()
+            .HasForeignKey(o => o.ReportOwnerId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
-
-        // ExtraContactRecords: explicit many-to-many
-        builder
-            .HasMany(fr => fr.ExtraContactRecords)
-            .WithMany(cr => cr.FloodReports)
-            .UsingEntity<Dictionary<string, object>>(
-                "FloodReportContactRecord",
-                j => j
-                    .HasOne<ContactRecord>()
-                    .WithMany()
-                    .HasForeignKey("ContactRecordId")
-                    .HasConstraintName("FK_FloodReportContactRecord_ContactRecords_ContactRecordId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j
-                    .HasOne<FloodReport>()
-                    .WithMany()
-                    .HasForeignKey("FloodReportId")
-                    .HasConstraintName("FK_FloodReportContactRecord_FloodReports_FloodReportId")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j =>
-                {
-                    j.ToTable("FloodReportContactRecords", "fortpublic");
-                    j.HasKey("FloodReportId", "ContactRecordId");
-                });
-
-        // Map SingleAssociatedContacts (reverse of ContactRecord.FloodReport)
-        builder
-            .HasMany(fr => fr.SingleAssociatedContacts)
-            .WithOne(cr => cr.FloodReport)
-            .HasForeignKey(cr => cr.FloodReportId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // Soft deletion filter
         builder

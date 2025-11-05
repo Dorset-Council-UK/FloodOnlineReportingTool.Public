@@ -84,23 +84,24 @@ public partial class Delete(
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactResult = await contactRepository.GetContactById(ContactId, _cts.Token);
-        if (contactResult == null)
+        // Set safe defaults
+        _deletePermited = false;
+        _floodReportReference = string.Empty;
+
+        var contactRecord = await contactRepository.GetContactById(ContactId, _cts.Token);
+        if (contactRecord == null)
         {
             return null;
         }
-        if (contactResult.FloodReports.Count > 1 || contactResult.FloodReports.Where(fr => fr.Id == _floodReportId).Count() == 0)
+
+        var floodReport = contactRecord.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId);
+        if (contactRecord.FloodReports.Count == 1 && floodReport != null)
         {
-            //You can only delete for the current flood report so we can't handle it for more one linked record
-            _deletePermited = false;
-        }
-        else
-        {
-            //If we have a valid match then we return the reference for the current flood report only
-            _floodReportReference = contactResult.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId)!.Reference;
+            _deletePermited = true;
+            _floodReportReference = floodReport.Reference;
         }
 
-        return contactResult.ToContactModel();
+        return contactRecord.ToContactModel();
     }
 
     private async Task OnValidSubmit()

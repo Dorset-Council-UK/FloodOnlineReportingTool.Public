@@ -56,7 +56,7 @@ public partial class Index(
             if (userId != null)
             {
                 var _floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
-                _contactModels = [.. _floodReports.SelectMany(fc => fc.ExtraContactRecords).Select(o => o.ToContactModel())];
+                _contactModels = [.. _floodReports.SelectMany(fc => fc.ContactRecords).Select(o => o.ToContactModel())];
                 _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
             }
             else

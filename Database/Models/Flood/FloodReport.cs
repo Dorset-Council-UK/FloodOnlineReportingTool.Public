@@ -27,10 +27,8 @@ public record FloodReport
 
     public DateTimeOffset? ReportOwnerAccessUntil { get; init; } // was AccessToken.ExpirationUtc in a previous version
 
-    // Extra contacts (many-to-many)
-    public IList<ContactRecord> ExtraContactRecords { get; set; } = [];
-
-    // Contacts that are linked by a direct FK on ContactRecord (for non-user contacts)
-    // Optional navigation to see those single-associated contacts.
-    public IList<ContactRecord> SingleAssociatedContacts { get; set; } = [];
+    /// <summary>
+    /// All contact records, including the report owner.
+    /// </summary>
+    public ICollection<ContactRecord> ContactRecords { get; set; } = [];
 }

@@ -23,7 +23,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
 
         return await context.FloodReports
             .Where(fr => fr.Id == floodReportId)
-            .SelectMany(fr => fr.ExtraContactRecords)
+            .SelectMany(fr => fr.ContactRecords)
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }
@@ -31,7 +31,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
     public async Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct)
     {
         var floodReport = await context.FloodReports
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Where(o => o.Id == floodReportId)
             .FirstOrDefaultAsync(ct)
             .ConfigureAwait(false);
@@ -42,8 +42,8 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Only allow 1 instance of each type of contact to be created
-        var contactCount = floodReport.ExtraContactRecords.Count();
-        if (floodReport.ExtraContactRecords.Any(o => o.ContactType == dto.ContactType))
+        var contactCount = floodReport.ContactRecords.Count;
+        if (floodReport.ContactRecords.Any(o => o.ContactType == dto.ContactType))
         {
             throw new InvalidOperationException($"A contact record of type {dto.ContactType} already exists for the user");
         }
@@ -90,7 +90,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         // Do we need to add this contact record to the flood report?
-        var existingLink = floodReport.ExtraContactRecords.Contains(contactRecord);
+        var existingLink = floodReport.ContactRecords.Contains(contactRecord);
         if (existingLink != true)
         //{
         //    throw new InvalidOperationException($"FloodReport already has a contact of type {dto.ContactType}.");
@@ -98,7 +98,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         //else
         {
             // Link the contact to the flood report
-            floodReport.ExtraContactRecords.Add(contactRecord);
+            floodReport.ContactRecords.Add(contactRecord);
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
@@ -190,7 +190,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         var usedRecordTypes = await context.FloodReports
             .AsNoTracking()
             .Where(o => o.Id == floodReportId)
-            .SelectMany(o => o.ExtraContactRecords)
+            .SelectMany(o => o.ContactRecords)
             .Select(o => o.ContactType)
             .ToListAsync(ct)
             .ConfigureAwait(false);
@@ -208,7 +208,7 @@ public class ContactRecordRepository(PublicDbContext context, IPublishEndpoint p
         var usedRecordTypes = await context.FloodReports
             .AsNoTracking()
             .Where(o => o.Id == floodReportId)
-            .SelectMany(o => o.ExtraContactRecords)
+            .SelectMany(o => o.ContactRecords)
             .Select(o => o.ContactType)
             .Distinct()
             .CountAsync(ct)

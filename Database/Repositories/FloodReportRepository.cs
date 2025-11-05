@@ -29,7 +29,7 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
             .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
             .ConfigureAwait(false);
@@ -48,16 +48,12 @@ public class FloodReportRepository(
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
-
         return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null &&
-                 fc.ReportOwner.ContactUserId == contactUserId)
+            .Where(fc => fc.ReportOwner != null && fc.ReportOwner.ContactUserId == contactUserId)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct)
             .ConfigureAwait(false);
     }
-
-
 
     private string CreateReference()
     {
@@ -76,7 +72,7 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
             .FirstOrDefaultAsync(o => o.Id == reference, ct)
             .ConfigureAwait(false);
@@ -92,7 +88,7 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
             .FirstOrDefaultAsync(o => o.Reference == reference, ct)
             .ConfigureAwait(false);
@@ -233,7 +229,7 @@ public class FloodReportRepository(
 
         var floodReport = await context.FloodReports
             .AsNoTracking()
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.EligibilityCheck)
             .Where(o => o.Reference == reference)
             .FirstOrDefaultAsync(ct)
@@ -257,7 +253,7 @@ public class FloodReportRepository(
 
         return new EligibilityResult
         {
-            HasContactInformation = floodReport.ExtraContactRecords.Any(),
+            HasContactInformation = floodReport.ContactRecords.Any(),
             FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
             ResponsibleOrganisations = responsibleOrganisations,
             FloodReportId = floodReport.Id,
