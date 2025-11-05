@@ -41,13 +41,13 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    The database schema and seed data are handled by the data project.
    Navigate to the solution folder and run the following command:
    ```shell
-   dotnet ef database update --project "Database\Database.csproj" --startup-project "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" --context PublicDbContext
+   dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context PublicDbContext
    ```
 6. **Run migrations for the user database**:
 
    Navigate to the solution folder and run the following command:
    ```shell
-   dotnet ef database update --project "Database\Database.csproj" --startup-project "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" --context UserDbContext
+   dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context UserDbContext
    ```
 
 ## Database Setup
