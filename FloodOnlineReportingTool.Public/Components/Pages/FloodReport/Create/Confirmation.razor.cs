@@ -1,7 +1,4 @@
-﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Eligibility;
-using FloodOnlineReportingTool.Database.Models.Responsibilities;
-using FloodOnlineReportingTool.Database.Repositories;
+﻿using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
@@ -31,11 +28,6 @@ public partial class Confirmation(
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
-
-    protected async override Task OnInitializedAsync()
-    {
-        
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -83,9 +75,8 @@ public partial class Confirmation(
 
             _isLoading = false;
             StateHasChanged();
+
             await gdsJs.InitGds(_cts.Token);
         }
-
-
     }
 }

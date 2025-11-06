@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -108,21 +109,34 @@ public partial class Delete(
     {
         logger.LogDebug("Deleting contact information");
 
-        if (_contactModel == null)
+        if (_contactModel?.Id == null || _contactModel?.ContactType == null)
         {
             return;
         }
 
         try
         {
+            Guid contactRecordId = _contactModel.Id.Value;
+            ContactRecordType contactRecordType = _contactModel.ContactType.Value;
+
             // Send deletion confirmation email just before deleting
             // TODO - enable this once notification is available
-            //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, contactRecordType);
 
-            await contactRepository.DeleteById(_contactModel.Id!.Value, _contactModel.ContactType!.Value, _cts.Token);
-            logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
+            var deleteResult = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
+            if (!deleteResult.IsSuccess)
+            {
+                var field = _editContext.Field(nameof(_contactModel.ContactType));
+                foreach (var error in deleteResult.Errors)
+                {
+                    _messageStore.Add(field, error);
+                }
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
 
             // Navigate back to contacts home
+            logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)

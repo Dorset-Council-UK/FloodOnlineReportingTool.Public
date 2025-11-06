@@ -97,8 +97,6 @@ public partial class Create(
         }
     }
 
-
-
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
     {
 
@@ -112,7 +110,7 @@ public partial class Create(
         var id = contactRecordType.ToString().AsSpan();
         var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
 
-        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, false);
+        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected: false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -163,7 +161,7 @@ public partial class Create(
                 IsEmailVerified = false,
                 PhoneNumber = _contactModel.PhoneNumber,
             };
-            await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+            var createResult = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
 
             // Success - send confirmation email
             // TODO - enable this once notification is available
@@ -180,6 +178,17 @@ public partial class Create(
             //    _floodReport.EligibilityCheck!.Northing,
             //    _floodReport.CreatedUtc
             //    );
+
+            if (!createResult.IsSuccess)
+            {
+                var field = _editContext.Field(nameof(_contactModel.ContactType));
+                foreach (var error in createResult.Errors)
+                {
+                    _messageStore.Add(field, error);
+                }
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
 
             logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Home.Url);

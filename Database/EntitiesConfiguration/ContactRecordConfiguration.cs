@@ -12,6 +12,9 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
             .Property(o => o.Id)
             .ValueGeneratedNever();
 
+        builder
+            .HasIndex(o => o.ContactUserId);
+
         // Many-to-many: ContactRecord <-> FloodReport
         builder
             .HasMany(cr => cr.FloodReports)
