@@ -202,7 +202,7 @@ public class FloodReportRepository(
             .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
         var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(floodReportCreatedMessage, ct)
+        await publishEndpoint.Publish(floodReportCreatedMessage, ct);
         await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct);
 
         // Save the flood report, eligibility check, and messages to the database
