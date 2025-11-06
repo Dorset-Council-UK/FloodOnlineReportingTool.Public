@@ -9,18 +9,23 @@
 <div class="govuk-summary-card">
     <div class="govuk-summary-card__title-wrapper">
         <h2 class="govuk-summary-card__title">General information</h2>
-            <ul class="govuk-summary-card__actions">
-                <li class="govuk-summary-card__action">
-                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestMessage" title="Create a test contract message and publish it">
-                        Send test message
-                    </a>
-                </li>
+        <ul class="govuk-summary-card__actions">
+            <li class="govuk-summary-card__action">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestMessage" title="Create a test contract message and publish it">
+                    Send test message
+                </a>
+            </li>
             <li class="govuk-summary-card__action">
                 <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestNotifcation" title="Create a test notification and email it to configured email">
                     Send test notification
                 </a>
             </li>
-            </ul>
+            <li class="govuk-summary-card__action">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestFloodReport" title="Create a test flood report">
+                    Create test flood report
+                </a>
+            </li>
+        </ul>
     </div>
     <div class="govuk-summary-card__content">
         <dl class="govuk-summary-list">
