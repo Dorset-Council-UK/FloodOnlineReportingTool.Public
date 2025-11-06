@@ -13,7 +13,7 @@ internal static class AuthenticationStateExtensions
             return null;
         }
 
-        var authState = await authenticationState.ConfigureAwait(false);
+        var authState = await authenticationState;
         return authState?.User.IdentityUserId();
     }
 

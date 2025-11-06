@@ -109,5 +109,4 @@ app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
 // Map all identity endpoints
 app.MapGroup("/api/auth").MapIdentityApi<FortUser>();
 
-await app.RunAsync()
-         .ConfigureAwait(false);
+await app.RunAsync();

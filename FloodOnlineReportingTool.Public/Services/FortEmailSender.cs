@@ -14,7 +14,7 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
         logger.LogDebug("Confirmation link: {ConfirmationLink}", confirmationLink);
 
         var message = new ConfirmationLinkSent(user.Id, email, confirmationLink);
-        await PublishMessage(message).ConfigureAwait(false);
+        await PublishMessage(message);
 
         logger.LogInformation("Confirmation link 'message' published for user {UserId}", user.Id);
     }
@@ -25,7 +25,7 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
         logger.LogDebug("Reset code: {ResetCode}", resetCode);
 
         var message = new PasswordResetCodeSent(user.Id, email, resetCode);
-        await PublishMessage(message).ConfigureAwait(false);
+        await PublishMessage(message);
 
         logger.LogInformation("Password reset code 'message' published for user {UserId}", user.Id);
     }
@@ -36,7 +36,7 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
         logger.LogDebug("Reset link: {ResetLink}", resetLink);
 
         var message = new PasswordResetLinkSent(user.Id, email, resetLink);
-        await PublishMessage(message).ConfigureAwait(false);
+        await PublishMessage(message);
 
         logger.LogInformation("Password reset link 'message' published for user {UserId}", user.Id);
     }
@@ -46,7 +46,7 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
         using var scope = serviceScopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PublicDbContext>();
         var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        await publishEndpoint.Publish(message).ConfigureAwait(false);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await publishEndpoint.Publish(message);
+        await context.SaveChangesAsync();
     }
 }

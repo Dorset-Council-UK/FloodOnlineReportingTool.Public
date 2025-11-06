@@ -17,8 +17,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .Include(o => o.Investigation)
             .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.Investigation)
-            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
     public async Task<Investigation> CreateForUser(Guid userId, InvestigationDto investigationDto, CancellationToken ct)
@@ -26,8 +25,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         var floodReport = await context.FloodReports
             .AsNoTracking()
             .Include(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
 
         if (floodReport == null)
         {
@@ -58,14 +56,10 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
 
         // Publish a message to the message system
         var message = investigation.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint
-            .Publish(message, ct)
-            .ConfigureAwait(false);
+        await publishEndpoint.Publish(message, ct);
 
         // Save the investigation in the database
-        await context
-            .SaveChangesAsync(ct)
-            .ConfigureAwait(false);
+        await context.SaveChangesAsync(ct);
 
         return investigation;
     }
@@ -78,8 +72,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .Include(o => o.Investigation)
             .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.Investigation)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(ct);
     }
 
     /// <summary>

@@ -87,22 +87,16 @@ public class SearchRepository : ISearchRepository
         }
         client.DefaultRequestHeaders.Add("X-API-Key", _settings.ApiKey);
 
-        var response = await client.GetAsync(uri, ct)
-            .ConfigureAwait(false);
-
-        return response;
+        return await client.GetAsync(uri, ct);
     }
 
     public async Task<IList<ApiAddress>> AddressSearch(string postcode, SearchAreaOptions searchArea, Uri? referer, CancellationToken ct)
     {
-        var response = await GetResponse(CreateAddressSearchUri(postcode, searchArea), referer, ct)
-            .ConfigureAwait(false);
+        var response = await GetResponse(CreateAddressSearchUri(postcode, searchArea), referer, ct);
 
         if (response.IsSuccessStatusCode)
         {
-            var advancedSearch = await response.Content
-                .ReadFromJsonAsync<List<ApiAddress>>(_jsonOptions, ct)
-                .ConfigureAwait(false);
+            var advancedSearch = await response.Content.ReadFromJsonAsync<List<ApiAddress>>(_jsonOptions, ct);
 
             if (advancedSearch is not null)
             {
@@ -118,10 +112,7 @@ public class SearchRepository : ISearchRepository
     /// </summary>
     public async Task<HttpResponseMessage?> GetNearestAddressResponse(double easting, double northing, SearchAreaOptions searchArea, Uri? referer, CancellationToken ct)
     {
-        var response = await GetResponse(CreateNearestAddressUri(easting, northing, searchArea), referer, ct)
-            .ConfigureAwait(false);
-
-        return response;
+        return await GetResponse(CreateNearestAddressUri(easting, northing, searchArea), referer, ct);
     }
 
     /// <summary>
@@ -129,8 +120,7 @@ public class SearchRepository : ISearchRepository
     /// </summary>
     public async Task IsAddressSearchAvailable(Uri? referer, SearchAreaOptions searchArea, CancellationToken ct)
     {
-        var response = await GetResponse(CreateAddressSearchUri("", searchArea), referer, ct)
-            .ConfigureAwait(false);
+        var response = await GetResponse(CreateAddressSearchUri("", searchArea), referer, ct);
 
         // Expecting a 400 response, throw an exception for anything else
         if (response.StatusCode != System.Net.HttpStatusCode.BadRequest)
@@ -144,8 +134,7 @@ public class SearchRepository : ISearchRepository
     /// </summary>
     public async Task IsNearestAddressAvailable(Uri? referer, SearchAreaOptions searchArea, CancellationToken ct)
     {
-        var response = await GetResponse(CreateNearestAddressUri(0, 0, searchArea), referer, ct)
-            .ConfigureAwait(false);
+        var response = await GetResponse(CreateNearestAddressUri(0, 0, searchArea), referer, ct);
 
         // Expecting a 400 response, throw an exception for anything else
         if (response.StatusCode != System.Net.HttpStatusCode.BadRequest)

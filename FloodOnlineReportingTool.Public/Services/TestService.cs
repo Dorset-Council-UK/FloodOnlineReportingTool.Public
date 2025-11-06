@@ -57,8 +57,8 @@ public sealed class TestService
 
         var message = eligibilityCheckCreatedFaker.Generate();
 
-        await _publishEndpoint.Publish(message, ct).ConfigureAwait(false);
-        await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await _publishEndpoint.Publish(message, ct);
+        await _context.SaveChangesAsync(ct);
 #endif
     }
 }

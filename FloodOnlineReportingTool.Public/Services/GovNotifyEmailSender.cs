@@ -27,8 +27,7 @@ internal class GovNotifyEmailSender(
         logger.LogDebug("Sending email to {EmailAddress}", emailAddress);
 
         var response = await notificationClient
-            .SendEmailAsync(emailAddress, templateId, personalisation, clientReference, emailReplyToId, oneClickUnsubscribeURL)
-            .ConfigureAwait(false);
+            .SendEmailAsync(emailAddress, templateId, personalisation, clientReference, emailReplyToId, oneClickUnsubscribeURL);
 
         logger.LogInformation("Email sent to {EmailAddress} with GovNotify response ID {ResponseId}", emailAddress, response.id);
 
@@ -74,7 +73,7 @@ internal class GovNotifyEmailSender(
             { "test_message", testMessage },
         };
 
-        return await SendEmail(targetEmail, _govNotifySettings.Templates.TestNotification, personalisation).ConfigureAwait(false);
+        return await SendEmail(targetEmail, _govNotifySettings.Templates.TestNotification, personalisation);
     }
 
     // Account notifications
@@ -108,7 +107,7 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.VerifyEmailAddress, personalisation).ConfigureAwait(false);
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.VerifyEmailAddress, personalisation);
     }
 
     // Contact notifications
@@ -132,7 +131,7 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactUpdated, personalisation).ConfigureAwait(false);
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactUpdated, personalisation);
     }
 
     // TODO: Create / set notification template.
@@ -155,6 +154,6 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactDeleted, personalisation).ConfigureAwait(false);
+        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactDeleted, personalisation);
     }
 }
