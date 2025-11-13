@@ -61,6 +61,8 @@ public sealed class TestService(
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         await publishEndpoint.Publish(message, ct);
         await context.SaveChangesAsync(ct);
+#else
+        await Task.CompletedTask;
 #endif
     }
 
@@ -110,6 +112,9 @@ public sealed class TestService(
         }
 
         return floodReport.Reference;
+#else
+        await Task.CompletedTask;
+        return null;
 #endif
     }
 }
