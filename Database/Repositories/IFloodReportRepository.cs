@@ -48,5 +48,9 @@ public interface IFloodReportRepository
     /// </summary>
     Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, CancellationToken ct);
 
+    /// <summary>
+    ///     <para>Gets the result model with information about the eligibility status of the current record</para>
+    /// </summary>
+    Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct);
     bool HasInvestigationStarted(Guid status);
 }

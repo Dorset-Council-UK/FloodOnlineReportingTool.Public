@@ -14,9 +14,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<FloodImpact?> GetFloodImpact(Guid id, CancellationToken ct)
     {
-        return await context.FloodImpacts
-            .FindAsync([id], ct)
-            .ConfigureAwait(false);
+        return await context.FloodImpacts.FindAsync([id], ct);
     }
 
     public async Task<IList<FloodImpact>> GetFloodImpactsByCategory(string category, CancellationToken ct)
@@ -25,23 +23,19 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => o.Category == category)
             .OrderBy(o => o.OptionOrder)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
     {
-        return await context.FloodProblems
-            .FindAsync([id], ct)
-            .ConfigureAwait(false);
+        return await context.FloodProblems.FindAsync([id], ct);
     }
 
     public async Task<FloodProblem?> GetFloodProblemByCategory(string category, Guid id, CancellationToken ct)
     {
         return await context.FloodProblems
             .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Category == category && o.Id == id, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.Category == category && o.Id == id, ct);
     }
 
     public async Task<IList<FloodProblem>> GetFloodProblemsByCategory(string category, CancellationToken ct)
@@ -50,8 +44,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => o.Category == category)
             .OrderBy(o => o.OptionOrder)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<IList<FloodProblem>> GetFloodProblemsByCategories(string[] categories, CancellationToken ct)
@@ -60,13 +53,12 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
             .OrderBy(o => o.OptionOrder)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<IList<FloodProblem>> FilterFloodProblemsByCategories(string[] categories, IList<FloodProblem> problemList, CancellationToken ct)
     {
-        var filterHashSet = (await GetFloodProblemsByCategories(categories, ct).ConfigureAwait(false))
+        var filterHashSet = (await GetFloodProblemsByCategories(categories, ct))
             .Select(f => f.Id)
             .ToHashSet();
         return problemList.Where(p => filterHashSet.Contains(p.Id)).ToList();
@@ -85,11 +77,9 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
         var allSources = primarySources.Concat(secondarySources);
 
-        IList<FloodProblem> fullFloodSource = await context.FloodProblems.Where(f =>
-                allSources
-                .Contains(f.Id)
-            ).ToListAsync(ct)
-            .ConfigureAwait(false);
+        IList<FloodProblem> fullFloodSource = await context.FloodProblems
+            .Where(f => allSources.Contains(f.Id))
+            .ToListAsync(ct);
 
         return fullFloodSource;
     }
@@ -100,8 +90,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => o.Category == category)
             .OrderBy(o => o.OptionOrder)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategories(string[] categories, CancellationToken ct)
@@ -110,15 +99,12 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
             .OrderBy(o => o.OptionOrder)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<RecordStatus?> GetRecordStatus(Guid id, CancellationToken ct)
     {
-        return await context.RecordStatuses
-            .FindAsync([id], ct)
-            .ConfigureAwait(false);
+        return await context.RecordStatuses.FindAsync([id], ct);
     }
 
     public async Task<IList<RecordStatus>> GetRecordStatusesByCategory(string category, CancellationToken ct)
@@ -127,8 +113,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => o.Category == category)
             .OrderBy(o => o.Order)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     public async Task<IList<RecordStatus>> GetRecordStatusesByCategories(string[] categories, CancellationToken ct)
@@ -137,8 +122,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
             .OrderBy(o => o.Order)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
 
     /// <summary>
@@ -155,8 +139,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
         var adminUnitIds = await boundariesDb.Counties
             .FromSqlRaw(SqlAllCounties, easting, northing)
             .Select(c => c.AdminUnitId)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
 
         if (adminUnitIds is null || adminUnitIds.Count == 0)
         {
@@ -171,8 +154,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
             .AsNoTracking()
             .Where(fr => adminUnitIds.Contains(fr.AdminUnitId))
             .Select(fr => fr.Organisation)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
 
         return organisations;
     }

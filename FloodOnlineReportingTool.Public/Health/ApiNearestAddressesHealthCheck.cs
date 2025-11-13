@@ -11,10 +11,7 @@ public class ApiNearestAddressesHealthCheck(ISearchRepository searchRepository, 
     {
         try
         {
-            await searchRepository
-                .IsNearestAddressAvailable(GetReferrer(), SearchAreaOptions.dorset, ct)
-                .ConfigureAwait(false);
-
+            await searchRepository.IsNearestAddressAvailable(GetReferrer(), SearchAreaOptions.dorset, ct);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)

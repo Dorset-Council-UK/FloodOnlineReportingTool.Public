@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
+using RecordStatusIds = FloodOnlineReportingTool.Contracts.Shared.RecordStatusIds;
 
 namespace FloodOnlineReportingTool.Database.Seed;
 
@@ -340,9 +341,9 @@ internal static class InitialData
             new RecordStatus(RecordStatusIds.Agreed, RecordStatusCategory.DataProtection, "Agreed", 2),
 
             // Yes / No / Not Sure
-            new RecordStatus(RecordStatusIds.Yes, RecordStatusCategory.General, "Yes", 1),
-            new RecordStatus(RecordStatusIds.No, RecordStatusCategory.General, "No", 2),
-            new RecordStatus(RecordStatusIds.NotSure, RecordStatusCategory.General, "Not Sure", 3),
+            new RecordStatus(Models.Status.RecordStatusIds.Yes, RecordStatusCategory.General, "Yes", 1),
+            new RecordStatus(Models.Status.RecordStatusIds.No, RecordStatusCategory.General, "No", 2),
+            new RecordStatus(Models.Status.RecordStatusIds.NotSure, RecordStatusCategory.General, "Not Sure", 3),
         ];
     }
 

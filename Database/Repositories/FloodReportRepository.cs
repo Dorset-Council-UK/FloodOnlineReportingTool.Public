@@ -1,8 +1,8 @@
-﻿using FloodOnlineReportingTool.Database.DbContexts;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
-using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Settings;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -29,10 +29,9 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
     }
 
     public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
@@ -42,22 +41,16 @@ public class FloodReportRepository(
             .Where(fr => fr.ReportOwner != null &&
                  fr.ReportOwner.ContactUserId == contactUserId &&
                  fr.Id == floodReportId)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
-
         return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null &&
-                 fc.ReportOwner.ContactUserId == contactUserId)
+            .Where(fc => fc.ReportOwner != null && fc.ReportOwner.ContactUserId == contactUserId)
             .OrderByDescending(cr => cr.CreatedUtc)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
+            .ToListAsync(ct);
     }
-
-
 
     private string CreateReference()
     {
@@ -76,10 +69,9 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.Id == reference, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.Id == reference, ct);
     }
 
     public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
@@ -92,10 +84,9 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
-            .Include(o => o.ExtraContactRecords)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.Reference == reference, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.Reference == reference, ct);
     }
 
     public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(Guid userId, CancellationToken ct)
@@ -113,8 +104,7 @@ public class FloodReportRepository(
                 o.StatusId,
                 o.Investigation,
             })
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(ct);
 
         if (result == null)
         {
@@ -150,14 +140,10 @@ public class FloodReportRepository(
 
         // Publish a created message to the message system?
         var message = floodReport.ToMessageCreated();
-        await publishEndpoint
-            .Publish(message, ct)
-            .ConfigureAwait(false);
+        await publishEndpoint.Publish(message, ct);
 
         // Add both the flood report and the message to the database
-        await context
-            .SaveChangesAsync(ct)
-            .ConfigureAwait(false);
+        await context.SaveChangesAsync(ct);
 
         return floodReport;
     }
@@ -169,7 +155,7 @@ public class FloodReportRepository(
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
 
-        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
+        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct);
 
         var floodReport = new FloodReport
         {
@@ -209,22 +195,62 @@ public class FloodReportRepository(
 
         // Publish mutiple messages to the message system
         var responsibleOrganisations = await commonRepository
-            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
-            .ConfigureAwait(false);
+            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
 
         var fullFloodSource = await commonRepository
-            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct)
-            .ConfigureAwait(false);
+            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
         var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(floodReportCreatedMessage, ct).ConfigureAwait(false);
-        await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct).ConfigureAwait(false);
+        await publishEndpoint.Publish(floodReportCreatedMessage, ct);
+        await publishEndpoint.Publish(eligibilityCheckCreatedMessage, ct);
 
         // Save the flood report, eligibility check, and messages to the database
-        await context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await context.SaveChangesAsync(ct);
 
         return floodReport;
+    }
+
+    public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
+    {
+        logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
+
+        var floodReport = await context.FloodReports
+            .AsNoTracking()
+            .Include(o => o.ContactRecords)
+            .Include(o => o.EligibilityCheck)
+            .Where(o => o.Reference == reference)
+            .FirstOrDefaultAsync(ct);
+
+        if (floodReport is null)
+        {
+            logger.LogWarning("No flood report found for reference {Reference}", reference);
+            throw new InvalidOperationException($"No flood report found for reference {reference}");
+        }
+
+        if (floodReport.EligibilityCheck is null)
+        {
+            logger.LogWarning("No eligibility check found for flood report reference {Reference}", reference);
+            throw new InvalidOperationException($"No eligibility check found for flood report reference {reference}");
+        }
+
+        var responsibleOrganisations = await commonRepository
+                .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
+
+        return new EligibilityResult
+        {
+            HasContactInformation = floodReport.ContactRecords.Any(),
+            FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
+            ResponsibleOrganisations = responsibleOrganisations,
+            FloodReportId = floodReport.Id,
+
+            // These don't have any logic yet
+            IsEmergencyResponse = false,
+            Section19Url = null,
+            Section19 = EligibilityOptions.None,
+            PropertyProtection = EligibilityOptions.None,
+            GrantApplication = EligibilityOptions.None,
+        };
     }
 
     public bool HasInvestigationStarted(Guid status)
@@ -262,9 +288,7 @@ public class FloodReportRepository(
         }
 
         // Get the duration from the flood problem
-        var floodProblem = await context.FloodProblems
-            .FindAsync([durationKnownId], ct)
-            .ConfigureAwait(false);
+        var floodProblem = await context.FloodProblems.FindAsync([durationKnownId], ct);
 
         if (floodProblem == null)
         {

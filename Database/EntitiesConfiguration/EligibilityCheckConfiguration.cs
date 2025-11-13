@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Status;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,6 +20,12 @@ internal class EligibilityCheckConfiguration : IEntityTypeConfiguration<Eligibil
         builder
             .Property(o => o.VulnerablePeopleId)
             .HasDefaultValue(RecordStatusIds.NotSure);
+
+        builder
+            .HasOne(e => e.FloodReport)
+            .WithOne(f => f.EligibilityCheck)
+            .HasForeignKey<FloodReport>(f => f.EligibilityCheckId)
+            .IsRequired(false);
 
         // Auto includes
         builder

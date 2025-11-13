@@ -17,8 +17,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             .AsNoTracking()
             .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<EligibilityCheck?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
@@ -28,8 +27,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             .AsNoTracking()
             .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
     public async Task<EligibilityCheck?> GetById(Guid id, CancellationToken ct)
@@ -37,22 +35,18 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         logger.LogInformation("Getting eligibility check by id {Id}", id);
 
         // FloodProblems, and FloodImpacts will be auto included
-        return await context.EligibilityChecks
-            .FindAsync([id], ct)
-            .ConfigureAwait(false);
+        return await context.EligibilityChecks.FindAsync([id], ct);
     }
 
     public async Task<EligibilityCheck?> GetByReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Getting eligibility check by flood report reference {Reference}", reference);
 
-        return await context.FloodReports
+        return await context.EligibilityChecks
             .AsNoTracking()
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
-            .Select(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
+            .Include(o => o.FloodReport)
+            .Where(o => o.FloodReport.Reference == reference)
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<EligibilityCheck?> Update(Guid id, EligibilityCheckDto dto, CancellationToken ct)
@@ -61,8 +55,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
         var eligibilityCheck = await context.EligibilityChecks
             .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id, ct)
-            .ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.Id == id, ct);
 
         if (eligibilityCheck == null)
         {
@@ -70,7 +63,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         }
 
         // Update the fields we choose
-        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
+        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct);
         var updatedCheck = eligibilityCheck with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
@@ -90,24 +83,19 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
             Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
             Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
-            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))]
+            SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))],
         };
         context.EligibilityChecks.Update(updatedCheck);
 
         // Publish a updated message to the message system
-        var responsibleOrganisations = await commonRepository
-            .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
-            .ConfigureAwait(false);
-
-        var fullFloodSource = await commonRepository
-            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
-            .ConfigureAwait(false);
+        var responsibleOrganisations = await commonRepository.GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct);
+        var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
+        await publishEndpoint.Publish(updatedMessage, ct);
 
         // Update the database with the eligibility check, message, flood impacts, and flood problems
-        await context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await context.SaveChangesAsync(ct);
 
         return updatedCheck;
     }
@@ -120,11 +108,10 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             .Where(o => o.ReportOwnerId == userId)
             .Select(o => o.EligibilityCheck)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
-            .ConfigureAwait(false)
             ?? throw new InvalidOperationException("No eligiblity check found");
 
         // Update the fields we choose
-        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct).ConfigureAwait(false);
+        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct);
         var updatedCheck = eligibilityCheck with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
@@ -149,65 +136,16 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         context.EligibilityChecks.Update(updatedCheck);
 
         // Publish a updated message to the message system
-        var responsibleOrganisations = await commonRepository
-            .GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct)
-            .ConfigureAwait(false);
-
-        var fullFloodSource = await commonRepository
-            .GetFullEligibilityFloodProblemSourceList(updatedCheck, ct)
-            .ConfigureAwait(false);
+        var responsibleOrganisations = await commonRepository.GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct);
+        var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(updatedMessage, ct).ConfigureAwait(false);
+        await publishEndpoint.Publish(updatedMessage, ct);
 
         // Update the database with the eligibility check, message, flood impacts, and flood problems
-        await context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await context.SaveChangesAsync(ct);
 
         return updatedCheck;
-    }
-
-    public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
-    {
-        logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
-
-        var floodReport = await context.FloodReports
-            .AsNoTracking()
-            .Include(o => o.ExtraContactRecords)
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
-            .FirstOrDefaultAsync(ct)
-            .ConfigureAwait(false);
-
-        if (floodReport is null)
-        {
-            logger.LogWarning("No flood report found for reference {Reference}", reference);
-            throw new InvalidOperationException($"No flood report found for reference {reference}");
-        }
-
-        if (floodReport.EligibilityCheck is null)
-        {
-            logger.LogWarning("No eligibility check found for flood report reference {Reference}", reference);
-            throw new InvalidOperationException($"No eligibility check found for flood report reference {reference}");
-        }
-
-        var responsibleOrganisations = await commonRepository
-                .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct)
-                .ConfigureAwait(false);
-
-        return new EligibilityResult
-        {
-            HasContactInformation = floodReport.ExtraContactRecords.Any(),
-            FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
-            ResponsibleOrganisations = responsibleOrganisations,
-            FloodReportId = floodReport.Id,
-
-            // These don't have any logic yet
-            IsEmergencyResponse = false,
-            Section19Url = null,
-            Section19 = EligibilityOptions.None,
-            PropertyProtection = EligibilityOptions.None,
-            GrantApplication = EligibilityOptions.None,
-        };
     }
 
     /// <summary>
@@ -240,9 +178,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         }
 
         // Get the duration from the flood problem
-        var floodProblem = await context.FloodProblems
-            .FindAsync([durationKnownId], ct)
-            .ConfigureAwait(false);
+        var floodProblem = await context.FloodProblems.FindAsync([durationKnownId], ct);
 
         if (floodProblem == null)
         {

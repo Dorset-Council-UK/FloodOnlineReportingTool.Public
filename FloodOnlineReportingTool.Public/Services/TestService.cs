@@ -1,21 +1,22 @@
 ﻿using Bogus;
 using FloodOnlineReportingTool.Contracts;
+using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Repositories;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
-public sealed class TestService
-{
-    private readonly IPublishEndpoint _publishEndpoint;
-    private readonly PublicDbContext _context;
-
-    public TestService(IPublishEndpoint publishEndpoint, PublicDbContext context)
-    {
-        _publishEndpoint = publishEndpoint;
-        _context = context;
-    }
-
+public sealed class TestService(
+    IPublishEndpoint publishEndpoint,
+    IDbContextFactory<PublicDbContext> contextFactory,
+    ICommonRepository commonRepository,
+    IFloodReportRepository floodReportRepository
+) {
     internal async Task TestMessage(CancellationToken ct)
     {
 #if DEBUG
@@ -57,8 +58,63 @@ public sealed class TestService
 
         var message = eligibilityCheckCreatedFaker.Generate();
 
-        await _publishEndpoint.Publish(message, ct).ConfigureAwait(false);
-        await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await publishEndpoint.Publish(message, ct);
+        await context.SaveChangesAsync(ct);
+#else
+        await Task.CompletedTask;
+#endif
+    }
+
+    internal async Task<string?> TestFloodReport(CancellationToken ct)
+    {
+#if DEBUG
+        EligibilityCheckDto dto = new()
+        {
+            Uprn = 10023242411,
+            Usrn = 20023242411,
+            Easting = 368991.12,
+            Northing = 90881.94,
+            IsAddress = true,
+            LocationDesc = "TEST location description",
+            TemporaryUprn = null,
+            TemporaryLocationDesc = null,
+            ImpactStart = DateTimeOffset.UtcNow.AddDays(-1),
+            DurationKnownId = FloodDurationIds.Duration24,
+            ImpactDuration = 24,
+            OnGoing = false,
+            Uninhabitable = false,
+            VulnerablePeopleId = Database.Models.Status.RecordStatusIds.Yes,
+            VulnerableCount = 1,
+            Residentials = [
+                FloodImpactIds.InsideLivingArea,
+                FloodImpactIds.Basement,
+            ],
+            Commercials = [
+                FloodImpactIds.InsideBuilding,
+                FloodImpactIds.CarPark,
+            ],
+            Sources = [
+                PrimaryCauseIds.River,
+                PrimaryCauseIds.WaterRisingOutOfTheGround,
+            ],
+            SecondarySources = [
+                SecondaryCauseIds.RunoffFromRoad,
+                SecondaryCauseIds.RunoffFromTrackOrPath,
+            ],
+        };
+
+        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, ct);
+
+        if (floodReport is null)
+        {
+            return null;
+        }
+
+        return floodReport.Reference;
+#else
+        await Task.CompletedTask;
+        return null;
 #endif
     }
 }

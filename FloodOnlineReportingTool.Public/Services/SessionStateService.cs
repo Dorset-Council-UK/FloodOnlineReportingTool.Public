@@ -18,7 +18,7 @@ public class SessionStateService
     {
         try
         {
-            var storedId = await _sessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId).ConfigureAwait(false);
+            var storedId = await _sessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId);
             return storedId.Success ? storedId.Value : Guid.Empty;
         }
         catch (Exception ex)
@@ -30,6 +30,6 @@ public class SessionStateService
 
     public async Task SaveFloodReportId(Guid floodReportId)
     {
-        await _sessionStorage.SetAsync(SessionConstants.FloodReportId, floodReportId).ConfigureAwait(false);
+        await _sessionStorage.SetAsync(SessionConstants.FloodReportId, floodReportId);
     }
 }

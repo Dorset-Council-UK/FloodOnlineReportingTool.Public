@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -7,29 +8,30 @@ public interface IContactRecordRepository
     /// <summary>
     /// Gets a contact record by its ID value
     /// </summary>
-    /// <returns></returns>
     Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct);
 
     /// <summary>
     /// Get all contact records associated with a flood report
     /// </summary>
-    /// <returns></returns>
     Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Create a contact record for the user, going via the flood report
     /// </summary>
-    Task<ContactRecord> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
+    /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    Task<ContactRecordCreateOrUpdateResult> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Update the contact record, going via the flood report
     /// </summary>
-    Task<ContactRecord> UpdateForUser(Guid userId, Guid id, ContactRecordDto dto, CancellationToken ct);
+    /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    Task<ContactRecordCreateOrUpdateResult> UpdateForUser(Guid userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Delete the contact record by ID
     /// </summary>
-    Task DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
+    /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    Task<ContactRecordDeleteResult> DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report
@@ -40,4 +42,8 @@ public interface IContactRecordRepository
     /// Get the unused contact record types, going via the flood report
     /// </summary>
     Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
+
+    Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default);
+
+    Task<bool> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default);
 }

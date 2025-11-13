@@ -11,10 +11,7 @@ public class ApiAdvancedSearchHealthCheck(ISearchRepository searchRepository, IH
     {
         try
         {
-            await searchRepository
-                .IsAddressSearchAvailable(GetReferrer(), SearchAreaOptions.dorset, ct)
-                .ConfigureAwait(false);
-
+            await searchRepository.IsAddressSearchAvailable(GetReferrer(), SearchAreaOptions.dorset, ct);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)

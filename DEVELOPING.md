@@ -9,7 +9,7 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 
 - **PostgreSQL 13+ with PostGIS extension**: This is the default database provider. The project uses Entity Framework, making it adaptable to other providers with minimal effort.
 - **.NET 9**: Ensure you have the .NET 9 SDK installed.
-- **Message system (optional)**: The project includes a messaging system using RabbitMQ. You can enable or disable this system through the `RabbitMQ:Enabled` setting in your configuration.
+- **Message system (optional)**: The project includes a messaging system using Azure Service Bus. You can enable or disable this system through the `Messaging:Enabled` setting in your configuration.
 - **GDS Framework**: The project relies on the Government Digital Service (GDS) framework for its front-end. Make sure to run `npm install` to set up dependencies.
 
 ## Getting Started
@@ -41,13 +41,13 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    The database schema and seed data are handled by the data project.
    Navigate to the solution folder and run the following command:
    ```shell
-   dotnet ef database update --project "Database\Database.csproj" --startup-project "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" --context PublicDbContext
+   dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context PublicDbContext
    ```
 6. **Run migrations for the user database**:
 
    Navigate to the solution folder and run the following command:
    ```shell
-   dotnet ef database update --project "Database\Database.csproj" --startup-project "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" --context UserDbContext
+   dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context UserDbContext
    ```
 
 ## Database Setup
@@ -94,12 +94,9 @@ Example secrets file:
     "AccessTokenIssueDurationMonths": 6,
     "OSApiKey": "Your OS Maps API Key here"
   },
-  "RabbitMQ": {
+  "Messaging": {
     "Enabled": "false",
-    "Host": "amqp://localhost:5672",
-    "HostContainer": "amqp://fort-queue:5672",
-    "Username": "YourMessagingUserName",
-    "Password": "YourMessagingPassword"
+    "ConnectionString": "YourConnectionString"
   }
 }
 ```
