@@ -1,5 +1,8 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -64,16 +67,37 @@ public partial class Summary(
             Model.PropertyTypeName = await GetPropertyTypeName(createExtraData);
 
             var eligibilityCheck = await GetEligibilityCheck();
+            Model.IsAddress = eligibilityCheck.IsAddress;
             Model.AddressPreview = eligibilityCheck.LocationDesc;
+            Model.TemporaryAddressPreview = eligibilityCheck.TemporaryLocationDesc;
             Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
             Model.FloodSources = await GetFloodSources(eligibilityCheck);
+            bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);
+            Model.FloodSecondarySources = runoff ? await GetFloodSecondarySources(eligibilityCheck) : null;
             Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
             Model.StartDate = eligibilityCheck.ImpactStart;
             Model.IsOnGoing = eligibilityCheck.OnGoing;
-            Model.FloodDurationHours = eligibilityCheck.ImpactDuration;
+            Model.FloodDurationKnownId = eligibilityCheck.DurationKnownId;
             Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId;
             Model.NumberOfVulnerablePeople = eligibilityCheck.VulnerableCount;
             Model.NumberOfMediaItemsUploaded = await GetNumberOfMediaItems();
+
+            // Build the flood lasted for message
+            Model.FloodingLasted = null;
+            var durationId = eligibilityCheck.DurationKnownId;
+            if (!eligibilityCheck.OnGoing && durationId != null)
+            {
+                if (durationId.Value == FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
+                {
+                    var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
+                    Model.FloodingLasted = duration.GdsReadable();
+                }
+                else
+                {
+                    var floodDuration = await commonRepository.GetFloodProblemByCategory(FloodProblemCategory.Duration, durationId.Value, _cts.Token);
+                    Model.FloodingLasted = floodDuration?.TypeDescription;
+                }
+            }
 
             _isLoading = false;
             StateHasChanged();
@@ -190,6 +214,21 @@ public partial class Summary(
         return [.. query];
     }
 
+    private async Task<IReadOnlyCollection<string>> GetFloodSecondarySources(EligibilityCheckDto eligibilityCheck)
+    {
+        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
+        if (floodProblems.Count == 0)
+        {
+            return [];
+        }
+
+        var query = floodProblems
+            .Where(o => eligibilityCheck.SecondarySources.Contains(o.Id))
+            .Select(o => o.TypeName ?? "");
+
+        return [.. query];
+    }
+
     private async Task<int> GetNumberOfMediaItems()
     {
         var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
@@ -234,7 +273,7 @@ public partial class Summary(
     /// <summary>
     /// Add the flood report, and eligibility check
     /// </summary>
-    private async Task<DataAccess.Models.FloodReport?> CreateFloodReport()
+    private async Task<Database.Models.Flood.FloodReport?> CreateFloodReport()
     {
         var eligibilityCheck = await GetEligibilityCheck();
         var floodReport = await floodReportRepository.CreateWithEligiblityCheck(eligibilityCheck, _cts.Token);
@@ -262,12 +301,12 @@ public partial class Summary(
         }
 
         var id = Model.VulnerablePeopleId.Value;
-        if (id == RecordStatusIds.No)
+        if (id == Database.Models.Status.RecordStatusIds.No)
         {
             return "No";
         }
 
-        if (id == RecordStatusIds.NotSure)
+        if (id == Database.Models.Status.RecordStatusIds.NotSure)
         {
             return "Not sure";
         }

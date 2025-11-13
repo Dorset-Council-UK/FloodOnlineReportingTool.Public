@@ -1,5 +1,7 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
@@ -68,7 +70,7 @@ public partial class FloodSource(
 
             _isLoading = false;
             StateHasChanged();
-            
+
             await gdsJs.InitGds(_cts.Token);
         }
     }
@@ -77,15 +79,32 @@ public partial class FloodSource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
+
+        var selectedOptions = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value);
+        IList<Guid> secondarySources = eligibilityCheck.SecondarySources;
+        if (!selectedOptions.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            // We need to remove any run off options as it has not been selected
+            secondarySources = [];
+        }
         var updated = eligibilityCheck with
         {
             Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
+            SecondarySources = secondarySources
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page
-        navigationManager.NavigateTo(FromSummary ? FloodReportCreatePages.Summary.Url : FloodReportCreatePages.Media.Url);
+        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            // We need to know more if they have selected this option
+            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
+        }
+        else
+        {
+            // Go to the next page, which is always the summary
+            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        }
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -115,7 +134,7 @@ public partial class FloodSource(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodProblemIds.PrimaryCauseNotSure;
+        var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

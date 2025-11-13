@@ -1,36 +1,61 @@
 ﻿@page "/test"
+@using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
-<dl class="govuk-summary-list">
-    <AuthorizeView>
-        <Authorized>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Fort user is signed in</dt>
-                <dd class="govuk-summary-list__value">true</dd>
-                <dd class="govuk-summary-list__actions">
-                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignOut.Title</a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Fort Name</dt>
-                <dd class="govuk-summary-list__value">@context.User.Identity?.Name</dd>
-            </div>
-        </Authorized>
-        <NotAuthorized>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Fort user is signed in</dt>
-                <dd class="govuk-summary-list__value">false</dd>
-                <dd class="govuk-summary-list__actions">
-                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignIn.Title</a>
-                </dd>
-            </div>
-        </NotAuthorized>
-    </AuthorizeView>
-</dl>
+<div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">General information</h2>
+        <ul class="govuk-summary-card__actions">
+            <li class="govuk-summary-card__action">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestMessage" title="Create a test contract message and publish it">
+                    Send test message
+                </a>
+            </li>
+            <li class="govuk-summary-card__action">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestNotifcation" title="Create a test notification and email it to configured email">
+                    Send test notification
+                </a>
+            </li>
+            <li class="govuk-summary-card__action">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestFloodReport" title="Create a test flood report">
+                    Create test flood report
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Fort user is signed in</dt>
+                        <dd class="govuk-summary-list__value">true</dd>
+                        <dd class="govuk-summary-list__actions">
+                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignOut.Title</a>
+                        </dd>
+                    </div>
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Fort Name</dt>
+                        <dd class="govuk-summary-list__value">@context.User.Identity?.Name</dd>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Fort user is signed in</dt>
+                        <dd class="govuk-summary-list__value">false</dd>
+                        <dd class="govuk-summary-list__actions">
+                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignIn.Title</a>
+                        </dd>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </dl>
+    </div>
+</div>
 
 <h2 class="govuk-heading-l">Session details</h2>
 <dl class="govuk-summary-list">
@@ -104,13 +129,15 @@
 <div>
     <h2 class="govuk-heading-l">Create flood report pages</h2>
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-        <ol class="govuk-breadcrumbs__list">
+        <ol style="display:flex; flex-wrap:wrap;" class="govuk-breadcrumbs__list">
             @foreach (var info in _floodReportCreatePages)
             {
-                <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @info.Note</a></li>
+                string MarkupNote = info.Note != null ? info.Note.ToString(): "";
+                <li class= "govuk-breadcrumbs__list-item"><a class= "govuk-breadcrumbs__link" href = "@info.Url"> @info.Title  @((MarkupString)MarkupNote)</a></li>
             }
         </ol>
     </nav>
+    <GdsInsetText Text="1. ^ User may pass through one or both pages"></GdsInsetText>
 </div>
 
 <div>

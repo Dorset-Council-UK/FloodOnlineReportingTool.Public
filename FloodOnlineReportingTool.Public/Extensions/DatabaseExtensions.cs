@@ -1,24 +1,25 @@
-﻿using FloodOnlineReportingTool.DataAccess.DbContexts;
-using FloodOnlineReportingTool.DataAccess.Exceptions;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class DatabaseExtensions
 {
-    public static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString, bool logSensitiveData = false)
+    internal static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new ConfigurationMissingException("Missing configuration setting: The connection string for the flood reporting database is is missing.");
         }
 
-        // Get the connection string and include additional error details in development
-        var builder = new NpgsqlConnectionStringBuilder(connectionString)
-        {
-            IncludeErrorDetail = logSensitiveData,
-        };
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+#if DEBUG
+        builder.IncludeErrorDetail = true;
+#endif
 
         // Double check that a schema has been set
         if (string.IsNullOrWhiteSpace(builder.SearchPath))
@@ -27,7 +28,7 @@ internal static class DatabaseExtensions
         }
 
         // Add the database context
-        services.AddDbContextPool<FORTDbContext>(
+        services.AddDbContextFactory<PublicDbContext>(
             options =>
             {
                 options.UseNpgsql(builder.ToString(), o =>
@@ -35,24 +36,25 @@ internal static class DatabaseExtensions
                     //o.EnableRetryOnFailure(5);
                     o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
                 });
-                options.EnableSensitiveDataLogging(logSensitiveData);
+#if DEBUG
+                options.EnableSensitiveDataLogging(true);
+#endif
             });
 
         return services;
     }
 
-    public static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString, bool isDevelopment = false)
+    internal static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new ConfigurationMissingException("Missing configuration setting: The connection string for the boundaries database is is missing.");
         }
 
-        // Get the connection string and include additional error details in development
-        var builder = new NpgsqlConnectionStringBuilder(connectionString)
-        {
-            IncludeErrorDetail = isDevelopment,
-        };
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+#if DEBUG
+        builder.IncludeErrorDetail = true;
+#endif
 
         // Double check that a schema has been set
         if (string.IsNullOrWhiteSpace(builder.SearchPath))
@@ -70,18 +72,17 @@ internal static class DatabaseExtensions
         return services;
     }
 
-    public static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString, bool logSensitiveData = false)
+    internal static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new ConfigurationMissingException("Missing configuration setting: The connection string for the identity database is is missing.");
         }
 
-        // Get the connection string and include additional error details in development
-        var builder = new NpgsqlConnectionStringBuilder(connectionString)
-        {
-            IncludeErrorDetail = logSensitiveData,
-        };
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+#if DEBUG
+        builder.IncludeErrorDetail = true;
+#endif
 
         // Double check that a schema has been set
         if (string.IsNullOrWhiteSpace(builder.SearchPath))
@@ -97,7 +98,9 @@ internal static class DatabaseExtensions
                 {
                     o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
                 });
-                options.EnableSensitiveDataLogging(logSensitiveData);
+#if DEBUG
+                options.EnableSensitiveDataLogging(true);
+#endif
             });
 
         return services;

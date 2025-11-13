@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FluentValidation;
 
@@ -12,7 +12,7 @@ public class FloodDurationValidator : AbstractValidator<FloodDuration>
             .NotEmpty()
             .WithMessage("Select the duration of the flooding");
 
-        When(o => o.DurationKnownId == FloodProblemIds.DurationKnown, () =>
+        When(o => o.DurationKnownId == FloodDurationIds.DurationKnown, () =>
         {
             RuleFor(o => o.DurationDaysText)
                 .NotEmpty()

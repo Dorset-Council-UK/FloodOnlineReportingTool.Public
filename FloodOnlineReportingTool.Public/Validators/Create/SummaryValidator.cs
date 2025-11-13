@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FluentValidation;
 
@@ -36,10 +36,17 @@ public class SummaryValidator : AbstractValidator<Summary>
             .NotEmpty()
             .WithMessage("Flooding on-going is empty.");
 
-        RuleFor(o => o.FloodDurationHours)
-            .NotEmpty()
-            .WithMessage("Flood duration is empty.")
-            .When(o => o.IsOnGoing == false);
+        When(o => o.IsOnGoing == false, () =>
+        {
+            RuleFor(o => o.FloodDurationKnownId)
+                .NotEmpty()
+                .WithMessage("Flood duration is empty.");
+
+            RuleFor(o => o.FloodingLasted)
+                .NotEmpty()
+                .WithMessage("Flood lasted is empty.")
+                .When(o => o.FloodDurationKnownId != null);
+        });
 
         RuleFor(o => o.VulnerablePeopleId)
             .NotEmpty()

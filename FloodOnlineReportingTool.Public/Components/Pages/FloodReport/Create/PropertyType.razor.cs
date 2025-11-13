@@ -1,5 +1,6 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -20,11 +21,24 @@ public partial class PropertyType(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.PropertyType.Title;
+
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Address.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
     ];
+
+    private async Task<IReadOnlyCollection<GdsBreadcrumb>> GetBreadcrumbs()
+    {
+
+        var eligibilityCheck = await GetEligibilityCheck();
+
+        var pageInfo = eligibilityCheck?.IsAddress == true
+            ? FloodReportCreatePages.Address
+            : FloodReportCreatePages.Location;
+
+        return Breadcrumbs.Append(pageInfo.ToGdsBreadcrumb()).ToList();
+    }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -63,6 +77,8 @@ public partial class PropertyType(
     {
         if (firstRender)
         {
+            Breadcrumbs = await GetBreadcrumbs();
+
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();
@@ -73,6 +89,7 @@ public partial class PropertyType(
             var propertyTypes = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.PropertyType, _cts.Token);
             Model.Property = GetPropertyType(createExtraData, propertyTypes);
             Model.PropertyOptions = [.. propertyTypes.Select(CreateOption)];
+            Model.IsAddress = eligibilityCheck.IsAddress;
 
             var organisations = await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, _cts.Token);
             Model.ResponsibleOrganisations = organisations.AsReadOnly();

@@ -1,5 +1,7 @@
 ﻿@page "/floodreport/overview"
-@using FloodOnlineReportingTool.DataAccess.Models
+@using FloodOnlineReportingTool.Contracts.Shared
+@using FloodOnlineReportingTool.Database.Models
+@using FloodOnlineReportingTool.Database.Models.Eligibility
 @using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -7,18 +9,65 @@
 
 <GdsBreadcrumbs Items="@Breadcrumbs" />
 
-<AuthorizeView Roles="@AuthenticationSchemeDefaults.FloodReportAdminRole">
+<AuthorizeView Policy="@PolicyNames.Admin">
     <Authorized>
         <h1 class="govuk-heading-xl">The users flood report</h1>
     </Authorized>
     <NotAuthorized>
-        <h1 class="govuk-heading-xl">Your flood report</h1>
+        @* <h1 class="govuk-heading-xl">Your flood report</h1> *@
     </NotAuthorized>
 </AuthorizeView>
 
+<GdsSpinner Show="_isLoading" />
+
 <AuthorizeView>
     <NotAuthorized>
-        <AccessDenied />
+        @if (_floodReport == null)
+        {
+            <div class="govuk-grid-column-full">
+                <GdsWarning Text="We cannot find your flood report." />
+            </div>
+        } else
+        {
+            <div class="govuk-panel govuk-panel--confirmation">
+                <h1 class="govuk-panel__title">Record Status: @(_floodReport.Status?.Text ?? "Unknown status")</h1>
+                <div class="govuk-panel__body">
+                    Flood reference <strong>@_floodReport.Reference</strong>
+                </div>
+            </div>
+
+            @if (_accessHasExpired)
+            {
+                <GdsWarning Text="Your access to this flood report has expired" />
+            } else
+            {
+                <p>Please make a note of your flood reference but note you are not able to update or view your record online as you are not logged in.</p>
+                <p>You will recieve update notifications about your report by email if you provided one.</p>
+            }
+
+            @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+            {
+                <h2 class="govuk-heading-l">Tell us more</h2>
+                <p>There is currently an ongoing investigation.</p>
+                <p>We need some more information from you to help us complete the investigation.</p>
+                <p>This will include details about:</p>
+                <ul>
+                    <li>Information about how and when water entered your property</li>
+                    <li>Flood depths</li>
+                    <li>Warnings you recieved</li>
+                    <li>Any help you were provided with</li>
+                    <li>More information about the flood water itself</li>
+                </ul>
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button govuk-button--start" data-module="govuk-button" href="@InvestigationPages.FirstPage.Url">
+                    Start now
+                    <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+                    </svg>
+                </a>
+            }
+
+            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+        }
     </NotAuthorized>
     <Authorized>
         <div class="govuk-grid-row">
@@ -114,5 +163,97 @@
                 }
             }
         </div>
+
+        <section id="eligibility-results">
+            <h2 class="govuk-heading-l">Eligibility results</h2>
+
+            @if (_isEmergencyResponse)
+            {
+                <p>This service does not trigger an emergency response please ring 999 and ask for the relevant service.</p>
+            }
+
+            @switch (_floodInvestigation)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>Your record is eligible for a property level flood investigation. Please complete a full flood report so the relevant organisations can complete this investigation.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>Because your property was flooded internally you may be eligible for additional support from you lead local flood authority. Eligibility is not automatic but if you are signed up for updates on this record the relevant organisation can let you know if they believe you are eligible.</p>
+                    <p>If you want to discuss this further with the relevant organisations, use the reference number above to allow them to see the details of this flood event and this may help you to get a decision.</p>
+                    break;
+
+                case EligibilityOptions.None:
+                    <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_grantApplication)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>You have successfully applied for a grant in relation to this flood event.</p>
+                    <p>For further details, refer to whichever system you used to apply for the grant.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>You may be eligible to apply for a grant. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_propertyProtection)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>You have successfully applied for help installing property level protection for your property.</p>
+                    break;
+
+                case EligibilityOptions.Conditional:
+                    <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                    break;
+            }
+
+            @switch (_section19)
+            {
+                case EligibilityOptions.Eligible:
+                    <p>The lead local flood authority responsible for your property has begun a section 19 flood investigation. To help with this process you can complete a full flood report to provide further information about this flood event. The details you provide will assist them in their investigations.</p>
+                    break;
+
+                case EligibilityOptions.Completed:
+                    <p>
+                        The lead local flood authority responsible for your property has completed a section 19 flood investigation for this flood event.
+                        @if (string.IsNullOrEmpty(_section19Url))
+                        {
+                            <span>The report is published and can be found by contacting the lead local flood authority.</span>
+                        }
+                        else
+                        {
+                            <span>The report is published and can be found at <a href="@_section19Url" target="_blank" class="govuk-link">@_section19Url</a>.</span>
+                        }
+                    </p>
+                    break;
+            }
+        </section>
+
+        @* <section id="responsible-organisations">
+        <h2 class="govuk-heading-l">Responsible organisations</h2>
+
+        @if (_leadLocalFloodAuthorities.Any())
+        {
+            <div class="govuk-inset-text">
+                @foreach (var org in _leadLocalFloodAuthorities)
+                {
+                    @((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))
+                }
+            </div>
+        }
+
+        @if (_otherFloodAuthorities.Any())
+        {
+            <p>Other responsible organisations include:</p>
+            @foreach (var org in _otherFloodAuthorities)
+            {
+                <p>@((MarkupString)org.Description.Replace("{{orgLogo}}", org.Logo.ToString()))</p>
+            }
+        }
+    </section> *@
     </Authorized>
 </AuthorizeView>

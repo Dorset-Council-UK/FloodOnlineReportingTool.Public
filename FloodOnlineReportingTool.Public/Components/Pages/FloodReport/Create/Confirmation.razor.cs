@@ -1,6 +1,6 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 
@@ -9,6 +9,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
+    SessionStateService scopedSessionStorage,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -25,48 +26,8 @@ public partial class Confirmation(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private bool _loadingError;
-
+    private Guid _FloodReportId;
     private bool _hasContactInformation;
-    private EligibilityOptions _floodInvestigation;
-    private IList<Organisation> _leadLocalFloodAuthorities = [];
-    private IList<Organisation> _otherFloodAuthorities = [];
-
-    // These don't have any logic yet in the repository
-    private bool _isEmergencyResponse;
-    private string? _section19Url;
-    private EligibilityOptions _grantApplication;
-    private EligibilityOptions _propertyProtection;
-    private EligibilityOptions _section19;
-
-    protected async override Task OnInitializedAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(Reference))
-        {
-            try
-            {
-                var result = await eligibilityRepository.CalculateEligibilityWithReference(Reference, _cts.Token);
-
-                _hasContactInformation = result.HasContactInformation;
-                _floodInvestigation = result.FloodInvestigation;
-                _leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
-                _otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
-
-                // These don't have any logic yet in the repository
-                _isEmergencyResponse = result.IsEmergencyResponse;
-                _section19Url = result.Section19Url;
-                _section19 = result.Section19;
-                _propertyProtection = result.PropertyProtection;
-                _grantApplication = result.GrantApplication;
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.LogError(ex, "There was a problem getting the eligibility check from the database");
-                _loadingError = true;
-            }
-        }
-
-        _isLoading = false;
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -86,6 +47,35 @@ public partial class Confirmation(
     {
         if (firstRender)
         {
+            if (!string.IsNullOrWhiteSpace(Reference))
+            {
+                try
+                {
+                    var result = await eligibilityRepository.GetByReference(Reference, _cts.Token);
+
+                    if ( result?.FloodReport != null)
+                    {
+                        _FloodReportId = result.FloodReport.Id;
+                        // Store the current flood report to session storage
+                        if (_FloodReportId != Guid.Empty)
+                        {
+                            //Never save a blank Guid, only a real one
+                            await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
+                        }
+
+                        _hasContactInformation = result.FloodReport.ContactRecords.Count > 0;
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.LogError(ex, "There was a problem getting the eligibility check from the database");
+                    _loadingError = true;
+                }
+            }
+
+            _isLoading = false;
+            StateHasChanged();
+
             await gdsJs.InitGds(_cts.Token);
         }
     }

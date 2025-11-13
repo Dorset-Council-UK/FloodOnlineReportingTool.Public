@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Components.Authorization;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class AuthenticationStateExtensions
 {
@@ -11,7 +13,7 @@ internal static class AuthenticationStateExtensions
             return null;
         }
 
-        var authState = await authenticationState.ConfigureAwait(false);
+        var authState = await authenticationState;
         return authState?.User.IdentityUserId();
     }
 

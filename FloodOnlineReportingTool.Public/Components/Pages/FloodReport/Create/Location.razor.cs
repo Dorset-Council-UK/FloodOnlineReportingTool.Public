@@ -1,6 +1,8 @@
-﻿using FloodOnlineReportingTool.DataAccess.Exceptions;
-using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Exceptions;
+using FloodOnlineReportingTool.Database.Models.API;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Database.Settings;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -8,6 +10,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using System.Net;
 using System.Text.Json;
@@ -20,7 +23,8 @@ public partial class Location(
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
     IGdsJsInterop gdsJs,
-    IJSRuntime JS
+    IJSRuntime JS,
+    IOptions<GISSettings> gisOptions
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -44,6 +48,8 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
+    private readonly GISSettings _gisSettings = gisOptions.Value;
+
     protected override void OnInitialized()
     {
         // Setup model and edit context
@@ -63,6 +69,8 @@ public partial class Location(
             Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
             Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.Postcode = createExtraData.Postcode;
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            Model.LocationDesc = eligibilityCheck.LocationDesc;
 
             await LoadJavaScriptAndMap();
 
@@ -88,6 +96,11 @@ public partial class Location(
                 return;
             }
 
+            // Pass the OS key to JavaScript
+            var apiKey = _gisSettings.OSApiKey;
+            await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
+
+            //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();
             var (startingEasting, startingNorthing) = StartingLocation();
             await _module.InvokeVoidAsync("setupMap", _cts.Token, _map, centreEasting, centreNorthing, startingEasting, startingNorthing);
@@ -192,33 +205,73 @@ public partial class Location(
 
     private async Task OnValidSubmit()
     {
-        Model.Postcode = await GetPostcodeFromLocation();
+        var createExtraData = await GetCreateExtraData();
+        var eligibilityCheck = await GetEligibilityCheck();
+        ExtraData? updatedExtraData = null;
+        bool propertyTypeReset = false;
+        if (Model.IsAddress)
+        {
+            Model.Postcode = await GetPostcodeFromLocation();
+
+            updatedExtraData = createExtraData with
+            {
+                Postcode = Model.Postcode,
+                //PrimaryClassification = apiAddress.PrimaryClassification,
+                //SecondaryClassification = apiAddress.SecondaryClassification,
+            };
+            propertyTypeReset = true;
+
+        }
+        else if ((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
+        {
+            //They changed the location so we reset the property type option
+            updatedExtraData = createExtraData with
+            {
+                Postcode = null,
+                PrimaryClassification = null,
+                SecondaryClassification = null,
+                PropertyType = null,
+            };
+            propertyTypeReset = true;
+        }
+        if (updatedExtraData != null)
+        {
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+        }
 
         // Remember the entered postcode
-        var eligibilityCheck = await GetEligibilityCheck();
-        var createExtraData = await GetCreateExtraData();
-
         var updatedEligibilityCheck = eligibilityCheck with
         {
             //Uprn = apiAddress.UPRN,
-            Easting = Model.Easting.Value,
-            Northing = Model.Northing.Value,
-            //LocationDesc = apiAddress.ConcatenatedAddress,
-        };
+            Easting = Model.Easting!.Value,
+            Northing = Model.Northing!.Value,
+            LocationDesc = Model.LocationDesc,
 
-        var updatedExtraData = createExtraData with
-        {
-            Postcode = Model.Postcode,
-            //PrimaryClassification = apiAddress.PrimaryClassification,
-            //SecondaryClassification = apiAddress.SecondaryClassification,
         };
-
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Address;
-        navigationManager.NavigateTo(nextPage.Url);
+        // Go to the next page or pass back to the summary (user must return from property type page if reset)
+        var nextPage = GetNextPage(propertyTypeReset);
+        var nextPageUrl = nextPage.Url;
+        if (propertyTypeReset && FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
+    }
+    private PageInfo GetNextPage(bool propertyTypeReset)
+    {
+        if (!propertyTypeReset && FromSummary)
+        {
+            return FloodReportCreatePages.Summary;
+        }
+
+        if (Model.IsAddress)
+        {
+            return FloodReportCreatePages.Address;
+        }
+
+        return FloodReportCreatePages.PropertyType;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -267,9 +320,7 @@ public partial class Location(
         try
         {
             var referrer = navigationManager.ToAbsoluteUri("");
-            var response = await repository
-                .GetNearestAddressResponse(easting, northing, referrer, _cts.Token)
-                .ConfigureAwait(false);
+            var response = await repository.GetNearestAddressResponse(easting, northing, SearchAreaOptions.uk, referrer, _cts.Token);
 
             if (response == null || response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -290,7 +341,7 @@ public partial class Location(
                 return null;
             }
 
-            var postcode = addresses[0].Postcode;
+            var postcode = addresses?.FirstOrDefault()?.Postcode ?? "";
             return postcode.Trim().ToUpperInvariant();
         }
         catch (ConfigurationMissingException ex)
@@ -308,4 +359,5 @@ public partial class Location(
 
         return null;
     }
+
 }

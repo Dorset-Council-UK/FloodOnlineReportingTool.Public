@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.API;
+using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -10,10 +11,7 @@ public class ApiNearestAddressesHealthCheck(ISearchRepository searchRepository, 
     {
         try
         {
-            await searchRepository
-                .IsNearestAddressAvailable(GetReferrer(), ct)
-                .ConfigureAwait(false);
-
+            await searchRepository.IsNearestAddressAvailable(GetReferrer(), SearchAreaOptions.dorset, ct);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)

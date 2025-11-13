@@ -1,15 +1,22 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
 public partial class Test(
     ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs
+    IGdsJsInterop gdsJs,
+    TestService testService,
+    IGovNotifyEmailSender govNotifyEmailSender,
+    IConfiguration Configuration,
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -18,14 +25,17 @@ public partial class Test(
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _floodReportCreatePages = [
         new (FloodReportCreatePages.Home),
-        new (FloodReportCreatePages.Location, "(optional)"),
-        new (FloodReportCreatePages.Address),
+        new (FloodReportCreatePages.Location, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.Address, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.PropertyType),
         new (FloodReportCreatePages.FloodAreas),
+        new (FloodReportCreatePages.TemporaryPostcode, "(optional <sup>[1]</sup>)"),
+        new (FloodReportCreatePages.TemporaryAddress, "(optional <sup>[1]</sup>)"),
         new (FloodReportCreatePages.Vulnerability),
         new (FloodReportCreatePages.FloodStarted),
         new (FloodReportCreatePages.FloodDuration, "(optional)"),
         new (FloodReportCreatePages.FloodSource),
+        new (FloodReportCreatePages.FloodSecondarySource, "(optional)"),
         new (FloodReportCreatePages.Summary),
         new (FloodReportCreatePages.Confirmation),
     ];
@@ -51,13 +61,9 @@ public partial class Test(
     ];
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _accountPages = [
-        new (new($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignIn.Title)),
+        new (AccountPages.SignIn),
         new (new($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}", AccountPages.SignOut.Title)),
-        new (AccountPages.Register),
-        new (AccountPages.RegisterConfirmation),
-        new (AccountPages.EmailConfirm),
-        new (AccountPages.EmailResendConfirm),
-        new (AccountPages.PasswordForgot),
+        new (AccountPages.MyAccount),
     ];
 
     private readonly CancellationTokenSource _cts = new();
@@ -105,6 +111,29 @@ public partial class Test(
     {
         var data = await protectedSessionStorage.GetAsync<InvestigationDto?>(SessionConstants.Investigation);
         return data.Success && data.Value != null;
+    }
+
+    private async Task<bool> TestNotifcation()
+    {
+        var testEmail = Configuration["GovNotify:TestEmail"];
+        if (testEmail == null)
+        {
+            return false;
+        }
+        var result = await govNotifyEmailSender.SendTestNotification(testEmail, "This is a test of the FORT notification system - public reporting project.", _cts.Token);
+        return string.IsNullOrEmpty(result)!;
+    }
+
+    private async Task TestMessage()
+    {
+        await testService.TestMessage(_cts.Token);
+    }
+    public async Task TestFloodReport()
+    {
+        var reference = await testService.TestFloodReport(_cts.Token)
+            ?? throw new InvalidOperationException("TestFloodReport did not work, investigate.");
+
+        navigationManager.NavigateTo($"{FloodReportCreatePages.Confirmation.Url}?reference={reference}");
     }
 
     private async Task BlankCreateData()

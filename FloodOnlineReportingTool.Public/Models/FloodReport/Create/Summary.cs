@@ -5,8 +5,12 @@ public class Summary
     public IReadOnlyCollection<string> FloodedAreas { get; set; } = [];
 
     public IReadOnlyCollection<string> FloodSources { get; set; } = [];
+    public IReadOnlyCollection<string>? FloodSecondarySources { get; set; } = [];
+    public bool IsAddress { get; set; }
 
     public string? AddressPreview { get; set; }
+
+    public string? TemporaryAddressPreview { get; set; }
 
     public string? PropertyTypeName { get; set; }
 
@@ -16,7 +20,9 @@ public class Summary
 
     public bool? IsOnGoing { get; set; }
 
-    public int? FloodDurationHours { get; set; }
+    public Guid? FloodDurationKnownId { get; set; }
+
+    public string? FloodingLasted { get; set; }
 
     public Guid? VulnerablePeopleId { get; set; }
 

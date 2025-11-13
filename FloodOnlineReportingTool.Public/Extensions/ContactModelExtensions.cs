@@ -1,6 +1,9 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class ContactModelExtensions
 {
@@ -11,6 +14,7 @@ internal static class ContactModelExtensions
             ContactType = contactModel.ContactType ?? ContactRecordType.Unknown,
             ContactName = contactModel.ContactName ?? "",
             EmailAddress = contactModel.EmailAddress ?? "",
+            IsEmailVerified = contactModel.IsEmailVerified,
             PhoneNumber = contactModel.PhoneNumber,
         };
     }

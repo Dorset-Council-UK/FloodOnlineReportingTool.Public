@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
@@ -48,7 +48,7 @@ public partial class Index(
         var userId = await AuthenticationState.IdentityUserId();
         if (userId.HasValue)
         {
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token).ConfigureAwait(false);
+            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
         }
     }
 

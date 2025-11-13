@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.Public.Models;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
@@ -30,9 +30,9 @@ public partial class Index(
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _postcodeKnownOptions = [
-        new("postcode-known-yes", "Yes", value: true),
-        new("postcode-known-no", "No", value: false),
+    private IReadOnlyCollection<GdsOptionItem<bool>> _isAddressOptions = [
+        new("is-address-yes", "Yes", value: true),
+        new("is-address-no", "No", value: false),
     ];
 
     protected override void OnInitialized()
@@ -48,13 +48,9 @@ public partial class Index(
         if (firstRender)
         {
             // Set any previously entered data
-            var createExtraData = await GetCreateExtraData();
-            Model.Postcode = createExtraData.Postcode;
-            if (Model.Postcode != null)
-            {
-                Model.PostcodeKnown = true;
-                _postcodeKnownOptions.Single(o => o.Value).Selected = true;
-            }
+            var eligibilityCheck = await GetEligibilityCheck();
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            _isAddressOptions.Single(o => o.Value).Selected = true;
 
             _isLoading = false;
             StateHasChanged();
@@ -79,39 +75,39 @@ public partial class Index(
 
     private async Task OnValidSubmit()
     {
-        // Save the postcode
-        var createExtraData = await GetCreateExtraData();
-
-        var updatedExtraData = createExtraData with
+        // Set the IsAddress so that location page knows if this is a postal search rather than location
+        var eligibilityCheck = await GetEligibilityCheck();
+        var updatedEligibilityCheck = eligibilityCheck with
         {
-            Postcode = Model.Postcode?.ToUpperInvariant(),
+            IsAddress = Model.IsAddress,
+            LocationDesc = null, //Always reset this at this point to avoid unexpected results
         };
 
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or back to the summary
+        // Go to the next page or pass back to the summary
         var nextPage = GetNextPage();
-        navigationManager.NavigateTo(nextPage.Url);
+        var nextPageUrl = nextPage.Url;
+        if (FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private PageInfo GetNextPage()
     {
-        if (FromSummary)
+        if (Model.IsAddress == true)
         {
-            return FloodReportCreatePages.Summary;
-        }
-
-        if (Model.PostcodeKnown == true)
-        {
-            return FloodReportCreatePages.Address;
+            return FloodReportCreatePages.Postcode;
         }
 
         return FloodReportCreatePages.Location;
     }
 
-    private async Task<ExtraData> GetCreateExtraData()
+    private async Task<EligibilityCheckDto> GetEligibilityCheck()
     {
-        var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
+        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
         if (data.Success)
         {
             if (data.Value != null)
@@ -120,7 +116,7 @@ public partial class Index(
             }
         }
 
-        logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
-        return new();
+        logger.LogWarning("Eligibility Check was not found in the protected storage.");
+        return new EligibilityCheckDto();
     }
 }

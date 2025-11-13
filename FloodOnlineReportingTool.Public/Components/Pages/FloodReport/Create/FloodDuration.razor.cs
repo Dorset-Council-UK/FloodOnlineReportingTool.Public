@@ -1,5 +1,7 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
@@ -69,16 +71,19 @@ public partial class FloodDuration(
 
             _floodStart = eligibilityCheck.ImpactStart;
             _isFloodOngoing = eligibilityCheck.OnGoing;
-            if (eligibilityCheck.ImpactDuration.HasValue)
-            {
-                var days = eligibilityCheck.ImpactDuration.Value / 24;
-                var hours = eligibilityCheck.ImpactDuration.Value % 24;
 
-                Model.DurationKnownId = FloodProblemIds.DurationKnown;
-                Model.DurationDaysNumber = days;
-                Model.DurationDaysText = days.ToString(CultureInfo.CurrentCulture);
-                Model.DurationHoursNumber = hours;
-                Model.DurationHoursText = hours.ToString(CultureInfo.CurrentCulture);
+            Model.DurationKnownId = eligibilityCheck.DurationKnownId;
+            if (Model.DurationKnownId == FloodDurationIds.DurationKnown)
+            {
+                if (eligibilityCheck.ImpactDuration != null)
+                {
+                    var days = eligibilityCheck.ImpactDuration.Value / 24;
+                    var hours = eligibilityCheck.ImpactDuration.Value % 24;
+                    Model.DurationDaysNumber = days;
+                    Model.DurationDaysText = days.ToString(CultureInfo.CurrentCulture);
+                    Model.DurationHoursNumber = hours;
+                    Model.DurationHoursText = hours.ToString(CultureInfo.CurrentCulture);
+                }
             }
 
             _durationOptions = await CreateDurationOptions();
@@ -107,16 +112,13 @@ public partial class FloodDuration(
 
     private async Task OnValidSubmit()
     {
-        int? impactDuration = null;
-        if (Model.DurationKnownId == FloodProblemIds.DurationKnown)
-        {
-            impactDuration = (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0);
-        }
-
         var eligibilityCheck = await GetEligibilityCheck();
         var updated = eligibilityCheck with
         {
-            ImpactDuration = impactDuration,
+            DurationKnownId = Model.DurationKnownId,
+            ImpactDuration = Model.DurationKnownId == FloodDurationIds.DurationKnown
+                ? (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0)
+                : null,
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
@@ -138,7 +140,7 @@ public partial class FloodDuration(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeDescription.AsSpan();
         var selected = floodProblem.Id == selectedValue;
-        var isExclusive = floodProblem.Id == FloodProblemIds.DurationNotSure;
+        var isExclusive = floodProblem.Id == FloodDurationIds.DurationNotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }

@@ -1,20 +1,22 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Delete(
     ILogger<Delete> logger,
     NavigationManager navigationManager,
+    SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
+    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -35,6 +37,10 @@ public partial class Delete(
     private ContactModel? _contactModel;
 
     private EditContext _editContext = default!;
+    private Guid _floodReportId = Guid.Empty;
+    private string _floodReportReference = string.Empty;
+    private bool _isLoading = true;
+    private bool _deletePermited = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
@@ -53,37 +59,49 @@ public partial class Delete(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        // Setup model and edit context
-        if (_contactModel == null)
-        {
-            _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _contactModel = await GetContact();
-
-            if (_contactModel != null)
-            {
-                _editContext = new(_contactModel);
-                _messageStore = new(_editContext);
-            }
-        }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            // Setup model and edit context
+            if (_contactModel == null)
+            {
+                _contactModel = await GetContact();
+
+                if (_contactModel != null)
+                {
+                    _editContext = new(_contactModel);
+                    _messageStore = new(_editContext);
+                }
+            }
+
+            _isLoading = false;
+            StateHasChanged();
             await gdsJs.InitGds(_cts.Token);
         }
     }
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactRecord = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token);
+        // Set safe defaults
+        _deletePermited = false;
+        _floodReportReference = string.Empty;
+
+        var contactRecord = await contactRepository.GetContactById(ContactId, _cts.Token);
         if (contactRecord == null)
         {
             return null;
         }
+
+        var floodReport = contactRecord.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId);
+        if (contactRecord.FloodReports.Count == 1 && floodReport != null)
+        {
+            _deletePermited = true;
+            _floodReportReference = floodReport.Reference;
+        }
+
         return contactRecord.ToContactModel();
     }
 
@@ -91,21 +109,40 @@ public partial class Delete(
     {
         logger.LogDebug("Deleting contact information");
 
-        if (_contactModel == null)
+        if (_contactModel?.Id == null || _contactModel?.ContactType == null)
         {
             return;
         }
 
         try
         {
-            await contactRepository.DeleteForUser(_userId, _contactModel.Id!.Value, _cts.Token);
+            Guid contactRecordId = _contactModel.Id.Value;
+            ContactRecordType contactRecordType = _contactModel.ContactType.Value;
+
+            // Send deletion confirmation email just before deleting
+            // TODO - enable this once notification is available
+            //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, contactRecordType);
+
+            var deleteResult = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
+            if (!deleteResult.IsSuccess)
+            {
+                var field = _editContext.Field(nameof(_contactModel.ContactType));
+                foreach (var error in deleteResult.Errors)
+                {
+                    _messageStore.Add(field, error);
+                }
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
+
+            // Navigate back to contacts home
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem deleting contact information");
-            _messageStore.Add(() => _contactModel.ContactType, $"There was a problem deleting the contact information. Please try again but if this issue happens again then please report a bug.");
+            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem deleting the contact information. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
     }

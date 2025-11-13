@@ -1,6 +1,7 @@
-﻿using FloodOnlineReportingTool.DataAccess.Exceptions;
-using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Exceptions;
+using FloodOnlineReportingTool.Database.Models.API;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -25,6 +26,7 @@ public partial class Address(
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
         FloodReportCreatePages.Home.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
     ];
 
     [SupplyParameterFromQuery]
@@ -68,7 +70,11 @@ public partial class Address(
             var createExtraData = await GetCreateExtraData();
 
             Model.Postcode = createExtraData.Postcode;
+            Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
+            Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
+            Model.IsAddress = eligibilityCheck.IsAddress;
+            Model.LocationDesc = eligibilityCheck.LocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
 
             StateHasChanged();
@@ -104,9 +110,14 @@ public partial class Address(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
-            navigationManager.NavigateTo(nextPage.Url);
+            // Go to the next page or pass back to the summary (user must return from property type page)
+            var nextPage = FloodReportCreatePages.PropertyType;
+            var nextPageUrl = nextPage.Url;
+            if (FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         }
     }
 
@@ -151,8 +162,13 @@ public partial class Address(
     /// </summary>
     private async Task<IList<ApiAddress>> AddressSearch()
     {
-
-        if (string.IsNullOrWhiteSpace(Model.Postcode))
+        if (string.IsNullOrWhiteSpace(Model.Postcode) && Model.IsAddress == false)
+        {
+            logger.LogDebug("Non address query so not searching");
+            _isSearching = false;
+            return [];
+        }
+        else if (string.IsNullOrWhiteSpace(Model.Postcode))
         {
             logger.LogDebug("No postcode, not searching");
             _isSearching = false;
@@ -165,7 +181,7 @@ public partial class Address(
 
             _isSearching = true;
             var referer = navigationManager.ToAbsoluteUri("");
-            return await searchRepository.AddressSearch(Model.Postcode, referer, _cts.Token);
+            return await searchRepository.AddressSearch(Model.Postcode, SearchAreaOptions.dorset, referer, _cts.Token);
         }
         catch (ConfigurationMissingException ex)
         {

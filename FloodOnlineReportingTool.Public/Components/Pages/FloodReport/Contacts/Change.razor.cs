@@ -1,20 +1,22 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-[Authorize]
 public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
+    SessionStateService scopedSessionStorage,
+    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -34,6 +36,10 @@ public partial class Change(
 
     private ContactModel? _contactModel;
     private EditContext _editContext = default!;
+    private Guid _floodReportId = Guid.Empty;
+    private string _floodReportReference = string.Empty;
+    private Database.Models.Flood.FloodReport? _floodReport;
+    private bool _isLoading = true;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private Guid _userId;
@@ -73,8 +79,13 @@ public partial class Change(
     {
         if (firstRender)
         {
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            _isLoading = false;
+            StateHasChanged();
             await gdsJs.InitGds(_cts.Token);
         }
+        
     }
 
     private async Task OnSubmit()
@@ -92,8 +103,9 @@ public partial class Change(
     private async Task UpdateContact()
     {
         logger.LogDebug("Updating contact information");
+        _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
 
-        if (_contactModel == null)
+        if (_contactModel == null || _floodReport == null)
         {
             return;
         }
@@ -101,25 +113,53 @@ public partial class Change(
         try
         {
             var dto = _contactModel.ToDto();
-            await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
+            var resultingContact = await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
+
+            // Success - send confirmation email
+            // TODO - enable this once notification is available
+            //var sentNotification = await govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress!, _contactModel.PhoneNumber!, _contactModel.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+
+            // TODO - enable this once notification is available
+            //if (!resultingContact.IsEmailVerified)
+            //{
+            //    // Resend verification email if it was changed
+            //    var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
+            //    _contactModel.ContactType!.Value.ToString(),
+            //    _contactModel.PrimaryContactRecord,
+            //     true,
+            //    _contactModel.EmailAddress!,
+            //    _contactModel.PhoneNumber!,
+            //    _contactModel.ContactName!,
+            //    _floodReport.Reference,
+            //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
+            //    _floodReport.EligibilityCheck!.Easting,
+            //    _floodReport.EligibilityCheck!.Northing,
+            //    _floodReport.CreatedUtc
+            //    );
+            //}
+
+            // Navigate back to contacts home
             navigationManager.NavigateTo(ContactPages.Home.Url);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem updating contact information");
-            _messageStore.Add(() => _contactModel.ContactType, $"There was a problem updating the contact information. Please try again but if this issue happens again then please report a bug.");
+            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem updating the contact information. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
     }
 
     private async Task<ContactModel?> GetContact()
     {
-        var contactRecord = await contactRepository.ReportedByUser(_userId, ContactId, _cts.Token);
-        if (contactRecord == null)
+        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);
+        if (floodReport == null || floodReport.ReportOwner == null)
         {
             return null;
         }
-        return contactRecord.ToContactModel();
+
+        //If we have a valid match then we return the reference for the current flood report only
+        _floodReportReference = floodReport!.Reference;
+        return floodReport.ReportOwner.ToContactModel();
     }
 }

@@ -1,5 +1,6 @@
-using FloodOnlineReportingTool.DataAccess.Models;
-using FloodOnlineReportingTool.DataAccess.Repositories;
+using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Status;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;

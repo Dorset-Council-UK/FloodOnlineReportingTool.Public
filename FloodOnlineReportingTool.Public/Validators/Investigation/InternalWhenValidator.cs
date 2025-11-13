@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.DataAccess.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
 using FluentValidation;
 
@@ -39,7 +39,8 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
             // If the date must be between two dates
             RuleFor(o => o.WhenWaterEnteredDate.DateUtc)
                 .InclusiveBetween(now.AddYears(-1), now)
-                .WithMessage((o, d) => {
+                .WithMessage((o, d) =>
+                {
                     var from = now.AddYears(-1).GdsReadable();
                     var to = now.GdsReadable();
                     return $"When water entered date must be between {from} and {to}";
