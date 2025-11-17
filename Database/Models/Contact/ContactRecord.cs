@@ -5,7 +5,7 @@ namespace FloodOnlineReportingTool.Database.Models.Contact;
 
 /// <summary>
 ///     <para>Represents contact information for individuals reporting flood incidents and seeking assistance.</para>
-///     <para>This can represent different types of contact records, for example tenant and owner contact details.</para>
+///     <para>This can represent different types of contact records, for example tenant and home owner contact details.</para>
 /// </summary>
 /// <remarks>
 ///     <para>We are setting Oauth to be optional but if the Oid is set then the user details are coming from an account.</para>

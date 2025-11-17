@@ -89,7 +89,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             FloodReports = [floodReport], // this will link the contact to the flood report in the ContactRecordFloodReport table
         };
 
-        if (contactRecord.ContactType == ContactRecordType.Owner)
+        if (contactRecord.ContactType == ContactRecordType.HomeOwner)
         {
             floodReport.ReportOwnerId = contactRecordId;
         }
@@ -158,8 +158,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         // Remove the contact record from the flood report
         context.ContactRecords.Remove(contactRecord);
 
-        // Update the flood report owner if the contact type was owner
-        if (contactType == ContactRecordType.Owner)
+        // Update the flood report owner if the contact type was home owner
+        if (contactType == ContactRecordType.HomeOwner)
         {
             var floodReport = await context.FloodReports
                 .IgnoreAutoIncludes()
