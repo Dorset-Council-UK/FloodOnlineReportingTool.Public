@@ -1,5 +1,6 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
@@ -10,15 +11,24 @@ var builder = WebApplication.CreateBuilder(args);
 var assembly = typeof(Program).Assembly;
 
 // Configure all the settings.
-builder.Configuration.AddFloodReportingKeyVault();
-var (messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
 
-// Add services to the container.
-builder.Services.AddApplicationInsightsTelemetry();
-builder.Services.AddFloodReportingAuthentication(builder.Configuration);
+// Configure authentication and keyvault options
+builder.Services.Configure<AzureAdOptions>(builder.Configuration.GetSection(AzureAdOptions.SectionName));
+builder.AddAuthentication();
+
+builder.Services.Configure<KeyVaultOptions>(builder.Configuration.GetSection(KeyVaultOptions.SectionName));
+builder.AddKeyVaults();
+
+// Configure messaging system
+var (messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
+builder.AddGovNotify();
+
+// Configure API versioning and OpenAPI
 builder.Services.AddFloodReportingVersioning();
 builder.Services.AddFloodReportingOpenApi(identityOptions);
-builder.AddGovNotify();
+
+// Configure logging
+builder.Services.AddApplicationInsightsTelemetry();
 
 // Add the HttpClient and configure it with the standard policies
 builder.Services

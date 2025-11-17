@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Public.Settings;
+﻿using FloodOnlineReportingTool.Public.Options;
 using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
@@ -7,13 +7,13 @@ namespace FloodOnlineReportingTool.Public.Services;
 
 internal class GovNotifyEmailSender(
     ILogger<GovNotifyEmailSender> logger,
-    IOptions<GovNotifySettings> options,
+    IOptions<GovNotifyOptions> options,
     IWebHostEnvironment environment,
     ICurrentUserService currentUserService,
     NotificationClient notificationClient
 ) : IGovNotifyEmailSender
 {
-    private readonly GovNotifySettings _govNotifySettings = options.Value;
+    private readonly GovNotifyOptions _govNotifySettings = options.Value;
 
     /// <summary>
     ///     <para>Send an email to the specified email address via GovNotify.</para>

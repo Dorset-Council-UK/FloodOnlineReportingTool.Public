@@ -1,5 +1,5 @@
-﻿using FloodOnlineReportingTool.Public.Services;
-using FloodOnlineReportingTool.Public.Settings;
+﻿using FloodOnlineReportingTool.Public.Options;
+using FloodOnlineReportingTool.Public.Services;
 using Notify.Client;
 using Notify.Interfaces;
 
@@ -23,13 +23,13 @@ internal static class GovNotifyExtensions
         return builder;
     }
 
-    private static GovNotifySettings AddGovNotifySettings<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    private static GovNotifyOptions AddGovNotifySettings<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        var section = builder.Configuration.GetRequiredSection(GovNotifySettings.SectionName);
-        builder.Services.Configure<GovNotifySettings>(section);
-        var settings = section.Get<GovNotifySettings>();
+        var section = builder.Configuration.GetRequiredSection(GovNotifyOptions.SectionName);
+        builder.Services.Configure<GovNotifyOptions>(section);
+        var settings = section.Get<GovNotifyOptions>();
         return settings is null
-            ? throw new InvalidOperationException($"There was a problem getting the settings from the {GovNotifySettings.SectionName} section")
+            ? throw new InvalidOperationException($"There was a problem getting the settings from the {GovNotifyOptions.SectionName} section")
             : settings;
     }
 

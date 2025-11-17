@@ -1,6 +1,8 @@
 ﻿using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Options;
+using MassTransit.Configuration;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -9,34 +11,35 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal static class AuthenticationExtensions
 {
+
     /// <summary>
     /// Configures authentication, authorization and policies.
     /// </summary>
-    internal static IServiceCollection AddFloodReportingAuthentication(this IServiceCollection services, IConfiguration configuration)
+    internal static TBuilder AddAuthentication<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        var section = configuration
-            .GetSection("FORT")
-            .GetSection(KeyVaultAzureAdOptions.SectionName);
+
+        var azureAdSection = builder.Configuration
+            .GetRequiredSection(AzureAdOptions.SectionName);
 
         // Setup Authentication
-        services
+        builder.Services
             .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(section);
+            .AddMicrosoftIdentityWebApp(azureAdSection);
 
-        ConfigureResilientOpenIdConnect(services);
+        ConfigureResilientOpenIdConnect(builder.Services);
 
         // Add Blazor cascading authentication state
-        services.AddCascadingAuthenticationState();
+        builder.Services.AddCascadingAuthenticationState();
 
         // Setup Authorization
-        services
-            .AddAuthorizationBuilder()
+        builder.Services
+           .AddAuthorizationBuilder()
             .AddPolicy(PolicyNames.Admin, options =>
             {
                 options.RequireAuthenticatedUser();
             });
 
-        return services;
+        return builder;
     }
 
     /// <summary>
@@ -59,89 +62,3 @@ internal static class AuthenticationExtensions
             });
     }
 }
-
-//internal static class AuthenticationExtensions
-//{
-//    /// <summary>
-//    ///     <para>Configures authentication, authorization, and policies.</para>
-//    ///     <para>Sets up Identity / Identity Platform / Entra / Bearer authentication for role based access, using C# policies.</para>
-//    /// </summary>
-//    internal static IServiceCollection AddFloodReportingAuthentication(this IServiceCollection services, IConfiguration configuration)
-//    {
-//        // Setup authentication
-//        BuildIdentityAuthentication(services, configuration);
-
-//        ConfigureResilientJwtBearerOptions(services);
-
-//        // Add Blazor cascading authentication state
-//        services.AddCascadingAuthenticationState();
-
-//        // Setup Authorization
-//        BuildAuthorization(services);
-
-//        return services;
-//    }
-
-//    /// <summary>
-//    ///     Build the Identity authentication scheme and settings.
-//    /// </summary>
-//    private static void BuildIdentityAuthentication(IServiceCollection services, IConfiguration configuration)
-//    {
-//        services
-//            .AddAuthentication(IdentityConstants.ApplicationScheme)
-//            .AddCookie(IdentityConstants.ApplicationScheme, options =>
-//            {
-//                options.Cookie.IsEssential = true;
-//                options.Cookie.Name = "FloodReportCookie";
-//                options.Cookie.HttpOnly = true;
-//                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-//                options.Cookie.SameSite = SameSiteMode.Strict;
-//                options.ReturnUrlParameter = "returnUrl";
-//                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-//                options.LoginPath = "/" + AccountPages.SignIn.Url;
-//                options.LogoutPath = "/" + AccountPages.SignOut.Url;
-//                options.AccessDeniedPath = "/" + GeneralPages.AccessDenied;
-//                options.SlidingExpiration = true;
-//            })
-//            .AddMicrosoftIdentityWebApi(configuration);
-//    }
-
-//    /// <summary>
-//    /// Configure a resilient JWT Bearer Options authentication handler.
-//    /// </summary>
-//    /// <remarks>For example, retrying when .well-known fails to read.</remarks>
-//    private static void ConfigureResilientJwtBearerOptions(IServiceCollection services)
-//    {
-//        const string clientName = "OAuthResilient";
-
-//        services
-//            .AddHttpClient(clientName)
-//            .AddStandardResilienceHandler();
-
-//        services
-//            .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-//            .Configure<IHttpClientFactory>((options, httpClientFactory) =>
-//            {
-//                options.Backchannel = httpClientFactory.CreateClient(clientName);
-//            });
-//    }
-
-//    private static void BuildAuthorization(IServiceCollection services)
-//    {
-//        services
-//            .AddAuthorizationBuilder()
-//            .AddPolicy(PolicyNames.Identity, policy =>
-//            {
-//                policy.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme);
-//                policy.RequireAuthenticatedUser();
-//            })
-//            .AddPolicy(PolicyNames.Reader, policy => policy
-//                .RequireAuthenticatedUser()
-//                .RequireAssertion(context =>
-//                    context.User.IsInRole(RoleNames.Reader) ||
-//                    context.User.IsInRole(RoleNames.Admin)))
-//            .AddPolicy(PolicyNames.Admin, policy => policy
-//                .RequireAuthenticatedUser()
-//                .RequireRole(RoleNames.Admin));
-//    }
-//}

@@ -1,6 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Public.Settings;
+﻿namespace FloodOnlineReportingTool.Public.Options;
 
-public class GovNotifySettings
+public class GovNotifyOptions
 {
     public const string SectionName = "GovNotify";
 
