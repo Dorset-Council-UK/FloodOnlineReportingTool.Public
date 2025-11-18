@@ -1,6 +1,5 @@
 ﻿using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Endpoints.Account;
-using FloodOnlineReportingTool.Public.Options;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
@@ -11,20 +10,15 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal static class AuthenticationExtensions
 {
-
     /// <summary>
     /// Configures authentication, authorization and policies.
     /// </summary>
     internal static TBuilder AddAuthentication<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-
-        var azureAdSection = builder.Configuration
-            .GetRequiredSection(AzureAdOptions.SectionName);
-
         // Setup Authentication
         builder.Services
             .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(azureAdSection);
+            .AddMicrosoftIdentityWebApp(builder.Configuration);
 
         // Configure all HttpClients to be resilient. For example: Identity Web + DownstreamApi
         builder.Services
