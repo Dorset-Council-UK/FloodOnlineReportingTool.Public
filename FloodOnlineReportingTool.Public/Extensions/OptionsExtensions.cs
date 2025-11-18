@@ -11,14 +11,14 @@ internal static class OptionsExtensions
     internal static (MessagingOptions, GISOptions, MicrosoftIdentityOptions?) AddFloodReportingSettings<TBuilder>(this TBuilder builder) 
         where TBuilder : IHostApplicationBuilder
     {
-        var messagingSettings = AddRequired<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
-        var gisSettings = AddRequired<GISOptions, TBuilder>(builder, GISOptions.SectionName);
-        var identityOptions = AddOptional<MicrosoftIdentityOptions, TBuilder>(builder, "AzureAd");
+        var messagingSettings = AddOptions_Required<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
+        var gisSettings = AddOptions_Required<GISOptions, TBuilder>(builder, GISOptions.SectionName);
+        var identityOptions = AddOptions_Optional<MicrosoftIdentityOptions, TBuilder>(builder, "AzureAd");
 
         return (messagingSettings, gisSettings, identityOptions);
     }
 
-    private static T? AddOptional<T, TBuilder>(
+    private static T? AddOptions_Optional<T, TBuilder>(
         TBuilder builder, 
         string sectionName
     ) 
@@ -30,7 +30,7 @@ internal static class OptionsExtensions
         return section.Get<T>();
     }
 
-    private static T AddRequired<T, TBuilder>(
+    private static T AddOptions_Required<T, TBuilder>(
         TBuilder builder,
         string sectionName
     )
