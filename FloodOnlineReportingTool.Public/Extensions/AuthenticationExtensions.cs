@@ -18,7 +18,19 @@ internal static class AuthenticationExtensions
         // Setup Authentication
         builder.Services
             .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(builder.Configuration);
+            .AddMicrosoftIdentityWebApp(options =>
+            {
+                builder.Configuration.Bind("AzureAd", options);
+
+                options.Authority = $"https://dorsetcouncilext1.ciamlogin.com/{options.TenantId}/v2.0";
+
+                // Inject user flow as query parameter
+                options.Events.OnRedirectToIdentityProvider = context =>
+                {
+                    context.ProtocolMessage.SetParameter("p", "Staging_Test_Flow");
+                    return Task.CompletedTask;
+                };
+            });
 
         // Configure all HttpClients to be resilient. For example: Identity Web + DownstreamApi
         builder.Services
