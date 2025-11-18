@@ -30,14 +30,6 @@ builder.Services.AddFloodReportingOpenApi(identityOptions);
 // Configure logging
 builder.Services.AddApplicationInsightsTelemetry();
 
-// Add the HttpClient and configure it with the standard policies
-builder.Services
-    .AddHttpClient()
-    .ConfigureHttpClientDefaults(o =>
-    {
-        o.AddStandardResilienceHandler();
-    });
-
 // Add health checks
 builder.Services.AddFloodReportingHealthChecks();
 
@@ -115,6 +107,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
+app.MapAuthenticationEndpoints();
 
 // Map all identity endpoints
 app.MapGroup("/api/auth").MapIdentityApi<FortUser>();
