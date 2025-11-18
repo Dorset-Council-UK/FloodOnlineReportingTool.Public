@@ -14,10 +14,8 @@ internal static class KeyVaultExtensions
         // if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
         var keyvaultSection = builder.Configuration
             .GetRequiredSection(KeyVaultOptions.SectionName).Get<KeyVaultOptions>();
-        var azureAdSection = builder.Configuration
-            .GetRequiredSection(AzureAdOptions.SectionName).Get<AzureAdOptions>();
 
-        if (keyvaultSection == null || azureAdSection == null || string.IsNullOrEmpty(keyvaultSection.VaultName))
+        if (keyvaultSection == null || string.IsNullOrEmpty(keyvaultSection.VaultName))
         {
             return builder;
         }
@@ -25,14 +23,16 @@ internal static class KeyVaultExtensions
         using var x509Store = new X509Store(StoreLocation.LocalMachine);
         x509Store.Open(OpenFlags.ReadOnly);
 
-        var x509Certificate = x509Store.Certificates
-            .Find(X509FindType.FindByThumbprint, azureAdSection.ClientCertificateThumbprint, validOnly: false)
-            .OfType<X509Certificate2>()
-            .Single();
+        //var x509Certificate = x509Store.Certificates
+        //    .Find(X509FindType.FindByThumbprint, azureAdSection.ClientCertificateThumbprint, validOnly: false)
+        //    .OfType<X509Certificate2>()
+        //    .Single();
+        //new ClientCertificateCredential(azureAdSection.TenantId, azureAdSection.ClientId, x509Certificate));
 
         builder.Configuration.AddAzureKeyVault(
             new Uri($"https://{keyvaultSection.VaultName}.vault.azure.net/"),
-            new ClientCertificateCredential(azureAdSection.TenantId, azureAdSection.ClientId, x509Certificate));
+            new DefaultAzureCredential()
+        );
 
         if (string.IsNullOrEmpty(keyvaultSection.SharedVaultName))
         {
@@ -41,7 +41,8 @@ internal static class KeyVaultExtensions
 
         builder.Configuration.AddAzureKeyVault(
             new Uri($"https://{keyvaultSection.SharedVaultName}.vault.azure.net/"),
-            new ClientCertificateCredential(azureAdSection.TenantId, azureAdSection.ClientId, x509Certificate));
+            new DefaultAzureCredential()
+        );
 
         return builder;
     }

@@ -3,7 +3,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
-using FloodOnlineReportingTool.Database.Settings;
+using FloodOnlineReportingTool.Database.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,10 +17,10 @@ public class FloodReportRepository(
     PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISSettings> options
+    IOptions<GISOptions> options
 ) : IFloodReportRepository
 {
-    private readonly GISSettings _gisSettings = options.Value;
+    private readonly GISOptions _gisSettings = options.Value;
 
     public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
     {

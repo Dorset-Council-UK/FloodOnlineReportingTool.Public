@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Models.API;
-using FloodOnlineReportingTool.Database.Settings;
+using FloodOnlineReportingTool.Database.Options;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Net.Http.Json;
@@ -11,10 +11,10 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public class SearchRepository : ISearchRepository
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly GISSettings _settings;
+    private readonly GISOptions _settings;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public SearchRepository(IHttpClientFactory httpClientFactory, IOptions<GISSettings> settings)
+    public SearchRepository(IHttpClientFactory httpClientFactory, IOptions<GISOptions> settings)
     {
         _httpClientFactory = httpClientFactory;
         _settings = settings.Value;

@@ -13,14 +13,11 @@ var assembly = typeof(Program).Assembly;
 // Configure all the settings.
 
 // Configure authentication and keyvault options
-builder.Services.Configure<AzureAdOptions>(builder.Configuration.GetSection(AzureAdOptions.SectionName));
+builder.AddKeyVaults();
 builder.AddAuthentication();
 
-builder.Services.Configure<KeyVaultOptions>(builder.Configuration.GetSection(KeyVaultOptions.SectionName));
-builder.AddKeyVaults();
-
 // Configure messaging system
-var (messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
+var (messagingSettings, gisSettings, identityOptions) = builder.AddFloodReportingSettings();
 builder.AddGovNotify();
 
 // Configure API versioning and OpenAPI

@@ -1,8 +1,10 @@
-﻿namespace FloodOnlineReportingTool.Public.Options;
+﻿using FloodOnlineReportingTool.Database.Options;
 
-public class MessagingOptions
+namespace FloodOnlineReportingTool.Public.Options;
+
+public class MessagingOptions : IConfigSection
 {
-    public const string SectionName = "Messaging";
+    public static string SectionName => "Messaging";
 
     public required bool Enabled { get; init; } = false;
     public required string ConnectionString { get; init; }
