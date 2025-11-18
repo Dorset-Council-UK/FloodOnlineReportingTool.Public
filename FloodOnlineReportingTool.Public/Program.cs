@@ -10,15 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
-// Configure all the settings.
+// Configure all the options.
 
 // Configure authentication and keyvault options
 builder.AddKeyVaults();
 builder.AddAuthentication();
 
 // Configure messaging system
-var (messagingSettings, gisSettings, identityOptions) = builder.AddFloodReportingSettings();
-builder.AddGovNotify();
+var (messagingOptions, gisOptions, notifyOptions, identityOptions) = builder.AddFloodReportingOptions();
+builder.AddGovNotify(notifyOptions);
 
 // Configure API versioning and OpenAPI
 builder.Services.AddFloodReportingVersioning();
@@ -71,13 +71,13 @@ builder.Services.AddRepositories();
 builder.Services.AddValidatorsFromAssembly(assembly);
 
 // Add the message system
-builder.Services.AddMessageSystem(messagingSettings);
+builder.Services.AddMessageSystem(messagingOptions);
 
 builder.Services.AddScoped<TestService>();
 
 var app = builder.Build();
 
-var pathBase = string.IsNullOrWhiteSpace(gisSettings.PathBase) ? "/" : $"/{gisSettings.PathBase}";
+var pathBase = string.IsNullOrWhiteSpace(gisOptions.PathBase) ? "/" : $"/{gisOptions.PathBase}";
 app.UsePathBase(pathBase);
 
 // Configure the HTTP request pipeline.

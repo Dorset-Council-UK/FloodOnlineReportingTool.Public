@@ -48,7 +48,7 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
-    private readonly GISOptions _gisSettings = gisOptions.Value;
+    private readonly GISOptions _gisOptions = gisOptions.Value;
 
     protected override void OnInitialized()
     {
@@ -97,7 +97,7 @@ public partial class Location(
             }
 
             // Pass the OS key to JavaScript
-            var apiKey = _gisSettings.OSApiKey;
+            var apiKey = _gisOptions.OSApiKey;
             await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
 
             //Setup the map

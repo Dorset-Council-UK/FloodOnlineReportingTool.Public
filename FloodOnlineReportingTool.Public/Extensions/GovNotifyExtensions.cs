@@ -11,26 +11,15 @@ internal static class GovNotifyExtensions
 {
     private const string GovNotifyClientName = "GovNotifyClient";
 
-    public static TBuilder AddGovNotify<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddGovNotify<TBuilder>(this TBuilder builder, GovNotifyOptions notifyOptions) where TBuilder : IHostApplicationBuilder
     {
-        var govNotifySettings = builder.AddGovNotifySettings();
         builder.Services
             .AddGovNotifyHttpClient()
             .AddGovNotifyHttpClientWrapper()
-            .AddGovNotifyNotificationClient(govNotifySettings.ApiKey)
+            .AddGovNotifyNotificationClient(notifyOptions.ApiKey)
             .AddScoped<IGovNotifyEmailSender, GovNotifyEmailSender>();
 
         return builder;
-    }
-
-    private static GovNotifyOptions AddGovNotifySettings<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
-    {
-        var section = builder.Configuration.GetRequiredSection(GovNotifyOptions.SectionName);
-        builder.Services.Configure<GovNotifyOptions>(section);
-        var settings = section.Get<GovNotifyOptions>();
-        return settings is null
-            ? throw new InvalidOperationException($"There was a problem getting the settings from the {GovNotifyOptions.SectionName} section")
-            : settings;
     }
 
     /// <summary>

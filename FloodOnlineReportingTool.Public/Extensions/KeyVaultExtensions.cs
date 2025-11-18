@@ -11,7 +11,7 @@ internal static class KeyVaultExtensions
 {
     internal static TBuilder AddKeyVaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        // if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
+        // if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local options (appOptions, user secrets etc.) are used
         var keyvaultSection = builder.Configuration
             .GetRequiredSection(KeyVaultOptions.SectionName).Get<KeyVaultOptions>();
 

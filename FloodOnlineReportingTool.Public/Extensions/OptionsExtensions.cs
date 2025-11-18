@@ -8,14 +8,15 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal static class OptionsExtensions
 {
-    internal static (MessagingOptions, GISOptions, MicrosoftIdentityOptions?) AddFloodReportingSettings<TBuilder>(this TBuilder builder) 
+    internal static (MessagingOptions, GISOptions, GovNotifyOptions, MicrosoftIdentityOptions?) AddFloodReportingOptions<TBuilder>(this TBuilder builder) 
         where TBuilder : IHostApplicationBuilder
     {
-        var messagingSettings = AddOptions_Required<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
-        var gisSettings = AddOptions_Required<GISOptions, TBuilder>(builder, GISOptions.SectionName);
+        var messagingOptions = AddOptions_Required<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
+        var gisOptions = AddOptions_Required<GISOptions, TBuilder>(builder, GISOptions.SectionName);
+        var govNotifyOptions = AddOptions_Required<GovNotifyOptions, TBuilder>(builder, GovNotifyOptions.SectionName);
         var identityOptions = AddOptions_Optional<MicrosoftIdentityOptions, TBuilder>(builder, "AzureAd");
 
-        return (messagingSettings, gisSettings, identityOptions);
+        return (messagingOptions, gisOptions, govNotifyOptions, identityOptions);
     }
 
     private static T? AddOptions_Optional<T, TBuilder>(

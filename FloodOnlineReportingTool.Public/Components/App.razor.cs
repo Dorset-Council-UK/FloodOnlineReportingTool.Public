@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
-public partial class App(IOptions<GISOptions> _settings, GdsBlazorComponents.IGdsJsInterop gdsJs)
+public partial class App(IOptions<GISOptions> _options, GdsBlazorComponents.IGdsJsInterop gdsJs)
 {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -14,12 +14,12 @@ public partial class App(IOptions<GISOptions> _settings, GdsBlazorComponents.IGd
     // The Render Mode is InteractiveServer most of the time. Except on pages which are set as Static server-side rendering (static SSR)
     private IComponentRenderMode? PageRenderMode => HttpContext?.AcceptsInteractiveRouting() == true ? RenderMode.InteractiveServer : null;
 
-    private readonly GISOptions _gisSettings = _settings.Value;
+    private readonly GISOptions _gisOptions = _options.Value;
     private string _pathBase = "/";
 
     protected override void OnInitialized()
     {
-        var pathBase = _gisSettings.PathBase;
+        var pathBase = _gisOptions.PathBase;
         if (pathBase != null)
         {
             _pathBase = $"/{pathBase}/";
