@@ -1,24 +1,30 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
-// Configure all the options.
-
-// Configure authentication and keyvault options
+// Configure Key Vault access
 builder.AddKeyVaults();
+
+// Configure all the options.
+var gisOptions = builder.AddOptions_Required<GISOptions>(GISOptions.SectionName);
+
+// Configure authentication 
+var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Constants.AzureAd);
 builder.AddAuthentication();
 
 // Configure messaging system
-var (messagingOptions, gisOptions, notifyOptions, identityOptions) = builder.AddFloodReportingOptions();
-builder.AddGovNotify(notifyOptions);
+builder.AddMessageSystem();
+builder.AddGovNotify();
 
 // Configure API versioning and OpenAPI
 builder.Services.AddFloodReportingVersioning();
@@ -69,9 +75,6 @@ builder.Services.AddRepositories();
 
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
-
-// Add the message system
-builder.Services.AddMessageSystem(messagingOptions);
 
 builder.Services.AddScoped<TestService>();
 

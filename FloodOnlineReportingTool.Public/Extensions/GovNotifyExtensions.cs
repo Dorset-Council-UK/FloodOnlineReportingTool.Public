@@ -11,12 +11,13 @@ internal static class GovNotifyExtensions
 {
     private const string GovNotifyClientName = "GovNotifyClient";
 
-    public static TBuilder AddGovNotify<TBuilder>(this TBuilder builder, GovNotifyOptions notifyOptions) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddGovNotify<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        var govNotifyOptions = builder.AddOptions_Required<GovNotifyOptions>(GovNotifyOptions.SectionName);
         builder.Services
             .AddGovNotifyHttpClient()
             .AddGovNotifyHttpClientWrapper()
-            .AddGovNotifyNotificationClient(notifyOptions.ApiKey)
+            .AddGovNotifyNotificationClient(govNotifyOptions.ApiKey)
             .AddScoped<IGovNotifyEmailSender, GovNotifyEmailSender>();
 
         return builder;

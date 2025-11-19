@@ -12,11 +12,12 @@ internal static class MessageSystemExtensions
     /// Add the message system. The Public project only needs to publish messages, not consume them
     /// </summary>
     /// <remarks>Even if messaging is disabled we still need to add MassTransit, so the database services work with the MassTransit interfaces.</remarks>
-    internal static IServiceCollection AddMessageSystem(this IServiceCollection services, MessagingOptions messagingOptions)
+    internal static TBuilder AddMessageSystem<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        var messagingOptions = builder.AddOptions_Required<MessagingOptions>(MessagingOptions.SectionName);
         if (!messagingOptions.Enabled)
         {
-            services.AddMassTransit(o =>
+            builder.Services.AddMassTransit(o =>
             {
                 // In-Memory transport configuration
                 o.UsingInMemory((context, cfg) =>
@@ -25,10 +26,10 @@ internal static class MessageSystemExtensions
                 });
             });
 
-            return services;
+            return builder;
         }
 
-        services.AddMassTransit(o =>
+        builder.Services.AddMassTransit(o =>
         {
             var assembly = typeof(Program).Assembly;
 
@@ -55,6 +56,6 @@ internal static class MessageSystemExtensions
             });
         });
 
-        return services;
+        return builder;
     }
 }
