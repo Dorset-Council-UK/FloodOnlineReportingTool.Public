@@ -1,8 +1,8 @@
 ﻿namespace FloodOnlineReportingTool.Database.Options;
 
-public record GISOptions : IConfigSection
+public record GISOptions
 {
-    public static string SectionName => "GIS";
+    public const string SectionName = "GIS";
 
     public required string ApiKey { get; init; }
     public required string PathBase { get; init; }

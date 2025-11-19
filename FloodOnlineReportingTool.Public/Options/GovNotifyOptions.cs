@@ -1,10 +1,8 @@
-﻿using FloodOnlineReportingTool.Database.Options;
+﻿namespace FloodOnlineReportingTool.Public.Options;
 
-namespace FloodOnlineReportingTool.Public.Options;
-
-public class GovNotifyOptions : IConfigSection
+public class GovNotifyOptions 
 {
-    public static string SectionName => "GovNotify";
+    public const string SectionName = "GovNotify";
 
     public required string ApiKey { get; init; }
     public required GovNotifyTemplates Templates { get; init; }

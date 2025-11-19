@@ -14,7 +14,7 @@ internal static class OptionsExtensions
         var messagingOptions = AddOptions_Required<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
         var gisOptions = AddOptions_Required<GISOptions, TBuilder>(builder, GISOptions.SectionName);
         var govNotifyOptions = AddOptions_Required<GovNotifyOptions, TBuilder>(builder, GovNotifyOptions.SectionName);
-        var identityOptions = AddOptions_Optional<MicrosoftIdentityOptions, TBuilder>(builder, Constants.AzureAd);
+        var identityOptions = AddOptions_Required<MicrosoftIdentityOptions, TBuilder>(builder, Constants.AzureAd);
 
         return (messagingOptions, gisOptions, govNotifyOptions, identityOptions);
     }
@@ -35,13 +35,13 @@ internal static class OptionsExtensions
         TBuilder builder,
         string sectionName
     )
-        where T : class, IConfigSection
+        where T : class
         where TBuilder : IHostApplicationBuilder
     {
-        var section = builder.Configuration.GetSection(sectionName);
+        var section = builder.Configuration.GetRequiredSection(sectionName);
         builder.Services.Configure<T>(section);
         var options = section.Get<T>()
-            ?? throw new InvalidOperationException($"Configuration section '{T.SectionName}' is not properly defined.");
+            ?? throw new InvalidOperationException($"Configuration section '{sectionName}' is not properly defined.");
         return options;
     }
 }
