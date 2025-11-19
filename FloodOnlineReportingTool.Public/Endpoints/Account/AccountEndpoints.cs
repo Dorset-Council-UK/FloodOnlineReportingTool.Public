@@ -37,7 +37,6 @@ internal static class AccountEndpoints
 
     internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> SignIn(
         string? redirectUri,
-        string? returnUrl,
         string? loginHint,
         string? domainHint
         
@@ -48,7 +47,6 @@ internal static class AccountEndpoints
             RedirectUri = IsLocalUrl(redirectUri) ? redirectUri : "/report-flooding",
             Parameters =
             {
-                { Constants.ReturnUrl, returnUrl  },
                 { Constants.LoginHint, loginHint },
                 { Constants.DomainHint, domainHint },
             },
@@ -70,7 +68,6 @@ internal static class AccountEndpoints
     internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> IdentityChallenge(
         string? redirectUri,
         string? scope,
-        string? returnUrl,
         string? loginHint,
         string? domainHint,
         string? claims,
@@ -87,7 +84,6 @@ internal static class AccountEndpoints
         };
         Dictionary<string, object?> parameters = new(StringComparer.Ordinal)
         {
-            { Constants.ReturnUrl, returnUrl },
             { Constants.LoginHint, loginHint },
             { Constants.DomainHint, domainHint },
         };
