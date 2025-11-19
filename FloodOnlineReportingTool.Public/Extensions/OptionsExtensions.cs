@@ -14,7 +14,7 @@ internal static class OptionsExtensions
         var messagingOptions = AddOptions_Required<MessagingOptions, TBuilder>(builder, MessagingOptions.SectionName);
         var gisOptions = AddOptions_Required<GISOptions, TBuilder>(builder, GISOptions.SectionName);
         var govNotifyOptions = AddOptions_Required<GovNotifyOptions, TBuilder>(builder, GovNotifyOptions.SectionName);
-        var identityOptions = AddOptions_Optional<MicrosoftIdentityOptions, TBuilder>(builder, "AzureAd");
+        var identityOptions = AddOptions_Optional<MicrosoftIdentityOptions, TBuilder>(builder, Constants.AzureAd);
 
         return (messagingOptions, gisOptions, govNotifyOptions, identityOptions);
     }

@@ -20,7 +20,7 @@ internal static class AuthenticationExtensions
             .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApp(options =>
             {
-                builder.Configuration.Bind("AzureAd", options);
+                builder.Configuration.Bind(Constants.AzureAd, options);
 
                 options.Authority = $"https://dorsetcouncilext1.ciamlogin.com/{options.TenantId}/v2.0";
 
