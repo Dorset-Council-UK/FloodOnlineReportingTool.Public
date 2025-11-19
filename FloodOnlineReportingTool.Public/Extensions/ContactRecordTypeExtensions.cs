@@ -4,8 +4,8 @@ namespace FloodOnlineReportingTool.Contracts.Shared;
 
 internal static class ContactRecordTypeExtensions
 {
-    internal static ReadOnlySpan<char> LabelText(this ContactRecordType? contactRecordType) => (contactRecordType ?? ContactRecordType.Unknown).LabelText();
-    internal static ReadOnlySpan<char> LabelText(this ContactRecordType contactRecordType) => contactRecordType switch
+    internal static string LabelText(this ContactRecordType? contactRecordType) => (contactRecordType ?? ContactRecordType.Unknown).LabelText();
+    internal static string LabelText(this ContactRecordType contactRecordType) => contactRecordType switch
     {
         ContactRecordType.Tenant => "Tenant",
         ContactRecordType.HomeOwner => "Home owner",
@@ -13,8 +13,8 @@ internal static class ContactRecordTypeExtensions
         _ => "Unknown",
     };
 
-    internal static ReadOnlySpan<char> HintText(this ContactRecordType? contactRecordType) => (contactRecordType ?? ContactRecordType.Unknown).HintText();
-    internal static ReadOnlySpan<char> HintText(this ContactRecordType contactRecordType) => contactRecordType switch
+    internal static string HintText(this ContactRecordType? contactRecordType) => (contactRecordType ?? ContactRecordType.Unknown).HintText();
+    internal static string HintText(this ContactRecordType contactRecordType) => contactRecordType switch
     {
         ContactRecordType.Tenant => "Tenant of the property affected by flooding.",
         ContactRecordType.HomeOwner => "Home owner of the property affected by flooding.",

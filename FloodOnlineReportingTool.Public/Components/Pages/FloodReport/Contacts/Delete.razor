@@ -27,7 +27,7 @@
 
                 <AuthorizeView Context="authContext">
                     <NotAuthorized>
-                        <p>Contact type @_contactModel.ContactType.LabelText().ToString()</p>
+                        <p>Contact type @_contactModel.ContactType.LabelText()</p>
                     </NotAuthorized>
                     <Authorized>
                         <ContactInformation Contact="@_contactModel" ViewOnly="true" />
