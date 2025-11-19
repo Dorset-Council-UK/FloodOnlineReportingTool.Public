@@ -76,15 +76,4 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
 
         return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
-
-    private static string DescriptionText(ContactModel contactModel)
-    {
-        var contactType = contactModel.ContactType;
-        if (contactType == null)
-        {
-            return "contact information";
-        }
-
-        return $"{contactType.LabelText()} contact information";
-    }
 }
