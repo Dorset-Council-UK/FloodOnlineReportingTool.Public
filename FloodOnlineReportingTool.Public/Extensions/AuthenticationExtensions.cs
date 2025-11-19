@@ -22,8 +22,6 @@ internal static class AuthenticationExtensions
             {
                 builder.Configuration.Bind(Constants.AzureAd, options);
 
-                //options.Authority = $"https://dorsetcouncilext1.ciamlogin.com/{options.TenantId}/v2.0";
-
                 // Inject user flow as query parameter
                 options.Events.OnRedirectToIdentityProvider = context =>
                 {
