@@ -28,6 +28,7 @@ internal static class AuthenticationExtensions
                     context.ProtocolMessage.SetParameter("p", "Staging_Test_Flow");
                     return Task.CompletedTask;
                 };
+
             });
 
         // Configure all HttpClients to be resilient. For example: Identity Web + DownstreamApi
