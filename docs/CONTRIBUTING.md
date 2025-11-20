@@ -14,7 +14,7 @@ To get started with development, refer to the [`DEVELOPING.md`](DEVELOPING.md) f
 
 ## Contributor License Agreement
 
-By contributing, you agree that your contributions will be licensed under the [MIT license](LICENCE).
+By contributing, you agree that your contributions will be licensed under the [MIT license](LICENCE.md).
 
 ## Project Proposals
 

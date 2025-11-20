@@ -5,20 +5,11 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FloodOnlineReportingTool.Public", "FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj", "{5C23281F-31A3-42AE-8D04-B1848AE0D23B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4FCBE61B-A312-4C99-9472-F42CA5D02A4A}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitignore = .gitignore
-		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
-		CONTRIBUTING.md = CONTRIBUTING.md
-		DEVELOPING.md = DEVELOPING.md
-		LICENSE = LICENSE
-		README.md = README.md
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{A427791D-89C4-4C61-98F5-795C098DE3B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{420FB74F-314A-4A67-A505-D75DCA0541B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "docs", "docs\docs.csproj", "{99FDA51E-523C-4D17-99D7-3637E9B84A30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +57,18 @@ Global
 		{420FB74F-314A-4A67-A505-D75DCA0541B6}.Release|x64.Build.0 = Release|Any CPU
 		{420FB74F-314A-4A67-A505-D75DCA0541B6}.Release|x86.ActiveCfg = Release|Any CPU
 		{420FB74F-314A-4A67-A505-D75DCA0541B6}.Release|x86.Build.0 = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|x64.Build.0 = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Debug|x86.Build.0 = Debug|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|x64.ActiveCfg = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|x64.Build.0 = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|x86.ActiveCfg = Release|Any CPU
+		{99FDA51E-523C-4D17-99D7-3637E9B84A30}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
