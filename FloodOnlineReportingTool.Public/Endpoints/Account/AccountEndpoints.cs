@@ -4,37 +4,29 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Identity.Web;
+using System.IO;
 
 namespace FloodOnlineReportingTool.Public.Endpoints.Account;
 
 internal static class AccountEndpoints
 {
-    private static bool IsLocalUrl(string? url)
+    private static bool IsLocalPath(string? path)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
+
+        if (string.IsNullOrWhiteSpace(path))
             return false;
-        }
 
-        // Only allow relative URLs that start with a single '/'
-        if (url[0] == '/')
-        {
-            if (url.Length == 1)
-            {
-                return true;
-            }
-
-            // "/foo" is local, but "//foo" and "/\foo" are not
-            if (url[1] != '/' && url[1] != '\\')
-            {
-                return true;
-            }
-        } else if(url[0] == '~' || url.StartsWith("http", StringComparison.OrdinalIgnoreCase) == true){
-            // Disallow all other forms, including "~" style and absolute URLs
+        // Reject if it's an absolute URI (http://, https://, etc.)
+        if (Uri.TryCreate(path, UriKind.Absolute, out _))
             return false;
-        }
 
-         return true;   
+        // Reject protocol-relative URLs (//example.com)
+        if (path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        // Accept relative paths like "contacts", "report-flooding/contacts", or "/report-flooding"
+        return true;
+  
     }
 
     internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> SignIn(
@@ -46,7 +38,7 @@ internal static class AccountEndpoints
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = IsLocalUrl(redirectUri) ? redirectUri : "/report-flooding",
+            RedirectUri = IsLocalPath(redirectUri) ? redirectUri : "/report-flooding",
             Parameters =
             {
                 { Constants.LoginHint, loginHint },
