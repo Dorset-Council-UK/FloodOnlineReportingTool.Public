@@ -1,6 +1,6 @@
 # Contributing to Flood Online Reporting Tool - Public
 
-Thank you for your interest in contributing to Flood Online Reporting Tool - Public! Please review the project's [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before proceeding.
+Thank you for your interest in contributing to Flood Online Reporting Tool - Public! Please review the project's [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) before proceeding.
 
 If you wish to become a core developer, please contact the project team via email at [fort@dorsetcouncil.gov.uk](mailto:fort@dorsetcouncil.gov.uk)
 
@@ -10,7 +10,7 @@ We welcome contributions in the form of code, documentation, and suggestions. Pl
 
 ## Development Information
 
-To get started with development, refer to the [`DEVELOPING.md`](DEVELOPING.md) file included in this repository. You can find it in the root of the project.
+To get started with development, refer to the [DEVELOPING](DEVELOPING.md) file included in this repository. You can find it in the root of the project.
 
 ## Contributor License Agreement
 

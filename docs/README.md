@@ -19,7 +19,7 @@ Please report any bugs via the issue tracker in Azure DevOps.
 
 ## Contributing
 
-Please see our guide on [contributing](CONTRIBUTING.md) if you're interested in getting involved.
+Please see our guide on [CONTRIBUTING](CONTRIBUTING.md) if you're interested in getting involved.
 
 ## Reporting security issues
 
