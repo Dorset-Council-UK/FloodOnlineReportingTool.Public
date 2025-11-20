@@ -1,20 +1,25 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using FloodOnlineReportingTool.Contracts.Shared
+@using Microsoft.AspNetCore.Components.Authorization
 
 @if (SummaryCard)
 {
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
-            <h2 class="govuk-summary-card__title">@Contact.ContactType</h2>
+            <h2 class="govuk-summary-card__title">@Contact.ContactType.LabelText()</h2>
             <ul class="govuk-summary-card__actions">
                 <AuthorizeView Context="authContext">
                     <Authorized>
                         <li class="govuk-summary-card__action">
-                            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Change.Url}/{Contact.Id}")">Change<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
+                            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Change.Url}/{Contact.Id}")">
+                                Change<span class="govuk-visually-hidden"> @($"{Contact.ContactType?.LabelText()} contact information".Trim())</span>
+                            </a>
                         </li>
                     </Authorized>
                 </AuthorizeView>
                 <li class="govuk-summary-card__action">
-                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Delete.Url}/{Contact.Id}")">Delete<span class="govuk-visually-hidden"> @DescriptionText(Contact)</span></a>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@($"{ContactPages.Delete.Url}/{Contact.Id}")">
+                        Delete<span class="govuk-visually-hidden"> @($"{Contact.ContactType?.LabelText()} contact information".Trim())</span>
+                    </a>
                 </li>
             </ul>
         </div>
@@ -45,7 +50,7 @@ else if (ViewOnly)
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Type of contact</dt>
-            <dd class="govuk-summary-list__value">@Contact.ContactType</dd>
+            <dd class="govuk-summary-list__value">@Contact.ContactType.LabelText()</dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Contact name</dt>

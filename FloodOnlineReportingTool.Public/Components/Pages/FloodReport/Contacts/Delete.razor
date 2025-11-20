@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/contacts/delete/{contactid:guid}"
+@using FloodOnlineReportingTool.Contracts.Shared
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
@@ -26,7 +27,7 @@
 
                 <AuthorizeView Context="authContext">
                     <NotAuthorized>
-                        <p>Contact Type = @_contactModel.ContactType.ToString()</p>
+                        <p>Contact type: @_contactModel.ContactType.LabelText()</p>
                     </NotAuthorized>
                     <Authorized>
                         <ContactInformation Contact="@_contactModel" ViewOnly="true" />

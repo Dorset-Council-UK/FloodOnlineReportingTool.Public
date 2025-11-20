@@ -13,8 +13,8 @@ Given that contact records can be created by the public and on behalf of others,
 
 There are different types of contact records, each serving a specific purpose:
 - Tenant
-- Owner
-- Non-Resident
+- Home Owner
+- Non Resident
 
 ## Simple relationships
 

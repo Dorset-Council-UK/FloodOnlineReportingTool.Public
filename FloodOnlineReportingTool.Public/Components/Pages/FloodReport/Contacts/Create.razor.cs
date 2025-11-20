@@ -108,9 +108,8 @@ public partial class Create(
     private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();
-        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
-
-        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected: false);
+        var selected = false;
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
