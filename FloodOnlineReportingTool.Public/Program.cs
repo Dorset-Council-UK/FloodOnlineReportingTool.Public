@@ -65,9 +65,6 @@ builder.Services
     .AddBoundariesDatabase(boundariesConnectionString)
     .AddFloodReportingUsersDatabase(identityConnectionString);
 
-// Add the repositories
-builder.Services.AddRepositories();
-
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
 

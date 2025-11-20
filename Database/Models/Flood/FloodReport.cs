@@ -21,7 +21,6 @@ public record FloodReport
     public Guid? InvestigationId { get; init; }
     public Investigation? Investigation { get; init; }
 
-    // Owner: single optional ContactRecord (can be null)
     public Guid? ReportOwnerId { get; set; }
     public ContactRecord? ReportOwner { get; set; }
 

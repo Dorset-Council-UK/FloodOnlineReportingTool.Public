@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Exceptions;
+using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -40,6 +41,21 @@ internal static class DatabaseExtensions
                 options.EnableSensitiveDataLogging(true);
 #endif
             });
+
+        services.AddFloodReportingDatabaseRepositories();
+
+        return services;
+    }
+
+    private static IServiceCollection AddFloodReportingDatabaseRepositories(this IServiceCollection services)
+    {
+        services
+            .AddScoped<ICommonRepository, CommonRepository>()
+            .AddScoped<IContactRecordRepository, ContactRecordRepository>()
+            .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
+            .AddScoped<IFloodReportRepository, FloodReportRepository>()
+            .AddScoped<IInvestigationRepository, InvestigationRepository>()
+            .AddScoped<ISearchRepository, SearchRepository>();
 
         return services;
     }

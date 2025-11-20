@@ -4,11 +4,10 @@ using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-public partial class ContactInformation(IContactRecordRepository contactRepository, ProtectedSessionStorage protectedSessionStorage) : IAsyncDisposable
+public partial class ContactInformation(IContactRecordRepository contactRepository) : IAsyncDisposable
 {
     [Parameter, EditorRequired]
     public required ContactModel Contact { get; set; }
@@ -73,20 +72,8 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();
-        var label = contactRecordType is ContactRecordType.NonResident ? "Non resident".AsSpan() : id;
-        var selected = contactRecordType == Contact!.ContactType;
+        var selected = contactRecordType == Contact.ContactType;
 
-        return new GdsOptionItem<ContactRecordType>(id, label, contactRecordType, selected);
-    }
-
-    private static string DescriptionText(ContactModel contactModel)
-    {
-        var contactType = contactModel.ContactType;
-        if (contactType == null)
-        {
-            return "contact information";
-        }
-
-        return $"{contactType.Value.ToString().ToLowerInvariant()} contact information";
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 }
