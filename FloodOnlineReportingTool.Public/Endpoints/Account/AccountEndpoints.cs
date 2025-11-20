@@ -29,7 +29,7 @@ internal static class AccountEndpoints
             {
                 return true;
             }
-        } else if(url[0] == '~' && url.StartsWith("http", StringComparison.OrdinalIgnoreCase) == true){
+        } else if(url[0] == '~' || url.StartsWith("http", StringComparison.OrdinalIgnoreCase) == true){
             // Disallow all other forms, including "~" style and absolute URLs
             return false;
         }
