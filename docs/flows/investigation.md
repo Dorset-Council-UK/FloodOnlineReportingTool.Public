@@ -31,7 +31,7 @@ flowchart TB
     ActionsTaken --> HelpReceived[Help received]
     HelpReceived --> Warnings[Before the flooding]
     Warnings --> WarningSources[Warning sources]
-    WarningSources --> WarningSourceContainsFloodline{Recieved<br>Floodline<br>Warning?}
+    WarningSources --> WarningSourceContainsFloodline{Received<br>Floodline<br>Warning?}
     WarningSourceContainsFloodline -- No --> History[Flood history]
     WarningSourceContainsFloodline -- Yes --> Floodline[Floodline warning]
     Floodline --> History
