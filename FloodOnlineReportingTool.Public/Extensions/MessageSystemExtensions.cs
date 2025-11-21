@@ -1,5 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Public.Settings;
+using FloodOnlineReportingTool.Public.Options;
 using MassTransit;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -12,11 +12,12 @@ internal static class MessageSystemExtensions
     /// Add the message system. The Public project only needs to publish messages, not consume them
     /// </summary>
     /// <remarks>Even if messaging is disabled we still need to add MassTransit, so the database services work with the MassTransit interfaces.</remarks>
-    internal static IServiceCollection AddMessageSystem(this IServiceCollection services, MessagingSettings messagingSettings)
+    internal static TBuilder AddMessageSystem<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        if (!messagingSettings.Enabled)
+        var messagingOptions = builder.AddOptions_Required<MessagingOptions>(MessagingOptions.SectionName);
+        if (!messagingOptions.Enabled)
         {
-            services.AddMassTransit(o =>
+            builder.Services.AddMassTransit(o =>
             {
                 // In-Memory transport configuration
                 o.UsingInMemory((context, cfg) =>
@@ -25,10 +26,10 @@ internal static class MessageSystemExtensions
                 });
             });
 
-            return services;
+            return builder;
         }
 
-        services.AddMassTransit(o =>
+        builder.Services.AddMassTransit(o =>
         {
             var assembly = typeof(Program).Assembly;
 
@@ -43,18 +44,18 @@ internal static class MessageSystemExtensions
 
             o.UsingAzureServiceBus((context, config) =>
             {
-                if (messagingSettings.ConnectionString.Contains("Endpoint=", StringComparison.OrdinalIgnoreCase))
+                if (messagingOptions.ConnectionString.Contains("Endpoint=", StringComparison.OrdinalIgnoreCase))
                 {
-                    config.Host(messagingSettings.ConnectionString);
+                    config.Host(messagingOptions.ConnectionString);
                 }
                 else
                 {
                     // Using Azure Managed Identity
-                    config.Host(new Uri(messagingSettings.ConnectionString));
+                    config.Host(new Uri(messagingOptions.ConnectionString));
                 }
             });
         });
 
-        return services;
+        return builder;
     }
 }

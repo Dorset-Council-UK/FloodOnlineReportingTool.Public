@@ -14,8 +14,8 @@ const componentEntries = Object.fromEntries(
 );
 
 // Get the base path from app settings, if available
-const appSettings = require(process.env.NODE_ENV === 'production' ? './appsettings.json' : './appsettings.Development.json');
-const pathBase = appSettings?.GIS?.PathBase || '';
+const appOptions = require(process.env.NODE_ENV === 'production' ? './appsettings.json' : './appsettings.Development.json');
+const pathBase = appOptions?.GIS?.PathBase || '';
 
 module.exports = {
     entry: {

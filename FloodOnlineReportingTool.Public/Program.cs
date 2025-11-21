@@ -1,32 +1,37 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
-// Configure all the settings.
-builder.Configuration.AddFloodReportingKeyVault();
-var (messagingSettings, gisSettings, identityOptions) = builder.Services.AddFloodReportingSettings(builder.Configuration);
+// Configure Key Vault access
+builder.AddKeyVaults();
 
-// Add services to the container.
-builder.Services.AddApplicationInsightsTelemetry();
-builder.Services.AddFloodReportingAuthentication(builder.Configuration);
-builder.Services.AddFloodReportingVersioning();
-builder.Services.AddFloodReportingOpenApi(identityOptions);
+// Configure all the options.
+var gisOptions = builder.AddOptions_Required<GISOptions>(GISOptions.SectionName);
+
+// Configure authentication 
+var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Constants.AzureAd);
+builder.AddAuthentication();
+
+// Configure messaging system
+builder.AddMessageSystem();
 builder.AddGovNotify();
 
-// Add the HttpClient and configure it with the standard policies
-builder.Services
-    .AddHttpClient()
-    .ConfigureHttpClientDefaults(o =>
-    {
-        o.AddStandardResilienceHandler();
-    });
+// Configure API versioning and OpenAPI
+builder.Services.AddFloodReportingVersioning();
+builder.Services.AddFloodReportingOpenApi(identityOptions);
+
+// Configure logging
+builder.Services.AddApplicationInsightsTelemetry();
 
 // Add health checks
 builder.Services.AddFloodReportingHealthChecks();
@@ -68,14 +73,11 @@ builder.Services
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
 
-// Add the message system
-builder.Services.AddMessageSystem(messagingSettings);
-
 builder.Services.AddScoped<TestService>();
 
 var app = builder.Build();
 
-var pathBase = string.IsNullOrWhiteSpace(gisSettings.PathBase) ? "/" : $"/{gisSettings.PathBase}";
+var pathBase = string.IsNullOrWhiteSpace(gisOptions.PathBase) ? "/" : $"/{gisOptions.PathBase}";
 app.UsePathBase(pathBase);
 
 // Configure the HTTP request pipeline.
@@ -102,6 +104,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
+app.MapAuthenticationEndpoints();
 
 // Map all identity endpoints
 app.MapGroup("/api/auth").MapIdentityApi<FortUser>();

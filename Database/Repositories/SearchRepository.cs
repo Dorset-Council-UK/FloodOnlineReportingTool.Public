@@ -1,6 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Models.API;
-using FloodOnlineReportingTool.Database.Settings;
+using FloodOnlineReportingTool.Database.Options;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Net.Http.Json;
@@ -11,13 +11,13 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public class SearchRepository : ISearchRepository
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly GISSettings _settings;
+    private readonly GISOptions _options;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public SearchRepository(IHttpClientFactory httpClientFactory, IOptions<GISSettings> settings)
+    public SearchRepository(IHttpClientFactory httpClientFactory, IOptions<GISOptions> options)
     {
         _httpClientFactory = httpClientFactory;
-        _settings = settings.Value;
+        _options = options.Value;
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -33,10 +33,10 @@ public class SearchRepository : ISearchRepository
     private Uri CreateAddressSearchUri(string searchTerm, SearchAreaOptions searchArea)
     {
         // Throw an error if the search URI or API key are not set
-        var searchUri = _settings.AddressSearchUrl
+        var searchUri = _options.AddressSearchUrl
             ?? throw new ConfigurationMissingException("Missing configuration setting: The search URL is not set in the settings. Under GIS > AddressSearchUrl");
 
-        if (_settings.ApiKey is null)
+        if (_options.ApiKey is null)
         {
             throw new ConfigurationMissingException("Missing configuration setting: The GIS API key not set in the settings. Under GIS > ApiKey");
         }
@@ -61,10 +61,10 @@ public class SearchRepository : ISearchRepository
     private Uri CreateNearestAddressUri(double easting, double northing, SearchAreaOptions searchArea)
     {
         // Throw an error if the search URI or API key are not set
-        var nearestAddressesUri = _settings.NearestAddressesUrl
+        var nearestAddressesUri = _options.NearestAddressesUrl
             ?? throw new ConfigurationMissingException("Missing configuration setting: The nearest addresses URL is not set in the settings. Under GIS > NearestAddressesUrl");
 
-        if (_settings.ApiKey is null)
+        if (_options.ApiKey is null)
         {
             throw new ConfigurationMissingException("Missing configuration setting: The GIS API key not set in the settings. Under GIS > ApiKey");
         }
@@ -85,7 +85,7 @@ public class SearchRepository : ISearchRepository
         {
             client.DefaultRequestHeaders.Add("Referer", referer.ToString());
         }
-        client.DefaultRequestHeaders.Add("X-API-Key", _settings.ApiKey);
+        client.DefaultRequestHeaders.Add("X-API-Key", _options.ApiKey);
 
         return await client.GetAsync(uri, ct);
     }

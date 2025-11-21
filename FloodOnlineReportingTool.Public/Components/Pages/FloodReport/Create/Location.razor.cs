@@ -1,8 +1,8 @@
 ﻿using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Models.API;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Database.Settings;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -24,7 +24,7 @@ public partial class Location(
     NavigationManager navigationManager,
     IGdsJsInterop gdsJs,
     IJSRuntime JS,
-    IOptions<GISSettings> gisOptions
+    IOptions<GISOptions> gisOptions
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -48,7 +48,7 @@ public partial class Location(
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
 
-    private readonly GISSettings _gisSettings = gisOptions.Value;
+    private readonly GISOptions _gisOptions = gisOptions.Value;
 
     protected override void OnInitialized()
     {
@@ -97,7 +97,7 @@ public partial class Location(
             }
 
             // Pass the OS key to JavaScript
-            var apiKey = _gisSettings.OSApiKey;
+            var apiKey = _gisOptions.OSApiKey;
             await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
 
             //Setup the map

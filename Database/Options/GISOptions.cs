@@ -1,6 +1,6 @@
-﻿namespace FloodOnlineReportingTool.Database.Settings;
+﻿namespace FloodOnlineReportingTool.Database.Options;
 
-public record GISSettings
+public record GISOptions
 {
     public const string SectionName = "GIS";
 

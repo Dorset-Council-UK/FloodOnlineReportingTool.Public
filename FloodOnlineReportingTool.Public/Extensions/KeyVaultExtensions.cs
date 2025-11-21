@@ -1,5 +1,6 @@
 ﻿using Azure.Identity;
-using FloodOnlineReportingTool.Public.Settings;
+using FloodOnlineReportingTool.Public.Options;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -8,47 +9,41 @@ namespace Microsoft.AspNetCore.Builder;
 
 internal static class KeyVaultExtensions
 {
-    internal static IConfigurationManager AddFloodReportingKeyVault(this IConfigurationManager configuration)
+    internal static TBuilder AddKeyVaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        // if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local settings (appSettings, user secrets etc.) are used
-        var keyVaultSettings = GetKeyVaultSettings(configuration);
-        if (keyVaultSettings == null)
+        // if keyvault options exist then we use keyvault, otherwise we ignore and use whatever local options (appOptions, user secrets etc.) are used
+        var keyvaultSection = builder.Configuration
+            .GetRequiredSection(KeyVaultOptions.SectionName).Get<KeyVaultOptions>();
+
+        if (keyvaultSection == null || string.IsNullOrEmpty(keyvaultSection.VaultName))
         {
-            return configuration;
+            return builder;
         }
 
         using var x509Store = new X509Store(StoreLocation.LocalMachine);
         x509Store.Open(OpenFlags.ReadOnly);
 
-        var x509Certificate = x509Store.Certificates
-            .Find(X509FindType.FindByThumbprint, keyVaultSettings.AzureAd.CertificateThumbprint, validOnly: false)
-            .OfType<X509Certificate2>()
-            .Single();
+        //var x509Certificate = x509Store.Certificates
+        //    .Find(X509FindType.FindByThumbprint, azureAdSection.ClientCertificateThumbprint, validOnly: false)
+        //    .OfType<X509Certificate2>()
+        //    .Single();
+        //new ClientCertificateCredential(azureAdSection.TenantId, azureAdSection.ClientId, x509Certificate));
 
-        configuration.AddAzureKeyVault(
-            new Uri($"https://{keyVaultSettings.Name}.vault.azure.net/"),
-            new ClientCertificateCredential(keyVaultSettings.AzureAd.DirectoryId, keyVaultSettings.AzureAd.ApplicationId, x509Certificate));
+        builder.Configuration.AddAzureKeyVault(
+            new Uri($"https://{keyvaultSection.VaultName}.vault.azure.net/"),
+            new DefaultAzureCredential()
+        );
 
-        return configuration;
-    }
-
-    private static KeyVaultSettings? GetKeyVaultSettings(IConfigurationManager configuration)
-    {
-        var keyVaultSection = configuration.GetSection(KeyVaultSettings.SectionName);
-        var keyVaultAzureAdSection = keyVaultSection.GetSection(KeyVaultAzureAdSettings.SectionName);
-
-        if (!keyVaultSection.Exists() || !keyVaultAzureAdSection.Exists())
+        if (string.IsNullOrEmpty(keyvaultSection.SharedVaultName))
         {
-            return null;
+            return builder;
         }
 
-        var settings = keyVaultSection.Get<KeyVaultSettings>();
-        if (settings == null || string.IsNullOrWhiteSpace(settings.Name) || string.IsNullOrWhiteSpace(settings.AzureAd.CertificateThumbprint) ||
-            string.IsNullOrWhiteSpace(settings.AzureAd.DirectoryId) || string.IsNullOrWhiteSpace(settings.AzureAd.ApplicationId))
-        {
-            return null;
-        }
+        builder.Configuration.AddAzureKeyVault(
+            new Uri($"https://{keyvaultSection.SharedVaultName}.vault.azure.net/"),
+            new DefaultAzureCredential()
+        );
 
-        return settings;
+        return builder;
     }
 }
