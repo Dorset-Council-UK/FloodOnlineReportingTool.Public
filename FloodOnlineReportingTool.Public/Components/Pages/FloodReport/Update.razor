@@ -34,19 +34,19 @@
                 <GdsFormGroup For="() => _updateModel.UprnText">
                     <GdsLabel Text="UPRN" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.UprnText" @bind-WholeNumber="_updateModel.UprnNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.UprnText" @bind-NumberValue="_updateModel.UprnNumber" class="govuk-input" />
                 </GdsFormGroup>
 
                 <GdsFormGroup For="() => _updateModel.EastingText">
                     <GdsLabel Text="Easting" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.EastingText" @bind-FloatNumber="_updateModel.EastingNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.EastingText" @bind-NumberValue="_updateModel.EastingNumber" class="govuk-input" />
                 </GdsFormGroup>
 
                 <GdsFormGroup For="() => _updateModel.NorthingText">
                     <GdsLabel Text="Northing" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.NorthingText" @bind-FloatNumber="_updateModel.NorthingNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.NorthingText" @bind-NumberValue="_updateModel.NorthingNumber" class="govuk-input" />
                 </GdsFormGroup>
 
                 <GdsFormGroup For="() => _updateModel.LocationDesc">
