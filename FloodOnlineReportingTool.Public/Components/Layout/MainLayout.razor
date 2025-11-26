@@ -1,11 +1,18 @@
-﻿@using Microsoft.AspNetCore.Components.Sections
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 
 <GdsHeader ServiceName="Flood Online Reporting Tool (FORT)" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
     @if (!Env.IsProduction())
     {
-        <div class="govuk-header__service-name govuk-!-display-block">This is <strong>@Env.EnvironmentName</strong>!</div>
+        <div class="govuk-heading-m" style="color:#fff">@Env.EnvironmentName</div>
     }
+    <div>
+        <AuthorizeView>
+            <Authorized><a href="signout" class="govuk-link govuk-link--no-visited-state" style="color:#fff">Sign out</a></Authorized>
+            <NotAuthorized><a href="signin" class="govuk-link govuk-link--no-visited-state" style="color:#fff">Sign in</a></NotAuthorized>
+        </AuthorizeView>
+    </div>
 </GdsHeader>
 
 <div class="govuk-width-container">

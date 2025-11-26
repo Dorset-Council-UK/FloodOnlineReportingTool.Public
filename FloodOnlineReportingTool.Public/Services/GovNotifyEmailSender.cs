@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Public.Settings;
+﻿using FloodOnlineReportingTool.Public.Options;
 using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
@@ -7,13 +7,13 @@ namespace FloodOnlineReportingTool.Public.Services;
 
 internal class GovNotifyEmailSender(
     ILogger<GovNotifyEmailSender> logger,
-    IOptions<GovNotifySettings> options,
+    IOptions<GovNotifyOptions> options,
     IWebHostEnvironment environment,
     ICurrentUserService currentUserService,
     NotificationClient notificationClient
 ) : IGovNotifyEmailSender
 {
-    private readonly GovNotifySettings _govNotifySettings = options.Value;
+    private readonly GovNotifyOptions _govNotifyOptions = options.Value;
 
     /// <summary>
     ///     <para>Send an email to the specified email address via GovNotify.</para>
@@ -73,7 +73,7 @@ internal class GovNotifyEmailSender(
             { "test_message", testMessage },
         };
 
-        return await SendEmail(targetEmail, _govNotifySettings.Templates.TestNotification, personalisation);
+        return await SendEmail(targetEmail, _govNotifyOptions.Templates.TestNotification, personalisation);
     }
 
     // Account notifications
@@ -107,7 +107,7 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.VerifyEmailAddress, personalisation);
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailAddress, personalisation);
     }
 
     // Contact notifications
@@ -131,7 +131,7 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactUpdated, personalisation);
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.ConfirmContactUpdated, personalisation);
     }
 
     // TODO: Create / set notification template.
@@ -154,6 +154,6 @@ internal class GovNotifyEmailSender(
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifySettings.Templates.ConfirmContactDeleted, personalisation);
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.ConfirmContactDeleted, personalisation);
     }
 }

@@ -95,7 +95,8 @@ internal static class OpenApiExtensions
         {
             options
                 .WithTitle(DocumentTransformer.Title)
-                .WithOperationSorter(OperationSorter.Alpha)
+                .SortOperationsByMethod()
+                .SortTagsAlphabetically()
                 .AddDocuments(documentNames)
                 .AddPreferredSecuritySchemes(Constants.Bearer)
                 .AddOAuth2Flows(Constants.Bearer, flows =>

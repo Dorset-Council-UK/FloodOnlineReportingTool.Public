@@ -1,6 +1,7 @@
 ﻿@page "/floodreport/create/confirmation"
 @using FloodOnlineReportingTool.Database.Models
 @using FloodOnlineReportingTool.Database.Models.Eligibility
+@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
 
@@ -52,9 +53,10 @@
                     </li>
                     <li class="govuk-task-list__item govuk-task-list__item--with-link">
                         <div class="govuk-task-list__name-and-hint">
-                            <a class="govuk-link govuk-task-list__link govuk-link--no-visited-state" href="@AccountPages.SignIn.Url" aria-describedby="report-and-check-2-contacts">
-                                Register or sign in to add ways to keep in touch
-                            </a>
+                            <AuthorizeView>
+                                <Authorized><a href="@($"{ContactPages.Home.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Manage ways to keep in touch</a></Authorized>
+                                <NotAuthorized><a href="signin?redirectUri=@($"{ContactPages.Home.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register or sign in to add ways to keep in touch</a></NotAuthorized>
+                            </AuthorizeView>
                         </div>
                         <div class="govuk-task-list__status" id="report-and-check-2-contacts">
                             <strong class="govuk-tag govuk-tag--blue">
