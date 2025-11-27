@@ -48,7 +48,7 @@ internal sealed class DocumentTransformer(ApiVersion version, MicrosoftIdentityO
             License = new()
             {
                 Name = "MIT",
-                Url = new("https://github.com/Dorset-Council-UK/FloodOnlineReportingTool.Public/blob/main/LICENSE"),
+                Url = new("https://github.com/Dorset-Council-UK/FloodOnlineReportingTool.Public/blob/main/LICENSE.md"),
             },
         };
     }
