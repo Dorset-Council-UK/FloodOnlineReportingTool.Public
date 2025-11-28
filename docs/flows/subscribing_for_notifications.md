@@ -10,10 +10,10 @@ See [registration](registration.md) for details on the registration flow.
 ## Subscription flow
 ```mermaid
 flowchart TB
-    Start((Start)) -- Email & Name --> CollectDetails[Email]
-    CollectDetails -- Create verification code and expiry --> VerifyEmail[Verify Email]
-    VerifyEmail -- Remove code and mark verified --> Save[(Save to database)]
-    Save --> EmailSubscription
+    Start((Start)) --> CollectDetails[Collect Details]
+    CollectDetails -- Email & Name --> CollectDetails2[Initial Check] 
+    CollectDetails2 -- Create verification code and expiry --> VerifyEmail[Verify Email]
+    VerifyEmail -- Remove code and mark verified --> EmailSubscription
     EmailSubscription(Subscription Created) --> Confirmation((( End )))
 ```
 
