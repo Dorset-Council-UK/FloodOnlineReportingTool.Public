@@ -5,7 +5,7 @@ They can choose two routes:
 - Subscribe to recieve notification emails only
 - Register for an account to allow them to login and manage the current (and other linked) record and recieve notification emails
 
-See (registration)[registration.md] for details on the registration flow.
+See [registration](registration.md) for details on the registration flow.
 
 ## Subscription flow
 ```mermaid
