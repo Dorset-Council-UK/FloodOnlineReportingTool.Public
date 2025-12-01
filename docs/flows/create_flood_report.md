@@ -17,8 +17,13 @@ flowchart TB
     FloodDuration --> FloodSource
     FloodSource --> Summary[Check your answers]
     Summary --> Save[(Save to database)]
-    Save --> Confirmation((( End )))
+    Save --> Notifications{Choose Contacts}
+    Notifications -- Subscribe --> SubscribeFlow[/Subscribe for notifications/]
+    Notifications -- Register/Login --> RegistrationFlow[/Register for an account/]
+    Notifications -- No thanks --> Confirmation((( End )))
 ```
 ## After creating a flood report
-The user can optionally choose to subscribe to notifications or more.
-See [subscribing for notifications](subscribing_for_notifications.md) for more details.
+- The user can optionally choose to subscribe to notifications or more.
+- See the following for more details:
+    - [Subscribing for notifications flow](subscribing_for_notifications.md)
+    - [Registration flow](registration.md)
