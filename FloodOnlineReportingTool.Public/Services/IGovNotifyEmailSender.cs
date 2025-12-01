@@ -2,6 +2,8 @@
 
 public interface IGovNotifyEmailSender
 {
+    Task<string> SendReportSubmittedNotification(bool isPrimary, bool temporaryAccessOnly, string recordReference, string contactDisplayName, string contactEmail, string contactPhone, string locationDescription, double easting, double northing, DateTimeOffset reportDate);
+
     // Contact notifications
     // The create contact is a special case where we verify the contact email but also notify them of the particulars of the record and how it can be edited.
     Task<string> SendEmailVerificationNotification(string contactType, bool isPrimary, bool temporaryAccessOnly, string contactEmail, string contactPhone, string contactDisplayName, string recordReference, string locationDescription, double easting, double northing, DateTimeOffset reportDate);

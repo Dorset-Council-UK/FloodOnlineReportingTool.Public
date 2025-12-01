@@ -76,8 +76,35 @@ internal class GovNotifyEmailSender(
         return await SendEmail(targetEmail, _govNotifyOptions.Templates.TestNotification, personalisation);
     }
 
+    // Report submitted notifications
+
+    /// <summary>
+    /// This triggers an email when the report has been submitted and is a summary of the flood report. 
+    /// It also give the user a link to edit details if needed.
+    /// </summary>
+    public async Task<string> SendReportSubmittedNotification(bool isPrimary, bool temporaryAccessOnly, string recordReference, string contactDisplayName, string contactEmail, string contactPhone, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "isPrimary", isPrimary },
+            { "temporaryAccessOnly", temporaryAccessOnly },
+            { "recordReference", recordReference },
+            { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
+            { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },
+            { "location_description", locationDescription},
+            { "report_date", reportDate.GdsReadable() },
+        };
+        var emailAddress = GetUsermailAddress();
+        if (emailAddress == null)
+        {
+            return string.Empty;
+        }
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.ReportSubmitted, personalisation);
+    }
+
     // Account notifications
-    // TODO: Update this notification template as required.
+    // TODO: Update this notification template once process has been finalised.
     /// <summary>
     /// This triggers an email to ask the user or contact to verify their email address.
     /// If isPrimary then the user will have some permission level. 
@@ -111,7 +138,7 @@ internal class GovNotifyEmailSender(
     }
 
     // Contact notifications
-    // TODO: Create / set notification template.
+
     /// <summary>
     /// This triggers an email to notify a contact that their details have been updated.
     /// </summary>
@@ -134,10 +161,9 @@ internal class GovNotifyEmailSender(
         return await SendEmail(emailAddress, _govNotifyOptions.Templates.ConfirmContactUpdated, personalisation);
     }
 
-    // TODO: Create / set notification template.
+    // TODO: Update this notification template as required - should include instructions in case this was not intended as deletion removes the ability to self fix.
     /// <summary>
     /// This triggers an email to notify a contact that their details have been deleted.
-    /// The notification should include instructions in case this was not intended as deletion removes the ability to self fix.
     /// </summary>
     public async Task<string> SendContactDeletedNotification(string contactType, string contactEmail, string contactDisplayName, string recordReference)
     {
