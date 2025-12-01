@@ -17,7 +17,6 @@ public partial class Create(
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
-    IGovNotifyEmailSender govNotifyEmailSender,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -161,22 +160,6 @@ public partial class Create(
                 PhoneNumber = _contactModel.PhoneNumber,
             };
             var createResult = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-
-            // Success - send confirmation email
-            // TODO - enable this once notification is available
-            //var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-            //    _contactModel.ContactType!.Value.ToString(),
-            //    _contactModel.PrimaryContactRecord,
-            //    userId == null ? true : false,
-            //    _contactModel.EmailAddress!,
-            //    _contactModel.PhoneNumber!,
-            //    _contactModel.ContactName!,
-            //    _floodReport.Reference,
-            //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
-            //    _floodReport.EligibilityCheck!.Easting,
-            //    _floodReport.EligibilityCheck!.Northing,
-            //    _floodReport.CreatedUtc
-            //    );
 
             if (!createResult.IsSuccess)
             {

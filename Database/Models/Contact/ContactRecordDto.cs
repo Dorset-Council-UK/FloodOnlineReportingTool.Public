@@ -9,6 +9,7 @@ public record ContactRecordDto
 {
     public Guid? UserId { get; init; }
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
+    public Guid ContactSubscriptionRecord { get; init; }
     public string ContactName { get; init; } = "";
     public string EmailAddress { get; init; } = "";
     public bool IsEmailVerified { get; init; }

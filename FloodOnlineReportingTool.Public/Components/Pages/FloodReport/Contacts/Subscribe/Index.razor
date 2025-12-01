@@ -1,0 +1,33 @@
+﻿@page "/floodreport/contacts/subscribe"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBreadcrumbs Items="Breadcrumbs" />
+
+<h1 class="govuk-heading-l">@Title</h1>
+
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateSubscription">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsFormGroup For="() => _contactModel.ContactName">
+        <GdsLabel Text="Contact name" />
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="_contactModel.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => _contactModel.EmailAddress">
+        <GdsLabel Text="Email address" />
+        <GdsHint>
+            <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
+            <div>Email addresses will be deleted within 6 months unless a further investigation is started.</div>
+        </GdsHint>
+        <GdsErrorMessage />
+        <GdsInputText @bind-Value="_contactModel.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
+    </GdsFormGroup>
+
+    <div class="govuk-button-group">
+        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@FloodReportCreatePages.Confirmation.Url">Cancel</a>
+    </div>
+</EditForm>

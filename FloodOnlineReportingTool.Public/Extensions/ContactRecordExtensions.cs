@@ -14,8 +14,8 @@ internal static class ContactRecordExtensions
             Id = contactRecord.Id,
 
             ContactType = contactRecord.ContactType,
-            ContactName = contactRecord.ContactName,
-            EmailAddress = contactRecord.EmailAddress,
+            ContactName = contactRecord.SubscriptionRecord.ContactName,
+            EmailAddress = contactRecord.SubscriptionRecord.EmailAddress,
             PhoneNumber = contactRecord.PhoneNumber,
         };
     }

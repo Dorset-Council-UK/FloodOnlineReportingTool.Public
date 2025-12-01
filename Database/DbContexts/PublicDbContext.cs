@@ -12,6 +12,7 @@ namespace FloodOnlineReportingTool.Database.DbContexts;
 public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbContext(options)
 {
     public DbSet<ContactRecord> ContactRecords { get; set; }
+    public DbSet<ContactSubscriptionRecord> ContactSubscriptionRecords { get; set; }
     public DbSet<EligibilityCheck> EligibilityChecks { get; set; }
     public DbSet<EligibilityCheckResidential> EligibilityCheckResidentials { get; set; } // Relationship table
     public DbSet<EligibilityCheckCommercial> EligibilityCheckCommercials { get; set; } // Relationship table

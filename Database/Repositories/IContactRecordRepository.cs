@@ -34,6 +34,12 @@ public interface IContactRecordRepository
     Task<ContactRecordDeleteResult> DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
+    /// Creates a contact subscription record
+    /// </summary>
+    /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
+    Task<ContactSubscriptionCreateResult> CreateSubscriptionRecord(ContactSubscriptionRecord contactSubscription, CancellationToken ct);
+
+    /// <summary>
     /// Count the number of unused contact record types, going via the flood report
     /// </summary>
     Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
