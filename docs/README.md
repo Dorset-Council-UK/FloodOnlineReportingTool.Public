@@ -2,7 +2,7 @@
 
 The Flood Online Reporting Tool is a .NET based web application targeted at members of the public who need to report flooding to lead local flood authorities and other responsible risk authorities. 
 
-It is built using the GDS Design System and is Open Source Software licenced under the MIT licence. It is intended to be used by local authorities and government departments.
+It is built using the GDS Design System and is Open Source Software licensed under the MIT license. It is intended to be used by local authorities and government departments.
 
 ## Dependencies
 
@@ -29,6 +29,6 @@ Security issues should be reported privately, to the project team via email at [
 
 The Flood Online Reporting tool is a Dorset Council Open Source project. The core developers are currently Dorset Council staff. If you want to become a core developer, Please see our guide on [contributing](CONTRIBUTING.md).
 
-## Licence
+## License
 
 Unless stated otherwise, the codebase is released under the MIT License. This covers both the codebase and any sample code in the documentation.
