@@ -132,36 +132,6 @@ internal class GovNotifyEmailSender(
         return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailAddress, personalisation);
     }
 
-    // Account notifications
-    // TODO: Update this notification template as required.
-    /// <summary>
-    /// Record notification email
-    /// </summary>
-    //public async Task<string> SendEmailVerificationNotification(string contactType, bool isPrimary, bool temporaryAccessOnly, string contactEmail, string contactPhone, string contactDisplayName, string recordReference, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
-    //{
-    //    var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
-    //    {
-    //        { "from_development", environment.IsDevelopment() },
-    //        { "recordReference", recordReference },
-    //        { "isPrimary", isPrimary },
-    //        { "temporaryAccessOnly", temporaryAccessOnly },
-    //        { "contactDisplayName", contactDisplayName },
-    //        { "contactPhone", contactPhone },
-    //        { "contactType", contactType },
-    //        { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
-    //        { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },
-    //        { "location_description", locationDescription},
-    //        { "report_date", reportDate.GdsReadable() },
-    //    };
-
-    //    var emailAddress = GetUsermailAddress();
-    //    if (emailAddress == null)
-    //    {
-    //        return string.Empty;
-    //    }
-    //    return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailAddress, personalisation);
-    //}
-
     // Contact notifications
 
     /// <summary>
