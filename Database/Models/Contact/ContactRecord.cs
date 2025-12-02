@@ -17,11 +17,13 @@ public record ContactRecord
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
-    public string ContactName { get; set; } = "";
-    public string EmailAddress { get; set; } = "";
-    public bool IsEmailVerified { get; set; } = false;
     public string? PhoneNumber { get; set; }
     public DateTimeOffset RedactionDate { get; init; }
+
+    // We moved the name and contact email to the subscription record but it is automatically included 
+    // if calling GetContact. 
+    public Guid ContactSubscriptionRecord { get; set; }
+    public ContactSubscriptionRecord SubscriptionRecord { get; set; }
 
     // If set, this contact maps to a user account — only user-backed contacts may be associated with many reports.
     public Guid? ContactUserId { get; set; }

@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -82,9 +83,10 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
             ContactUserId = dto.UserId,
             ContactType = dto.ContactType,
-            ContactName = dto.ContactName,
-            EmailAddress = dto.EmailAddress,
-            IsEmailVerified = dto.IsEmailVerified,
+            ContactSubscriptionRecord = dto.ContactSubscriptionRecord,
+            //ContactName = dto.ContactName,
+            //EmailAddress = dto.EmailAddress,
+            //IsEmailVerified = dto.IsEmailVerified,
             PhoneNumber = dto.PhoneNumber,
             FloodReports = [floodReport], // this will link the contact to the flood report in the ContactRecordFloodReport table
         };
@@ -120,8 +122,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         }
 
         // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = contactRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (contactRecord.IsEmailVerified || dto.IsEmailVerified);
+        bool emailNotChanged = contactRecord.SubscriptionRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
+        var isEmailVerified = emailNotChanged && (contactRecord.SubscriptionRecord.IsEmailVerified || dto.IsEmailVerified);
 
         contactRecord = contactRecord with
         {
@@ -129,9 +131,9 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
             ContactUserId = userId,
             //ContactType = dto.ContactType,
-            ContactName = dto.ContactName,
-            EmailAddress = dto.EmailAddress,
-            IsEmailVerified = isEmailVerified,
+            //ContactName = dto.ContactName,
+            //EmailAddress = dto.EmailAddress,
+            //IsEmailVerified = isEmailVerified,
             PhoneNumber = dto.PhoneNumber,
         };
 
@@ -177,6 +179,29 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         return ContactRecordDeleteResult.Success();
     }
+
+    public async Task<ContactSubscriptionCreateResult> CreateSubscriptionRecord(ContactSubscriptionRecord contactSubscription, CancellationToken ct)
+    {
+        logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", contactSubscription.EmailAddress);
+        
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        ContactSubscriptionRecord newSubscription = new ContactSubscriptionRecord()
+        {
+            ContactName = contactSubscription.ContactName,
+            EmailAddress = contactSubscription.EmailAddress,
+            IsEmailVerified = false,
+            IsSubscribed = false,
+            CreatedUtc = DateTimeOffset.UtcNow,
+            VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
+            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+            RedactionDate = DateTimeOffset.UtcNow.AddMinutes(31)
+        };
+
+        context.ContactSubscriptionRecords.Add(newSubscription);
+        await context.SaveChangesAsync(ct);
+        return ContactSubscriptionCreateResult.Success(newSubscription);
+    }
+
 
     public async Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
     {
