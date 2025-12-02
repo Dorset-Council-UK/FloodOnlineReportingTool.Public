@@ -104,7 +104,7 @@ internal class GovNotifyEmailSender(
     }
 
     // Account notifications
-    // TODO: Update this notification template once process has been finalised.
+
     /// <summary>
     /// This triggers an email to ask the user or contact to verify their email address.
     /// </summary>
