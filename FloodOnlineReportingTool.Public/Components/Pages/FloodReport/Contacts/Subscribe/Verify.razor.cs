@@ -8,13 +8,14 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
 public partial class Verify(
     ILogger<Verify> logger,
     IContactRecordRepository contactRepository,
-    IFloodReportRepository floodReportRepository,
+    IGovNotifyEmailSender govNotifyEmailSender,
     SessionStateService scopedSessionStorage,
     NavigationManager navigationManager,
     IGdsJsInterop gdsJs
@@ -100,8 +101,7 @@ public partial class Verify(
     {
         _messageStore.Clear();
 
-        // TODO: Replace with actual verification logic
-        bool VerifiedResult = true;
+        bool VerifiedResult = await contactRepository.VerifySubscriptionRecord(Model.Id, (int)Model.EnteredCodeNumber, _cts.Token);
 
         if (!VerifiedResult)
         {
@@ -118,7 +118,15 @@ public partial class Verify(
     {
         isResent = false;
 
-        // TODO: Replace with actual resend logic
+        var VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
+        var VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30);
+
+        var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+            Model.EmailAddress,
+            Model.ContactName,
+            VerificationCode,
+            VerificationExpiryUtc
+            );
         bool sent = false;
 
         if (sent)

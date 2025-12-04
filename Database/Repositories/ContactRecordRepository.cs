@@ -4,6 +4,7 @@ using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
@@ -213,6 +214,40 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .Where(sr => sr.Id == subscriptionId)
             .OrderByDescending(sr => sr.CreatedUtc)
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct)
+    {
+        logger.LogInformation("Verify subscription record for id: {SubscriptionID} by code", subscriptionId);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var subscriptionRecord = await context.ContactSubscribeRecords
+                .IgnoreAutoIncludes()
+                .Where(sr => sr.Id == subscriptionId)
+                .OrderByDescending(sr => sr.CreatedUtc)
+                .FirstOrDefaultAsync(ct);
+
+        if (subscriptionRecord == null)
+        {
+            return false;
+        }
+
+        if( subscriptionRecord.VerificationCode == verificationCode && subscriptionRecord.VerificationExpiryUtc >  DateTimeOffset.UtcNow)
+        {
+            // Mark as verified
+            subscriptionRecord = subscriptionRecord with
+            {
+                IsEmailVerified = true,
+                VerificationCode = null,
+                VerificationExpiryUtc = null
+            };
+            context.ContactSubscribeRecords.Update(subscriptionRecord);
+            await context.SaveChangesAsync(ct);
+            return true;
+        } else
+        {
+           return false;
+        }
+
     }
 
     public async Task<SubscribeCreateOrUpdateResult> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct)

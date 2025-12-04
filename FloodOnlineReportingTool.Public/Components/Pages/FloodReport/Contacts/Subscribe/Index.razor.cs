@@ -90,13 +90,12 @@ public partial class Index(
         }
 
         // Success - send confirmation email
-        // Lucy to enable the code below
-        //var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-        //    subscriptionResult.ContactSubscriptionRecord!.EmailAddress,
-        //    subscriptionResult.ContactSubscriptionRecord!.ContactName,
-        //    subscriptionResult.ContactSubscriptionRecord!.VerificationCode,
-        //    subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
-        //    );
+        var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+            subscriptionResult.ContactSubscriptionRecord!.EmailAddress,
+            subscriptionResult.ContactSubscriptionRecord!.ContactName,
+            subscriptionResult.ContactSubscriptionRecord!.VerificationCode,
+            (DateTimeOffset)subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
+            );
 
         await scopedSessionStorage.SaveVerificationId(subscriptionResult.ContactSubscriptionRecord!.Id);
 

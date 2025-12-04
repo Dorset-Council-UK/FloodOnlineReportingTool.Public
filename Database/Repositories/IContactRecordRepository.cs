@@ -47,6 +47,12 @@ public interface IContactRecordRepository
     Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct);
 
     /// <summary>
+    /// Verifies a contact subscription record
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct);
+
+    /// <summary>
     /// Updates a subscription record
     /// </summary>
     /// <returns></returns>
