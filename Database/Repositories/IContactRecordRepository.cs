@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -37,7 +38,31 @@ public interface IContactRecordRepository
     /// Creates a contact subscription record
     /// </summary>
     /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
-    Task<ContactSubscriptionCreateResult> CreateSubscriptionRecord(ContactSubscriptionRecord contactSubscription, CancellationToken ct);
+    Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, CancellationToken ct);
+
+    /// <summary>
+    /// Returns a current subscription record by its ID
+    /// </summary>
+    /// <returns></returns>
+    Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct);
+
+    /// <summary>
+    /// Verifies a contact subscription record
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct);
+
+    /// <summary>
+    /// Updates a subscription record
+    /// </summary>
+    /// <returns></returns>
+    Task<SubscribeCreateOrUpdateResult> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct);
+
+    /// <summary>
+    /// Deletes a subscription record by its ID
+    /// </summary>
+    /// <returns></returns>
+    Task<SubscribeDeleteResult> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report

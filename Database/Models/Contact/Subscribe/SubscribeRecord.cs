@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FloodOnlineReportingTool.Database.Models.Contact;
+namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 
 
-public record ContactSubscriptionRecord
+public record SubscribeRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
@@ -18,7 +18,7 @@ public record ContactSubscriptionRecord
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset RedactionDate { get; init; }
     public int? VerificationCode { get; set; }
-    public DateTimeOffset VerificationExpiryUtc { get; init; }
+    public DateTimeOffset? VerificationExpiryUtc { get; init; }
 
     // Optional foreign key to ContactRecord
     public Guid? ContactRecordId { get; set; }

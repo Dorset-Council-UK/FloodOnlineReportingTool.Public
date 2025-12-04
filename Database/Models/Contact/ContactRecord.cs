@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Flood;
 
 namespace FloodOnlineReportingTool.Database.Models.Contact;
@@ -23,7 +24,7 @@ public record ContactRecord
     // We moved the name and contact email to the subscription record but it is automatically included 
     // if calling GetContact. 
     public Guid ContactSubscriptionRecord { get; set; }
-    public ContactSubscriptionRecord SubscriptionRecord { get; set; }
+    public SubscribeRecord SubscriptionRecord { get; set; }
 
     // If set, this contact maps to a user account — only user-backed contacts may be associated with many reports.
     public Guid? ContactUserId { get; set; }

@@ -1,14 +1,11 @@
-using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Extensions.Logging;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
@@ -31,7 +28,7 @@ public partial class Index(
     private EditContext _editContext = default!;
 
 
-    public required ContactSubscriptionRecord _contactModel { get; set; } = default!;
+    public required CreateModel _contactModel { get; set; } = default!;
 
     // Page order properties
     public string Title { get; set; } = SubscriptionPages.Home.Title;
@@ -85,7 +82,7 @@ public partial class Index(
             return;
         }
 
-        ContactSubscriptionCreateResult subscriptionResult = await CreateSubscription();
+        SubscribeCreateOrUpdateResult subscriptionResult = await CreateSubscription();
 
         if (!subscriptionResult.IsSuccess)
         {
@@ -97,7 +94,7 @@ public partial class Index(
             subscriptionResult.ContactSubscriptionRecord!.EmailAddress,
             subscriptionResult.ContactSubscriptionRecord!.ContactName,
             subscriptionResult.ContactSubscriptionRecord!.VerificationCode,
-            subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
+            (DateTimeOffset)subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
             );
 
         await scopedSessionStorage.SaveVerificationId(subscriptionResult.ContactSubscriptionRecord!.Id);
@@ -110,11 +107,17 @@ public partial class Index(
         navigationManager.NavigateTo(nextPageUrl);
     }
 
-    private async Task<ContactSubscriptionCreateResult> CreateSubscription()
+    private async Task<SubscribeCreateOrUpdateResult> CreateSubscription()
     {
         logger.LogDebug("Creating subscription information");
 
-        return await contactRepository.CreateSubscriptionRecord(_contactModel, _cts.Token);
+        SubscribeRecord contactModel = new()
+        {
+            ContactName = _contactModel.ContactName!,
+            EmailAddress = _contactModel.EmailAddress!
+        };
+
+        return await contactRepository.CreateSubscriptionRecord(contactModel, _cts.Token);
 
     }
 }
