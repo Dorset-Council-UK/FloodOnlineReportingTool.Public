@@ -88,6 +88,10 @@ public partial class Index(
         {
             return;
         }
+        if (subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc == null)
+        {
+            return;
+        }
 
         // Success - send confirmation email
         var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
