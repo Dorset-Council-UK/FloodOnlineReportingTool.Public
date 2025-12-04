@@ -6,4 +6,31 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
+<p>Please enter the <strong>6-digit verification code</strong> sent to your email address.</p>
+<p>The code is valid for 30 minutes.</p>
 
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="VerificationForm">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFormGroup For="() => Model.EnteredCodeText">
+        <GdsLabel Text="Verification code" />
+        <GdsHint>Enter the 6-digit code (numbers only).</GdsHint>
+        <GdsErrorMessage />
+        <GdsInputNumber @bind-Value="Model.EnteredCodeText" @bind-NumberValue="Model.EnteredCodeNumber" class="govuk-input govuk-input--width-10" />
+    </GdsFormGroup>
+
+    <div class="govuk-button-group">
+        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Verify</button>
+        <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="OnResend">Resend code</button>
+    </div>
+
+    @if (isResent != null)
+    {
+        <div class="govuk-inset-text">
+            @((bool)isResent ? "A new verification code has been sent to your email address." : "Unable to resend code. Please try again later.")
+        </div>
+    }
+</EditForm>

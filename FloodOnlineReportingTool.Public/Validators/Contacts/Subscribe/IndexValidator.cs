@@ -1,11 +1,11 @@
-﻿using FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FluentValidation;
 
 namespace FloodOnlineReportingTool.Public.Validators.Contacts;
 
-public class ContactSubscriptionRecordValidator : AbstractValidator<ContactSubscriptionRecord>
+public class IndexValidator : AbstractValidator<SubscribeModel>
 {
-    public ContactSubscriptionRecordValidator()
+    public IndexValidator()
     {
         RuleFor(o => o.ContactName)
             .NotEmpty()

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FloodOnlineReportingTool.Database.Models.Contact;
+namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 
 
-public record ContactSubscriptionRecord
+public record SubscribeRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
 

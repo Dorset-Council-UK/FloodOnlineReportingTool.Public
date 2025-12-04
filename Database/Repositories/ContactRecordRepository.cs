@@ -1,6 +1,7 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
@@ -180,12 +181,12 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         return ContactRecordDeleteResult.Success();
     }
 
-    public async Task<ContactSubscriptionCreateResult> CreateSubscriptionRecord(ContactSubscriptionRecord contactSubscription, CancellationToken ct)
+    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, CancellationToken ct)
     {
         logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", contactSubscription.EmailAddress);
         
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        ContactSubscriptionRecord newSubscription = new ContactSubscriptionRecord()
+        SubscribeRecord newSubscription = new SubscribeRecord()
         {
             ContactName = contactSubscription.ContactName,
             EmailAddress = contactSubscription.EmailAddress,
@@ -197,9 +198,54 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             RedactionDate = DateTimeOffset.UtcNow.AddMinutes(31)
         };
 
-        context.ContactSubscriptionRecords.Add(newSubscription);
+        context.ContactSubscribeRecords.Add(newSubscription);
         await context.SaveChangesAsync(ct);
-        return ContactSubscriptionCreateResult.Success(newSubscription);
+        return SubscribeCreateOrUpdateResult.Success(newSubscription);
+    }
+
+    public async Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct)
+    {
+        logger.LogInformation("Getting contact subscription record for id: {SubscriptionID}", subscriptionId);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        return await context.ContactSubscribeRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Where(sr => sr.Id == subscriptionId)
+            .OrderByDescending(sr => sr.CreatedUtc)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<SubscribeCreateOrUpdateResult> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct)
+    {
+        logger.LogInformation("Updating contact subscription record ID: {SubscriptionId}", subscriptionRecord.Id);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        
+        context.ContactSubscribeRecords.Update(subscriptionRecord);
+        await context.SaveChangesAsync(ct);
+        return SubscribeCreateOrUpdateResult.Success(subscriptionRecord);
+    }
+
+    public async Task<SubscribeDeleteResult> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct)
+    {
+        logger.LogInformation("Deleting subscription record ID: {SubscriptionId}", subscriptionId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var subscriptionRecord = await context.ContactSubscribeRecords
+            .Where(sr => sr.Id == subscriptionId)
+            .FirstOrDefaultAsync(ct);
+
+        if (subscriptionRecord == null)
+        {
+            return SubscribeDeleteResult.Failure([$"No subscription record found"]);
+        }
+
+        // Remove the subscription record from the flood report
+        context.ContactSubscribeRecords.Remove(subscriptionRecord);
+
+        // Remove the subscription record and add the message to the database
+        await context.SaveChangesAsync(ct);
+
+        return SubscribeDeleteResult.Success();
     }
 
 
