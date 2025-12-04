@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251201195653_AddContactSubscriptionTable")]
+    partial class AddContactSubscriptionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,7 +77,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactSubscriptionRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,7 +109,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<int?>("VerificationCode")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("VerificationExpiryUtc")
+                    b.Property<DateTimeOffset>("VerificationExpiryUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -114,7 +117,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.HasIndex("ContactRecordId")
                         .IsUnique();
 
-                    b.ToTable("ContactSubscribeRecords", "fortpublic");
+                    b.ToTable("ContactSubscriptionRecords", "fortpublic");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", b =>
@@ -2587,11 +2590,11 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactSubscriptionRecord", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", "ContactRecord")
                         .WithOne("SubscriptionRecord")
-                        .HasForeignKey("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", "ContactRecordId");
+                        .HasForeignKey("FloodOnlineReportingTool.Database.Models.Contact.ContactSubscriptionRecord", "ContactRecordId");
 
                     b.Navigation("ContactRecord");
                 });

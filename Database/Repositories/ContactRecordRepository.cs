@@ -1,8 +1,11 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -82,9 +85,10 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
             ContactUserId = dto.UserId,
             ContactType = dto.ContactType,
-            ContactName = dto.ContactName,
-            EmailAddress = dto.EmailAddress,
-            IsEmailVerified = dto.IsEmailVerified,
+            ContactSubscriptionRecord = dto.ContactSubscriptionRecord,
+            //ContactName = dto.ContactName,
+            //EmailAddress = dto.EmailAddress,
+            //IsEmailVerified = dto.IsEmailVerified,
             PhoneNumber = dto.PhoneNumber,
             FloodReports = [floodReport], // this will link the contact to the flood report in the ContactRecordFloodReport table
         };
@@ -120,8 +124,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         }
 
         // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = contactRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (contactRecord.IsEmailVerified || dto.IsEmailVerified);
+        bool emailNotChanged = contactRecord.SubscriptionRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
+        var isEmailVerified = emailNotChanged && (contactRecord.SubscriptionRecord.IsEmailVerified || dto.IsEmailVerified);
 
         contactRecord = contactRecord with
         {
@@ -129,9 +133,9 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
             ContactUserId = userId,
             //ContactType = dto.ContactType,
-            ContactName = dto.ContactName,
-            EmailAddress = dto.EmailAddress,
-            IsEmailVerified = isEmailVerified,
+            //ContactName = dto.ContactName,
+            //EmailAddress = dto.EmailAddress,
+            //IsEmailVerified = isEmailVerified,
             PhoneNumber = dto.PhoneNumber,
         };
 
@@ -177,6 +181,108 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         return ContactRecordDeleteResult.Success();
     }
+
+    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, CancellationToken ct)
+    {
+        logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", contactSubscription.EmailAddress);
+        
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        SubscribeRecord newSubscription = new SubscribeRecord()
+        {
+            ContactName = contactSubscription.ContactName,
+            EmailAddress = contactSubscription.EmailAddress,
+            IsEmailVerified = false,
+            IsSubscribed = false,
+            CreatedUtc = DateTimeOffset.UtcNow,
+            VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
+            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+            RedactionDate = DateTimeOffset.UtcNow.AddMinutes(31)
+        };
+
+        context.ContactSubscribeRecords.Add(newSubscription);
+        await context.SaveChangesAsync(ct);
+        return SubscribeCreateOrUpdateResult.Success(newSubscription);
+    }
+
+    public async Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct)
+    {
+        logger.LogInformation("Getting contact subscription record for id: {SubscriptionID}", subscriptionId);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        return await context.ContactSubscribeRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Where(sr => sr.Id == subscriptionId)
+            .OrderByDescending(sr => sr.CreatedUtc)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct)
+    {
+        logger.LogInformation("Verify subscription record for id: {SubscriptionID} by code", subscriptionId);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var subscriptionRecord = await context.ContactSubscribeRecords
+                .IgnoreAutoIncludes()
+                .Where(sr => sr.Id == subscriptionId)
+                .OrderByDescending(sr => sr.CreatedUtc)
+                .FirstOrDefaultAsync(ct);
+
+        if (subscriptionRecord == null)
+        {
+            return false;
+        }
+
+        if( subscriptionRecord.VerificationCode == verificationCode && subscriptionRecord.VerificationExpiryUtc >  DateTimeOffset.UtcNow)
+        {
+            // Mark as verified
+            subscriptionRecord = subscriptionRecord with
+            {
+                IsEmailVerified = true,
+                VerificationCode = null,
+                VerificationExpiryUtc = null
+            };
+            context.ContactSubscribeRecords.Update(subscriptionRecord);
+            await context.SaveChangesAsync(ct);
+            return true;
+        } else
+        {
+           return false;
+        }
+
+    }
+
+    public async Task<SubscribeCreateOrUpdateResult> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct)
+    {
+        logger.LogInformation("Updating contact subscription record ID: {SubscriptionId}", subscriptionRecord.Id);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        
+        context.ContactSubscribeRecords.Update(subscriptionRecord);
+        await context.SaveChangesAsync(ct);
+        return SubscribeCreateOrUpdateResult.Success(subscriptionRecord);
+    }
+
+    public async Task<SubscribeDeleteResult> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct)
+    {
+        logger.LogInformation("Deleting subscription record ID: {SubscriptionId}", subscriptionId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var subscriptionRecord = await context.ContactSubscribeRecords
+            .Where(sr => sr.Id == subscriptionId)
+            .FirstOrDefaultAsync(ct);
+
+        if (subscriptionRecord == null)
+        {
+            return SubscribeDeleteResult.Failure([$"No subscription record found"]);
+        }
+
+        // Remove the subscription record from the flood report
+        context.ContactSubscribeRecords.Remove(subscriptionRecord);
+
+        // Remove the subscription record and add the message to the database
+        await context.SaveChangesAsync(ct);
+
+        return SubscribeDeleteResult.Success();
+    }
+
 
     public async Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
     {

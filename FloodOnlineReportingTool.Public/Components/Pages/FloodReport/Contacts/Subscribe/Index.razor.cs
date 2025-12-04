@@ -1,0 +1,127 @@
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
+using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
+using GdsBlazorComponents;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+
+namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
+
+public partial class Index(
+    ILogger<Index> logger,
+    IContactRecordRepository contactRepository,
+    IGovNotifyEmailSender govNotifyEmailSender,
+    NavigationManager navigationManager,
+    SessionStateService scopedSessionStorage,
+    IGdsJsInterop gdsJs
+) : IPageOrder, IAsyncDisposable
+{
+    private readonly CancellationTokenSource _cts = new();
+    private Guid _verificationId = Guid.Empty;
+    private bool _isLoading = true;
+
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
+
+    private EditContext _editContext = default!;
+
+
+    public required CreateModel _contactModel { get; set; } = default!;
+
+    // Page order properties
+    public string Title { get; set; } = SubscriptionPages.Home.Title;
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
+        GeneralPages.Home.ToGdsBreadcrumb(),
+        FloodReportPages.Overview.ToGdsBreadcrumb(),
+    ];
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _cts.CancelAsync();
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Setup model and edit context
+        if (_contactModel == null)
+        {
+            _contactModel = new();
+            _editContext = new(_contactModel);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _verificationId = await scopedSessionStorage.GetVerificationId();
+
+            _isLoading = false;
+            StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+
+        if (!_editContext.Validate())
+        {
+            return;
+        }
+
+        SubscribeCreateOrUpdateResult subscriptionResult = await CreateSubscription();
+
+        if (!subscriptionResult.IsSuccess)
+        {
+            return;
+        }
+        if (subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc == null)
+        {
+            return;
+        }
+
+        // Success - send confirmation email
+        var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+            subscriptionResult.ContactSubscriptionRecord!.EmailAddress,
+            subscriptionResult.ContactSubscriptionRecord!.ContactName,
+            subscriptionResult.ContactSubscriptionRecord!.VerificationCode,
+            (DateTimeOffset)subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
+            );
+
+        await scopedSessionStorage.SaveVerificationId(subscriptionResult.ContactSubscriptionRecord!.Id);
+
+        var nextPageUrl = SubscriptionPages.Verify.Url;
+        if (FromSummary)
+        {
+            nextPageUrl = SubscriptionPages.Summary.Url;
+        }
+        navigationManager.NavigateTo(nextPageUrl);
+    }
+
+    private async Task<SubscribeCreateOrUpdateResult> CreateSubscription()
+    {
+        logger.LogDebug("Creating subscription information");
+
+        SubscribeRecord contactModel = new()
+        {
+            ContactName = _contactModel.ContactName!,
+            EmailAddress = _contactModel.EmailAddress!
+        };
+
+        return await contactRepository.CreateSubscriptionRecord(contactModel, _cts.Token);
+
+    }
+}
