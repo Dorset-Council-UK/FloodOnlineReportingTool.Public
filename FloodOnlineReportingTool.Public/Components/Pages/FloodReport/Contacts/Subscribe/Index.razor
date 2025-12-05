@@ -10,20 +10,20 @@
     <FluentValidationValidator />
     <GdsErrorSummary />
 
-    <GdsFormGroup For="() => _contactModel.ContactName">
+    <GdsFormGroup For="() => Model.ContactName">
         <GdsLabel Text="Contact name" />
         <GdsErrorMessage />
-        <GdsInputText @bind-Value="_contactModel.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
+        <GdsInputText @bind-Value="Model.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => _contactModel.EmailAddress">
+    <GdsFormGroup For="() => Model.EmailAddress">
         <GdsLabel Text="Email address" />
         <GdsHint>
             <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
             <div>Email addresses will be deleted within 6 months unless a further investigation is started.</div>
         </GdsHint>
         <GdsErrorMessage />
-        <GdsInputText @bind-Value="_contactModel.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
+        <GdsInputText @bind-Value="Model.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
     <div class="govuk-button-group">

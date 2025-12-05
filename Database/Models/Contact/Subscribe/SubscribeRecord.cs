@@ -18,7 +18,7 @@ public record SubscribeRecord
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset RedactionDate { get; init; }
     public int? VerificationCode { get; set; }
-    public DateTimeOffset? VerificationExpiryUtc { get; init; }
+    public DateTimeOffset? VerificationExpiryUtc { get; set; }
 
     // Optional foreign key to ContactRecord
     public Guid? ContactRecordId { get; set; }

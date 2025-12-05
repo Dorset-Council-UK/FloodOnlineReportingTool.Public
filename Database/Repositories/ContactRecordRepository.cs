@@ -234,13 +234,10 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         if( subscriptionRecord.VerificationCode == verificationCode && subscriptionRecord.VerificationExpiryUtc >  DateTimeOffset.UtcNow)
         {
             // Mark as verified
-            subscriptionRecord = subscriptionRecord with
-            {
-                IsEmailVerified = true,
-                VerificationCode = null,
-                VerificationExpiryUtc = null
-            };
-            context.ContactSubscribeRecords.Update(subscriptionRecord);
+            subscriptionRecord.IsEmailVerified = true;
+            subscriptionRecord.VerificationCode = null;
+            subscriptionRecord.VerificationExpiryUtc = null;
+
             await context.SaveChangesAsync(ct);
             return true;
         } else
@@ -248,6 +245,19 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
            return false;
         }
 
+    }
+
+    public async Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, CancellationToken ct)
+    {
+        logger.LogInformation("Updating contact subscription verification code for record ID: {SubscriptionId}", subscriptionRecord.Id);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        subscriptionRecord.VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
+        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30);
+
+        context.ContactSubscribeRecords.Update(subscriptionRecord);
+        await context.SaveChangesAsync(ct);
+        return SubscribeCreateOrUpdateResult.Success(subscriptionRecord);
     }
 
     public async Task<SubscribeCreateOrUpdateResult> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct)

@@ -53,6 +53,12 @@ public interface IContactRecordRepository
     Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct);
 
     /// <summary>
+    /// This updates the verification code and expiry on a subscription record
+    /// </summary>
+    /// <returns></returns>
+    Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, CancellationToken ct);
+
+    /// <summary>
     /// Updates a subscription record
     /// </summary>
     /// <returns></returns>

@@ -28,7 +28,9 @@ public partial class Index(
     private EditContext _editContext = default!;
 
 
-    public required CreateModel _contactModel { get; set; } = default!;
+    public required CreateModel Model { get; set; } = default!;
+
+    private ValidationMessageStore _messageStore = default!;
 
     // Page order properties
     public string Title { get; set; } = SubscriptionPages.Home.Title;
@@ -54,11 +56,12 @@ public partial class Index(
     protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
-        if (_contactModel == null)
+        if (Model == null)
         {
-            _contactModel = new();
-            _editContext = new(_contactModel);
+            Model = new();
+            _editContext = new(Model);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+            _messageStore = new(_editContext);
         }
     }
 
@@ -82,32 +85,61 @@ public partial class Index(
             return;
         }
 
+        // Error handling back into the Razor. Use validation message store or ErrorBoundary
         SubscribeCreateOrUpdateResult subscriptionResult = await CreateSubscription();
 
         if (!subscriptionResult.IsSuccess)
         {
+            CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
             return;
         }
-        if (subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc == null)
+        if (subscriptionResult.ContactSubscriptionRecord is not SubscribeRecord returnedSubscription)
         {
+            CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
+            return;
+        }
+        if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
+        {
+            CustomLogError(nameof(Model.ErrorMessage), "Subscription record verification expiry is not valid.", "Sorry, something went wrong", true);
             return;
         }
 
-        // Success - send confirmation email
-        var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-            subscriptionResult.ContactSubscriptionRecord!.EmailAddress,
-            subscriptionResult.ContactSubscriptionRecord!.ContactName,
-            subscriptionResult.ContactSubscriptionRecord!.VerificationCode,
-            (DateTimeOffset)subscriptionResult.ContactSubscriptionRecord!.VerificationExpiryUtc
-            );
+        // Success
+        // We are past the point of no return - all errors from here need to be passed to the next page
+        // Use try catch and pass errors via query string or session storage if needed
 
-        await scopedSessionStorage.SaveVerificationId(subscriptionResult.ContactSubscriptionRecord!.Id);
+        // Store session info
+        await scopedSessionStorage.SaveVerificationId(returnedSubscription.Id);
 
+        // send confirmation email
+        bool emailSent = false;
+        try
+        {
+            logger.LogInformation("Sending email verification notification");
+            var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+                returnedSubscription.EmailAddress,
+                returnedSubscription.ContactName,
+                returnedSubscription.VerificationCode,
+                expiry
+                );
+            emailSent = true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
+        }
+
+        // Send them onwards
         var nextPageUrl = SubscriptionPages.Verify.Url;
         if (FromSummary)
         {
             nextPageUrl = SubscriptionPages.Summary.Url;
         }
+        var NavigationOptions = new NavigationOptions
+        {
+             
+        };
+        // TODO: pass that the email sending failed if emailSent is false
         navigationManager.NavigateTo(nextPageUrl);
     }
 
@@ -117,11 +149,21 @@ public partial class Index(
 
         SubscribeRecord contactModel = new()
         {
-            ContactName = _contactModel.ContactName!,
-            EmailAddress = _contactModel.EmailAddress!
+            ContactName = Model.ContactName!,
+            EmailAddress = Model.EmailAddress!
         };
 
         return await contactRepository.CreateSubscriptionRecord(contactModel, _cts.Token);
 
+    }
+
+    private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
+    {
+        if (logMessage)
+        {
+            logger.LogWarning(errorMessage);
+        }
+        _messageStore.Add(_editContext.Field(fieldname), returnMessage);
+        _editContext.NotifyValidationStateChanged();
     }
 }

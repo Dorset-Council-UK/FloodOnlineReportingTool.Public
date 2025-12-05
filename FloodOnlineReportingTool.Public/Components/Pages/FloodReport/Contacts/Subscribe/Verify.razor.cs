@@ -1,3 +1,4 @@
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
@@ -97,16 +98,26 @@ public partial class Verify(
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnSubmit()
     {
         _messageStore.Clear();
 
-        bool VerifiedResult = await contactRepository.VerifySubscriptionRecord(Model.Id, (int)Model.EnteredCodeNumber, _cts.Token);
+        if (!_editContext.Validate())
+        {
+            StateHasChanged();
+            return;
+        }
+        if (Model.EnteredCodeNumber is not int enteredCode)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        bool VerifiedResult = await contactRepository.VerifySubscriptionRecord(Model.Id, enteredCode, _cts.Token);
 
         if (!VerifiedResult)
         {
-            _messageStore.Add(_editContext.Field(nameof(Model.EnteredCodeNumber)),
-            "The code you provided was not correct. Please try again or request a new code.");
+            CustomLogError(nameof(Model.EnteredCodeNumber),"Incorrect verification code entered.", "The code you provided was not correct. Please try again or request a new code.", false);
             _editContext.NotifyValidationStateChanged();
             return;
         }
@@ -118,21 +129,51 @@ public partial class Verify(
     {
         isResent = false;
 
-        var VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
-        var VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30);
-
-        var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-            Model.EmailAddress,
-            Model.ContactName,
-            VerificationCode,
-            VerificationExpiryUtc
-            );
-        bool sent = false;
-
-        if (sent)
+        var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+        if ( subscribeRecord == null)
         {
+            StateHasChanged();
+            return;
+        }
+        var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, _cts.Token);
+        if (updatedSubscription.ContactSubscriptionRecord is not SubscribeRecord returnedSubscription)
+        {
+            StateHasChanged();
+            return;
+        }
+        if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            logger.LogInformation("Sending email verification notification");
+            var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+                returnedSubscription.EmailAddress,
+                returnedSubscription.ContactName,
+                returnedSubscription.VerificationCode,
+                expiry
+                );
             isResent = true;
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
+        }
+
         StateHasChanged();
+        return;
+    }
+
+    private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
+    {
+        if (logMessage)
+        {
+            logger.LogWarning(errorMessage);
+        }
+        _messageStore.Add(_editContext.Field(fieldname), returnMessage);
+        _editContext.NotifyValidationStateChanged();
     }
 }
