@@ -17,13 +17,27 @@ internal sealed class CurrentUserService(IHttpContextAccessor httpContextAccesso
         get
         {
             var email = User?.FindFirstValue(ClaimTypes.Email);
-            if (!string.IsNullOrWhiteSpace(email))
+            if (!string.IsNullOrWhiteSpace(email) && !email.EndsWith(".onmicrosoft.com", StringComparison.OrdinalIgnoreCase))
             {
                 return email;
             }
 
+            // Try "emails" claim (Azure B2C/External Identity often uses this)
+            var emails = User?.FindFirstValue("emails");
+            if (!string.IsNullOrWhiteSpace(emails) && !emails.EndsWith(".onmicrosoft.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return emails;
+            }
+
+            // Last resort: preferred_username (but filter out .onmicrosoft.com)
             var preferredUsername = User?.FindFirstValue("preferred_username");
-            return preferredUsername ?? "";
+            if (!string.IsNullOrWhiteSpace(preferredUsername) && !preferredUsername.EndsWith(".onmicrosoft.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return preferredUsername;
+            }
+
+            // Fallback to empty string if all else fails
+            return "";
         }
     }
 }

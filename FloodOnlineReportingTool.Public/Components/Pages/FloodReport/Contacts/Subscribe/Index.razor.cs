@@ -15,12 +15,16 @@ public partial class Index(
     IGovNotifyEmailSender govNotifyEmailSender,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
+    ICurrentUserService currentUserService,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
     private bool _isLoading = true;
+
+    [SupplyParameterFromQuery]
+    private bool Me { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -70,6 +74,37 @@ public partial class Index(
         if (firstRender)
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
+
+            if (Me)
+            {
+                if (!currentUserService.IsAuthenticated)
+                {
+                    // Can't proceed if not authenticated
+                    navigationManager.NavigateTo(GeneralPages.Home.Url);
+                    return;
+                }
+
+                // Pre-fill email if known
+                if (string.IsNullOrWhiteSpace(Model.ContactName))
+                {
+                    Model.ContactName = currentUserService.Name;
+                }
+
+                if (string.IsNullOrWhiteSpace(Model.EmailAddress))
+                {
+                    Model.EmailAddress = currentUserService.Email;
+                }
+
+                // Notify EditContext of changes
+                if (!string.IsNullOrWhiteSpace(Model.ContactName))
+                {
+                    _editContext.NotifyFieldChanged(_editContext.Field(nameof(Model.ContactName)));
+                }
+                if (!string.IsNullOrWhiteSpace(Model.EmailAddress))
+                {
+                    _editContext.NotifyFieldChanged(_editContext.Field(nameof(Model.EmailAddress)));
+                }
+            }
 
             _isLoading = false;
             StateHasChanged();
