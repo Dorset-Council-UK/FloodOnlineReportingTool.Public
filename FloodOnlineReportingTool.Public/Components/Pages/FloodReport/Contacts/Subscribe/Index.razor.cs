@@ -1,4 +1,7 @@
+using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -21,6 +24,7 @@ public partial class Index(
 {
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
+    private Guid _floodReportId = Guid.Empty;
     private bool _isLoading = true;
 
     [SupplyParameterFromQuery]
@@ -31,8 +35,9 @@ public partial class Index(
 
     private EditContext _editContext = default!;
 
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
 
-    public required CreateModel Model { get; set; } = default!;
+    public required SubscribeModel Model { get; set; } = default!;
 
     private ValidationMessageStore _messageStore = default!;
 
@@ -66,6 +71,7 @@ public partial class Index(
             _editContext = new(Model);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
+            ContactTypes = CreateContactTypeOptions();
         }
     }
 
@@ -146,36 +152,57 @@ public partial class Index(
         // Store session info
         await scopedSessionStorage.SaveVerificationId(returnedSubscription.Id);
 
-        // send confirmation email
-        bool emailSent = false;
-        try
+        if (returnedSubscription.IsEmailVerified)
         {
-            logger.LogInformation("Sending email verification notification");
-            var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
-                returnedSubscription.EmailAddress,
-                returnedSubscription.ContactName,
-                returnedSubscription.VerificationCode,
-                expiry
-                );
-            emailSent = true;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
-        }
+            // Generate a contact record
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            Guid? userId = Guid.TryParse(currentUserService.UserId, out var guid) ? guid : (Guid?)null;
+            ContactRecordDto dto = new ContactRecordDto
+            {
+                UserId = userId,
+                ContactName = returnedSubscription.ContactName,
+                EmailAddress = returnedSubscription.EmailAddress,
+                IsEmailVerified = true,
+                SubscribeRecord = returnedSubscription,
+                ContactType = Model.ContactType,
+            };
+            var contactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
 
-        // Send them onwards
-        var nextPageUrl = SubscriptionPages.Verify.Url;
-        if (FromSummary)
+            // Send them onwards
+            var nextPageUrl = ContactPages.Summary.Url;
+            navigationManager.NavigateTo(nextPageUrl);
+        } else
         {
-            nextPageUrl = SubscriptionPages.Summary.Url;
+            // send confirmation email
+            try
+            {
+                logger.LogInformation("Sending email verification notification");
+                var sentNotification = await govNotifyEmailSender.SendEmailVerificationNotification(
+                    returnedSubscription.EmailAddress,
+                    returnedSubscription.ContactName,
+                    returnedSubscription.VerificationCode,
+                    expiry
+                    );
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
+            }
+
+            // Send them onwards
+            var nextPageUrl = SubscriptionPages.Verify.Url;
+            if (FromSummary)
+            {
+                nextPageUrl = ContactPages.Summary.Url;
+            }
+            var NavigationOptions = new NavigationOptions
+            {
+
+            };
+            // TODO: pass that the email sending failed if emailSent is false
+            navigationManager.NavigateTo(nextPageUrl);
         }
-        var NavigationOptions = new NavigationOptions
-        {
-             
-        };
-        // TODO: pass that the email sending failed if emailSent is false
-        navigationManager.NavigateTo(nextPageUrl);
+            
     }
 
     private async Task<SubscribeCreateOrUpdateResult> CreateSubscription()
@@ -185,10 +212,20 @@ public partial class Index(
         SubscribeRecord contactModel = new()
         {
             ContactName = Model.ContactName!,
-            EmailAddress = Model.EmailAddress!
+            EmailAddress = Model.EmailAddress!,
+            ContactType = Model.ContactType,
         };
 
-        return await contactRepository.CreateSubscriptionRecord(contactModel, _cts.Token);
+        bool AutoVerifyEmail = false;
+        if (currentUserService.IsAuthenticated)
+        {
+            if (string.Equals(currentUserService.Email, Model.EmailAddress, StringComparison.OrdinalIgnoreCase))
+            {
+                AutoVerifyEmail = true;
+            }
+        }
+        
+        return await contactRepository.CreateSubscriptionRecord(contactModel, AutoVerifyEmail, _cts.Token);
 
     }
 
@@ -200,5 +237,20 @@ public partial class Index(
         }
         _messageStore.Add(_editContext.Field(fieldname), returnMessage);
         _editContext.NotifyValidationStateChanged();
+    }
+
+    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
+    {
+
+        var allTypes = Enum.GetValues<ContactRecordType>();
+
+        return [.. allTypes.Select(CreateOption)];
+    }
+
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
+    {
+        var id = contactRecordType.ToString().AsSpan();
+        var selected = false;
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 }

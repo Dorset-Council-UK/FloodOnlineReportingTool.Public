@@ -2,3 +2,8 @@
 
 # MA0004: Use Task.ConfigureAwait
 dotnet_diagnostic.MA0004.severity = none
+
+
+[*]
+spelling_languages=en-gb
+

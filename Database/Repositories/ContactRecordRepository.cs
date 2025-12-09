@@ -30,12 +30,13 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         logger.LogInformation("Getting contact records for flood report ID: {FloodReportId}", floodReportId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.FloodReports
-            .AsNoTracking()
-            .IgnoreAutoIncludes()
-            .Where(fr => fr.Id == floodReportId)
-            .SelectMany(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
-            .ToListAsync(ct);
+        var floodReport = await context.FloodReports
+        .AsNoTracking()
+        .Include(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
+            .ThenInclude(cr => cr.SubscribeRecord)
+        .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+
+        return floodReport?.ContactRecords.ToList() ?? [];
     }
 
     public async Task<ContactRecordCreateOrUpdateResult> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct)
@@ -77,21 +78,30 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         var now = DateTimeOffset.UtcNow;
         var contactRecordId = Guid.CreateVersion7();
+        
+        // Load the SubscribeRecord
+        var subscribeRecord = await context.ContactSubscribeRecords
+            .FirstOrDefaultAsync(sr => sr.Id == dto.SubscribeRecord.Id, ct);
+        
+        if (subscribeRecord == null)
+        {
+            return ContactRecordCreateOrUpdateResult.Failure([ $"No subscribe record found for ID {dto.SubscribeRecord.Id}" ]);
+        }
+
         ContactRecord contactRecord = new()
         {
             Id = contactRecordId,
             CreatedUtc = now,
-            RedactionDate = now.AddMonths(6), // This is the default redaction period
-
+            RedactionDate = now.AddMonths(6),
             ContactUserId = dto.UserId,
             ContactType = dto.ContactType,
-            ContactSubscriptionRecord = dto.ContactSubscriptionRecord,
-            //ContactName = dto.ContactName,
-            //EmailAddress = dto.EmailAddress,
-            //IsEmailVerified = dto.IsEmailVerified,
             PhoneNumber = dto.PhoneNumber,
-            FloodReports = [floodReport], // this will link the contact to the flood report in the ContactRecordFloodReport table
+            FloodReports = [floodReport],
         };
+
+        // Link the relationship from both sides
+        subscribeRecord.ContactRecordId = contactRecordId;
+        subscribeRecord.ContactRecord = contactRecord;
 
         if (contactRecord.ContactType == ContactRecordType.HomeOwner)
         {
@@ -100,6 +110,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         // Add the contact record, including linking it to the flood report
         context.ContactRecords.Add(contactRecord);
+        context.Update(subscribeRecord);
         await context.SaveChangesAsync(ct);
 
         return ContactRecordCreateOrUpdateResult.Success(contactRecord);
@@ -124,8 +135,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         }
 
         // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = contactRecord.SubscriptionRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (contactRecord.SubscriptionRecord.IsEmailVerified || dto.IsEmailVerified);
+        bool emailNotChanged = contactRecord.SubscribeRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
+        var isEmailVerified = emailNotChanged && (contactRecord.SubscribeRecord.IsEmailVerified || dto.IsEmailVerified);
 
         contactRecord = contactRecord with
         {
@@ -182,16 +193,16 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         return ContactRecordDeleteResult.Success();
     }
 
-    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, CancellationToken ct)
+    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, bool isUserAuthenticated, CancellationToken ct)
     {
         logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", contactSubscription.EmailAddress);
-        
+
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         SubscribeRecord newSubscription = new SubscribeRecord()
         {
             ContactName = contactSubscription.ContactName,
             EmailAddress = contactSubscription.EmailAddress,
-            IsEmailVerified = false,
+            IsEmailVerified = isUserAuthenticated, //Assumption, logged in users do not need to authenticate unless it is not their email address. This logic is in calling function. 
             IsSubscribed = false,
             CreatedUtc = DateTimeOffset.UtcNow,
             VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),

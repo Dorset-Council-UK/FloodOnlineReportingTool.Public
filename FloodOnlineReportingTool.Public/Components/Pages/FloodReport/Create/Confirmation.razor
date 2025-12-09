@@ -88,7 +88,7 @@
 
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
-                                        <a href="signin?redirectUri=@($"{ContactPages.Home.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
+                                        <a href="signin?redirectUri=@($"{ContactPages.Summary.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
                                         <div id="report-and-check-2-contacts-login-hint" class="govuk-task-list__hint">
                                             You will be allowed to login and manage your notifications and reports on this website.
                                         </div>
@@ -159,7 +159,7 @@
             {
                 <p>Your contact details will be used to provide you with updates if you are subscribed to get them</p>
                 <p>
-                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">Change your contact information</a>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">Change your contact information</a>
                 </p>
             }
             else

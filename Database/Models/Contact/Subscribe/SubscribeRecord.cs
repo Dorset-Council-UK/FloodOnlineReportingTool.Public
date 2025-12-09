@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ public record SubscribeRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
+    public ContactRecordType ContactType { get; set; } = ContactRecordType.Unknown;
     public string ContactName { get; set; } = "";
     public string EmailAddress { get; set; } = "";
     public bool IsEmailVerified { get; set; } = false;

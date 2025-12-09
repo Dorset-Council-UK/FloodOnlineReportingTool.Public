@@ -1,0 +1,104 @@
+using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
+using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
+using GdsBlazorComponents;
+using Microsoft.AspNetCore.Components.Forms;
+
+namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
+
+public partial class Summary(
+    ILogger<Summary> logger,
+    IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
+    SessionStateService scopedSessionStorage,
+    IGdsJsInterop gdsJs
+) : IPageOrder, IAsyncDisposable
+{
+    private readonly CancellationTokenSource _cts = new();
+    private Guid _floodReportId = Guid.Empty;
+    private Guid _verificationId = Guid.Empty;
+    private bool _isLoading = true;
+    private IReadOnlyCollection<ContactModel> _contactModels = [];
+    private int _numberOfUnusedRecordTypes;
+
+    private EditContext _editContext = default!;
+
+    private SubscribeModel Model { get; set; } = default!;
+
+    private ValidationMessageStore _messageStore = default!;
+
+    // Page order properties
+    public string Title { get; set; } = ContactPages.Summary.Title;
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
+        GeneralPages.Home.ToGdsBreadcrumb(),
+        FloodReportPages.Overview.ToGdsBreadcrumb(),
+    ];
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await _cts.CancelAsync();
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected override void OnInitialized()
+    {
+        // Setup model and edit context
+        Model ??= new();
+        _editContext = new(Model);
+        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        _messageStore = new(_editContext);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _verificationId = await scopedSessionStorage.GetVerificationId();
+
+            var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+            if (subscribeRecord == null)
+            {
+                logger.LogWarning("No subscription record found for verification ID {VerificationId}", _verificationId);
+                // Handle missing subscription record as needed
+                _isLoading = false;
+                StateHasChanged();
+                return;
+            }
+
+            Model.ContactName = subscribeRecord.ContactName;
+            Model.EmailAddress = subscribeRecord.EmailAddress;
+            Model.IsEmailVerified = subscribeRecord.IsEmailVerified;
+
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
+            var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+            _contactModels = [.. _floodReports.Select(o => o.ToContactModel())];
+            _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
+
+            _isLoading = false;
+            StateHasChanged();
+            await gdsJs.InitGds(_cts.Token);
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        if (!_editContext.Validate())
+        {
+            return;
+        }
+
+        return;
+    }
+}

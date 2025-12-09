@@ -25,7 +25,7 @@ public partial class Change(
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
-        ContactPages.Home.ToGdsBreadcrumb(),
+        ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
     [Parameter]
@@ -140,7 +140,7 @@ public partial class Change(
             //}
 
             // Navigate back to contacts home
-            navigationManager.NavigateTo(ContactPages.Home.Url);
+            navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
         {

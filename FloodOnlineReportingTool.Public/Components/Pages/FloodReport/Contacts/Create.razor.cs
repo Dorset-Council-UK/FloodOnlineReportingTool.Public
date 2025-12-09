@@ -25,7 +25,7 @@ public partial class Create(
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
-        ContactPages.Home.ToGdsBreadcrumb(),
+        ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
     [CascadingParameter]
@@ -70,30 +70,6 @@ public partial class Create(
             ContactTypes = CreateContactTypeOptions();
         }
 
-        // Check if user is authenticated
-        if (AuthenticationState is not null)
-        {
-
-            var authState = await AuthenticationState;
-            var user = authState.User;
-
-            if (user.Identity?.IsAuthenticated ?? false)
-            {
-                // Populate model with known user info
-                _contactModel.ContactName = string.IsNullOrWhiteSpace(_contactModel.ContactName) ? user.Identity.Name : _contactModel.ContactName;
-                var oidClaim = user.FindFirst("oid")?.Value;
-                _contactModel.ContactUserId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
-
-                // Example: populate email if available
-                var email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-                if (!string.IsNullOrWhiteSpace(email))
-                {
-                    _contactModel.EmailAddress = string.IsNullOrWhiteSpace(_contactModel.EmailAddress) ? email : _contactModel.EmailAddress;
-                }
-
-            }
-
-        }
     }
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
@@ -173,7 +149,7 @@ public partial class Create(
             }
 
             logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
-            navigationManager.NavigateTo(ContactPages.Home.Url);
+            navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
         {

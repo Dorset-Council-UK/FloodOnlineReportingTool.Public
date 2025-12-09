@@ -26,6 +26,21 @@
         <GdsInputText @bind-Value="Model.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
+    <GdsFormGroup For="() => Model.ContactType">
+        <InputRadioGroup @bind-Value="Model.ContactType">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Who are you?</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+                    <GdsRadios Options="ContactTypes" />
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
     <div class="govuk-button-group">
         <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
         <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@FloodReportCreatePages.Confirmation.Url">Cancel</a>

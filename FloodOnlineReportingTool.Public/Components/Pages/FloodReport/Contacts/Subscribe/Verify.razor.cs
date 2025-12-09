@@ -1,3 +1,5 @@
+using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
@@ -24,6 +26,8 @@ public partial class Verify(
 {
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
+    private Guid _floodReportId = Guid.Empty;
+    private SubscribeRecord? _subscribeRecord;
     private bool _isLoading = true;
     private bool? isResent;
 
@@ -69,8 +73,8 @@ public partial class Verify(
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
 
-            var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
-            if (subscribeRecord == null)
+            _subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+            if (_subscribeRecord == null)
             {
                 logger.LogWarning("No subscription record found for verification ID {VerificationId}", _verificationId);
                 // Handle missing subscription record as needed
@@ -81,10 +85,11 @@ public partial class Verify(
 
             Model = new VerifyModel
             {
-                Id = subscribeRecord.Id,
-                ContactName = subscribeRecord.ContactName,
-                EmailAddress = subscribeRecord.EmailAddress,
-                IsEmailVerified = subscribeRecord.IsEmailVerified
+                Id = _subscribeRecord.Id,
+                ContactName = _subscribeRecord.ContactName,
+                EmailAddress = _subscribeRecord.EmailAddress,
+                IsEmailVerified = _subscribeRecord.IsEmailVerified,
+                ContactType = _subscribeRecord.ContactType,
             };
 
             // Recreate the EditContext with the new Model instance
@@ -122,7 +127,20 @@ public partial class Verify(
             return;
         }
 
-        navigationManager.NavigateTo(SubscriptionPages.Summary.Url);
+        // Generate a contact record
+        _floodReportId = await scopedSessionStorage.GetFloodReportId();
+        ContactRecordDto dto = new ContactRecordDto
+        {
+            ContactName = Model.ContactName,
+            EmailAddress = Model.EmailAddress,
+            IsEmailVerified = true,
+            SubscribeRecord = _subscribeRecord,
+            ContactType = Model.ContactType,
+
+        };
+        var contactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+
+        navigationManager.NavigateTo(ContactPages.Summary.Url);
     }
 
     private async Task OnResend()

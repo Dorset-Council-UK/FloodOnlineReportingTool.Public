@@ -19,7 +19,7 @@
             @if (_contactModel == null)
             {
                 <GdsWarning Text="Contact information not found" />
-                <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Home.Url">@ContactPages.Home.Title</a></div>
+                <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a></div>
             }
             else
             {
@@ -31,7 +31,7 @@
 
                     <div class="govuk-button-group">
                         <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
-                        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Home.Url">Cancel</a>
+                        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
                     </div>
                 </EditForm>
             }

@@ -21,14 +21,10 @@ public record ContactRecord
     public string? PhoneNumber { get; set; }
     public DateTimeOffset RedactionDate { get; init; }
 
-    // We moved the name and contact email to the subscription record but it is automatically included 
-    // if calling GetContact. 
-    public Guid ContactSubscriptionRecord { get; set; }
-    public SubscribeRecord SubscriptionRecord { get; set; }
+    // Navigation property only - no foreign key stored here
+    public SubscribeRecord SubscribeRecord { get; set; } = null!;
 
-    // If set, this contact maps to a user account — only user-backed contacts may be associated with many reports.
     public Guid? ContactUserId { get; set; }
 
-    // Many-to-many: flood reports can be associated with multiple contact records
     public ICollection<FloodReport> FloodReports { get; set; } = [];
 }

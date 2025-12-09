@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209215137_AddContactTypeToSubscription")]
+    partial class AddContactTypeToSubscription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,6 +44,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ContactSubscriptionRecord")
                         .HasColumnType("uuid");
 
                     b.Property<int>("ContactType")
@@ -2590,7 +2596,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", "ContactRecord")
-                        .WithOne("SubscribeRecord")
+                        .WithOne("SubscriptionRecord")
                         .HasForeignKey("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", "ContactRecordId");
 
                     b.Navigation("ContactRecord");
@@ -2941,7 +2947,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", b =>
                 {
-                    b.Navigation("SubscribeRecord")
+                    b.Navigation("SubscriptionRecord")
                         .IsRequired();
                 });
 
