@@ -2,22 +2,30 @@
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 
-<GdsHeader ServiceName="Flood Online Reporting Tool (FORT)" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
+<GdsHeader ServiceName="FORT" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
+    <NavLinks>
+        <AuthorizeView>
+            <Authorized>
+                <GdsHeaderNavLink Href="signout" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
+            </Authorized>
+            <NotAuthorized>
+                <GdsHeaderNavLink Href="signin" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+    </NavLinks>
+</GdsHeader>
+<div class="govuk-width-container">
+
     @if (!Env.IsProduction())
     {
-        <div class="govuk-heading-m" style="color:#fff">@Env.EnvironmentName</div>
+        // Show development banner in all non-production environments
+        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackLink="_feedbackUri" />
     }
-    <div>
-        <AuthorizeView>
-            <Authorized><a href="signout" class="govuk-link govuk-link--no-visited-state" style="color:#fff">Sign out</a></Authorized>
-            <NotAuthorized><a href="signin" class="govuk-link govuk-link--no-visited-state" style="color:#fff">Sign in</a></NotAuthorized>
-        </AuthorizeView>
-    </div>
-</GdsHeader>
-
-<div class="govuk-width-container">
-    <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Alpha" FeedbackLink="_feedbackUri" />
-
+    else
+    {
+        // Show appropriate banner (or none) in production environment
+        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Alpha" FeedbackLink="_feedbackUri" />
+    }
     <SectionOutlet SectionName="Layout.GdsBreadcrumbs" />
 
     <main class="govuk-main-wrapper govuk-body" id="main-content" role="main">

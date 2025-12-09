@@ -1,1 +1,9 @@
-﻿
+﻿$govuk-brand-colour: #05476d;
+
+.govuk-template--rebranded .govuk-header {
+    background-color: $govuk-brand-colour;
+}
+.govuk-template--rebranded .govuk-header__link--homepage:not(:focus){
+    background-color:unset;
+}
+
