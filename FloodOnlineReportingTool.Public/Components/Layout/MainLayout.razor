@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 
-<GdsHeader ServiceName="FORT" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
+<GdsHeader ServiceName="Flood Reporting" ServiceUrl="@GeneralPages.Home.Url" LogoUrl="@Assets["images/logos/logo.webp"]">
     <NavLinks>
         <AuthorizeView>
             <Authorized>
@@ -16,10 +16,11 @@
 </GdsHeader>
 <div class="govuk-width-container">
 
+
     @if (!Env.IsProduction())
     {
         // Show development banner in all non-production environments
-        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackLink="_feedbackUri" />
+        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackText="" FeedbackLink="_feedbackUri" />
     }
     else
     {
