@@ -12,10 +12,12 @@ public record SubscribeRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
+    public bool IsRecordOwner { get; set; } = false;
     public ContactRecordType ContactType { get; set; } = ContactRecordType.Unknown;
     public string ContactName { get; set; } = "";
     public string EmailAddress { get; set; } = "";
     public bool IsEmailVerified { get; set; } = false;
+    public string? PhoneNumber { get; set; }
     public bool IsSubscribed { get; set; } = false;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset RedactionDate { get; init; }

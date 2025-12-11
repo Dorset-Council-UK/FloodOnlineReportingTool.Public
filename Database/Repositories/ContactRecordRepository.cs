@@ -4,7 +4,6 @@ using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
@@ -25,6 +24,25 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .FirstOrDefaultAsync(ct);
     }
 
+    public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct)
+    {
+        logger.LogInformation("Getting report owner contact records for flood report ID: {FloodReportId}", floodReportId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var floodReport = await context.FloodReports
+        .AsNoTracking()
+        .IgnoreAutoIncludes()
+        .Include(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
+            .ThenInclude(cr => cr.SubscribeRecords)
+        .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+
+        var ownerSubscribeRecord = floodReport?.ContactRecords
+        .SelectMany(cr => cr.SubscribeRecords)
+        .FirstOrDefault(sr => sr.IsRecordOwner == true);
+
+        return ownerSubscribeRecord ?? null;
+    }
+
     public async Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct)
     {
         logger.LogInformation("Getting contact records for flood report ID: {FloodReportId}", floodReportId);
@@ -32,11 +50,15 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var floodReport = await context.FloodReports
         .AsNoTracking()
-        .Include(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
-            .ThenInclude(cr => cr.SubscribeRecord)
+        .IgnoreAutoIncludes()
+        .Include(fr => fr.ContactRecords)
+            .ThenInclude(sr => sr.SubscribeRecords)
         .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
 
-        return floodReport?.ContactRecords.ToList() ?? [];
+        var contactRecords = floodReport?.ContactRecords
+            .ToList();
+
+        return contactRecords ?? [];
     }
 
     public async Task<ContactRecordCreateOrUpdateResult> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct)
@@ -52,12 +74,6 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         if (floodReport == null)
         {
             return ContactRecordCreateOrUpdateResult.Failure([ $"No flood report found for ID {floodReportId}" ]);
-        }
-
-        // Only allow 1 instance of each type of contact to be created
-        if (floodReport.ContactRecords.Any(o => o.ContactType == dto.ContactType))
-        {
-            return ContactRecordCreateOrUpdateResult.Failure([ $"A contact record of type {dto.ContactType} already exists for the user" ]);
         }
 
         // Does the user already have a contact record?
@@ -78,15 +94,6 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         var now = DateTimeOffset.UtcNow;
         var contactRecordId = Guid.CreateVersion7();
-        
-        // Load the SubscribeRecord
-        var subscribeRecord = await context.ContactSubscribeRecords
-            .FirstOrDefaultAsync(sr => sr.Id == dto.SubscribeRecord.Id, ct);
-        
-        if (subscribeRecord == null)
-        {
-            return ContactRecordCreateOrUpdateResult.Failure([ $"No subscribe record found for ID {dto.SubscribeRecord.Id}" ]);
-        }
 
         ContactRecord contactRecord = new()
         {
@@ -94,23 +101,11 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             CreatedUtc = now,
             RedactionDate = now.AddMonths(6),
             ContactUserId = dto.UserId,
-            ContactType = dto.ContactType,
-            PhoneNumber = dto.PhoneNumber,
             FloodReports = [floodReport],
         };
 
-        // Link the relationship from both sides
-        subscribeRecord.ContactRecordId = contactRecordId;
-        subscribeRecord.ContactRecord = contactRecord;
-
-        if (contactRecord.ContactType == ContactRecordType.HomeOwner)
-        {
-            floodReport.ReportOwnerId = contactRecordId;
-        }
-
         // Add the contact record, including linking it to the flood report
         context.ContactRecords.Add(contactRecord);
-        context.Update(subscribeRecord);
         await context.SaveChangesAsync(ct);
 
         return ContactRecordCreateOrUpdateResult.Success(contactRecord);
@@ -122,32 +117,18 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
-            .FirstOrDefaultAsync(cr => cr.Id == contactRecordId && cr.ContactUserId == userId && cr.ContactType == dto.ContactType, ct);
+            .FirstOrDefaultAsync(cr => cr.Id == contactRecordId && cr.ContactUserId == userId, ct);
 
         if (contactRecord == null)
         {
-            return ContactRecordCreateOrUpdateResult.Failure([ $"No contact record found for record type {dto.ContactType}" ]);
+            return ContactRecordCreateOrUpdateResult.Failure([ $"No contact record found for record type" ]);
         }
-
-        if (contactRecord.ContactType != dto.ContactType)
-        {
-            return ContactRecordCreateOrUpdateResult.Failure([ $"The contact record type cannot be changed from {contactRecord.ContactType} to {dto.ContactType}" ]);
-        }
-
-        // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = contactRecord.SubscribeRecord.EmailAddress.Equals(dto.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (contactRecord.SubscribeRecord.IsEmailVerified || dto.IsEmailVerified);
 
         contactRecord = contactRecord with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
 
             ContactUserId = userId,
-            //ContactType = dto.ContactType,
-            //ContactName = dto.ContactName,
-            //EmailAddress = dto.EmailAddress,
-            //IsEmailVerified = isEmailVerified,
-            PhoneNumber = dto.PhoneNumber,
         };
 
         context.Update(contactRecord);
@@ -162,28 +143,30 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
-            .Where(cr => cr.Id == contactRecordId && cr.ContactType == contactType)
-            .FirstOrDefaultAsync(ct);
-
+            .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
+        
         if (contactRecord == null)
         {
             return ContactRecordDeleteResult.Failure([ $"No contact record found for record type {contactType}" ]);
         }
+        var subscribeRecordToRemove = contactRecord.SubscribeRecords
+                .FirstOrDefault(sr => sr.ContactType == contactType);
+        if (subscribeRecordToRemove == null)
+        {
+            return ContactRecordDeleteResult.Failure([$"No contact record found for record type {contactType}"]);
+        }
 
         // Remove the contact record from the flood report
-        context.ContactRecords.Remove(contactRecord);
-
-        // Update the flood report owner if the contact type was home owner
-        if (contactType == ContactRecordType.HomeOwner)
+        if (subscribeRecordToRemove.IsRecordOwner == true || contactRecord.SubscribeRecords.Count == 1)
         {
-            var floodReport = await context.FloodReports
-                .IgnoreAutoIncludes()
-                .FirstOrDefaultAsync(f => f.ReportOwnerId == contactRecordId, ct);
-
-            if (floodReport != null)
+            // If this is the record owner or there is only one subscribe record, we can remove the whole contact record
+            context.ContactRecords.Remove(contactRecord);
+        } else
+        {
+            // If there are multiple subscribe records we only remove the one matching the contact type
+            if (subscribeRecordToRemove != null)
             {
-                floodReport.ReportOwnerId = null;
-                context.Update(floodReport);
+               context.ContactSubscribeRecords.Remove(subscribeRecordToRemove);
             }
         }
 
@@ -193,17 +176,44 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         return ContactRecordDeleteResult.Success();
     }
 
-    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, bool isUserAuthenticated, CancellationToken ct)
+    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, CancellationToken ct)
     {
-        logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", contactSubscription.EmailAddress);
-
+        logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", dto.EmailAddress);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        SubscribeRecord contactModel = new()
+        {
+            ContactName = dto.ContactName!,
+            EmailAddress = dto.EmailAddress!,
+            ContactType = dto.ContactType,
+            ContactRecordId = contactRecordId,
+        };
+
+        // Assumption, logged in users do not need to authenticate unless it is not their email address.
+        bool AutoVerifyEmail = false;
+        if (!string.IsNullOrEmpty(userEmail))
+        {
+            if (string.Equals(userEmail, dto.EmailAddress, StringComparison.OrdinalIgnoreCase))
+            {
+                AutoVerifyEmail = true;
+            }
+        }
+
+        // Only allow 1 instance of each type of contact to be created
+        if (context.ContactSubscribeRecords.Where(csr => csr.ContactRecordId == contactRecordId).Any(o => o.ContactType == dto.ContactType))
+        {
+            return SubscribeCreateOrUpdateResult.Failure([$"A contact record of type {dto.ContactType} already exists for the user"]);
+        }
+
         SubscribeRecord newSubscription = new SubscribeRecord()
         {
-            ContactName = contactSubscription.ContactName,
-            EmailAddress = contactSubscription.EmailAddress,
-            IsEmailVerified = isUserAuthenticated, //Assumption, logged in users do not need to authenticate unless it is not their email address. This logic is in calling function. 
+            ContactRecordId = contactRecordId,
+            ContactType = dto.ContactType,
+            ContactName = dto.ContactName,
+            EmailAddress = dto.EmailAddress,
+            IsEmailVerified = AutoVerifyEmail,   
             IsSubscribed = false,
+            IsRecordOwner = dto.IsRecordOwner,
             CreatedUtc = DateTimeOffset.UtcNow,
             VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
             VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30),
@@ -223,6 +233,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .Where(sr => sr.Id == subscriptionId)
+            .Include(sr => sr.ContactRecord)
             .OrderByDescending(sr => sr.CreatedUtc)
             .FirstOrDefaultAsync(ct);
     }
@@ -275,8 +286,31 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
     {
         logger.LogInformation("Updating contact subscription record ID: {SubscriptionId}", subscriptionRecord.Id);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        
-        context.ContactSubscribeRecords.Update(subscriptionRecord);
+
+        if (context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType))
+        {
+            return SubscribeCreateOrUpdateResult.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
+        }
+
+        var subscribeRecord = await context.ContactSubscribeRecords
+            .FirstOrDefaultAsync(cr => cr.Id == subscriptionRecord.Id, ct);
+        if (subscribeRecord == null)
+        {
+            return SubscribeCreateOrUpdateResult.Failure([$"No contact record found for ID {subscriptionRecord.ContactRecordId}"]);
+        }
+
+        // Determine if the email has changed; if it has, we need to reset the verified status
+        bool emailNotChanged = subscribeRecord.EmailAddress.Equals(subscriptionRecord.EmailAddress, StringComparison.OrdinalIgnoreCase);
+        var isEmailVerified = emailNotChanged && (subscribeRecord.IsEmailVerified || subscriptionRecord.IsEmailVerified);
+
+        subscribeRecord.IsRecordOwner = subscriptionRecord.IsRecordOwner;
+        subscribeRecord.ContactType = subscriptionRecord.ContactType;
+        subscribeRecord.IsSubscribed = subscriptionRecord.IsSubscribed;
+        subscribeRecord.IsEmailVerified = isEmailVerified;
+        subscribeRecord.EmailAddress = subscriptionRecord.EmailAddress;
+        subscribeRecord.ContactName = subscriptionRecord.ContactName;
+        subscribeRecord.PhoneNumber = subscriptionRecord.PhoneNumber;
+
         await context.SaveChangesAsync(ct);
         return SubscribeCreateOrUpdateResult.Success(subscriptionRecord);
     }
@@ -315,7 +349,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .IgnoreAutoIncludes()
             .Where(f => f.Id == floodReportId)
             .SelectMany(f => f.ContactRecords)
-            .Select(cr => cr.ContactType)
+            .SelectMany(cr => cr.SubscribeRecords)
+            .Select(sr => sr.ContactType)
             .ToListAsync(ct);
 
         return [.. Enum.GetValues<ContactRecordType>().Where(o => o != ContactRecordType.Unknown && !usedRecordTypes.Contains(o))];
@@ -335,7 +370,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .IgnoreAutoIncludes()
             .Where(f => f.Id == floodReportId)
             .SelectMany(f => f.ContactRecords)
-            .Select(cr => cr.ContactType)
+            .SelectMany(cr => cr.SubscribeRecords)
+            .Select(sr => sr.ContactType)
             .Distinct()
             .CountAsync(ct);
 

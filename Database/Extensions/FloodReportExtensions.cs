@@ -15,7 +15,10 @@ internal static class FloodReportExtensions
             floodReport.EligibilityCheck is not null,
             floodReport.Investigation is not null,
             floodReport.ContactRecords.Count > 0,
-            [.. floodReport.ContactRecords.Select(c => c.ContactType).ToList()]
+            [.. floodReport.ContactRecords
+                .SelectMany(c => c.SubscribeRecords)
+                .Select(s => s.ContactType)
+                .ToList()]
         );
     }
 }

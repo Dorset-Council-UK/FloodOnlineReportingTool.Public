@@ -153,13 +153,21 @@ public partial class Change(
     private async Task<ContactModel?> GetContact()
     {
         var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);
-        if (floodReport == null || floodReport.ReportOwner == null)
+        if (floodReport == null)
         {
             return null;
         }
 
         //If we have a valid match then we return the reference for the current flood report only
         _floodReportReference = floodReport!.Reference;
-        return floodReport.ReportOwner.ToContactModel();
+        var contactRecord = floodReport.ContactRecords
+            .Where(fr => fr.Id == ContactId)
+            .FirstOrDefault();
+
+        if (contactRecord == null)
+        {
+            return null;
+        }
+        return contactRecord.ToContactModel();
     }
 }

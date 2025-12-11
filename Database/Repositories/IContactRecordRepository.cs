@@ -12,7 +12,13 @@ public interface IContactRecordRepository
     Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct);
 
     /// <summary>
-    /// Get all contact records associated with a flood report
+    /// Get the report owner contact records associated with a flood report
+    /// </summary>
+    /// <returns></returns>
+    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct);
+
+    /// <summary>
+    /// Get all other contact records associated with a flood report
     /// </summary>
     Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
 
@@ -38,7 +44,7 @@ public interface IContactRecordRepository
     /// Creates a contact subscription record
     /// </summary>
     /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
-    Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(SubscribeRecord contactSubscription, bool isUserAuthenticated, CancellationToken ct);
+    Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, CancellationToken ct);
 
     /// <summary>
     /// Returns a current subscription record by its ID

@@ -5,6 +5,7 @@ using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
+using MassTransit.Initializers;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
@@ -21,6 +22,7 @@ public partial class Summary(
     private Guid _floodReportId = Guid.Empty;
     private Guid _verificationId = Guid.Empty;
     private bool _isLoading = true;
+    private ContactModel? _reportOwnerContact;
     private IReadOnlyCollection<ContactModel> _contactModels = [];
     private int _numberOfUnusedRecordTypes;
 
@@ -65,31 +67,27 @@ public partial class Summary(
         if (firstRender)
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
-
-            var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
-            if (subscribeRecord == null)
-            {
-                logger.LogWarning("No subscription record found for verification ID {VerificationId}", _verificationId);
-                // Handle missing subscription record as needed
-                _isLoading = false;
-                StateHasChanged();
-                return;
-            }
-
-            Model.ContactName = subscribeRecord.ContactName;
-            Model.EmailAddress = subscribeRecord.EmailAddress;
-            Model.IsEmailVerified = subscribeRecord.IsEmailVerified;
-
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
-
-            var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
-            _contactModels = [.. _floodReports.Select(o => o.ToContactModel())];
-            _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
 
             _isLoading = false;
             StateHasChanged();
             await gdsJs.InitGds(_cts.Token);
         }
+
+        var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+        var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+        _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
+
+        var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+
+        // Filter out the report owner from the additional contacts list
+        _contactModels = allContactRecords
+            .SelectMany(cr => cr.SubscribeRecords)
+            .Where(sr => !sr.IsRecordOwner)
+            .Select(sr => sr.ToContactModel())
+            .ToList();
+        _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
+        StateHasChanged();
     }
 
     private async Task OnSubmit()

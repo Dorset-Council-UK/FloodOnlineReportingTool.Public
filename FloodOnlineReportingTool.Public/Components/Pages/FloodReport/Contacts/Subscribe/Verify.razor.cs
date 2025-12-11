@@ -1,17 +1,11 @@
-using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
@@ -126,20 +120,6 @@ public partial class Verify(
             _editContext.NotifyValidationStateChanged();
             return;
         }
-
-        // Generate a contact record
-        _floodReportId = await scopedSessionStorage.GetFloodReportId();
-        ContactRecordDto dto = new ContactRecordDto
-        {
-            ContactName = Model.ContactName,
-            EmailAddress = Model.EmailAddress,
-            IsEmailVerified = true,
-            SubscribeRecord = _subscribeRecord,
-            ContactType = Model.ContactType,
-
-        };
-        var contactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-
         navigationManager.NavigateTo(ContactPages.Summary.Url);
     }
 

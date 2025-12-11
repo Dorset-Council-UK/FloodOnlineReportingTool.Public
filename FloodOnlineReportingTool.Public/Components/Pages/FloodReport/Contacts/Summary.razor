@@ -8,6 +8,13 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
+<p>
+    By confirming your subscription, you agree to receive updates about your report.
+    Emails will be sent to your nominated address and will include an option to unsubscribe.
+    Subscriptions expire after 6 months unless extended by a flood risk organisation.
+    Adding contacts does not guarantee phone or email contact.
+</p>
+
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Summary">
     <FluentValidationValidator />
     <GdsErrorSummary />
@@ -16,7 +23,14 @@
 
     @if (!_isLoading)
     {
-        @foreach (ContactModel contact in _contactModels)
+        <h2 class="govuk-heading-l">Your contact details</h2>
+
+        if (_reportOwnerContact == null)
+        {
+            <p class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> <span>Sorry there was a problem setting up contacts. Please try again but if this issue happens again then please report a bug.</span>
+            </p>
+        } else
         {
             <dl class="govuk-summary-list">
                 <div class="govuk-summary-list__row">
@@ -24,10 +38,10 @@
                         Display Name
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @(contact.ContactName ?? "Not given")
+                        @(_reportOwnerContact.ContactName ?? "Not given")
                     </dd>
                     <dd class="govuk-summary-list__actions">
-                        <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@contact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> display name</span></a>
+                        <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@_reportOwnerContact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> display name</span></a>
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -35,14 +49,60 @@
                         Email Address
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @(contact.EmailAddress ?? "Not given")
+                        @(_reportOwnerContact.EmailAddress ?? "Not given")
                     </dd>
                     <dd class="govuk-summary-list__actions">
-                        <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@contact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> email address</span></a>
+                        <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@_reportOwnerContact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> email address</span></a>
                     </dd>
                 </div>
                 <AuthorizeView Context="authContext">
                     <Authorized>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                                Phone Number
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @(_reportOwnerContact.PhoneNumber ?? "Not given")
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@_reportOwnerContact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> phone number</span></a>
+                            </dd>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+            </dl>
+        }
+
+        <AuthorizeView Context="authContext">
+            <Authorized>
+
+                <h2 class="govuk-heading-l">Additional contacts</h2>
+
+                @foreach (ContactModel contact in _contactModels.Where(c => c.ContactUserId == null))
+                {
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                                Display Name
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @(contact.ContactName ?? "Not given")
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@contact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> display name</span></a>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
+                                Email Address
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @(contact.EmailAddress ?? "Not given")
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@contact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> email address</span></a>
+                            </dd>
+                        </div>
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
                                 Phone Number
@@ -54,13 +114,9 @@
                                 <a draggable="false" data-prevent-double-click="true" href="@(ContactPages.Change.Url)?ContactId=@contact.Id" class="govuk-link">Change<span class="govuk-visually-hidden"> phone number</span></a>
                             </dd>
                         </div>
-                    </Authorized>
-                </AuthorizeView>
-            </dl>
-        }
-        
-        <AuthorizeView Context="authContext">
-            <Authorized>
+                    </dl>
+                }
+
                 @if (_numberOfUnusedRecordTypes > 0)
                 {
                     <p><a href="@ContactPages.Create.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
@@ -71,13 +127,6 @@
         </AuthorizeView>
 
         <h2 class="govuk-heading-l">Finalise your subscriptions</h2>
-
-        <p>
-            By confirming your subscription, you agree to receive updates about your report.
-            Emails will be sent to your nominated address and will include an option to unsubscribe.
-            Subscriptions expire after 6 months unless extended by a flood risk organisation.
-            Adding contacts does not guarantee phone or email contact.
-        </p>
 
         <AuthorizeView Context="authContext">
             <Authorized>

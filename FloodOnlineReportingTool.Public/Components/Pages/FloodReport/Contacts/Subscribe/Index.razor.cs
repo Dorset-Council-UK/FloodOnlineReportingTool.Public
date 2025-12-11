@@ -3,12 +3,15 @@ using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
@@ -29,6 +32,12 @@ public partial class Index(
 
     [SupplyParameterFromQuery]
     private bool Me { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Owns { get; set; }
+
+    [CascadingParameter]
+    public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -68,10 +77,22 @@ public partial class Index(
         if (Model == null)
         {
             Model = new();
+            Model.ContactRecord = new();
             _editContext = new(Model);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
             ContactTypes = CreateContactTypeOptions();
+        }
+
+        // Check if user is authenticated
+        if (AuthenticationState is not null)
+        {
+
+            var authState = await AuthenticationState;
+            var user = authState.User;
+
+            var oidClaim = user.FindFirst("oid")?.Value;
+            Model.ContactRecord!.ContactUserId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
         }
     }
 
@@ -120,20 +141,43 @@ public partial class Index(
 
     private async Task OnSubmit()
     {
+        _messageStore.Clear();
 
         if (!_editContext.Validate())
         {
+            StateHasChanged();
             return;
         }
 
         // Error handling back into the Razor. Use validation message store or ErrorBoundary
-        SubscribeCreateOrUpdateResult subscriptionResult = await CreateSubscription();
 
-        if (!subscriptionResult.IsSuccess)
+        // Generate a contact record
+        _floodReportId = await scopedSessionStorage.GetFloodReportId();
+        ContactRecordDto dto = new ContactRecordDto
         {
-            CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
-            return;
+            UserId = Model.ContactRecord!.ContactUserId,
+            ContactType = Model.ContactType,
+            ContactName = Model.ContactName!,
+            EmailAddress = Model.EmailAddress!,
+            IsRecordOwner = Owns
+        };
+        var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+        Guid contactRecordId;
+        if (contactRecord.Count == 0)
+        {
+            var newRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+            if (!newRecord.IsSuccess)
+            {
+                CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
+                return;
+            }
+            contactRecordId = newRecord.ContactRecord!.Id;
+        } else
+        {
+            contactRecordId = contactRecord.First().Id;
         }
+        SubscribeCreateOrUpdateResult subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, _cts.Token);
+        
         if (subscriptionResult.ContactSubscriptionRecord is not SubscribeRecord returnedSubscription)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
@@ -154,20 +198,6 @@ public partial class Index(
 
         if (returnedSubscription.IsEmailVerified)
         {
-            // Generate a contact record
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            Guid? userId = Guid.TryParse(currentUserService.UserId, out var guid) ? guid : (Guid?)null;
-            ContactRecordDto dto = new ContactRecordDto
-            {
-                UserId = userId,
-                ContactName = returnedSubscription.ContactName,
-                EmailAddress = returnedSubscription.EmailAddress,
-                IsEmailVerified = true,
-                SubscribeRecord = returnedSubscription,
-                ContactType = Model.ContactType,
-            };
-            var contactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-
             // Send them onwards
             var nextPageUrl = ContactPages.Summary.Url;
             navigationManager.NavigateTo(nextPageUrl);
@@ -203,30 +233,6 @@ public partial class Index(
             navigationManager.NavigateTo(nextPageUrl);
         }
             
-    }
-
-    private async Task<SubscribeCreateOrUpdateResult> CreateSubscription()
-    {
-        logger.LogDebug("Creating subscription information");
-
-        SubscribeRecord contactModel = new()
-        {
-            ContactName = Model.ContactName!,
-            EmailAddress = Model.EmailAddress!,
-            ContactType = Model.ContactType,
-        };
-
-        bool AutoVerifyEmail = false;
-        if (currentUserService.IsAuthenticated)
-        {
-            if (string.Equals(currentUserService.Email, Model.EmailAddress, StringComparison.OrdinalIgnoreCase))
-            {
-                AutoVerifyEmail = true;
-            }
-        }
-        
-        return await contactRepository.CreateSubscriptionRecord(contactModel, AutoVerifyEmail, _cts.Token);
-
     }
 
     private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)

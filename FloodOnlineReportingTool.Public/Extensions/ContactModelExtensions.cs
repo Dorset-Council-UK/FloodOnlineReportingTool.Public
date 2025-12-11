@@ -11,11 +11,12 @@ internal static class ContactModelExtensions
     {
         return new()
         {
+            UserId = contactModel.ContactUserId,
             ContactType = contactModel.ContactType ?? ContactRecordType.Unknown,
             ContactName = contactModel.ContactName ?? "",
             EmailAddress = contactModel.EmailAddress ?? "",
-            IsEmailVerified = contactModel.IsEmailVerified,
             PhoneNumber = contactModel.PhoneNumber,
+            IsRecordOwner = contactModel.IsRecordOwner
         };
     }
 }

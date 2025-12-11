@@ -6,13 +6,33 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class AddContactSubscriptionTable : Migration
+    public partial class UpdateContactRecordsToHaveSubscriptions : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_FloodReports_ContactRecords_ReportOwnerId",
+                schema: "fortpublic",
+                table: "FloodReports");
+
+            migrationBuilder.DropIndex(
+                name: "IX_FloodReports_ReportOwnerId",
+                schema: "fortpublic",
+                table: "FloodReports");
+
+            migrationBuilder.DropColumn(
+                name: "ReportOwnerId",
+                schema: "fortpublic",
+                table: "FloodReports");
+
             migrationBuilder.DropColumn(
                 name: "ContactName",
+                schema: "fortpublic",
+                table: "ContactRecords");
+
+            migrationBuilder.DropColumn(
+                name: "ContactType",
                 schema: "fortpublic",
                 table: "ContactRecords");
 
@@ -26,35 +46,35 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 schema: "fortpublic",
                 table: "ContactRecords");
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "ContactSubscriptionRecord",
+            migrationBuilder.DropColumn(
+                name: "PhoneNumber",
                 schema: "fortpublic",
-                table: "ContactRecords",
-                type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                table: "ContactRecords");
 
             migrationBuilder.CreateTable(
-                name: "ContactSubscriptionRecords",
+                name: "ContactSubscribeRecords",
                 schema: "fortpublic",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsRecordOwner = table.Column<bool>(type: "boolean", nullable: false),
+                    ContactType = table.Column<int>(type: "integer", nullable: false),
                     ContactName = table.Column<string>(type: "text", nullable: false),
                     EmailAddress = table.Column<string>(type: "text", nullable: false),
                     IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
                     IsSubscribed = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     RedactionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     VerificationCode = table.Column<int>(type: "integer", nullable: true),
-                    VerificationExpiryUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    VerificationExpiryUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ContactRecordId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContactSubscriptionRecords", x => x.Id);
+                    table.PrimaryKey("PK_ContactSubscribeRecords", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ContactSubscriptionRecords_ContactRecords_ContactRecordId",
+                        name: "FK_ContactSubscribeRecords_ContactRecords_ContactRecordId",
                         column: x => x.ContactRecordId,
                         principalSchema: "fortpublic",
                         principalTable: "ContactRecords",
@@ -68,18 +88,17 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 column: "ContactUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContactSubscriptionRecords_ContactRecordId",
+                name: "IX_ContactSubscribeRecords_ContactRecordId",
                 schema: "fortpublic",
-                table: "ContactSubscriptionRecords",
-                column: "ContactRecordId",
-                unique: true);
+                table: "ContactSubscribeRecords",
+                column: "ContactRecordId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ContactSubscriptionRecords",
+                name: "ContactSubscribeRecords",
                 schema: "fortpublic");
 
             migrationBuilder.DropIndex(
@@ -87,10 +106,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 schema: "fortpublic",
                 table: "ContactRecords");
 
-            migrationBuilder.DropColumn(
-                name: "ContactSubscriptionRecord",
+            migrationBuilder.AddColumn<Guid>(
+                name: "ReportOwnerId",
                 schema: "fortpublic",
-                table: "ContactRecords");
+                table: "FloodReports",
+                type: "uuid",
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "ContactName",
@@ -99,6 +120,14 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 type: "text",
                 nullable: false,
                 defaultValue: "");
+
+            migrationBuilder.AddColumn<int>(
+                name: "ContactType",
+                schema: "fortpublic",
+                table: "ContactRecords",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
 
             migrationBuilder.AddColumn<string>(
                 name: "EmailAddress",
@@ -115,6 +144,29 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
+
+            migrationBuilder.AddColumn<string>(
+                name: "PhoneNumber",
+                schema: "fortpublic",
+                table: "ContactRecords",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FloodReports_ReportOwnerId",
+                schema: "fortpublic",
+                table: "FloodReports",
+                column: "ReportOwnerId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_FloodReports_ContactRecords_ReportOwnerId",
+                schema: "fortpublic",
+                table: "FloodReports",
+                column: "ReportOwnerId",
+                principalSchema: "fortpublic",
+                principalTable: "ContactRecords",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
     }
 }

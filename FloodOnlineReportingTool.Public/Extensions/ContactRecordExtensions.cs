@@ -12,11 +12,15 @@ internal static class ContactRecordExtensions
         return new()
         {
             Id = contactRecord.Id,
+            ContactName = contactRecord.SubscribeRecords.FirstOrDefault()?.ContactName,
+            ContactType = contactRecord.SubscribeRecords.FirstOrDefault()?.ContactType,
+            EmailAddress = contactRecord.SubscribeRecords.FirstOrDefault()?.EmailAddress,
+            IsRecordOwner = contactRecord.SubscribeRecords.FirstOrDefault()?.IsRecordOwner ?? false,
+            IsEmailVerified = contactRecord.SubscribeRecords.FirstOrDefault()?.IsEmailVerified ?? false,
+            IsSubscribed = contactRecord.SubscribeRecords.FirstOrDefault()?.IsSubscribed ?? false,
+            PhoneNumber = contactRecord.SubscribeRecords.FirstOrDefault()?.PhoneNumber,
+            ContactUserId = contactRecord.ContactUserId
 
-            ContactType = contactRecord.ContactType,
-            ContactName = contactRecord.SubscribeRecord.ContactName,
-            EmailAddress = contactRecord.SubscribeRecord.EmailAddress,
-            PhoneNumber = contactRecord.PhoneNumber,
         };
     }
 }

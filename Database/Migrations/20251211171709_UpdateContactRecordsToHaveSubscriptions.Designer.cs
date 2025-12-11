@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    [Migration("20251209225233_FixContactRecordRelationship")]
-    partial class FixContactRecordRelationship
+    [Migration("20251211171709_UpdateContactRecordsToHaveSubscriptions")]
+    partial class UpdateContactRecordsToHaveSubscriptions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,23 +46,14 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("ContactType")
-                        .HasColumnType("integer");
-
                     b.Property<Guid?>("ContactUserId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
                     b.Property<DateTimeOffset>("RedactionDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("SubscribeRecordId")
-                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
@@ -103,8 +94,14 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<bool>("IsEmailVerified")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsRecordOwner")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsSubscribed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("RedactionDate")
                         .HasColumnType("timestamp with time zone");
@@ -117,8 +114,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContactRecordId")
-                        .IsUnique();
+                    b.HasIndex("ContactRecordId");
 
                     b.ToTable("ContactSubscribeRecords", "fortpublic");
                 });
@@ -1351,9 +1347,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<DateTimeOffset?>("ReportOwnerAccessUntil")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ReportOwnerId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("StatusId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
@@ -1371,8 +1364,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasIndex("Reference")
                         .IsUnique();
-
-                    b.HasIndex("ReportOwnerId");
 
                     b.HasIndex("StatusId");
 
@@ -2596,8 +2587,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", "ContactRecord")
-                        .WithOne("SubscribeRecord")
-                        .HasForeignKey("FloodOnlineReportingTool.Database.Models.Contact.Subscribe.SubscribeRecord", "ContactRecordId");
+                        .WithMany("SubscribeRecords")
+                        .HasForeignKey("ContactRecordId");
 
                     b.Navigation("ContactRecord");
                 });
@@ -2691,11 +2682,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .WithMany()
                         .HasForeignKey("InvestigationId");
 
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", "ReportOwner")
-                        .WithMany()
-                        .HasForeignKey("ReportOwnerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -2705,8 +2691,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("EligibilityCheck");
 
                     b.Navigation("Investigation");
-
-                    b.Navigation("ReportOwner");
 
                     b.Navigation("Status");
                 });
@@ -2947,8 +2931,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", b =>
                 {
-                    b.Navigation("SubscribeRecord")
-                        .IsRequired();
+                    b.Navigation("SubscribeRecords");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", b =>

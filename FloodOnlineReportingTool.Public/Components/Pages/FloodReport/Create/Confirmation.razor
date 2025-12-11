@@ -75,7 +75,7 @@
                             <Authorized>
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
-                                        <a href="@($"{SubscriptionPages.Home.Url}?Me=true")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Manage ways subscriptions</a>
+                                        <a href="@($"{SubscriptionPages.Home.Url}?Me=true&Owns=true")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Manage ways subscriptions</a>
                                     </div>
                                     <div class="govuk-task-list__status">
                                         <strong class="govuk-tag govuk-tag--blue" id="report-and-check-2-contacts">
@@ -101,7 +101,7 @@
                                 </li>
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
-                                        Alternatively, <a href="@($"{SubscriptionPages.Home.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Subscribe</a> for updates only.
+                                        Alternatively, <a href="@($"{SubscriptionPages.Home.Url}?Owns=true")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Subscribe</a> for updates only.
                                         <div id="report-and-check-2-contacts-subscription-hint" class="govuk-task-list__hint">
                                             You can't update your report but may be contacted with updates or further information.
                                         </div>

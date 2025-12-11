@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
 
-public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbContext(options)
+public class PublicDbContext(DbContextOptions<PublicDbContext> options) : 
+    DbContext(options)
 {
     public DbSet<ContactRecord> ContactRecords { get; set; }
     public DbSet<SubscribeRecord> ContactSubscribeRecords { get; set; }

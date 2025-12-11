@@ -16,15 +16,6 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
         builder
             .HasIndex(o => o.ContactUserId);
 
-        // One-to-one: ContactRecord -> SubscribeRecord
-        // ContactRecord is principal, SubscribeRecord is dependent
-        // ContactRecord.SubscribeRecordId is the foreign key
-        builder
-            .HasOne(cr => cr.SubscribeRecord)
-            .WithOne(sr => sr.ContactRecord)
-            .HasForeignKey<SubscribeRecord>(sr => sr.ContactRecordId)
-            .IsRequired(false);
-
         // Many-to-many: ContactRecord <-> FloodReport
         builder
             .HasMany(cr => cr.FloodReports)

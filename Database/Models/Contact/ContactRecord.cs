@@ -15,16 +15,12 @@ public record ContactRecord
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
-    public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
-    public string? PhoneNumber { get; set; }
     public DateTimeOffset RedactionDate { get; init; }
-
-    // Navigation property only - no foreign key stored here
-    public SubscribeRecord SubscribeRecord { get; set; } = null!;
-
     public Guid? ContactUserId { get; set; }
+
+    public ICollection<SubscribeRecord> SubscribeRecords { get; set; } = [];
 
     public ICollection<FloodReport> FloodReports { get; set; } = [];
 }

@@ -15,8 +15,8 @@ public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
-    IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
+    ICurrentUserService currentUserService,
     IGdsJsInterop gdsJs
 ) : IPageOrder, IAsyncDisposable
 {
@@ -119,22 +119,49 @@ public partial class Create(
         logger.LogDebug("Creating contact information");
         try
         {
-            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
-            if (_contactModel == null || _floodReport == null)
+            if (_contactModel == null)
             {
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
-            var userId = await AuthenticationState.IdentityUserId();
-            ContactRecordDto dto = new()
+
+            // Generate a contact record
+            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            ContactRecordDto dto = new ContactRecordDto
             {
-                UserId = userId,
+                UserId = _contactModel!.ContactUserId,
                 ContactType = _contactModel.ContactType!.Value,
                 ContactName = _contactModel.ContactName!,
                 EmailAddress = _contactModel.EmailAddress!,
-                IsEmailVerified = false,
-                PhoneNumber = _contactModel.PhoneNumber,
             };
+
+            var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+            Guid contactRecordId;
+            if (contactRecord.Count == 0)
+            {
+                var newRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+                if (!newRecord.IsSuccess)
+                {
+                    return;
+                }
+                contactRecordId = newRecord.ContactRecord!.Id;
+            }
+            else
+            {
+                contactRecordId = contactRecord.First().Id;
+            }
+            var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, _cts.Token);
+
+           if (generatedSubscribeRecord == null || !generatedSubscribeRecord.IsSuccess)
+            {
+                logger.LogError("There was a problem creating contact information");
+                return;
+            }
+            if (generatedSubscribeRecord.ContactSubscriptionRecord == null)
+            {
+                logger.LogError("There was a problem creating contact information");
+                return;
+            }
             var createResult = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
 
             if (!createResult.IsSuccess)
