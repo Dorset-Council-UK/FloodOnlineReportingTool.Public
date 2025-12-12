@@ -12,20 +12,21 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
 {
     public async Task<Investigation?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
     {
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
-            .Include(o => o.Investigation)
-            .Where(o => o.ReportOwnerId == userId)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Select(o => o.Investigation)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
     public async Task<Investigation> CreateForUser(Guid userId, InvestigationDto investigationDto, CancellationToken ct)
     {
-        var floodReport = await context.FloodReports
+        var floodReport = await context.ContactRecords
             .AsNoTracking()
-            .Include(o => o.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .FirstOrDefaultAsync(ct);
 
         if (floodReport == null)
         {
@@ -66,11 +67,10 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
 
     public async Task<Investigation?> ReportedByUserBasicInformation(Guid userId, CancellationToken ct)
     {
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
-            .IgnoreAutoIncludes()
-            .Include(o => o.Investigation)
-            .Where(o => o.ReportOwnerId == userId)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Select(o => o.Investigation)
             .FirstOrDefaultAsync(ct);
     }

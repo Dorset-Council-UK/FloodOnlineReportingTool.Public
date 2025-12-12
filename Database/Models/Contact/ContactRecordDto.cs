@@ -3,7 +3,7 @@
 namespace FloodOnlineReportingTool.Database.Models.Contact;
 
 /// <summary>
-///  A data transfer object representing a contact record. Only the data which can be changed.
+///  A data transfer object representing a contact and subscription record. Only the data which can be changed.
 /// </summary>
 public record ContactRecordDto
 {
@@ -11,6 +11,6 @@ public record ContactRecordDto
     public ContactRecordType ContactType { get; init; } = ContactRecordType.Unknown;
     public string ContactName { get; init; } = "";
     public string EmailAddress { get; init; } = "";
-    public bool IsEmailVerified { get; init; }
     public string? PhoneNumber { get; init; }
+    public bool IsRecordOwner { get; init; } = false;
 }

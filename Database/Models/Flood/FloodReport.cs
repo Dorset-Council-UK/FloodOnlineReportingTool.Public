@@ -21,9 +21,6 @@ public record FloodReport
     public Guid? InvestigationId { get; init; }
     public Investigation? Investigation { get; init; }
 
-    public Guid? ReportOwnerId { get; set; }
-    public ContactRecord? ReportOwner { get; set; }
-
     public DateTimeOffset? ReportOwnerAccessUntil { get; init; } // was AccessToken.ExpirationUtc in a previous version
 
     /// <summary>

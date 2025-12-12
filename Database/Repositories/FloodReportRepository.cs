@@ -24,30 +24,35 @@ public class FloodReportRepository(
 
     public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
     {
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
     {
-
-        return await context.FloodReports
-            .Where(fr => fr.ReportOwner != null &&
-                 fr.ReportOwner.ContactUserId == contactUserId &&
-                 fr.Id == floodReportId)
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
-        return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null && fc.ReportOwner.ContactUserId == contactUserId)
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
     }
@@ -96,9 +101,10 @@ public class FloodReportRepository(
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
 
-        var result = await context.FloodReports
+        var result = await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ReportOwnerId == userId)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Select(o => new
             {
                 o.StatusId,

@@ -13,20 +13,22 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
     public async Task<EligibilityCheck?> ReportedByUser(Guid userId, CancellationToken ct)
     {
         // TODO: Might need to check a status on the flood report
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ReportOwnerId == userId)
-            .Select(o => o.EligibilityCheck)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Select(fr => fr.EligibilityCheck)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<EligibilityCheck?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
     {
         // TODO: Might need to check a status on the flood report
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ReportOwnerId == userId)
-            .Select(o => o.EligibilityCheck)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Select(fr => fr.EligibilityCheck)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
@@ -102,11 +104,11 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
     public async Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
     {
-        var eligibilityCheck = await context.FloodReports
+        var eligibilityCheck = await context.ContactRecords
             .AsNoTracking()
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.ReportOwnerId == userId)
-            .Select(o => o.EligibilityCheck)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Select(fr => fr.EligibilityCheck)
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
             ?? throw new InvalidOperationException("No eligiblity check found");
 

@@ -25,7 +25,7 @@ public partial class Delete(
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
-        ContactPages.Home.ToGdsBreadcrumb(),
+        ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
     [Parameter]
@@ -137,7 +137,7 @@ public partial class Delete(
 
             // Navigate back to contacts home
             logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
-            navigationManager.NavigateTo(ContactPages.Home.Url);
+            navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
         {

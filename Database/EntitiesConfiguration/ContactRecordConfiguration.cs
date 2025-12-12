@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
