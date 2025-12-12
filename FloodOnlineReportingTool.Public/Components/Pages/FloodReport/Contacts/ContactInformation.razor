@@ -69,27 +69,29 @@ else if (ViewOnly)
         }
     </dl>
 }
-else if (ContactTypes.Count == 0)
-{
-    <GdsWarning Text="There are no more contact types available" />
-}
 else
 {
-    <GdsFormGroup For="() => Contact.ContactType">
-        <InputRadioGroup @bind-Value="Contact.ContactType">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Type of contact</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>Select one option.</GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="ContactTypes" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
-    </GdsFormGroup>
-
+    if (ContactTypes.Count == 0)
+    {
+        <GdsWarning Text="You can't change the contact type as there are no more contact types available" />
+        <InputHidden Value="@(Contact?.ContactType.ToString() ?? string.Empty)" />
+    } else
+    {
+        <GdsFormGroup For="() => Contact.ContactType">
+            <InputRadioGroup @bind-Value="Contact.ContactType">
+                <GdsFieldsetGroup>
+                    <Heading>
+                        <h2 class="govuk-fieldset__heading">Type of contact</h2>
+                    </Heading>
+                    <Content>
+                        <GdsHint>Select one option.</GdsHint>
+                        <GdsErrorMessage />
+                        <GdsRadios Options="ContactTypes" />
+                    </Content>
+                </GdsFieldsetGroup>
+            </InputRadioGroup>
+        </GdsFormGroup>
+    }
 
     <GdsFormGroup For="() => Contact.ContactName">
         <GdsLabel Text="Contact name" />

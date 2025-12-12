@@ -2,7 +2,6 @@
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
-using FloodOnlineReportingTool.Database.Models.Flood;
 using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -199,7 +198,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         return ContactRecordDeleteResult.Success();
     }
 
-    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, CancellationToken ct)
+    public async Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct)
     {
         logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", dto.EmailAddress);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
@@ -239,7 +238,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             IsRecordOwner = dto.IsRecordOwner,
             CreatedUtc = DateTimeOffset.UtcNow,
             VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
-            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? 30 : 4320)),
             RedactionDate = DateTimeOffset.UtcNow.AddMinutes(31)
         };
 
@@ -292,13 +291,13 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
     }
 
-    public async Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, CancellationToken ct)
+    public async Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct)
     {
         logger.LogInformation("Updating contact subscription verification code for record ID: {SubscriptionId}", subscriptionRecord.Id);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         subscriptionRecord.VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
-        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes(30);
+        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? 30 : 4320));
 
         context.ContactSubscribeRecords.Update(subscriptionRecord);
         await context.SaveChangesAsync(ct);

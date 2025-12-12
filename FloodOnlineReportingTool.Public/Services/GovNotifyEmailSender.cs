@@ -132,29 +132,35 @@ internal class GovNotifyEmailSender(
         return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailAddress, personalisation);
     }
 
-    // Contact notifications
-
     /// <summary>
-    /// This triggers an email to notify a contact that their details have been updated.
+    /// This triggers an email to a non-user additional contact. The user will get a magic link 
+    /// Expiry is 3 days
     /// </summary>
-    public async Task<string> SendContactUpdatedNotification(string contactType, string contactEmail, string contactPhone, string contactDisplayName, string recordReference)
+    /// <returns></returns>
+    public async Task<string> SendEmailVerificationLinkNotification(string contactEmail, string contactDisplayName, int? verificationCode, DateTimeOffset verificationExpiryUtc)
     {
+        if (verificationCode is null)
+        {
+            return string.Empty;
+        }
+
         var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
         {
             { "from_development", environment.IsDevelopment() },
-            { "recordReference", recordReference },
             { "contactDisplayName", contactDisplayName },
-            { "contactPhone", contactPhone },
-            { "contactType", contactType },
+            { "VerifyCode", verificationCode },
+            { "VerifyUntil", verificationExpiryUtc },
         };
 
-        var emailAddress = GetUsermailAddress();
+        var emailAddress = contactEmail;
         if (emailAddress == null)
         {
             return string.Empty;
         }
-        return await SendEmail(emailAddress, _govNotifyOptions.Templates.ConfirmContactUpdated, personalisation);
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailLinkAddress, personalisation);
     }
+
+    // Contact notifications
 
     // TODO: Update this notification template as required - should include instructions in case this was not intended as deletion removes the ability to self fix.
     /// <summary>

@@ -12,7 +12,7 @@ public class ContactModel
     public string? EmailAddress { get; set; } 
     public bool IsRecordOwner { get; set; } = false;
 
-    public bool IsEmailVerified { get; init; } // Read-only in this view model
+    public bool IsEmailVerified { get; set; } = false;
 
     public bool IsSubscribed { get; init; } // Read-only in this view model
 

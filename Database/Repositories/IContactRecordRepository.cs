@@ -49,7 +49,7 @@ public interface IContactRecordRepository
     /// Creates a contact subscription record
     /// </summary>
     /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
-    Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, CancellationToken ct);
+    Task<SubscribeCreateOrUpdateResult> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct);
 
     /// <summary>
     /// Returns a current subscription record by its ID
@@ -67,7 +67,7 @@ public interface IContactRecordRepository
     /// This updates the verification code and expiry on a subscription record
     /// </summary>
     /// <returns></returns>
-    Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, CancellationToken ct);
+    Task<SubscribeCreateOrUpdateResult> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct);
 
     /// <summary>
     /// Updates a subscription record

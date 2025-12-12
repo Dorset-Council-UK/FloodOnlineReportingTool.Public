@@ -69,12 +69,26 @@ public partial class Summary(
             _verificationId = await scopedSessionStorage.GetVerificationId();
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
+            await LoadContactData();
+
             _isLoading = false;
             StateHasChanged();
             await gdsJs.InitGds(_cts.Token);
         }
+    }
 
-        var _floodReports = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+    protected override async Task OnParametersSetAsync()
+    {
+        // This runs every time parameters change OR when navigating back to the page
+        if (_floodReportId != Guid.Empty && !_isLoading)
+        {
+            await LoadContactData();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadContactData()
+    {
         var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
@@ -87,7 +101,6 @@ public partial class Summary(
             .Select(sr => sr.ToContactModel())
             .ToList();
         _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
-        StateHasChanged();
     }
 
     private async Task OnSubmit()

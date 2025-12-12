@@ -7,9 +7,9 @@ public interface IGovNotifyEmailSender
 
     // Account notifications
     Task<string> SendEmailVerificationNotification(string contactEmail, string contactDisplayName, int? verificationCode, DateTimeOffset verificationExpiryUtc);
+    Task<string> SendEmailVerificationLinkNotification(string contactEmail, string contactDisplayName, int? verificationCode, DateTimeOffset verificationExpiryUtc);
 
     // Contact notifications
-    Task<string> SendContactUpdatedNotification(string contactType, string contactEmail, string contactPhone, string contactDisplayName, string recordReference);
     Task<string> SendContactDeletedNotification(string contactType, string contactEmail, string contactDisplayName, string recordReference);
 
     // Test notifications

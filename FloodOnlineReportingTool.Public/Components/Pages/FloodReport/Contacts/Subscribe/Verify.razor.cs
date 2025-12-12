@@ -133,8 +133,8 @@ public partial class Verify(
             StateHasChanged();
             return;
         }
-        var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, _cts.Token);
-        if (updatedSubscription.ContactSubscriptionRecord is not SubscribeRecord returnedSubscription)
+        var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, true, _cts.Token);
+        if (updatedSubscription.SubscriptionRecord is not SubscribeRecord returnedSubscription)
         {
             StateHasChanged();
             return;

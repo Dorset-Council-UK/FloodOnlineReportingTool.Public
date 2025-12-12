@@ -1,9 +1,7 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
-using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
@@ -11,7 +9,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
@@ -28,7 +25,7 @@ public partial class Index(
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
-    private Guid? _userID = null;
+    private Guid _userID = Guid.Empty;
     private bool _isLoading = true;
 
     [SupplyParameterFromQuery]
@@ -92,8 +89,8 @@ public partial class Index(
             var authState = await AuthenticationState;
             var user = authState.User;
 
-            var oidClaim = user.FindFirst("oid")?.Value;
-            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
+            var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
         }
     }
 
@@ -105,22 +102,33 @@ public partial class Index(
 
             if (Me)
             {
-                if (!currentUserService.IsAuthenticated || _userID is not Guid userId)
+                if (_userID == Guid.Empty)
                 {
                     // Can't proceed if not authenticated
-                    navigationManager.NavigateTo(GeneralPages.Home.Url);
+                    navigationManager.NavigateTo(ContactPages.Summary.Url);
                     return;
                 }
                 // Check if this user already has a contact record
-                var contactRecord = await contactRepository.ContactRecordExistsForUser(userId, _cts.Token);
-                if (contactRecord is Guid contactRecordId)
+                var contactRecord = await contactRepository.ContactRecordExistsForUser(_userID, _cts.Token);
+                if (contactRecord != Guid.Empty)
                 {
+                    var contactRecordId = contactRecord.Value;
                     // Connect to the existing record and skip the subscription setup steps
                     _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
                     var linkResult = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
                     if (linkResult.IsSuccess)
-                    { 
+                    {
+                        var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+                        if (recordOwner == null) {
+                            // Can't proceed if not authenticated
+                            navigationManager.NavigateTo(ContactPages.Summary.Url);
+                            return;
+                        }
+
+                        // Store session info
+                        await scopedSessionStorage.SaveVerificationId(recordOwner.Id);
+
                         // Proceed to summary
                         var nextPageUrl = ContactPages.Summary.Url;
                         navigationManager.NavigateTo(nextPageUrl);
@@ -171,13 +179,13 @@ public partial class Index(
         // Generate a contact record
         _floodReportId = await scopedSessionStorage.GetFloodReportId();
         ContactRecordDto dto = new ContactRecordDto
-        {
-            UserId = Model.ContactRecord!.ContactUserId,
-            ContactType = Model.ContactType,
-            ContactName = Model.ContactName!,
-            EmailAddress = Model.EmailAddress!,
-            IsRecordOwner = Owns
-        };
+            {
+                UserId = _userID == Guid.Empty ? null : _userID,
+                ContactType = Model.ContactType,
+                ContactName = Model.ContactName!,
+                EmailAddress = Model.EmailAddress!,
+                IsRecordOwner = Owns
+            };
         var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
         Guid contactRecordId;
         if (contactRecord.Count == 0)
@@ -193,9 +201,9 @@ public partial class Index(
         {
             contactRecordId = contactRecord.First().Id;
         }
-        SubscribeCreateOrUpdateResult subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, _cts.Token);
+        SubscribeCreateOrUpdateResult subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, true, _cts.Token);
         
-        if (subscriptionResult.ContactSubscriptionRecord is not SubscribeRecord returnedSubscription)
+        if (subscriptionResult.SubscriptionRecord is not SubscribeRecord returnedSubscription)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
             return;
