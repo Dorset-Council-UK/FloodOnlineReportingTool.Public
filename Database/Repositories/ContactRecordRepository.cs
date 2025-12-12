@@ -2,6 +2,8 @@
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
@@ -109,6 +111,24 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         await context.SaveChangesAsync(ct);
 
         return ContactRecordCreateOrUpdateResult.Success(contactRecord);
+    }
+
+    public async Task<bool> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
+    {
+        logger.LogInformation("Linking contact record ID: {ContactRecordId} with record {FloodReportId}", contactRecordId, floodReportId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var contactRecord = await context.ContactRecords
+            .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
+
+        var floodReport = await context.FloodReports.FindAsync(floodReportId);
+        if (floodReport == null || contactRecord == null) throw new InvalidOperationException("Record not found.");
+
+        contactRecord.FloodReports.Add(floodReport);
+
+        await context.SaveChangesAsync(ct);
+
+        return true;
     }
 
     public async Task<ContactRecordCreateOrUpdateResult> UpdateForUser(Guid userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct)
@@ -387,11 +407,13 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .AnyAsync(o => o.Id == contactRecordId, ct);
     }
 
-    public async Task<bool> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default)
+    public async Task<Guid?> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
-            .AnyAsync(o => o.ContactUserId == userId, ct);
+            .Where(o => o.ContactUserId == userId)
+            .Select(o => o.Id)
+            .FirstOrDefaultAsync(ct);
     }
 }

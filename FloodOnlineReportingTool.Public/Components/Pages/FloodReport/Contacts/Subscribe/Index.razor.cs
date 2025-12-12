@@ -28,6 +28,7 @@ public partial class Index(
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
+    private Guid? _userID = null;
     private bool _isLoading = true;
 
     [SupplyParameterFromQuery]
@@ -92,7 +93,7 @@ public partial class Index(
             var user = authState.User;
 
             var oidClaim = user.FindFirst("oid")?.Value;
-            Model.ContactRecord!.ContactUserId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
+            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : null;
         }
     }
 
@@ -104,11 +105,19 @@ public partial class Index(
 
             if (Me)
             {
-                if (!currentUserService.IsAuthenticated)
+                if (!currentUserService.IsAuthenticated || _userID is not Guid userId)
                 {
                     // Can't proceed if not authenticated
                     navigationManager.NavigateTo(GeneralPages.Home.Url);
                     return;
+                }
+                // Check if this user already has a contact record
+                var contactRecord = await contactRepository.ContactRecordExistsForUser(userId, _cts.Token);
+                if (contactRecord != null)
+                {
+                    // Connect to the existing record and skip the subscription setup steps
+                    _floodReportId = await scopedSessionStorage.GetFloodReportId();
+
                 }
 
                 // Pre-fill email if known

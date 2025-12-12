@@ -29,6 +29,11 @@ public interface IContactRecordRepository
     Task<ContactRecordCreateOrUpdateResult> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
+    /// Adds the provided flood report to an existing contact record
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+    /// <summary>
     /// Update the contact record, going via the flood report
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
@@ -88,5 +93,5 @@ public interface IContactRecordRepository
 
     Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default);
 
-    Task<bool> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default);
+    Task<Guid?> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default);
 }
