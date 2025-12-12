@@ -6,7 +6,7 @@ This is a small-scale project, and as such, **only the latest version** is activ
 
 ## Reporting a Vulnerability
 
-Security issues should be reported privately, via email, to the Dorset Council GIS team gis@dorsetcouncil.gov.uk. You should receive a response within 24 hours during UK business days.
+Security issues should be reported privately, via email, to the Dorset Council GIS team fort@dorsetcouncil.gov.uk. You should receive a response within 24 hours during UK business days.
 
 Please include as much detail as possible to help us understand and address the issue quickly. This may include:
 
