@@ -32,7 +32,7 @@ public interface IContactRecordRepository
     /// Adds the provided flood report to an existing contact record
     /// </summary>
     /// <returns></returns>
-    Task<bool> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+    Task<ContactRecordCreateOrUpdateResult> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
     /// <summary>
     /// Update the contact record, going via the flood report
     /// </summary>

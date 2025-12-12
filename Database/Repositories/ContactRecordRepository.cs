@@ -113,7 +113,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         return ContactRecordCreateOrUpdateResult.Success(contactRecord);
     }
 
-    public async Task<bool> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
+    public async Task<ContactRecordCreateOrUpdateResult> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
     {
         logger.LogInformation("Linking contact record ID: {ContactRecordId} with record {FloodReportId}", contactRecordId, floodReportId);
 
@@ -122,13 +122,16 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
 
         var floodReport = await context.FloodReports.FindAsync(floodReportId);
-        if (floodReport == null || contactRecord == null) throw new InvalidOperationException("Record not found.");
+        if (floodReport == null || contactRecord == null)
+        {
+            return ContactRecordCreateOrUpdateResult.Failure(["Record not found."]);
+        }
 
         contactRecord.FloodReports.Add(floodReport);
 
         await context.SaveChangesAsync(ct);
 
-        return true;
+        return ContactRecordCreateOrUpdateResult.Success(contactRecord);
     }
 
     public async Task<ContactRecordCreateOrUpdateResult> UpdateForUser(Guid userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct)

@@ -113,11 +113,19 @@ public partial class Index(
                 }
                 // Check if this user already has a contact record
                 var contactRecord = await contactRepository.ContactRecordExistsForUser(userId, _cts.Token);
-                if (contactRecord != null)
+                if (contactRecord is Guid contactRecordId)
                 {
                     // Connect to the existing record and skip the subscription setup steps
                     _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
+                    var linkResult = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
+                    if (linkResult.IsSuccess)
+                    { 
+                        // Proceed to summary
+                        var nextPageUrl = ContactPages.Summary.Url;
+                        navigationManager.NavigateTo(nextPageUrl);
+                        return;
+                    }
                 }
 
                 // Pre-fill email if known
