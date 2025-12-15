@@ -17,8 +17,7 @@ public partial class History(
     ILogger<History> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -74,7 +73,7 @@ public partial class History(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

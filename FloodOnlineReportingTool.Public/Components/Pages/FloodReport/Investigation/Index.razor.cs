@@ -9,8 +9,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investiga
 
 [Authorize]
 public partial class Index(
-    IFloodReportRepository floodReportRepository,
-    IGdsJsInterop gdsJs
+    IFloodReportRepository floodReportRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -56,7 +55,7 @@ public partial class Index(
     {
         if (firstRender)
         {
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 }

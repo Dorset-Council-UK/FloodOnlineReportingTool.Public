@@ -17,8 +17,7 @@ public partial class FloodDestination(
     ILogger<FloodDestination> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -72,7 +71,7 @@ public partial class FloodDestination(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

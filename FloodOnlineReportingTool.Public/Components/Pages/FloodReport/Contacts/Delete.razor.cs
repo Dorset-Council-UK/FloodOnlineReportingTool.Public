@@ -16,8 +16,7 @@ public partial class Delete(
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
-    IGovNotifyEmailSender govNotifyEmailSender,
-    IGdsJsInterop gdsJs
+    IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -79,7 +78,7 @@ public partial class Delete(
 
             _isLoading = false;
             StateHasChanged();
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

@@ -21,8 +21,7 @@ public partial class PeakDepth(
     ICommonRepository commonRepository,
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -96,7 +95,7 @@ public partial class PeakDepth(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

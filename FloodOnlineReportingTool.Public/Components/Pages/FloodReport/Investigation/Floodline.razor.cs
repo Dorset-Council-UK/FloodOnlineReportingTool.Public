@@ -16,8 +16,7 @@ public partial class Floodline(
     ILogger<Speed> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -76,7 +75,7 @@ public partial class Floodline(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

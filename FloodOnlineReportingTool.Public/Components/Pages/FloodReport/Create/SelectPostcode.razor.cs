@@ -11,8 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class SelectPostcode(
     ILogger<SelectPostcode> logger,
     NavigationManager navigationManager,
-    ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs
+    ProtectedSessionStorage protectedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -60,7 +59,7 @@ public partial class SelectPostcode(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

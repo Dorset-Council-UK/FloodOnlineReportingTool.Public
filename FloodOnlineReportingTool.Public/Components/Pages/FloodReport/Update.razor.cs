@@ -13,8 +13,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 public partial class Update(
     ILogger<Update> logger,
     NavigationManager navigationManager,
-    IEligibilityCheckRepository eligibilityCheckRepository,
-    IGdsJsInterop gdsJs
+    IEligibilityCheckRepository eligibilityCheckRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -71,7 +70,7 @@ public partial class Update(
     {
         if (firstRender)
         {
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

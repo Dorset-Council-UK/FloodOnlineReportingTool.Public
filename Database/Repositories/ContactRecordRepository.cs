@@ -24,7 +24,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .Include(cr => cr.FloodReports)
             .FirstOrDefaultAsync(ct);
     }
-
+    
     public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct)
     {
         logger.LogInformation("Getting report owner contact records for flood report ID: {FloodReportId}", floodReportId);

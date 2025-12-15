@@ -14,8 +14,7 @@ public partial class Verify(
     IContactRecordRepository contactRepository,
     IGovNotifyEmailSender govNotifyEmailSender,
     SessionStateService scopedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
@@ -93,7 +92,7 @@ public partial class Verify(
 
             _isLoading = false;
             StateHasChanged();
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

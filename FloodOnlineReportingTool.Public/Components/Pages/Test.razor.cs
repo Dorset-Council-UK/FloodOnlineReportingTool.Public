@@ -12,7 +12,6 @@ namespace FloodOnlineReportingTool.Public.Components.Pages;
 
 public partial class Test(
     ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs,
     TestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
     IConfiguration Configuration,
@@ -93,7 +92,7 @@ public partial class Test(
             _hasCreateExtraData = await HasCreateExtraData();
             _hasInvestigationData = await HasInvestigationData();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

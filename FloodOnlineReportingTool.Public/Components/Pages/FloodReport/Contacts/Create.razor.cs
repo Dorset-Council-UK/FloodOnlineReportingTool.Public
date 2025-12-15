@@ -16,8 +16,7 @@ public partial class Create(
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
     SessionStateService scopedSessionStorage,
-    ICurrentUserService currentUserService,
-    IGdsJsInterop gdsJs
+    ICurrentUserService currentUserService
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -109,7 +108,7 @@ public partial class Create(
 
             _isLoading = false;
             StateHasChanged();
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

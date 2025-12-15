@@ -11,8 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class TemporarySelectPostcode(
     ILogger<TemporarySelectPostcode> logger,
     NavigationManager navigationManager,
-    ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs
+    ProtectedSessionStorage protectedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -56,7 +55,7 @@ public partial class TemporarySelectPostcode(
             _isLoading = false;
             StateHasChanged();
 
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

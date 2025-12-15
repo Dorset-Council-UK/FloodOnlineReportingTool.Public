@@ -12,8 +12,7 @@ using static MassTransit.ValidationResultExtensions;
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 public partial class Overview(
     IFloodReportRepository floodReportRepository,
-    SessionStateService scopedSessionStorage,
-    IGdsJsInterop gdsJs
+    SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -107,7 +106,7 @@ public partial class Overview(
 
             _isLoading = false;
             StateHasChanged();
-            //await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 }
