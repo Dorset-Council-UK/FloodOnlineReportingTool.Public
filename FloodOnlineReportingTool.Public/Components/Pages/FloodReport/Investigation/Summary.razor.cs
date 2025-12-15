@@ -95,7 +95,7 @@ public partial class Summary(
             StateHasChanged();
             _editContext.NotifyValidationStateChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

@@ -13,7 +13,7 @@ public partial class Index(IGdsJsInterop gdsJs) : IPageOrder
     {
         if (firstRender)
         {
-            await gdsJs.InitGds();
+            //await gdsJs.InitGds();
         }
     }
 }

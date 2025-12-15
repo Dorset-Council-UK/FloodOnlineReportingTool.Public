@@ -71,7 +71,7 @@ public partial class Update(
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

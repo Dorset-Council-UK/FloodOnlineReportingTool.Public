@@ -73,7 +73,7 @@ public partial class Summary(
 
             _isLoading = false;
             StateHasChanged();
-            await gdsJs.InitGds(_cts.Token);
+            await gdsJs.InitGds();
         }
     }
 

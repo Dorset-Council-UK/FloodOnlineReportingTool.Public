@@ -86,7 +86,7 @@ public partial class Location(
         try
         {
             _dotNetReference = DotNetObjectReference.Create(this);
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
             _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/location.js");
             if (_module == null)
             {

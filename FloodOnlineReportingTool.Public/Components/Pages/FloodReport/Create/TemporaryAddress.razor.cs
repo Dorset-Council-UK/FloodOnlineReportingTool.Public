@@ -77,7 +77,7 @@ public partial class TemporaryAddress(
 
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

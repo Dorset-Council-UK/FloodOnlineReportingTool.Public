@@ -93,7 +93,7 @@ public partial class Test(
             _hasCreateExtraData = await HasCreateExtraData();
             _hasInvestigationData = await HasInvestigationData();
 
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

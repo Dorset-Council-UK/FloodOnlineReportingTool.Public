@@ -91,7 +91,7 @@ public partial class FloodDuration(
             _isLoading = false;
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

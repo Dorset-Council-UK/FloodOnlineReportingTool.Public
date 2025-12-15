@@ -108,8 +108,8 @@ public partial class Change(
 
             _isDataLoading = false;
             _isLoading = false;
-            InvokeAsync(StateHasChanged); // TODO blazor state error.
-            await gdsJs.InitGds(_cts.Token);
+            StateHasChanged(); // TODO blazor state error.
+            ////await gdsJs.InitGds();
         }
         
     }

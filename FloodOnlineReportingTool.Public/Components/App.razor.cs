@@ -13,6 +13,7 @@ public partial class App(IOptions<GISOptions> _options, GdsBlazorComponents.IGds
 
     // The Render Mode is InteractiveServer most of the time. Except on pages which are set as Static server-side rendering (static SSR)
     private IComponentRenderMode? PageRenderMode => HttpContext?.AcceptsInteractiveRouting() == true ? RenderMode.InteractiveServer : null;
+    //private IComponentRenderMode? PageRenderMode = RenderMode.InteractiveServer;
 
     private readonly GISOptions _gisOptions = _options.Value;
     private string _pathBase = "/";

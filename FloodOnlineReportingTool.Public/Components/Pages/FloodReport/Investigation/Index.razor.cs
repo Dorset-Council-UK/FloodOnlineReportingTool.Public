@@ -56,7 +56,7 @@ public partial class Index(
     {
         if (firstRender)
         {
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 }

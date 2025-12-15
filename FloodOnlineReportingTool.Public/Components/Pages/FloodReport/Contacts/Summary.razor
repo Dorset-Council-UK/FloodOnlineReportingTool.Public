@@ -61,7 +61,7 @@
                             </dd>
                             <dd class="govuk-summary-list__value">
                                 <strong class="govuk-tag govuk-tag--@(_reportOwnerContact.IsEmailVerified ? "green" : "light-blue")">
-                                    @(_reportOwnerContact.IsEmailVerified ? "Verified" : "In progress")
+                                    @(_reportOwnerContact.IsEmailVerified ? "Verified" : "Not verified")
                                 </strong>
                             </dd>
                             <dd class="govuk-summary-list__actions">
@@ -125,7 +125,7 @@
                                 </dd>
                                 <dd class="govuk-summary-list__value">
                                     <strong class="govuk-tag govuk-tag--@(contact.IsEmailVerified ? "green" : "light-blue")">
-                                        @(contact.IsEmailVerified ? "Verified" : "In progress")
+                                            @(contact.IsEmailVerified ? "Verified" : "Not verified")
                                     </strong>
                                 </dd>
                                 <dd class="govuk-summary-list__actions">
@@ -162,7 +162,7 @@
 
         <AuthorizeView Context="authContext">
             <Authorized>
-                <p><strong>You confirm that you have permission to provide contact details for any additional contacts.</strong></p>
+                <GdsInsetText>You confirm that you have permission to provide contact details for any additional contacts.</GdsInsetText>
                 <p>If you have provided additional email addresses you understand they will receive an email asking them to verify this subscription. The email address will be deleted if they do not follow the instructions provided in this email within 3 days.</p>
                 <p>You can use this login to return to the site and manage your report until it expires and personal data is removed.</p>
             </Authorized>

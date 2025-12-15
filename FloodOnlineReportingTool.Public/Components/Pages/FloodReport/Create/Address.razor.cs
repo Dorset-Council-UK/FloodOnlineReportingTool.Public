@@ -79,7 +79,7 @@ public partial class Address(
 
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            //await gdsJs.InitGds(_cts.Token);
         }
     }
 
