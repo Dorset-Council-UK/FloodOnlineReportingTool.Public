@@ -17,8 +17,7 @@ public partial class Change(
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
-    IGovNotifyEmailSender govNotifyEmailSender,
-    IGdsJsInterop gdsJs
+    IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -108,8 +107,7 @@ public partial class Change(
 
             _isDataLoading = false;
             _isLoading = false;
-            StateHasChanged(); // TODO blazor state error.
-            ////await gdsJs.InitGds();
+            StateHasChanged(); 
         }
         
     }

@@ -18,8 +18,7 @@ public partial class Index(
     IGovNotifyEmailSender govNotifyEmailSender,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
-    ICurrentUserService currentUserService,
-    IGdsJsInterop gdsJs
+    ICurrentUserService currentUserService
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
@@ -160,7 +159,6 @@ public partial class Index(
 
             _isLoading = false;
             StateHasChanged();
-            //await gdsJs.InitGds(_cts.Token);
         }
     }
 

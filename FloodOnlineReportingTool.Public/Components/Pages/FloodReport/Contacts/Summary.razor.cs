@@ -14,8 +14,7 @@ public partial class Summary(
     ILogger<Summary> logger,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
-    SessionStateService scopedSessionStorage,
-    IGdsJsInterop gdsJs
+    SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
@@ -73,7 +72,6 @@ public partial class Summary(
 
             _isLoading = false;
             StateHasChanged();
-            await gdsJs.InitGds();
         }
     }
 
