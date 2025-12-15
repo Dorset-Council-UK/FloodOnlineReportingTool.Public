@@ -74,7 +74,7 @@ else
     if (ContactTypes.Count == 0)
     {
         <GdsWarning Text="You can't change the contact type as there are no more contact types available" />
-        <InputHidden Value="@(Contact?.ContactType.ToString() ?? string.Empty)" />
+        <input type="hidden" name="Contact.ContactType" value="@Contact.ContactType" />
     } else
     {
         <GdsFormGroup For="() => Contact.ContactType">
