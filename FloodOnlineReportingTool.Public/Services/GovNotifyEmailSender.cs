@@ -82,13 +82,17 @@ internal class GovNotifyEmailSender(
     /// This triggers an email when the report has been submitted and is a summary of the flood report. 
     /// It also give the user a link to edit details if needed.
     /// </summary>
-    public async Task<string> SendReportSubmittedNotification(bool isPrimary, bool temporaryAccessOnly, string recordReference, string contactDisplayName, string contactEmail, string contactPhone, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
+    public async Task<string> SendReportSubmittedNotification(bool isRecordOwner, bool canEdit, string recordReference, string contactType, string contactDisplayName, string contactEmail, string contactPhone, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
     {
         var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
         {
             { "from_development", environment.IsDevelopment() },
-            { "isPrimary", isPrimary },
-            { "temporaryAccessOnly", temporaryAccessOnly },
+            { "isRecordOwner", isRecordOwner },
+            { "canEdit", canEdit },
+            { "contactType", contactType  },
+            { "contactDisplayName", contactDisplayName },
+            { "contactEmail", contactEmail },
+            { "contactPhone", contactPhone },
             { "recordReference", recordReference },
             { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
             { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },

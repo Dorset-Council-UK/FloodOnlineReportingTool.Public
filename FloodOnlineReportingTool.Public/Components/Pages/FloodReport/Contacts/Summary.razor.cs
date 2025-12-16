@@ -1,4 +1,5 @@
 using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
@@ -17,7 +18,9 @@ public partial class Summary(
     ILogger<Summary> logger,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
-    SessionStateService scopedSessionStorage
+    NavigationManager navigationManager,
+    SessionStateService scopedSessionStorage,
+    IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
@@ -106,11 +109,59 @@ public partial class Summary(
 
     private async Task OnSubmit()
     {
-        if (!_editContext.Validate())
+
+        var EnableSubscriptions = await floodReportRepository.EnableContactSubscriptionsForReport(_floodReportId, _cts.Token);
+
+        if (!EnableSubscriptions.IsSuccess)
         {
+            logger.LogError("Failed to enable contact subscriptions for flood report {FloodReportId}: {Errors}", _floodReportId, EnableSubscriptions.Errors);
+            _messageStore.Add(new FieldIdentifier(Model, nameof(Model.ErrorMessage)), "An error occurred while updating your subscription preferences. Please try again.");
+            _editContext.NotifyValidationStateChanged();
             return;
         }
 
-        return;
+        // Carry on whether this works or not
+        try
+        {
+            // TODO: move the email logic to the service bus to allow for retries and better handling
+            // Send message with the details requesting email to be sent but don't actually send it here
+            foreach (var contactRecord in EnableSubscriptions.FloodReport!.ContactRecords)
+            {
+                foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
+                {
+                    if (!subscriptionRecord.IsSubscribed || !subscriptionRecord.IsEmailVerified)
+                    {
+                        // Don't send email if not subscribed or email not verified
+                        continue;
+                    }
+
+                    bool canEdit = false;
+                    if (contactRecord.ContactUserId != null && contactRecord.ContactUserId != Guid.Empty)
+                    {
+                        canEdit = subscriptionRecord.IsRecordOwner;
+                    }
+
+                    var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
+                        subscriptionRecord.IsRecordOwner,
+                        canEdit,
+                        EnableSubscriptions.FloodReport.Reference,
+                        subscriptionRecord.ContactType!.ToString(),
+                        subscriptionRecord.ContactName!,
+                        subscriptionRecord.EmailAddress!,
+                        subscriptionRecord.PhoneNumber!,
+                        EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
+                        EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
+                        EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
+                        EnableSubscriptions.FloodReport.CreatedUtc
+                        );
+                }
+            }
+        } catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to send subscription notification emails for flood report {FloodReportId}", _floodReportId);
+        }
+
+        // Navigate back to flood report overview
+        navigationManager.NavigateTo(FloodReportPages.Overview.Url);
     }
 }

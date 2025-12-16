@@ -214,25 +214,6 @@ public partial class Change(
         return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 
-    // TODO - enable this once notification is available
-    //if (!resultingContact.IsEmailVerified)
-    //{
-    //    // Resend verification email if it was changed
-    //    var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
-    //    _contactModel.ContactType!.Value.ToString(),
-    //    _contactModel.PrimaryContactRecord,
-    //     true,
-    //    _contactModel.EmailAddress!,
-    //    _contactModel.PhoneNumber!,
-    //    _contactModel.ContactName!,
-    //    _floodReport.Reference,
-    //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
-    //    _floodReport.EligibilityCheck!.Easting,
-    //    _floodReport.EligibilityCheck!.Northing,
-    //    _floodReport.CreatedUtc
-    //    );
-    //}
-
     private async Task<ContactModel?> GetContact()
     {
         var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);

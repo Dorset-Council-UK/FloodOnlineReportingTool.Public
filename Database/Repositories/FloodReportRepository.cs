@@ -17,7 +17,8 @@ public class FloodReportRepository(
     PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISOptions> options
+    IOptions<GISOptions> options,
+    IDbContextFactory<PublicDbContext> contextFactory
 ) : IFloodReportRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
@@ -55,6 +56,33 @@ public class FloodReportRepository(
             .SelectMany(cr => cr.FloodReports)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
+    }
+
+    public async Task<FloodReportCreateOrUpdateResult> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    {
+        // We need to upgrade this whole repo to use the factory pattern to create a new context for this operation
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        var floodReport = await context.FloodReports
+            .Include(fr => fr.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+
+        if (floodReport == null)
+        {
+            return FloodReportCreateOrUpdateResult.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+        }
+        foreach(var contactRecord in floodReport.ContactRecords)
+        {
+            foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
+            {
+                subscriptionRecord.IsSubscribed = true;
+            }
+        }
+
+        await context.SaveChangesAsync(ct);
+        return FloodReportCreateOrUpdateResult.Success(floodReport);
     }
 
     private string CreateReference()

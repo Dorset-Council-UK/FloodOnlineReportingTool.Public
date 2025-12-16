@@ -38,7 +38,7 @@ public class ContactModelValidator : AbstractValidator<ContactModel>
         var digitsOnly = new string(phoneNumber.Where(char.IsDigit).ToArray());
 
         // Must have at least 8 digits and 15 or less
-        if (digitsOnly.Length < 8 || digitsOnly.Length > 14)
+        if (digitsOnly.Length < 8 || digitsOnly.Length > 15)
             return false;
 
         // Must contain only valid phone number characters
@@ -46,7 +46,7 @@ public class ContactModelValidator : AbstractValidator<ContactModel>
             return false;
 
         // The first digit (ignoring formatting characters) must be + or 0 or (
-        var firstDigitOrPlus = phoneNumber.FirstOrDefault(c => char.IsDigit(c) || c == '+' || c == '(');
+        var firstDigitOrPlus = phoneNumber.TrimStart().FirstOrDefault(c => char.IsDigit(c) || c == '+' || c == '(');
         return firstDigitOrPlus == '+' || firstDigitOrPlus == '0' || firstDigitOrPlus == '(';
     }
 }

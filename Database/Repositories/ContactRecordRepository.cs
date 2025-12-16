@@ -316,7 +316,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             return SubscribeCreateOrUpdateResult.Failure([$"No contact record found for ID {subscriptionRecord.ContactRecordId}"]);
         }
 
-        if (subscriptionRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType))
+        if (subscriptionRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType && o.ContactRecord!.Id == subscriptionRecord.ContactRecordId))
         {
             return SubscribeCreateOrUpdateResult.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
         }

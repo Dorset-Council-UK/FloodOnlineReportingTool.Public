@@ -13,7 +13,17 @@
 {
     <AuthorizeView Context="authContext">
         <NotAuthorized>
-            <AccessDenied />
+            <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact">
+                <FluentValidationValidator />
+                <GdsErrorSummary />
+
+                <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+
+                <div class="govuk-button-group">
+                    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
+                </div>
+            </EditForm>
         </NotAuthorized>
         <Authorized>
             @if (!_isDataLoading)

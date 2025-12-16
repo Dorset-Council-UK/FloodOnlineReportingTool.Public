@@ -109,10 +109,15 @@ else
         <GdsInputText @bind-Value="Contact.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Contact.PhoneNumber">
-        <GdsLabel Text="Phone number (optional)" />
-        <GdsHint>For international numbers include the country code</GdsHint>
-        <GdsErrorMessage />
-        <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="tel" aria-describedby="PhoneNumber-hint" />
-    </GdsFormGroup>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <GdsFormGroup For="() => Contact.PhoneNumber">
+                <GdsLabel Text="Phone number (optional)" />
+                <GdsHint>For international numbers include the country code</GdsHint>
+                <GdsErrorMessage />
+                <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="tel" aria-describedby="PhoneNumber-hint" />
+            </GdsFormGroup>
+        </Authorized>
+    </AuthorizeView>
+    
 }
