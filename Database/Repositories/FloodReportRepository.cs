@@ -17,39 +17,72 @@ public class FloodReportRepository(
     PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISOptions> options
+    IOptions<GISOptions> options,
+    IDbContextFactory<PublicDbContext> contextFactory
 ) : IFloodReportRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
 
     public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
     {
-        return await context.FloodReports
+        return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
     {
-
-        return await context.FloodReports
-            .Where(fr => fr.ReportOwner != null &&
-                 fr.ReportOwner.ContactUserId == contactUserId &&
-                 fr.Id == floodReportId)
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
-        return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null && fc.ReportOwner.ContactUserId == contactUserId)
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
+    }
+
+    public async Task<FloodReportCreateOrUpdateResult> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    {
+        // We need to upgrade this whole repo to use the factory pattern to create a new context for this operation
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        var floodReport = await context.FloodReports
+            .Include(fr => fr.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+
+        if (floodReport == null)
+        {
+            return FloodReportCreateOrUpdateResult.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+        }
+        foreach(var contactRecord in floodReport.ContactRecords)
+        {
+            foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
+            {
+                subscriptionRecord.IsSubscribed = true;
+            }
+        }
+
+        await context.SaveChangesAsync(ct);
+        return FloodReportCreateOrUpdateResult.Success(floodReport);
     }
 
     private string CreateReference()
@@ -96,9 +129,10 @@ public class FloodReportRepository(
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
 
-        var result = await context.FloodReports
+        var result = await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ReportOwnerId == userId)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Select(o => new
             {
                 o.StatusId,
