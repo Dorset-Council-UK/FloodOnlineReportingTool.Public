@@ -11,6 +11,11 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, IDbContextFactory<PublicDbContext> contextFactory) : IContactRecordRepository
 {
+    private const int VerificationExpiryMinutesUserPresent = 30;
+    private const int VerificationExpiryMinutesUserNotPresent = 4320; // 3 days
+    private const int RedactionDelayMinutes = 31;
+    private const int RedactionPeriod = 6;
+
     public async Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct)
     {
         logger.LogInformation("Getting contact record by ID: {ContactRecordId}", contactRecordId);
@@ -100,7 +105,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         {
             Id = contactRecordId,
             CreatedUtc = now,
-            RedactionDate = now.AddMonths(6),
+            RedactionDate = now.AddMonths(RedactionPeriod),
             ContactUserId = dto.UserId,
             FloodReports = [floodReport],
         };
@@ -238,8 +243,8 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             IsRecordOwner = dto.IsRecordOwner,
             CreatedUtc = DateTimeOffset.UtcNow,
             VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
-            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? 30 : 4320)),
-            RedactionDate = DateTimeOffset.UtcNow.AddMinutes(31)
+            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? VerificationExpiryMinutesUserPresent : VerificationExpiryMinutesUserNotPresent)),
+            RedactionDate = DateTimeOffset.UtcNow.AddMinutes(RedactionDelayMinutes)
         };
 
         context.ContactSubscribeRecords.Add(newSubscription);
@@ -297,7 +302,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         subscriptionRecord.VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
-        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? 30 : 4320));
+        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? VerificationExpiryMinutesUserPresent : VerificationExpiryMinutesUserNotPresent));
 
         context.ContactSubscribeRecords.Update(subscriptionRecord);
         await context.SaveChangesAsync(ct);
