@@ -72,7 +72,7 @@ internal static class AuthenticationExtensions
                                     "emails",
                                     email));
 
-                                logger.LogInformation("Successfully added email claim to principal: {Email}", email);
+                                logger.LogInformation("Successfully added email claim to principal");
                             }
                         }
                         else
