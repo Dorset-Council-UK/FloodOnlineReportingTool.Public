@@ -28,19 +28,19 @@ public partial class Create(
     ];
 
     [CascadingParameter]
-    public EditContext EditContext { get; set; } = default!;
-
-    [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    [CascadingParameter]
+    public EditContext EditContext { get; set; } = default!;
+    private EditContext _editContext = default!;
 
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
     private ContactModel? _contactModel;
+
     private bool _isLoading = true;
     private Guid _floodReportId;
-    private Guid _userID = Guid.Empty;
+    private Guid _userId = Guid.Empty;
     private Database.Models.Flood.FloodReport? _floodReport;
-    private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
 
@@ -78,7 +78,7 @@ public partial class Create(
             var user = authState.User;
 
             var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
+            _userId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
         }
     }
 
@@ -139,7 +139,7 @@ public partial class Create(
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
             ContactRecordDto dto = new ContactRecordDto
             {
-                UserId = _userID == Guid.Empty ? null: _userID,
+                UserId = _userId == Guid.Empty ? null: _userId,
                 ContactType = _contactModel.ContactType!.Value,
                 ContactName = _contactModel.ContactName!,
                 EmailAddress = _contactModel.EmailAddress!,

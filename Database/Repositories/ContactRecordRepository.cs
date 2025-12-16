@@ -309,16 +309,16 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
         logger.LogInformation("Updating contact subscription record ID: {SubscriptionId}", subscriptionRecord.Id);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        if (context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType))
-        {
-            return SubscribeCreateOrUpdateResult.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
-        }
-
         var subscribeRecord = await context.ContactSubscribeRecords
             .FirstOrDefaultAsync(cr => cr.Id == subscriptionRecord.Id, ct);
         if (subscribeRecord == null)
         {
             return SubscribeCreateOrUpdateResult.Failure([$"No contact record found for ID {subscriptionRecord.ContactRecordId}"]);
+        }
+
+        if (subscriptionRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType))
+        {
+            return SubscribeCreateOrUpdateResult.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
         }
 
         // Determine if the email has changed; if it has, we need to reset the verified status

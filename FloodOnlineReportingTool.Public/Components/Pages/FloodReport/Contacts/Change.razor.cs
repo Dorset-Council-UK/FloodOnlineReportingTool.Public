@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
@@ -34,11 +35,16 @@ public partial class Change(
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    private ContactModel? _contactModel;
+    [CascadingParameter]
+    public EditContext EditContext { get; set; } = default!;
     private EditContext _editContext = default!;
+
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    private ContactModel? _contactModel;
+
     private SubscribeRecord? _subscribeModel;
     private Guid _floodReportId = Guid.Empty;
-    private Guid _userID = Guid.Empty;
+    private Guid _userId = Guid.Empty;
     private string _floodReportReference = string.Empty;
     private Database.Models.Flood.FloodReport? _floodReport;
     private bool _isLoading = true;
@@ -46,7 +52,6 @@ public partial class Change(
     private bool isResent = false;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
 
     public async ValueTask DisposeAsync()
     {
@@ -81,7 +86,7 @@ public partial class Change(
             var user = authState.User;
 
             var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
+            _userId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
         }
     }
 
@@ -94,7 +99,7 @@ public partial class Change(
             _subscribeModel = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);
             if (_subscribeModel is not null)
             {
-                // Update the existing _contactModel instead of creating a new one
+                // Update the existing _contactModel properties instead of replacing the object
                 _contactModel!.EmailAddress = _subscribeModel!.EmailAddress;
                 _contactModel.IsEmailVerified = _subscribeModel.IsEmailVerified;
                 _contactModel.ContactName = _subscribeModel.ContactName;
@@ -103,7 +108,11 @@ public partial class Change(
                 _contactModel.IsRecordOwner = _subscribeModel.IsRecordOwner;
                 _contactModel.PhoneNumber = _subscribeModel.PhoneNumber;
                 _contactModel.ContactUserId = _subscribeModel.ContactRecordId;
+
             }
+
+            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
+            ContactTypes = [.. allTypes.Select(CreateOption)];
 
             _isDataLoading = false;
             _isLoading = false;
@@ -196,6 +205,13 @@ public partial class Change(
             _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem updating the contact information. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
+    }
+
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
+    {
+        var id = contactRecordType.ToString().AsSpan();
+        var selected = false;
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 
     // TODO - enable this once notification is available

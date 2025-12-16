@@ -110,9 +110,9 @@ else
     </GdsFormGroup>
 
     <GdsFormGroup For="() => Contact.PhoneNumber">
-        <GdsLabel Text="UK telephone number (optional)" />
-        <GdsHint>Only add a telephone number if requested by an organisation</GdsHint>
+        <GdsLabel Text="Phone number (optional)" />
+        <GdsHint>For international numbers include the country code</GdsHint>
         <GdsErrorMessage />
-        <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="postal-code" aria-describedby="PhoneNumber-hint" />
+        <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="tel" aria-describedby="PhoneNumber-hint" />
     </GdsFormGroup>
 }
