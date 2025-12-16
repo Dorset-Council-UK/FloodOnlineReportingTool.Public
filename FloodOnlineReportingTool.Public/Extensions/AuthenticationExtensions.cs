@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Public.Endpoints.Account;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
+using System.IdentityModel.Tokens.Jwt;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
@@ -22,10 +23,64 @@ internal static class AuthenticationExtensions
             {
                 builder.Configuration.Bind(Constants.AzureAd, options);
 
+                // Ensure we're requesting and saving tokens
+                options.SaveTokens = true;
+                options.GetClaimsFromUserInfoEndpoint = true; // Try to get claims from UserInfo endpoint
+
                 // Inject user flow as query parameter
                 options.Events.OnRedirectToIdentityProvider = context =>
                 {
                     context.ProtocolMessage.SetParameter("p", "Staging_Test_Flow");
+
+                    // Explicitly add email scope if not present
+                    var currentScope = context.ProtocolMessage.Scope ?? "";
+                    if (!currentScope.Contains("email", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.ProtocolMessage.Scope = string.IsNullOrWhiteSpace(currentScope)
+                            ? "openid profile email"
+                            : $"{currentScope} email";
+                    }
+
+                    // Force interactive login to bypass Seamless SSO attempts
+                    context.ProtocolMessage.Prompt = "login";
+
+                    return Task.CompletedTask;
+                };
+
+                // Log when UserInfo endpoint is called
+                options.Events.OnUserInformationReceived = context =>
+                {
+                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                    if (context.User != null && context.Principal != null)
+                    {
+                        // Try to find email in UserInfo response
+                        if (context.User.RootElement.TryGetProperty("email", out var emailProperty))
+                        {
+                            var email = emailProperty.GetString();
+
+                            // Manually add the email claim to the principal
+                            var identity = context.Principal.Identity as System.Security.Claims.ClaimsIdentity;
+                            if (identity != null && !string.IsNullOrWhiteSpace(email))
+                            {
+                                // Add as standard ClaimTypes.Email
+                                identity.AddClaim(new System.Security.Claims.Claim(
+                                    System.Security.Claims.ClaimTypes.Email,
+                                    email));
+
+                                // Also add as "emails" for compatibility with Azure B2C patterns
+                                identity.AddClaim(new System.Security.Claims.Claim(
+                                    "emails",
+                                    email));
+
+                                logger.LogInformation("Successfully added email claim to principal");
+                            }
+                        }
+                        else
+                        {
+                            logger.LogWarning("No 'email' property found in UserInfo response!");
+                        }
+                    }
+
                     return Task.CompletedTask;
                 };
 
