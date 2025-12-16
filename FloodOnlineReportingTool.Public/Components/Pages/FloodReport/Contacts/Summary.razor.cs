@@ -141,19 +141,34 @@ public partial class Summary(
                         canEdit = subscriptionRecord.IsRecordOwner;
                     }
 
-                    var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
-                        subscriptionRecord.IsRecordOwner,
-                        canEdit,
-                        EnableSubscriptions.FloodReport.Reference,
-                        subscriptionRecord.ContactType!.ToString(),
-                        subscriptionRecord.ContactName!,
-                        subscriptionRecord.EmailAddress!,
-                        subscriptionRecord.PhoneNumber!,
-                        EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
-                        EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
-                        EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
-                        EnableSubscriptions.FloodReport.CreatedUtc
-                        );
+                    if (subscriptionRecord.IsRecordOwner)
+                    {
+                        var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
+                            subscriptionRecord.IsRecordOwner,
+                            canEdit,
+                            EnableSubscriptions.FloodReport.Reference,
+                            subscriptionRecord.ContactType!.ToString(),
+                            subscriptionRecord.ContactName!,
+                            subscriptionRecord.EmailAddress!,
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
+                            EnableSubscriptions.FloodReport.CreatedUtc
+                            );
+                    } else
+                    {
+                        var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
+                            EnableSubscriptions.FloodReport.Reference,
+                            subscriptionRecord.ContactType!.ToString(),
+                            subscriptionRecord.ContactName!,
+                            subscriptionRecord.EmailAddress!,
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
+                            EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
+                            EnableSubscriptions.FloodReport.CreatedUtc
+                            );
+                    }
+                        
                 }
             }
         } catch (Exception ex)

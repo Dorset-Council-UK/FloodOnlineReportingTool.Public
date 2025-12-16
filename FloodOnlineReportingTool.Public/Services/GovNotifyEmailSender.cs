@@ -80,29 +80,51 @@ internal class GovNotifyEmailSender(
     /// This triggers an email when the report has been submitted and is a summary of the flood report. 
     /// It also give the user a link to edit details if needed.
     /// </summary>
-    public async Task<string> SendReportSubmittedNotification(bool isRecordOwner, bool canEdit, string recordReference, string contactType, string contactDisplayName, string contactEmail, string contactPhone, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
+    public async Task<string> SendReportSubmittedNotification(bool isRecordOwner, bool canEdit, string recordReference, string contactType, string contactDisplayName, string contactEmail, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
     {
         var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
         {
             { "from_development", environment.IsDevelopment() },
-            { "isRecordOwner", isRecordOwner },
-            { "canEdit", canEdit },
-            { "contactType", contactType  },
-            { "contactDisplayName", contactDisplayName },
+            { "record_owner", isRecordOwner },
+            { "can_edit", canEdit },
+            { "contact_type", contactType  },
+            { "display_name", contactDisplayName },
             { "contactEmail", contactEmail },
-            { "contactPhone", contactPhone },
-            { "recordReference", recordReference },
+            { "record_reference", recordReference },
             { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
             { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },
             { "location_description", locationDescription},
             { "report_date", reportDate.GdsReadable() },
         };
-        var emailAddress = GetUsermailAddress();
+        var emailAddress = contactEmail;
         if (emailAddress == null)
         {
             return string.Empty;
         }
         return await SendEmail(emailAddress, _govNotifyOptions.Templates.ReportSubmitted, personalisation);
+    }
+
+    public async Task<string> SendReportSubmittedCopyNotification(string recordReference, string contactType, string contactDisplayName, string contactEmail, string locationDescription, double easting, double northing, DateTimeOffset reportDate)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "contact_type", contactType  },
+            { "display_name", contactDisplayName },
+            { "contactEmail", contactEmail },
+            { "record_reference", recordReference },
+            { "edit_url", $"[edit your report]({PublicReportsUrl()}/flood-event/{recordReference})" },
+            { "flood_location_url", $"[on Dorset Explorer]({DorsetExplorerUrl(17, easting, northing)})" },
+            { "location_description", locationDescription},
+            { "report_date", reportDate.GdsReadable() },
+        };
+        var emailAddress = contactEmail;
+        if (emailAddress == null)
+        {
+            return string.Empty;
+        }
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.ReportSubmittedCopy, personalisation);
+
     }
 
     // Account notifications
@@ -132,6 +154,29 @@ internal class GovNotifyEmailSender(
             return string.Empty;
         }
         return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailAddress, personalisation);
+    }
+
+    /// <summary>
+    /// This triggers an email to ask the user or contact to verify their email address by link.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string> SendEmailVerificationLinkNotification(string contactEmail, string contactDisplayName, string requesterName, string verificationLink, DateTimeOffset verificationExpiryUtc)
+    {
+        var personalisation = new Dictionary<string, dynamic>(StringComparer.CurrentCulture)
+        {
+            { "from_development", environment.IsDevelopment() },
+            { "contactDisplayName", contactDisplayName },
+            { "requesterName", requesterName },
+            { "VerifyLink", verificationLink },
+            { "VerifyUntil", verificationExpiryUtc },
+        };
+
+        var emailAddress = contactEmail;
+        if (emailAddress == null)
+        {
+            return string.Empty;
+        }
+        return await SendEmail(emailAddress, _govNotifyOptions.Templates.VerifyEmailLinkAddress, personalisation);
     }
 
     /// <summary>

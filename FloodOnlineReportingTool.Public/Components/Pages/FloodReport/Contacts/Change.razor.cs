@@ -182,10 +182,12 @@ public partial class Change(
                 try
                 {
                     logger.LogInformation("Sending email verification notification");
+                    // TODO: fix this, how do we create and send link emails?
                     var sentNotification = await govNotifyEmailSender.SendEmailVerificationLinkNotification(
                         returnedSubscription.EmailAddress,
                         returnedSubscription.ContactName,
-                        returnedSubscription.VerificationCode,
+                        "Unknown",
+                        "To fix",
                         expiry
                         );
                     isResent = true;
