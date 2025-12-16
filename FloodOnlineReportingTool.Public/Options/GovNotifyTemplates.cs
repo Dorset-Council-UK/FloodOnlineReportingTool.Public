@@ -10,16 +10,24 @@ public class GovNotifyTemplates
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
+    ///     <para>This template is used when a user submits a report and summarises their report and tells them how they can make changes</para>
+    /// </summary>  
+    public required string ReportSubmitted { get; init; }
+
+    /// <summary>
+    ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
     ///     <para>This template is used whenever an email address is added or changed.</para>
-    ///     <para>The reciepient is able to verify the email if not added in error and will be given the rights set out in the notification.</para>
+    ///     <para>The recipient is able to verify the email if not added in error and will be given the rights set out in the notification.</para>
     /// </summary>
     public required string VerifyEmailAddress { get; init; }
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
-    ///     <para>This template is used to confirm to the contact that their changes have been saved.</para>
+    ///     <para>This template is used whenever an email address is added or changed and the user is not present.</para>
+    ///     <para>The recipient is able to verify the email if not added in error and will be given the rights set out in the notification.</para>
     /// </summary>
-    public required string ConfirmContactUpdated { get; init; }
+    public required string VerifyEmailLinkAddress { get; init; }
+
 
     /// <summary>
     ///     <para>GovNotify template Id under ? > ?. Name: ?.</para>
