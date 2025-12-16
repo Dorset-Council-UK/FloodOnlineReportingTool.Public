@@ -17,8 +17,8 @@ flowchart TB
     EmailSubscription(Subscription Created) --> Confirmation[/ Add Contacts /]
 ```
 
-## Verfication email
-Gov.Notify template email will send the user a URL containing the versification endpoint and code.
+## Verification email
+Gov.Notify template email will send the user a URL containing the verification endpoint and code.
 
 ## Post subscription
 After submitting the subscription form, users are directed to the [contact flow](contact_flow.md).
