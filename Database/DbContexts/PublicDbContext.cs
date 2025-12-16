@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
 
-public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbContext(options)
+public class PublicDbContext(DbContextOptions<PublicDbContext> options) : 
+    DbContext(options)
 {
     public DbSet<ContactRecord> ContactRecords { get; set; }
+    public DbSet<SubscribeRecord> ContactSubscribeRecords { get; set; }
     public DbSet<EligibilityCheck> EligibilityChecks { get; set; }
     public DbSet<EligibilityCheckResidential> EligibilityCheckResidentials { get; set; } // Relationship table
     public DbSet<EligibilityCheckCommercial> EligibilityCheckCommercials { get; set; } // Relationship table
