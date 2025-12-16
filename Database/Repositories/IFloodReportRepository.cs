@@ -21,6 +21,12 @@ public interface IFloodReportRepository
     Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct);
 
     /// <summary>
+    /// This enables contact subscriptions for the flood report
+    /// </summary>
+    /// <returns></returns>
+    Task<FloodReportCreateOrUpdateResult> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct);
+
+    /// <summary>
     /// Flood report by ID.
     /// </summary>
     /// <returns></returns>
