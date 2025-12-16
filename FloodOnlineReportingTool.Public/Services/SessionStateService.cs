@@ -52,5 +52,4 @@ public class SessionStateService
         await _sessionStorage.SetAsync(SessionConstants.VerificationId, verificationId);
     }
 
-
 }
