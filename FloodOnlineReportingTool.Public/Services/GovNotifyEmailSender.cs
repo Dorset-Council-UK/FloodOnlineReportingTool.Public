@@ -24,12 +24,12 @@ internal class GovNotifyEmailSender(
     /// </remarks>
     private async Task<string> SendEmail(string emailAddress, string templateId, Dictionary<string, dynamic>? personalisation, string? clientReference = null, string? emailReplyToId = null, string? oneClickUnsubscribeURL = null)
     {
-        logger.LogDebug("Sending email to {EmailAddress}", emailAddress);
+        //logger.LogDebug("Sending email to {EmailAddress}", emailAddress);
 
         var response = await notificationClient
             .SendEmailAsync(emailAddress, templateId, personalisation, clientReference, emailReplyToId, oneClickUnsubscribeURL);
 
-        logger.LogInformation("Email sent to {EmailAddress} with GovNotify response ID {ResponseId}", emailAddress, response.id);
+        logger.LogInformation("Email sent with GovNotify response ID {ResponseId}", response.id);
 
         return response.id;
     }
