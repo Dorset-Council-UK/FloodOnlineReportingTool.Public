@@ -6,8 +6,8 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
-<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateSubscription">
-    <FluentValidationValidator />
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateSubscription" novalidate>
+    @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
     <GdsErrorSummary />
 
     <GdsFormGroup For="() => Model.ContactName">

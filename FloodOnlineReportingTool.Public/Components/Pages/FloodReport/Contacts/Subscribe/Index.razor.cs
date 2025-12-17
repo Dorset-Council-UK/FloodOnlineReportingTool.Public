@@ -5,6 +5,7 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
+using FloodOnlineReportingTool.Public.Validators.Contacts;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -119,7 +120,8 @@ public partial class Index(
                     if (linkResult.IsSuccess)
                     {
                         var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
-                        if (recordOwner == null) {
+                        if (recordOwner == null)
+                        {
                             // Can't proceed if not authenticated
                             navigationManager.NavigateTo(ContactPages.Summary.Url);
                             return;
@@ -166,8 +168,20 @@ public partial class Index(
     {
         _messageStore.Clear();
 
-        if (!_editContext.Validate())
+        // Manual FluentValidation - only runs on submit
+        var validator = new IndexValidator();
+        var validationResult = await validator.ValidateAsync(Model, _cts.Token);
+
+        if (!validationResult.IsValid)
         {
+            // Add FluentValidation errors to EditContext
+            foreach (var error in validationResult.Errors)
+            {
+                var fieldIdentifier = _editContext.Field(error.PropertyName);
+                _messageStore.Add(fieldIdentifier, error.ErrorMessage);
+            }
+
+            _editContext.NotifyValidationStateChanged();
             StateHasChanged();
             return;
         }
@@ -177,13 +191,13 @@ public partial class Index(
         // Generate a contact record
         _floodReportId = await scopedSessionStorage.GetFloodReportId();
         ContactRecordDto dto = new ContactRecordDto
-            {
-                UserId = _userID == Guid.Empty ? null : _userID,
-                ContactType = Model.ContactType,
-                ContactName = Model.ContactName!,
-                EmailAddress = Model.EmailAddress!,
-                IsRecordOwner = Owns
-            };
+        {
+            UserId = _userID == Guid.Empty ? null : _userID,
+            ContactType = Model.ContactType,
+            ContactName = Model.ContactName!,
+            EmailAddress = Model.EmailAddress!,
+            IsRecordOwner = Owns
+        };
         var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
         Guid contactRecordId;
         if (contactRecord.Count == 0)
@@ -195,12 +209,13 @@ public partial class Index(
                 return;
             }
             contactRecordId = newRecord.ContactRecord!.Id;
-        } else
+        }
+        else
         {
             contactRecordId = contactRecord.First().Id;
         }
         SubscribeCreateOrUpdateResult subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, true, _cts.Token);
-        
+
         if (subscriptionResult.SubscriptionRecord is not SubscribeRecord returnedSubscription)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
@@ -224,7 +239,8 @@ public partial class Index(
             // Send them onwards
             var nextPageUrl = ContactPages.Summary.Url;
             navigationManager.NavigateTo(nextPageUrl);
-        } else
+        }
+        else
         {
             // send confirmation email
             try
@@ -255,7 +271,7 @@ public partial class Index(
             // TODO: pass that the email sending failed if emailSent is false
             navigationManager.NavigateTo(nextPageUrl);
         }
-            
+
     }
 
     private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)

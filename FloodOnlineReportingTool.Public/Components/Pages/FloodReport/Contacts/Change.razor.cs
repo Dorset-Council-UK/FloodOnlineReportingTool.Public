@@ -5,6 +5,7 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
+using FloodOnlineReportingTool.Public.Validators.Contacts;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -125,8 +126,21 @@ public partial class Change(
     {
         _messageStore.Clear();
 
-        if (!_editContext.Validate())
+        // Manual FluentValidation - only runs on submit
+        var validator = new ContactModelValidator();
+        var validationResult = await validator.ValidateAsync(_contactModel, _cts.Token);
+
+        if (!validationResult.IsValid)
         {
+            // Add FluentValidation errors to EditContext
+            foreach (var error in validationResult.Errors)
+            {
+                var fieldIdentifier = _editContext.Field(error.PropertyName);
+                _messageStore.Add(fieldIdentifier, error.ErrorMessage);
+            }
+
+            _editContext.NotifyValidationStateChanged();
+            StateHasChanged();
             return;
         }
 

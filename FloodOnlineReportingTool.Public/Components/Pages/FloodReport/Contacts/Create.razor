@@ -29,8 +29,8 @@
             </NotAuthorized>
         </AuthorizeView>
 
-        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact">
-            <FluentValidationValidator />
+        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact" novalidate>
+            @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
             <GdsErrorSummary />
 
             <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
