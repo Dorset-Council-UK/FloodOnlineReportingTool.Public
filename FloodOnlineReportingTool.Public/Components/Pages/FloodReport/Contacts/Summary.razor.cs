@@ -58,7 +58,7 @@ public partial class Summary(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // Setup model and edit context
         Model ??= new();
