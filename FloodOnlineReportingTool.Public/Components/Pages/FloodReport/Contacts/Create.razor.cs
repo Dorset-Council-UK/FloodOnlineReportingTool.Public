@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -8,6 +9,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -16,7 +18,8 @@ public partial class Create(
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
     SessionStateService scopedSessionStorage,
-    ICurrentUserService currentUserService
+    ICurrentUserService currentUserService,
+    IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -174,7 +177,41 @@ public partial class Create(
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
-           
+
+            if (!generatedSubscribeRecord.SubscriptionRecord.IsEmailVerified && !generatedSubscribeRecord.SubscriptionRecord.IsRecordOwner)
+            {
+                var updatedVerification = await contactRepository.UpdateVerificationCode(generatedSubscribeRecord.SubscriptionRecord, false, _cts.Token);
+                if (updatedVerification.SubscriptionRecord is not SubscribeRecord returnedSubscription)
+                {
+                    logger.LogError("Error sending email verification notification");
+                    navigationManager.NavigateTo(ContactPages.Summary.Url);
+                    return;
+                }
+                if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
+                {
+                    logger.LogError("Error sending email verification notification");
+                    navigationManager.NavigateTo(ContactPages.Summary.Url);
+                    return;
+                }
+
+                try
+                {
+                    logger.LogInformation("Sending email verification notification");
+                    // TODO: fix this, how do we create and send link emails?
+                    var sentNotification = await govNotifyEmailSender.SendEmailVerificationLinkNotification(
+                        returnedSubscription.EmailAddress,
+                        returnedSubscription.ContactName,
+                        "Unknown",
+                        "To fix",
+                        expiry
+                        );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
+                }
+            }
+        
             logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
             navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
