@@ -16,6 +16,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FloodOnlineReportingTool.Public</RootNamespace>
     <UserSecretsId>9f01b06e-ea90-4198-bcd3-ca6687a9c2c2</UserSecretsId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
