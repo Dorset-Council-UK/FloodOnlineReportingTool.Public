@@ -3,7 +3,6 @@ using FloodOnlineReportingTool.Public.Endpoints.Account;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
-using System.IdentityModel.Tokens.Jwt;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
@@ -31,18 +30,6 @@ internal static class AuthenticationExtensions
                 options.Events.OnRedirectToIdentityProvider = context =>
                 {
                     context.ProtocolMessage.SetParameter("p", "Staging_Test_Flow");
-
-                    // Explicitly add email scope if not present
-                    var currentScope = context.ProtocolMessage.Scope ?? "";
-                    if (!currentScope.Contains("email", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.ProtocolMessage.Scope = string.IsNullOrWhiteSpace(currentScope)
-                            ? "openid profile email"
-                            : $"{currentScope} email";
-                    }
-
-                    // Force interactive login to bypass Seamless SSO attempts
-                    context.ProtocolMessage.Prompt = "login";
 
                     return Task.CompletedTask;
                 };
