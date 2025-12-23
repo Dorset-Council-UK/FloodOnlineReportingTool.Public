@@ -24,9 +24,12 @@
     <NotAuthorized>
         @if (_floodReport == null)
         {
-            <div class="govuk-grid-column-full">
-                <GdsWarning Text="We cannot find your flood report." />
-            </div>
+            if (!_isLoading)
+            {
+                <div class="govuk-grid-column-full">
+                    <GdsWarning Text="We cannot find your flood report." />
+                </div>
+            }
         } else
         {
             <div class="govuk-panel govuk-panel--confirmation">
@@ -73,9 +76,12 @@
         <div class="govuk-grid-row">
             @if (_floodReport == null)
             {
-                <div class="govuk-grid-column-full">
-                    <GdsWarning Text="We cannot find your flood report." />
-                </div>
+                if (!_isLoading)
+                {
+                    <div class="govuk-grid-column-full">
+                        <GdsWarning Text="We cannot find your flood report." />
+                    </div>
+                }
             }
             else
             {
