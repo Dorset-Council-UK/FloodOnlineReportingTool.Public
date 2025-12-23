@@ -112,8 +112,17 @@ public partial class Change(
 
             }
 
-            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
-            ContactTypes = [.. allTypes.Select(CreateOption)];
+            var allUnsedTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
+            var allTypes = Enum.GetValues<ContactRecordType>();
+            List<ContactRecordType> availableTypes = [];
+            foreach (var t in allTypes)
+            {
+                if (allUnsedTypes.Contains(t) || t == _contactModel!.ContactType)
+                {
+                    availableTypes.Add(t);
+                }
+            }
+            ContactTypes = [.. availableTypes.Select(CreateOption)];
 
             _isDataLoading = false;
             _isLoading = false;
@@ -228,26 +237,5 @@ public partial class Change(
         var id = contactRecordType.ToString().AsSpan();
         var selected = false;
         return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
-    }
-
-    private async Task<ContactModel?> GetContact()
-    {
-        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);
-        if (floodReport == null)
-        {
-            return null;
-        }
-
-        //If we have a valid match then we return the reference for the current flood report only
-        _floodReportReference = floodReport!.Reference;
-        var contactRecord = floodReport.ContactRecords
-            .Where(fr => fr.Id == ContactId)
-            .FirstOrDefault();
-
-        if (contactRecord == null)
-        {
-            return null;
-        }
-        return contactRecord.ToContactModel();
     }
 }

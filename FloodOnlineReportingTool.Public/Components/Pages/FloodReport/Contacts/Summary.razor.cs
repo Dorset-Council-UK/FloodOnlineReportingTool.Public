@@ -1,3 +1,4 @@
+using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
@@ -147,7 +148,7 @@ public partial class Summary(
                             subscriptionRecord.IsRecordOwner,
                             canEdit,
                             EnableSubscriptions.FloodReport.Reference,
-                            subscriptionRecord.ContactType!.ToString(),
+                            subscriptionRecord.ContactType!.LabelText(),
                             subscriptionRecord.ContactName!,
                             subscriptionRecord.EmailAddress!,
                             EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
@@ -159,7 +160,7 @@ public partial class Summary(
                     {
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
                             EnableSubscriptions.FloodReport.Reference,
-                            subscriptionRecord.ContactType!.ToString(),
+                            subscriptionRecord.ContactType!.LabelText(),
                             subscriptionRecord.ContactName!,
                             subscriptionRecord.EmailAddress!,
                             EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",

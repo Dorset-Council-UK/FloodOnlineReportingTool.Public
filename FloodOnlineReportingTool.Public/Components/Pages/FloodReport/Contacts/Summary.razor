@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/contacts/summary"
+@using FloodOnlineReportingTool.Contracts.Shared
 @using FloodOnlineReportingTool.Public.Models.FloodReport.Contact
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -38,7 +39,7 @@
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
                 <h2 class="govuk-summary-card__title">
-                    @_reportOwnerContact.ContactType
+                    @_reportOwnerContact.ContactType?.LabelText()
                 </h2>
                 </div>
                 <div class="govuk-summary-card__content">
@@ -102,7 +103,7 @@
                     <div class="govuk-summary-card">
                       <div class="govuk-summary-card__title-wrapper">
                         <h2 class="govuk-summary-card__title">
-                            @contact.ContactType
+                                @contact.ContactType!.LabelText()
                         </h2>
                       </div>
                       <div class="govuk-summary-card__content">
