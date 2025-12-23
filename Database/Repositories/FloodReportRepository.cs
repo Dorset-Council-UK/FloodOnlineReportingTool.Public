@@ -15,7 +15,6 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
-    PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
     IOptions<GISOptions> options,
@@ -26,6 +25,8 @@ public class FloodReportRepository(
 
     public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
@@ -40,6 +41,8 @@ public class FloodReportRepository(
 
     public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
@@ -50,6 +53,8 @@ public class FloodReportRepository(
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
@@ -61,7 +66,6 @@ public class FloodReportRepository(
 
     public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
     {
-        // We need to upgrade this whole repo to use the factory pattern to create a new context for this operation
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var floodReport = await context.FloodReports
@@ -97,6 +101,8 @@ public class FloodReportRepository(
     {
         logger.LogInformation("Getting flood report by id {Reference}.", reference);
 
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         // Include all related tables
         return await context.FloodReports
             .AsNoTracking()
@@ -111,6 +117,8 @@ public class FloodReportRepository(
     public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report by reference number {Reference}.", reference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         // Include all related tables
         return await context.FloodReports
@@ -129,6 +137,8 @@ public class FloodReportRepository(
 
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var result = await context.ContactRecords
             .AsNoTracking()
@@ -161,6 +171,8 @@ public class FloodReportRepository(
     {
         logger.LogInformation("Creating a new flood report.");
 
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         var now = DateTimeOffset.UtcNow;
 
         var floodReport = new FloodReport
@@ -186,6 +198,8 @@ public class FloodReportRepository(
     public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
@@ -228,7 +242,7 @@ public class FloodReportRepository(
         // Add the flood report to the database
         context.FloodReports.Add(floodReport);
 
-        // Publish mutiple messages to the message system
+        // Publish multiple messages to the message system
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
@@ -249,6 +263,8 @@ public class FloodReportRepository(
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var floodReport = await context.FloodReports
             .AsNoTracking()
@@ -302,6 +318,8 @@ public class FloodReportRepository(
     /// <remarks>This logic is currently in 2 places the FloodReportRepository and the EligibilityCheckRespository.</remarks>
     private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         // The flood is still happening, so there is no duration
         if (isOngoing)
         {
