@@ -31,19 +31,24 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    ```shell
    npm install
    ```
+4. **Update standards module**:
 
-4. **Set up your secrets**:
+    To update the standards module, navigate to the `FloodOnlineReportingTool.Public` solution folder and run:
+    ```shell
+    git submodule update
+    ```
+5. **Set up your secrets**:
 
    Configure the user secrets file for development. See the "User Secrets and Configuration" section below for details.
 
-5. **Run migrations and seed the database**:
+6. **Run migrations and seed the database**:
 
    The database schema and seed data are handled by the data project.
    Navigate to the solution folder and run the following command:
    ```shell
    dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context PublicDbContext
    ```
-6. **Run migrations for the user database**:
+7. **Run migrations for the user database**:
 
    Navigate to the solution folder and run the following command:
    ```shell
