@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -24,7 +25,7 @@ public interface IFloodReportRepository
     /// This enables contact subscriptions for the flood report
     /// </summary>
     /// <returns></returns>
-    Task<FloodReportCreateOrUpdateResult> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct);
+    Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Flood report by ID.

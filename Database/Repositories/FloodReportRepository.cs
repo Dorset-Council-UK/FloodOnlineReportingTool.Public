@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +59,7 @@ public class FloodReportRepository(
             .ToListAsync(ct);
     }
 
-    public async Task<FloodReportCreateOrUpdateResult> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
     {
         // We need to upgrade this whole repo to use the factory pattern to create a new context for this operation
         await using var context = await contextFactory.CreateDbContextAsync(ct);
@@ -71,7 +72,7 @@ public class FloodReportRepository(
 
         if (floodReport == null)
         {
-            return FloodReportCreateOrUpdateResult.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+            return CreateOrUpdateResult<FloodReport>.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
         }
         foreach(var contactRecord in floodReport.ContactRecords)
         {
@@ -82,7 +83,7 @@ public class FloodReportRepository(
         }
 
         await context.SaveChangesAsync(ct);
-        return FloodReportCreateOrUpdateResult.Success(floodReport);
+        return CreateOrUpdateResult<FloodReport>.Success(floodReport);
     }
 
     private string CreateReference()

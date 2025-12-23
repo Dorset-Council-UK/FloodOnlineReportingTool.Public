@@ -173,7 +173,7 @@ public partial class Create(
                 {
                     return;
                 }
-                contactRecordId = newRecord.ContactRecord!.Id;
+                contactRecordId = newRecord.ResultModel!.Id;
             }
             else
             {
@@ -186,16 +186,16 @@ public partial class Create(
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
-            if (generatedSubscribeRecord.SubscriptionRecord == null)
+            if (generatedSubscribeRecord.ResultModel == null)
             {
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
 
-            if (!generatedSubscribeRecord.SubscriptionRecord.IsEmailVerified && !generatedSubscribeRecord.SubscriptionRecord.IsRecordOwner)
+            if (!generatedSubscribeRecord.ResultModel.IsEmailVerified && !generatedSubscribeRecord.ResultModel.IsRecordOwner)
             {
-                var updatedVerification = await contactRepository.UpdateVerificationCode(generatedSubscribeRecord.SubscriptionRecord, false, _cts.Token);
-                if (updatedVerification.SubscriptionRecord is not SubscribeRecord returnedSubscription)
+                var updatedVerification = await contactRepository.UpdateVerificationCode(generatedSubscribeRecord.ResultModel, false, _cts.Token);
+                if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
                 {
                     logger.LogError("Error sending email verification notification");
                     navigationManager.NavigateTo(ContactPages.Summary.Url);

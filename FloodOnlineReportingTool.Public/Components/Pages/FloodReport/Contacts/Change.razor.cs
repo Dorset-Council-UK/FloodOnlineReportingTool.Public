@@ -183,7 +183,7 @@ public partial class Change(
 
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
 
-            if (updatedSubscription.SubscriptionRecord is not SubscribeRecord sub)
+            if (updatedSubscription.ResultModel is not SubscribeRecord sub)
             {
                 // Something when wrong!
                 return;
@@ -191,7 +191,7 @@ public partial class Change(
             if (!sub.IsEmailVerified)
             {
                 var updatedVerification = await contactRepository.UpdateVerificationCode(sub, false, _cts.Token);
-                if (updatedVerification.SubscriptionRecord is not SubscribeRecord returnedSubscription)
+                if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
                 {
                     StateHasChanged();
                     return;

@@ -18,7 +18,7 @@ internal static class FloodReportExtensions
             [.. floodReport.ContactRecords
                 .SelectMany(c => c.SubscribeRecords)
                 .Select(s => s.ContactType)
-                .ToList()]
+                .Distinct()]
         );
     }
 }

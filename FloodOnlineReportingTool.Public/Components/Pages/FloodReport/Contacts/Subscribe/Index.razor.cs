@@ -1,6 +1,7 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -208,15 +209,15 @@ public partial class Index(
                 CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
                 return;
             }
-            contactRecordId = newRecord.ContactRecord!.Id;
+            contactRecordId = newRecord.ResultModel!.Id;
         }
         else
         {
             contactRecordId = contactRecord.First().Id;
         }
-        SubscribeCreateOrUpdateResult subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, true, _cts.Token);
+        CreateOrUpdateResult<SubscribeRecord> subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, true, _cts.Token);
 
-        if (subscriptionResult.SubscriptionRecord is not SubscribeRecord returnedSubscription)
+        if (subscriptionResult.ResultModel is not SubscribeRecord returnedSubscription)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
             return;

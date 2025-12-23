@@ -126,7 +126,7 @@ public partial class Summary(
         {
             // TODO: move the email logic to the service bus to allow for retries and better handling
             // Send message with the details requesting email to be sent but don't actually send it here
-            foreach (var contactRecord in EnableSubscriptions.FloodReport!.ContactRecords)
+            foreach (var contactRecord in EnableSubscriptions.ResultModel!.ContactRecords)
             {
                 foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
                 {
@@ -147,26 +147,26 @@ public partial class Summary(
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
                             subscriptionRecord.IsRecordOwner,
                             canEdit,
-                            EnableSubscriptions.FloodReport.Reference,
+                            EnableSubscriptions.ResultModel.Reference,
                             subscriptionRecord.ContactType!.LabelText(),
                             subscriptionRecord.ContactName!,
                             subscriptionRecord.EmailAddress!,
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
-                            EnableSubscriptions.FloodReport.CreatedUtc
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.LocationDesc ?? "",
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.Easting,
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.Northing,
+                            EnableSubscriptions.ResultModel.CreatedUtc
                             );
                     } else
                     {
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
-                            EnableSubscriptions.FloodReport.Reference,
+                            EnableSubscriptions.ResultModel.Reference,
                             subscriptionRecord.ContactType!.LabelText(),
                             subscriptionRecord.ContactName!,
                             subscriptionRecord.EmailAddress!,
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.LocationDesc ?? "",
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.Easting,
-                            EnableSubscriptions.FloodReport.EligibilityCheck!.Northing,
-                            EnableSubscriptions.FloodReport.CreatedUtc
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.LocationDesc ?? "",
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.Easting,
+                            EnableSubscriptions.ResultModel.EligibilityCheck!.Northing,
+                            EnableSubscriptions.ResultModel.CreatedUtc
                             );
                     }
                         
