@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -14,42 +15,79 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
-    PublicDbContext context,
     ICommonRepository commonRepository,
     IPublishEndpoint publishEndpoint,
-    IOptions<GISOptions> options
+    IOptions<GISOptions> options,
+    IDbContextFactory<PublicDbContext> contextFactory
 ) : IFloodReportRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
 
     public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
     {
-        return await context.FloodReports
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Include(o => o.EligibilityCheck)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.ReportOwnerId == userId, ct);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        return await context.FloodReports
-            .Where(fr => fr.ReportOwner != null &&
-                 fr.ReportOwner.ContactUserId == contactUserId &&
-                 fr.Id == floodReportId)
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
     {
-        return await context.FloodReports
-            .Where(fc => fc.ReportOwner != null && fc.ReportOwner.ContactUserId == contactUserId)
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == contactUserId)
+            .SelectMany(cr => cr.FloodReports)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
+    }
+
+    public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        var floodReport = await context.FloodReports
+            .Include(fr => fr.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+
+        if (floodReport == null)
+        {
+            return CreateOrUpdateResult<FloodReport>.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+        }
+        foreach(var contactRecord in floodReport.ContactRecords)
+        {
+            foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
+            {
+                subscriptionRecord.IsSubscribed = true;
+            }
+        }
+
+        await context.SaveChangesAsync(ct);
+        return CreateOrUpdateResult<FloodReport>.Success(floodReport);
     }
 
     private string CreateReference()
@@ -62,6 +100,8 @@ public class FloodReportRepository(
     public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report by id {Reference}.", reference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         // Include all related tables
         return await context.FloodReports
@@ -77,6 +117,8 @@ public class FloodReportRepository(
     public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report by reference number {Reference}.", reference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         // Include all related tables
         return await context.FloodReports
@@ -96,9 +138,12 @@ public class FloodReportRepository(
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
 
-        var result = await context.FloodReports
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        var result = await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ReportOwnerId == userId)
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
             .Select(o => new
             {
                 o.StatusId,
@@ -126,6 +171,8 @@ public class FloodReportRepository(
     {
         logger.LogInformation("Creating a new flood report.");
 
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         var now = DateTimeOffset.UtcNow;
 
         var floodReport = new FloodReport
@@ -151,6 +198,8 @@ public class FloodReportRepository(
     public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
@@ -193,7 +242,7 @@ public class FloodReportRepository(
         // Add the flood report to the database
         context.FloodReports.Add(floodReport);
 
-        // Publish mutiple messages to the message system
+        // Publish multiple messages to the message system
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
         var floodReportCreatedMessage = floodReport.ToMessageCreated();
@@ -214,6 +263,8 @@ public class FloodReportRepository(
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
     {
         logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         var floodReport = await context.FloodReports
             .AsNoTracking()
@@ -267,6 +318,8 @@ public class FloodReportRepository(
     /// <remarks>This logic is currently in 2 places the FloodReportRepository and the EligibilityCheckRespository.</remarks>
     private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
         // The flood is still happening, so there is no duration
         if (isOngoing)
         {

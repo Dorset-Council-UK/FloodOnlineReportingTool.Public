@@ -32,14 +32,6 @@ internal class FloodReportConfiguration : IEntityTypeConfiguration<FloodReport>
             .Property(o => o.StatusId)
             .HasDefaultValue(RecordStatusIds.New);
 
-        // Explicitly configure the ReportOwner relationship
-        builder
-            .HasOne(o => o.ReportOwner)
-            .WithMany()
-            .HasForeignKey(o => o.ReportOwnerId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
-
         // Soft deletion filter
         builder
             .HasQueryFilter(o => o.StatusId != RecordStatusIds.MarkedForDeletion);

@@ -21,8 +21,7 @@ public partial class Summary(
     IEligibilityCheckRepository eligibilityCheckRepository,
     IInvestigationRepository investigationRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -95,7 +94,7 @@ public partial class Summary(
             StateHasChanged();
             _editContext.NotifyValidationStateChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

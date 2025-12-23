@@ -9,8 +9,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
-    SessionStateService scopedSessionStorage,
-    IGdsJsInterop gdsJs
+    SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -76,7 +75,7 @@ public partial class Confirmation(
             _isLoading = false;
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 }

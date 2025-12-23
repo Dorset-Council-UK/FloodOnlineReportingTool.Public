@@ -1,8 +1,11 @@
-﻿using FloodOnlineReportingTool.Database.Models;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
+using FloodOnlineReportingTool.Public.Validators.Contacts;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -16,8 +19,7 @@ public partial class Change(
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage,
-    IGovNotifyEmailSender govNotifyEmailSender,
-    IGdsJsInterop gdsJs
+    IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -25,7 +27,7 @@ public partial class Change(
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
-        ContactPages.Home.ToGdsBreadcrumb(),
+        ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
     [Parameter]
@@ -34,15 +36,23 @@ public partial class Change(
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    private ContactModel? _contactModel;
+    [CascadingParameter]
+    public EditContext EditContext { get; set; } = default!;
     private EditContext _editContext = default!;
+
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    private ContactModel? _contactModel;
+
+    private SubscribeRecord? _subscribeModel;
     private Guid _floodReportId = Guid.Empty;
+    private Guid _userId = Guid.Empty;
     private string _floodReportReference = string.Empty;
     private Database.Models.Flood.FloodReport? _floodReport;
     private bool _isLoading = true;
+    private bool _isDataLoading = true;
+    private bool isResent = false;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
 
     public async ValueTask DisposeAsync()
     {
@@ -63,15 +73,21 @@ public partial class Change(
         // Setup model and edit context
         if (_contactModel == null)
         {
-            _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _contactModel = await GetContact();
+            _contactModel = new();
+            _editContext = new(_contactModel);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+            _messageStore = new(_editContext);
+        }
 
-            if (_contactModel != null)
-            {
-                _editContext = new(_contactModel);
-                _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
-                _messageStore = new(_editContext);
-            }
+        // Check if user is authenticated
+        if (AuthenticationState is not null)
+        {
+
+            var authState = await AuthenticationState;
+            var user = authState.User;
+
+            var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            _userId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
         }
     }
 
@@ -81,9 +97,36 @@ public partial class Change(
         {
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
+            _subscribeModel = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);
+            if (_subscribeModel is not null)
+            {
+                // Update the existing _contactModel properties instead of replacing the object
+                _contactModel!.EmailAddress = _subscribeModel!.EmailAddress;
+                _contactModel.IsEmailVerified = _subscribeModel.IsEmailVerified;
+                _contactModel.ContactName = _subscribeModel.ContactName;
+                _contactModel.ContactType = _subscribeModel.ContactType;
+                _contactModel.Id = _subscribeModel.Id;
+                _contactModel.IsRecordOwner = _subscribeModel.IsRecordOwner;
+                _contactModel.PhoneNumber = _subscribeModel.PhoneNumber;
+                _contactModel.ContactUserId = _subscribeModel.ContactRecordId;
+
+            }
+
+            var allUnsedTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
+            var allTypes = Enum.GetValues<ContactRecordType>();
+            List<ContactRecordType> availableTypes = [];
+            foreach (var t in allTypes)
+            {
+                if (allUnsedTypes.Contains(t) || t == _contactModel!.ContactType)
+                {
+                    availableTypes.Add(t);
+                }
+            }
+            ContactTypes = [.. availableTypes.Select(CreateOption)];
+
+            _isDataLoading = false;
             _isLoading = false;
-            StateHasChanged();
-            await gdsJs.InitGds(_cts.Token);
+            StateHasChanged(); 
         }
         
     }
@@ -92,8 +135,21 @@ public partial class Change(
     {
         _messageStore.Clear();
 
-        if (!_editContext.Validate())
+        // Manual FluentValidation - only runs on submit
+        var validator = new ContactModelValidator();
+        var validationResult = await validator.ValidateAsync(_contactModel, _cts.Token);
+
+        if (!validationResult.IsValid)
         {
+            // Add FluentValidation errors to EditContext
+            foreach (var error in validationResult.Errors)
+            {
+                var fieldIdentifier = _editContext.Field(error.PropertyName);
+                _messageStore.Add(fieldIdentifier, error.ErrorMessage);
+            }
+
+            _editContext.NotifyValidationStateChanged();
+            StateHasChanged();
             return;
         }
 
@@ -103,44 +159,70 @@ public partial class Change(
     private async Task UpdateContact()
     {
         logger.LogDebug("Updating contact information");
-        _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
-
-        if (_contactModel == null || _floodReport == null)
+        
+        if (_contactModel == null)
         {
             return;
         }
 
         try
         {
-            var dto = _contactModel.ToDto();
-            var resultingContact = await contactRepository.UpdateForUser(_userId, _contactModel.Id!.Value, dto, _cts.Token);
+
+            var selectedRecord = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);
+            if (selectedRecord is null)
+            {
+                return;
+            }
+
+            selectedRecord.PhoneNumber = _contactModel.PhoneNumber;
+            selectedRecord.EmailAddress = _contactModel.EmailAddress!;
+            selectedRecord.ContactName = _contactModel.ContactName!;
+            selectedRecord.ContactType = _contactModel.ContactType!.Value;
+
+            var updatedSubscription = await contactRepository.UpdateSubscriptionRecord(selectedRecord, _cts.Token);
+
             logger.LogInformation("Contact information updated successfully for user {UserId}", _userId);
 
-            // Success - send confirmation email
-            // TODO - enable this once notification is available
-            //var sentNotification = await govNotifyEmailSender.SendContactUpdatedNotification(_contactModel.EmailAddress!, _contactModel.PhoneNumber!, _contactModel.ContactName!, _floodReportReference, _contactModel.ContactType!.Value.ToString());
+            if (updatedSubscription.ResultModel is not SubscribeRecord sub)
+            {
+                // Something when wrong!
+                return;
+            }
+            if (!sub.IsEmailVerified)
+            {
+                var updatedVerification = await contactRepository.UpdateVerificationCode(sub, false, _cts.Token);
+                if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
+                {
+                    StateHasChanged();
+                    return;
+                }
+                if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
+                {
+                    StateHasChanged();
+                    return;
+                }
 
-            // TODO - enable this once notification is available
-            //if (!resultingContact.IsEmailVerified)
-            //{
-            //    // Resend verification email if it was changed
-            //    var sentNotification2 = await govNotifyEmailSender.SendEmailVerificationNotification(
-            //    _contactModel.ContactType!.Value.ToString(),
-            //    _contactModel.PrimaryContactRecord,
-            //     true,
-            //    _contactModel.EmailAddress!,
-            //    _contactModel.PhoneNumber!,
-            //    _contactModel.ContactName!,
-            //    _floodReport.Reference,
-            //    _floodReport.EligibilityCheck!.LocationDesc ?? "",
-            //    _floodReport.EligibilityCheck!.Easting,
-            //    _floodReport.EligibilityCheck!.Northing,
-            //    _floodReport.CreatedUtc
-            //    );
-            //}
+                try
+                {
+                    logger.LogInformation("Sending email verification notification");
+                    // TODO: fix this, how do we create and send link emails?
+                    var sentNotification = await govNotifyEmailSender.SendEmailVerificationLinkNotification(
+                        returnedSubscription.EmailAddress,
+                        returnedSubscription.ContactName,
+                        "Unknown",
+                        "To fix",
+                        expiry
+                        );
+                    isResent = true;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error sending email verification notification: {ErrorMessage}", ex.Message);
+                }
+            }
 
             // Navigate back to contacts home
-            navigationManager.NavigateTo(ContactPages.Home.Url);
+            navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
         {
@@ -150,16 +232,10 @@ public partial class Change(
         }
     }
 
-    private async Task<ContactModel?> GetContact()
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
-        var floodReport = await floodReportRepository.ReportedByContact(_userId, ContactId, _cts.Token);
-        if (floodReport == null || floodReport.ReportOwner == null)
-        {
-            return null;
-        }
-
-        //If we have a valid match then we return the reference for the current flood report only
-        _floodReportReference = floodReport!.Reference;
-        return floodReport.ReportOwner.ToContactModel();
+        var id = contactRecordType.ToString().AsSpan();
+        var selected = false;
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 }

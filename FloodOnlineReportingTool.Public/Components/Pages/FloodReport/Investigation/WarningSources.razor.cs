@@ -16,8 +16,7 @@ public partial class WarningSources(
     ILogger<WarningSources> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -71,7 +70,7 @@ public partial class WarningSources(
             _isLoading = false;
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

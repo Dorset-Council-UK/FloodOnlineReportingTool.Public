@@ -16,8 +16,7 @@ public partial class Address(
     ILogger<Address> logger,
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -79,7 +78,7 @@ public partial class Address(
 
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

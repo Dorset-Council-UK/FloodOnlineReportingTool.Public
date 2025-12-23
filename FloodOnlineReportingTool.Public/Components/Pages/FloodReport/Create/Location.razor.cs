@@ -22,7 +22,6 @@ public partial class Location(
     ISearchRepository repository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager,
-    IGdsJsInterop gdsJs,
     IJSRuntime JS,
     IOptions<GISOptions> gisOptions
 ) : IPageOrder, IAsyncDisposable
@@ -86,7 +85,7 @@ public partial class Location(
         try
         {
             _dotNetReference = DotNetObjectReference.Create(this);
-            await gdsJs.InitGds(_cts.Token);
+            
             _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/location.js");
             if (_module == null)
             {

@@ -11,8 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Index(
     ILogger<Index> logger,
     NavigationManager navigationManager,
-    ProtectedSessionStorage protectedSessionStorage,
-    IGdsJsInterop gdsJs
+    ProtectedSessionStorage protectedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -54,8 +53,6 @@ public partial class Index(
 
             _isLoading = false;
             StateHasChanged();
-
-            await gdsJs.InitGds(_cts.Token);
         }
     }
 

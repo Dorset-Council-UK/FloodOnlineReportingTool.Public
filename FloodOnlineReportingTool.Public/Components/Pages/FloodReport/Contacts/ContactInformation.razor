@@ -69,27 +69,29 @@ else if (ViewOnly)
         }
     </dl>
 }
-else if (ContactTypes.Count == 0)
-{
-    <GdsWarning Text="There are no more contact types available" />
-}
 else
 {
-    <GdsFormGroup For="() => Contact.ContactType">
-        <InputRadioGroup @bind-Value="Contact.ContactType">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Type of contact</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>Select one option.</GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="ContactTypes" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
-    </GdsFormGroup>
-
+    if (ContactTypes.Count == 0)
+    {
+        <GdsWarning Text="You can't change the contact type as there are no more contact types available" />
+        <input type="hidden" name="Contact.ContactType" value="@Contact.ContactType" />
+    } else
+    {
+        <GdsFormGroup For="() => Contact.ContactType">
+            <InputRadioGroup @bind-Value="Contact.ContactType">
+                <GdsFieldsetGroup>
+                    <Heading>
+                        <h2 class="govuk-fieldset__heading">Type of contact</h2>
+                    </Heading>
+                    <Content>
+                        <GdsHint>Select one option.</GdsHint>
+                        <GdsErrorMessage />
+                        <GdsRadios Options="ContactTypes" />
+                    </Content>
+                </GdsFieldsetGroup>
+            </InputRadioGroup>
+        </GdsFormGroup>
+    }
 
     <GdsFormGroup For="() => Contact.ContactName">
         <GdsLabel Text="Contact name" />
@@ -107,10 +109,15 @@ else
         <GdsInputText @bind-Value="Contact.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Contact.PhoneNumber">
-        <GdsLabel Text="UK telephone number (optional)" />
-        <GdsHint>Only add a telephone number if requested by an organisation</GdsHint>
-        <GdsErrorMessage />
-        <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="postal-code" aria-describedby="PhoneNumber-hint" />
-    </GdsFormGroup>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <GdsFormGroup For="() => Contact.PhoneNumber">
+                <GdsLabel Text="Phone number (optional)" />
+                <GdsHint>For international numbers include the country code</GdsHint>
+                <GdsErrorMessage />
+                <GdsInputText @bind-Value="Contact.PhoneNumber" class="govuk-input govuk-input--width-20" type="tel" autocomplete="tel" aria-describedby="PhoneNumber-hint" />
+            </GdsFormGroup>
+        </Authorized>
+    </AuthorizeView>
+    
 }

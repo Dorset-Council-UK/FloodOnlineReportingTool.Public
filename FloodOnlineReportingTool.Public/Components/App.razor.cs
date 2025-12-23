@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
-public partial class App(IOptions<GISOptions> _options, GdsBlazorComponents.IGdsJsInterop gdsJs)
+public partial class App(IOptions<GISOptions> _options)
 {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -26,11 +26,4 @@ public partial class App(IOptions<GISOptions> _options, GdsBlazorComponents.IGds
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await gdsJs.InitGds();
-        }
-    }
 }

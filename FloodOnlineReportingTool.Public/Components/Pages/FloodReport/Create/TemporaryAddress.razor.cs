@@ -16,8 +16,7 @@ public partial class TemporaryAddress(
     ILogger<TemporaryAddress> logger,
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -77,7 +76,7 @@ public partial class TemporaryAddress(
 
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

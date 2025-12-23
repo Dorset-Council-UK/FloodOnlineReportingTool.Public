@@ -12,15 +12,15 @@ public class ContactModel
     public string? ContactName { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public string? EmailAddress { get; set; }
+    public string? EmailAddress { get; set; } 
+    public bool IsRecordOwner { get; set; } = false;
 
-    public bool IsEmailVerified { get; init; } // Read-only in this view model
+    public bool IsEmailVerified { get; set; } = false;
+
+    public bool IsSubscribed { get; init; } // Read-only in this view model
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public string? PhoneNumber { get; set; }
-
-    [GdsFieldErrorClass(GdsFieldTypes.Radio)]
-    public bool PrimaryContactRecord { get; set; }
+    public string? PhoneNumber { get; set; } 
 
     public Guid? Id { get; set; }
 

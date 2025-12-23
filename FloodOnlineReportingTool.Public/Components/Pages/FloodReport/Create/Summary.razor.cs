@@ -18,8 +18,7 @@ public partial class Summary(
     ICommonRepository commonRepository,
     IFloodReportRepository floodReportRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager,
-    IGdsJsInterop gdsJs
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     public string Title { get; set; } = FloodReportCreatePages.Summary.Title;
@@ -101,7 +100,7 @@ public partial class Summary(
             _isLoading = false;
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 

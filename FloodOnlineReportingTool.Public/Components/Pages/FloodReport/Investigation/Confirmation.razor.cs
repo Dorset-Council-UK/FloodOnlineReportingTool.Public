@@ -9,8 +9,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investiga
 
 [Authorize]
 public partial class Confirmation(
-    IInvestigationRepository investigationRepository,
-    IGdsJsInterop gdsJs
+    IInvestigationRepository investigationRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -51,7 +50,7 @@ public partial class Confirmation(
             _isLoading = false;
             StateHasChanged();
 
-            await gdsJs.InitGds(_cts.Token);
+            
         }
     }
 }

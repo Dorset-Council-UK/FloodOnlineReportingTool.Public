@@ -11,11 +11,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FloodOnlineReportingTool.Public</RootNamespace>
     <UserSecretsId>9f01b06e-ea90-4198-bcd3-ca6687a9c2c2</UserSecretsId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,17 +29,17 @@
     <PackageReference Include="FluentValidation" Version="12.1.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
     <PackageReference Include="GovukNotify" Version="7.2.0" />
-    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.5" />
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.253">
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.7" />
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.257">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.8.0" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="4.0.1" />
-	<PackageReference Include="Scalar.AspNetCore" Version="2.10.3" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="4.1.1" />
+	<PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
 	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
   </ItemGroup>
 

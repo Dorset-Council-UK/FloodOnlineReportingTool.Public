@@ -6,3 +6,8 @@ dotnet_diagnostic.MA0004.severity = none
 [**/Migrations/*.cs]
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
+
+
+[*]
+spelling_languages=en-gb
+

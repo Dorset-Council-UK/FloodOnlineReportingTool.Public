@@ -22,5 +22,10 @@ public class ContactModelValidator : AbstractValidator<ContactModel>
             .WithMessage("Enter your email address")
             .EmailAddress()
             .WithMessage("Enter an email address in the correct format, like name@example.com");
+
+        RuleFor(o => o.PhoneNumber)
+            .Must(PhoneNumberValidator.IsValid)
+            .When(o => !string.IsNullOrWhiteSpace(o.PhoneNumber))
+            .WithMessage(PhoneNumberValidator.ErrorMessage);
     }
 }

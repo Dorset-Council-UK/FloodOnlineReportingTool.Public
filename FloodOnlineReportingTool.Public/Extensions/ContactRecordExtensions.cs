@@ -9,14 +9,26 @@ internal static class ContactRecordExtensions
 {
     internal static ContactModel ToContactModel(this ContactRecord contactRecord)
     {
+        if (contactRecord.SubscribeRecords.FirstOrDefault() is not Contact.Subscribe.SubscribeRecord subscriptionRecord)
+        {
+            return new()
+            {
+                Id = contactRecord.Id,
+                ContactUserId = contactRecord.ContactUserId
+            };
+        }
         return new()
         {
             Id = contactRecord.Id,
+            ContactName = subscriptionRecord.ContactName,
+            ContactType = subscriptionRecord.ContactType,
+            EmailAddress = subscriptionRecord.EmailAddress,
+            IsRecordOwner = subscriptionRecord.IsRecordOwner,
+            IsEmailVerified = subscriptionRecord.IsEmailVerified,
+            IsSubscribed = subscriptionRecord.IsSubscribed,
+            PhoneNumber = subscriptionRecord.PhoneNumber,
+            ContactUserId = contactRecord.ContactUserId
 
-            ContactType = contactRecord.ContactType,
-            ContactName = contactRecord.ContactName,
-            EmailAddress = contactRecord.EmailAddress,
-            PhoneNumber = contactRecord.PhoneNumber,
         };
     }
 }

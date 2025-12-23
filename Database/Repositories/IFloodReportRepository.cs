@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -19,6 +20,12 @@ public interface IFloodReportRepository
     /// Get all contact records for the given user, going via the flood report
     /// </summary>
     Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct);
+
+    /// <summary>
+    /// This enables contact subscriptions for the flood report
+    /// </summary>
+    /// <returns></returns>
+    Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Flood report by ID.

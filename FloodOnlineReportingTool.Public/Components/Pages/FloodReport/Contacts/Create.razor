@@ -29,15 +29,15 @@
             </NotAuthorized>
         </AuthorizeView>
 
-        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact">
-            <FluentValidationValidator />
+        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact" novalidate>
+            @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
             <GdsErrorSummary />
 
             <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
 
             <div class="govuk-button-group">
                 <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
-                <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Home.Url">Cancel</a>
+                <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
             </div>
         </EditForm>
     }
