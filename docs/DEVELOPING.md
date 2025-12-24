@@ -32,11 +32,14 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    npm install
    ```
 4. **Update standards module**:
-
-    To update the standards module, navigate to the `FloodOnlineReportingTool.Public` solution folder and run:
-    ```shell
-    git submodule update
-    ```
+    
+   If you are using GitHub Copilot you can choose to import the Dorset Council UK instruction files. 
+   This ensures that code suggestions are more likely to follow the coding standards we are trying to follow at Dorset Council.
+   
+   To update the standards module, navigate to the `FloodOnlineReportingTool.Public` solution folder and run:
+   ```shell
+   git submodule update
+   ```
 5. **Set up your secrets**:
 
    Configure the user secrets file for development. See the "User Secrets and Configuration" section below for details.
