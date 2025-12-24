@@ -31,19 +31,31 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    ```shell
    npm install
    ```
-
-4. **Set up your secrets**:
+4. **AI standards module**:
+    
+   If you are using GitHub Copilot you can choose to import the Dorset Council UK instruction files. 
+   This ensures that code suggestions are more likely to follow the coding standards we are trying to follow at Dorset Council.
+   
+   To update the standards module, navigate to the `FloodOnlineReportingTool.Public` solution folder and run:
+   ```shell
+   git submodule update
+   ```
+   You may need to initialize the submodule the first time you load it after cloning from the source repository. Use the init flag as follows:
+   ```shell
+   git submodule update --init
+   ```
+5. **Set up your secrets**:
 
    Configure the user secrets file for development. See the "User Secrets and Configuration" section below for details.
 
-5. **Run migrations and seed the database**:
+6. **Run migrations and seed the database**:
 
    The database schema and seed data are handled by the data project.
    Navigate to the solution folder and run the following command:
    ```shell
    dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context PublicDbContext
    ```
-6. **Run migrations for the user database**:
+7. **Run migrations for the user database**:
 
    Navigate to the solution folder and run the following command:
    ```shell
