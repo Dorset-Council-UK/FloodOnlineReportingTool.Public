@@ -362,3 +362,4 @@ healthchecksdb
 **/wwwroot/favicons/*.*
 *.dtmp
 *.bkp
+/FloodOnlineReportingTool.Public/package-lock.json
