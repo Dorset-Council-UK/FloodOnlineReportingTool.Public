@@ -11,8 +11,13 @@ const isWatch = process.argv.includes("--watch");
 // Get the base path from app settings, if available
 const appSettingsPath = isDev ? "./appsettings.Development.json" : "./appsettings.json";
 const appSettingsFile = existsSync(appSettingsPath) ? appSettingsPath : "./appsettings.json";
-const appOptions = JSON.parse(readFileSync(appSettingsFile, "utf-8"));
-const pathBase = appOptions?.GIS?.PathBase || "";
+let pathBase = "";
+try {
+	const appOptions = JSON.parse(readFileSync(appSettingsFile, "utf-8"));
+	pathBase = appOptions?.GIS?.PathBase || "";
+} catch (error) {
+	console.error(`Failed to read or parse app settings from ${appSettingsFile}:`, error);
+}
 
 // Dynamically load all *.razor.ts files under the Components folder
 const componentEntries = globSync("./Components/**/*.razor.ts").map((file) => ({
