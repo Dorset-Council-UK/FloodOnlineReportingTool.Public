@@ -97,12 +97,12 @@ public partial class Location(
 
             // Pass the OS key to JavaScript
             var apiKey = _gisOptions.OSApiKey;
-            await _module.InvokeVoidAsync("receiveApiKey", _cts.Token, apiKey);
+            var osLicenceNumber = string.IsNullOrEmpty(_gisOptions.OSLicenceNumber) ? "" :_gisOptions.OSLicenceNumber;
 
             //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();
             var (startingEasting, startingNorthing) = StartingLocation();
-            await _module.InvokeVoidAsync("setupMap", _cts.Token, _map, centreEasting, centreNorthing, startingEasting, startingNorthing);
+            await _module.InvokeVoidAsync("setupMap", _cts.Token, _map, centreEasting, centreNorthing, startingEasting, startingNorthing, apiKey, osLicenceNumber);
             await _module.InvokeVoidAsync("setHelper", _cts.Token, _dotNetReference);
         }
         catch (Exception ex)

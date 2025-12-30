@@ -10,4 +10,5 @@ public record GISOptions
     public required Uri NearestAddressesUrl { get; init; }
     public required int AccessTokenIssueDurationMonths { get; init; } = 6;
     public required string OSApiKey { get; init; }
+    public required string OSLicenceNumber { get; init; }
 }
