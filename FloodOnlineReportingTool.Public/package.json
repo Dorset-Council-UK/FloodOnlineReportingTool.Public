@@ -6,6 +6,7 @@
   "license": "OGL-UK-3.0",
   "main": "index.js",
   "scripts": {
+    "bun:install": "bun install",
     "build": "bun run bun.build.ts --prod",
     "build:dev": "bun run bun.build.ts --dev",
     "watch": "bun run bun.build.ts --dev --watch",
