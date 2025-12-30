@@ -97,7 +97,7 @@ public partial class Location(
 
             // Pass the OS key to JavaScript
             var apiKey = _gisOptions.OSApiKey;
-            var osLicenceNumber = string.IsNullOrEmpty(_gisOptions.OSLicenceNumber) ? "" :_gisOptions.OSLicenceNumber;
+            var osLicenceNumber = string.IsNullOrEmpty(_gisOptions.OSLicenceNumber) ? "" : _gisOptions.OSLicenceNumber;
 
             //Setup the map
             var (centreEasting, centreNorthing) = MapCentre();

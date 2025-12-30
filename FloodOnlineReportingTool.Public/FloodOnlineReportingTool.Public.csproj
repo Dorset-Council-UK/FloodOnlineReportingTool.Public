@@ -19,9 +19,6 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="C:\Users\paul.wittle\.nuget\packages\dorset-council-uk.gdsblazorcomponents\1.4.0\contentFiles\any\net9.0\package-lock.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
