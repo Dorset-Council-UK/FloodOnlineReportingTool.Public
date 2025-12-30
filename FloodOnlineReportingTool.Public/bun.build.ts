@@ -63,9 +63,8 @@ function copyAssets() {
 	mkdirSync("./wwwroot/favicons", { recursive: true });
 	mkdirSync("./wwwroot/images/logos", { recursive: true });
 
-	// Copy leaflet CSS and images
-	copyFileSync("./node_modules/leaflet/dist/leaflet.css", "./wwwroot/css/leaflet.css");
-	copyDirectory("./node_modules/leaflet/dist/images", "./wwwroot/css/images");
+	// Copy MapLibre GL CSS
+	copyFileSync("./node_modules/maplibre-gl/dist/maplibre-gl.css", "./wwwroot/css/maplibre-gl.css");
 
 	// Copy favicons (excluding template)
 	if (existsSync("./Scripts/favicons")) {
