@@ -27,10 +27,9 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 
 3. **Install front-end dependencies**:
 
-   Run the following command in the root folder:
-   ```shell
-   npm install
-   ```
+   - [Install Bun](https://bun.com/docs/installation) and run `bun install` from within the `FloodOnlineReportingTool.Public` project to download the dependencies
+   - Previously we recommended using the NPM Task Runner extension in Visual Studio. This can still be used for other tasks, but `install` commands should be run using `bun install` in a separate terminal, since the `install` command in the extension defaults to `npm install`
+
 4. **AI standards module**:
     
    If you are using GitHub Copilot you can choose to import the Dorset Council UK instruction files. 

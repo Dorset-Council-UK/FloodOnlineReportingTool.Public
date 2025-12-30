@@ -1,143 +1,177 @@
-import * as L from "leaflet";
-import proj4 from 'proj4';
-import "proj4leaflet";
+import proj4 from "proj4";
+import maplibregl, { Map, Marker, LngLat } from "maplibre-gl";
 
-let map: L.Map | null = null;
+// Define the British National Grid projection for coordinate transformations
+proj4.defs(
+  "EPSG:27700",
+  "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs",
+);
+
+let map: Map | null = null;
 let helper: any = null;
 let markerEnabled: boolean = false;
-let marker: L.Marker | null = null;
-
-
-let apiKey: string | null = null;
-
-// This function is called on load
-export function receiveApiKey(key: string): void {
-    //console.log("receiveApiKey called with:", key);
-    apiKey = key;
-}
+let marker: Marker | null = null;
 
 /**
- * Settup a simple map using the OS Maps API and Leaflet, using the British National Grid projection.
- * @see https://labs.os.uk/public/os-data-hub-examples/os-maps-api/zxy-27700-basic-map#leaflet
+ * Setup a map using the OS Maps Vector Tile Service API and MapLibre GL JS.
+ * @see https://osdatahub.os.uk/docs/vts/overview
  */
-export function setupMap(element: HTMLElement, centreEasting: Number, centreNorthing: Number, startingEasting: Number | undefined, startingNorthing: Number | undefined) {
-    //console.log("setupMap is using:", apiKey);
-    if (apiKey) {
-        destroyMap();
+export function setupMap(
+  element: HTMLElement,
+  centreEasting: number,
+  centreNorthing: number,
+  startingEasting: number | undefined,
+  startingNorthing: number | undefined,
+  apiKey: string,
+  osLicenceNumber: string,
+) {
+  if (apiKey) {
+    destroyMap();
 
+    // Transform centre coordinates from BNG to WGS84
+    const [centreLng, centreLat] = transformToWGS84(
+      centreEasting,
+      centreNorthing,
+    );
 
-        // Setup the EPSG:27700 (British National Grid) projection.
-        const resolutions: number[] = [896.0, 448.0, 224.0, 112.0, 56.0, 28.0, 14.0, 7.0, 3.5, 1.75, 0.875, 0.4375, 0.21875, 0.109375];
-        const EPSG27700: L.CRS = new L.Proj.CRS('EPSG:27700', '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs', {
-            resolutions: resolutions,
-            origin: [-238375.0, 1376256.0]
-        });
+    // OS Maps Vector Tile Service style URL
+    // Available styles: Road, Outdoor, Light, Night
+    const styleUrl = `https://api.os.uk/maps/vector/v1/vts/resources/styles?srs=3857&key=${apiKey}`;
 
-        const [lat, lng] = transformCoords([centreEasting, centreNorthing]);
-        const centre = new L.LatLng(lat, lng);
+    map = new maplibregl.Map({
+      container: element,
+      style: styleUrl,
+      center: [centreLng, centreLat],
+      zoom: 9,
+      maxZoom: 20,
+      maxBounds: [
+        [-10.76, 49.0], // Southwest coordinates (roughly covers UK)
+        [1.9, 61.0], // Northeast coordinates
+      ],
+      attributionControl: false,
+    });
 
-        const mapOptions: L.MapOptions = {
-            crs: EPSG27700,
-            minZoom: 0,
-            maxZoom: resolutions.length - 1,
-            center: centre,
-            zoom: 4,
-            maxBounds: [
-                transformCoords([-238375.0, 0.0]),
-                transformCoords([900000.0, 1376256.0])
-            ],
-            attributionControl: false
-        };
+    // Add custom attribution control with OS licence
+    map.addControl(
+      new maplibregl.AttributionControl({
+        customAttribution: `&copy; Crown Copyright and database rights ${new Date().getFullYear()} OS ${osLicenceNumber}`,
+      }),
+    );
 
-        map = L.map(element, mapOptions);
+    // Add navigation controls
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-        if (startingEasting && startingNorthing) {
-            const [startingLat, startingLng] = transformCoords([startingEasting, startingNorthing]);
-            setMarkerLocation(new L.LatLng(startingLat, startingLng), map);
-        }
+    // Wait for map to load before adding marker and click handler
+    map.on("load", () => {
+      // Add starting marker if coordinates provided
+      if (startingEasting && startingNorthing) {
+        const [startingLng, startingLat] = transformToWGS84(
+          startingEasting,
+          startingNorthing,
+        );
+        setMarkerLocation(new LngLat(startingLng, startingLat));
+      }
 
-        L.tileLayer(`https://api.os.uk/maps/raster/v1/zxy/Road_27700/{z}/{x}/{y}.png?key=${apiKey}`).addTo(map);
-        turnMarkerOn(); //On by default now
-        map.on('click', onMapClick);
-    }
+      // Enable marker placement by default
+      turnMarkerOn();
+
+      // Handle map clicks
+      map!.on("click", onMapClick);
+    });
+  }
 }
 
 export function setHelper(helperRef: any) {
-    helper = helperRef;
+  helper = helperRef;
 }
 
 /**
  * The user has clicked the "Choose location" button, so enable the marker.
  */
 export function turnMarkerOn() {
-    markerEnabled = true;
+  markerEnabled = true;
 }
 
 /**
  * Transform coordinates from British National Grid (EPSG:27700) to WGS84 (EPSG:4326).
+ * Returns [longitude, latitude] for MapLibre compatibility.
  */
-function transformCoords(arr: any) {
-    return proj4('EPSG:27700', 'EPSG:4326', arr).reverse();
-};
+function transformToWGS84(easting: number, northing: number): [number, number] {
+  return proj4("EPSG:27700", "EPSG:4326", [easting, northing]) as [
+    number,
+    number,
+  ];
+}
+
+/**
+ * Transform coordinates from WGS84 (EPSG:4326) to British National Grid (EPSG:27700).
+ * Returns [easting, northing].
+ */
+function transformToBNG(lng: number, lat: number): [number, number] {
+  return proj4("EPSG:4326", "EPSG:27700", [lng, lat]) as [number, number];
+}
 
 /**
  * When the user clicks on the map, set the marker location and remember the coordinates.
  */
-function onMapClick(evt: L.LeafletMouseEvent) {
-    if (!markerEnabled) return;
+function onMapClick(evt: maplibregl.MapMouseEvent) {
+  if (!markerEnabled) return;
 
-    const latLng = evt.latlng as L.LatLng;
-    setMarkerLocation(latLng, evt.target);
-    rememberCoordinates(latLng);
+  const lngLat = evt.lngLat;
+  setMarkerLocation(lngLat);
+  rememberCoordinates(lngLat);
 }
 
 /**
  * Either set the marker location or move the existing marker to the new location.
- * @see https://leafletjs.com/reference.html#marker
  */
-function setMarkerLocation(latLng: L.LatLng, map: L.Map) {
-    if (marker) {
-        marker.setLatLng(latLng);
-        return;
-    }
+function setMarkerLocation(lngLat: LngLat) {
+  if (!map) return;
 
-    const options: L.MarkerOptions = {
-        alt: 'Chosen location',
-        riseOnHover: true,
-        draggable: true
-    };
-    marker = L.marker(latLng, options).addTo(map);
-    marker.on('dragend', onMarkerDragEnd);
+  if (marker) {
+    marker.setLngLat(lngLat);
+    return;
+  }
+
+  marker = new maplibregl.Marker({
+    draggable: true,
+    color: "#05476d", // Blue marker color
+  })
+    .setLngLat(lngLat)
+    .addTo(map);
+
+  marker.on("dragend", onMarkerDragEnd);
 }
 
-function rememberCoordinates(latLng: L.LatLng) {
-    if (!helper) {
-        console.error('Helper not set, unable to update new coordinates!');
-        return;
-    }
+function rememberCoordinates(lngLat: LngLat) {
+  if (!helper) {
+    console.error("Helper not set, unable to update new coordinates!");
+    return;
+  }
 
-    // Transform coordinates from WGS84 (EPSG:4326) to British National Grid (EPSG:27700).
-    const [easting, northing] = proj4('EPSG:4326', 'EPSG:27700', [latLng.lng, latLng.lat]);
-    helper.invokeMethodAsync("CoordinatesChanged", easting, northing);
+  // Transform coordinates from WGS84 to British National Grid
+  const [easting, northing] = transformToBNG(lngLat.lng, lngLat.lat);
+  helper.invokeMethodAsync("CoordinatesChanged", easting, northing);
 }
 
 /**
  * When the user drags the marker, save the new location.
  */
-function onMarkerDragEnd(evt: L.DragEndEvent) {
-    const latLng = evt.target.getLatLng() as L.LatLng;
-    rememberCoordinates(latLng);
+function onMarkerDragEnd() {
+  if (!marker) return;
+  const lngLat = marker.getLngLat();
+  rememberCoordinates(lngLat);
 }
 
 export function destroyMap() {
-    if (marker) {
-        marker.remove();
-        marker = null;
-    }
-    markerEnabled = false;
-    helper = null;
-    if (map) {
-        map.remove();
-        map = null;
-    }
+  if (marker) {
+    marker.remove();
+    marker = null;
+  }
+  markerEnabled = false;
+  helper = null;
+  if (map) {
+    map.remove();
+    map = null;
+  }
 }

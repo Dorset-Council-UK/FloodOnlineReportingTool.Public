@@ -362,3 +362,5 @@ healthchecksdb
 **/wwwroot/favicons/*.*
 *.dtmp
 *.bkp
+/FloodOnlineReportingTool.Public/package-lock.json
+/FloodOnlineReportingTool.Public/wwwroot/js
