@@ -1,4 +1,17 @@
-﻿@page "/floodreport/contacts/change/{contactid:guid}"
+﻿@*
+    Component: Change Contact Information
+    Purpose: Allows users to modify contact details for a flood report
+    
+    This component handles two scenarios:
+    1. Authenticated users: Can change all contact information with real-time validation
+    2. Unauthenticated users: Can change contact information with validation on submit only
+    
+    Design decisions:
+    - Validation differs between authenticated/unauthenticated to avoid validation glitches
+    - Email verification is automatically triggered when email changes
+    - Contact type dropdown only shows available types (max one per type per report)
+*@
+@page "/floodreport/contacts/change/{contactid:guid}"
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
@@ -7,14 +20,24 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
+@* Show loading spinner while initial data loads *@
 <GdsSpinner Show="_isLoading" />
 
 @if (!_isLoading)
 {
+    @* 
+        AuthorizeView splits the rendering based on authentication status.
+        Different validation approaches are used for authenticated vs unauthenticated users.
+    *@
     <AuthorizeView Context="authContext">
+        @* 
+            NotAuthorized: User is not signed in
+            - Uses manual validation on submit only (novalidate attribute)
+            - FluentValidationValidator is commented out to prevent premature validation
+        *@
         <NotAuthorized>
             <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
-                @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
+                @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch *@
                 <GdsErrorSummary />
 
                 <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
@@ -25,28 +48,43 @@
                 </div>
             </EditForm>
         </NotAuthorized>
+        @* 
+            Authorized: User is signed in
+            - Shows loading state while data loads
+            - Shows warning if contact not found
+            - Uses real-time FluentValidation for better UX
+        *@
         <Authorized>
-            @if (!_isDataLoading)
+            @if (_isDataLoading)
             {
-                @if (_contactModel == null)
-                {
-                    <GdsWarning Text="Contact information not found" />
-                    <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a></div>
-                }
-                else
-                {
-                    <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact">
-                        <FluentValidationValidator />
-                        <GdsErrorSummary />
+                @* Show spinner while contact data is being loaded from database *@
+                <GdsSpinner Show="true" />
+            }
+            else if (_contactModel is null)
+            {
+                @* Contact not found - show warning and link back to summary *@
+                <GdsWarning Text="Contact information not found" />
+                <div>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
+                </div>
+            }
+            else
+            {
+                @* 
+                    Contact found - render the form with real-time validation
+                    novalidate is used to prevent browser validation and rely on FluentValidation
+                *@
+                <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
+                    <FluentValidationValidator />
+                    <GdsErrorSummary />
 
-                        <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+                    <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
 
-                        <div class="govuk-button-group">
-                            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
-                            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
-                        </div>
-                    </EditForm>
-                }
+                    <div class="govuk-button-group">
+                        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
+                    </div>
+                </EditForm>
             }
         </Authorized>
     </AuthorizeView>
