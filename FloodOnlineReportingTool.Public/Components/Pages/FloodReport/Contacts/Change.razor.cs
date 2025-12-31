@@ -13,14 +13,8 @@ using Microsoft.AspNetCore.Components.Forms;
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
 /// <summary>
-/// Page component for changing contact information associated with a flood report.
-/// Handles both authenticated and unauthenticated scenarios with different validation approaches.
+/// See comment at the top of Change.razor for overview comments.
 /// </summary>
-/// <remarks>
-/// Design decision: This component uses manual FluentValidation on submit for unauthenticated users
-/// to avoid validation glitches when the form is partially filled. Authenticated users get real-time validation.
-/// Email verification is automatically triggered when an unverified email address is updated.
-/// </remarks>
 public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
@@ -31,14 +25,8 @@ public partial class Change(
 {
     #region Page Properties
 
-    /// <summary>
-    /// Gets or sets the page title displayed in the browser and page header.
-    /// </summary>
     public string Title { get; set; } = ContactPages.Change.Title;
 
-    /// <summary>
-    /// Gets or sets the breadcrumb navigation items for the page.
-    /// </summary>
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } =
     [
         GeneralPages.Home.ToGdsBreadcrumb(),
@@ -50,23 +38,12 @@ public partial class Change(
 
     #region Parameters
 
-    /// <summary>
-    /// Gets or sets the unique identifier of the contact record to change.
-    /// </summary>
     [Parameter]
     public Guid ContactId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the cascading authentication state parameter.
-    /// Used to determine if the user is authenticated and retrieve their user ID.
-    /// </summary>
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    /// <summary>
-    /// Gets or sets the cascading edit context parameter.
-    /// Note: This is overridden by the local _editContext field.
-    /// </summary>
     [CascadingParameter]
     public EditContext EditContext { get; set; } = default!;
 
@@ -74,66 +51,21 @@ public partial class Change(
 
     #region Private Fields
 
-    /// <summary>
-    /// The edit context used for form validation and state management.
-    /// </summary>
     private EditContext _editContext = default!;
-
-    /// <summary>
-    /// The validation message store for managing validation errors.
-    /// </summary>
     private ValidationMessageStore _messageStore = default!;
-
-    /// <summary>
-    /// The contact model bound to the form for editing.
-    /// </summary>
     private ContactModel? _contactModel;
-
-    /// <summary>
-    /// The subscription record retrieved from the database.
-    /// Used to populate the contact model and track verification status.
-    /// </summary>
     private SubscribeRecord? _subscribeModel;
-
-    /// <summary>
-    /// The ID of the flood report associated with this contact.
-    /// Retrieved from session storage.
-    /// </summary>
     private Guid _floodReportId = Guid.Empty;
-
-    /// <summary>
-    /// The authenticated user's ID from the Entra ID (formerly Azure AD) object identifier claim.
-    /// </summary>
     private Guid _userId = Guid.Empty;
-
-    /// <summary>
-    /// Indicates whether the page is in a loading state (spinner visible).
-    /// </summary>
     private bool _isLoading = true;
-
-    /// <summary>
-    /// Indicates whether data is currently being loaded from the database.
-    /// </summary>
     private bool _isDataLoading = true;
-
-    /// <summary>
-    /// Indicates whether a verification email has been resent to the user.
-    /// </summary>
     private bool _isResent;
-
-    /// <summary>
-    /// Cancellation token source for managing async operation cancellation during disposal.
-    /// </summary>
     private readonly CancellationTokenSource _cts = new();
 
     #endregion
 
     #region Public Properties
 
-    /// <summary>
-    /// Gets the available contact types that can be selected.
-    /// Excludes types already in use for the current flood report, except the current contact's type.
-    /// </summary>
     public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; private set; } = [];
 
     #endregion
@@ -142,9 +74,7 @@ public partial class Change(
 
     /// <summary>
     /// Disposes of managed resources asynchronously.
-    /// Cancels any pending operations and releases the cancellation token source.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous dispose operation.</returns>
     public async ValueTask DisposeAsync()
     {
         try
@@ -162,9 +92,7 @@ public partial class Change(
 
     /// <summary>
     /// Initializes the component on first load.
-    /// Sets up the contact model, edit context, validation message store, and retrieves the authenticated user's ID.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
@@ -187,10 +115,7 @@ public partial class Change(
 
     /// <summary>
     /// Loads contact data after the first render.
-    /// Retrieves the flood report ID, subscription record, and available contact types.
     /// </summary>
-    /// <param name="firstRender">Indicates whether this is the first render of the component.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>
     /// Design decision: Data loading occurs in OnAfterRenderAsync instead of OnInitializedAsync
     /// to avoid blocking the initial render and provide a better user experience with loading states.
@@ -246,10 +171,8 @@ public partial class Change(
     /// Loads the available contact types that can be selected for this contact.
     /// Excludes types already in use for the current flood report, except the current contact's type.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>
-    /// Design decision: Only one contact of each type is allowed per flood report to ensure
-    /// clear ownership and responsibility for flood-related communications.
+    /// Design decision: Only one contact of each type is allowed per flood report.
     /// </remarks>
     private async Task LoadAvailableContactTypesAsync()
     {
@@ -273,9 +196,7 @@ public partial class Change(
 
     /// <summary>
     /// Handles form submission.
-    /// Validates the contact model and updates the contact if validation succeeds.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>
     /// Design decision: Manual validation is triggered on submit to avoid validation errors
     /// appearing prematurely for unauthenticated users filling out the form.
@@ -307,13 +228,7 @@ public partial class Change(
 
     /// <summary>
     /// Updates the contact information in the database.
-    /// If the email is unverified, triggers a verification email to be sent.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    /// <remarks>
-    /// Design decision: Email verification is automatically triggered when an unverified email
-    /// is updated to ensure contact information accuracy for flood-related communications.
-    /// </remarks>
     private async Task UpdateContactAsync()
     {
         logger.LogDebug("Updating contact information for ContactId {ContactId}", ContactId);
@@ -369,14 +284,7 @@ public partial class Change(
 
     /// <summary>
     /// Sends an email verification notification to the contact.
-    /// Updates the verification code and expiry time before sending the email.
     /// </summary>
-    /// <param name="subscription">The subscription record for which to send verification.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    /// <remarks>
-    /// TODO: The verification link generation needs to be implemented properly.
-    /// Currently using placeholder values for requesterName and verificationLink.
-    /// </remarks>
     private async Task SendEmailVerificationAsync(SubscribeRecord subscription)
     {
         try
@@ -420,12 +328,6 @@ public partial class Change(
     /// <summary>
     /// Creates a GDS option item for a contact record type.
     /// </summary>
-    /// <param name="contactRecordType">The contact record type to convert.</param>
-    /// <returns>A <see cref="GdsOptionItem{T}"/> for use in a radio button or select list.</returns>
-    /// <remarks>
-    /// Uses extension methods LabelText() and HintText() to get localized display text
-    /// for the contact record type.
-    /// </remarks>
     private static GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();
