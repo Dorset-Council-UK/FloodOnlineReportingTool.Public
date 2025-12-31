@@ -72,9 +72,6 @@ public partial class Change(
 
     #region Lifecycle Methods
 
-    /// <summary>
-    /// Disposes of managed resources asynchronously.
-    /// </summary>
     public async ValueTask DisposeAsync()
     {
         try
@@ -90,9 +87,6 @@ public partial class Change(
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>
-    /// Initializes the component on first load.
-    /// </summary>
     protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
@@ -113,13 +107,6 @@ public partial class Change(
         }
     }
 
-    /// <summary>
-    /// Loads contact data after the first render.
-    /// </summary>
-    /// <remarks>
-    /// Design decision: Data loading occurs in OnAfterRenderAsync instead of OnInitializedAsync
-    /// to avoid blocking the initial render and provide a better user experience with loading states.
-    /// </remarks>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -194,9 +181,6 @@ public partial class Change(
         ContactTypes = availableTypes.Select(CreateOption).ToArray();
     }
 
-    /// <summary>
-    /// Handles form submission.
-    /// </summary>
     /// <remarks>
     /// Design decision: Manual validation is triggered on submit to avoid validation errors
     /// appearing prematurely for unauthenticated users filling out the form.
@@ -226,9 +210,6 @@ public partial class Change(
         await UpdateContactAsync();
     }
 
-    /// <summary>
-    /// Updates the contact information in the database.
-    /// </summary>
     private async Task UpdateContactAsync()
     {
         logger.LogDebug("Updating contact information for ContactId {ContactId}", ContactId);
@@ -282,9 +263,6 @@ public partial class Change(
         }
     }
 
-    /// <summary>
-    /// Sends an email verification notification to the contact.
-    /// </summary>
     private async Task SendEmailVerificationAsync(SubscribeRecord subscription)
     {
         try
