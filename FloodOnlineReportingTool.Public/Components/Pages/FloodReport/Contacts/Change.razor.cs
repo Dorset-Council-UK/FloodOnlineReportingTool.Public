@@ -12,9 +12,6 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
-/// <summary>
-/// See comment at the top of Change.razor for overview comments.
-/// </summary>
 public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
