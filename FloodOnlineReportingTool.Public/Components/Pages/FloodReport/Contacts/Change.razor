@@ -1,13 +1,9 @@
 ﻿@*
-    Component: Change Contact Information
     Purpose: Allows users to modify contact details for a flood report
     
-    This component handles two scenarios:
-    1. Authenticated users: Can change all contact information with real-time validation
-    2. Unauthenticated users: Can change contact information with validation on submit only
-    
     Design decisions:
-    - Validation differs between authenticated/unauthenticated to avoid validation glitches
+    - Validation differs if logged in as only authenticated users can add multiple contacts / phone numbers
+    - novalidate used to disable browser validation as only validate when full form is submitted
     - Email verification is automatically triggered when email changes
     - Contact type dropdown only shows available types (max one per type per report)
 *@
@@ -20,21 +16,11 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
-@* Show loading spinner while initial data loads *@
 <GdsSpinner Show="_isLoading" />
 
 @if (!_isLoading)
 {
-    @* 
-        AuthorizeView splits the rendering based on authentication status.
-        Different validation approaches are used for authenticated vs unauthenticated users.
-    *@
     <AuthorizeView Context="authContext">
-        @* 
-            NotAuthorized: User is not signed in
-            - Uses manual validation on submit only (novalidate attribute)
-            - FluentValidationValidator is commented out to prevent premature validation
-        *@
         <NotAuthorized>
             <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
                 @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch *@
@@ -48,16 +34,9 @@
                 </div>
             </EditForm>
         </NotAuthorized>
-        @* 
-            Authorized: User is signed in
-            - Shows loading state while data loads
-            - Shows warning if contact not found
-            - Uses real-time FluentValidation for better UX
-        *@
         <Authorized>
             @if (_isDataLoading)
             {
-                @* Show spinner while contact data is being loaded from database *@
                 <GdsSpinner Show="true" />
             }
             else if (_contactModel is null)
@@ -70,10 +49,6 @@
             }
             else
             {
-                @* 
-                    Contact found - render the form with real-time validation
-                    novalidate is used to prevent browser validation and rely on FluentValidation
-                *@
                 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
                     <FluentValidationValidator />
                     <GdsErrorSummary />
