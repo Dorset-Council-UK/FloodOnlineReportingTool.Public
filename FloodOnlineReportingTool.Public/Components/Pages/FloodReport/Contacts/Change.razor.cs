@@ -20,7 +20,6 @@ public partial class Change(
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
-    #region Page Properties
 
     public string Title { get; set; } = ContactPages.Change.Title;
 
@@ -31,9 +30,7 @@ public partial class Change(
         ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
-    #endregion
-
-    #region Parameters
+    // Parameters
 
     [Parameter]
     public Guid ContactId { get; set; }
@@ -44,9 +41,7 @@ public partial class Change(
     [CascadingParameter]
     public EditContext EditContext { get; set; } = default!;
 
-    #endregion
-
-    #region Private Fields
+    // Private Fields
 
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
@@ -59,15 +54,9 @@ public partial class Change(
     private bool _isResent;
     private readonly CancellationTokenSource _cts = new();
 
-    #endregion
-
-    #region Public Properties
+    // Public Properties
 
     public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; private set; } = [];
-
-    #endregion
-
-    #region Lifecycle Methods
 
     public async ValueTask DisposeAsync()
     {
@@ -147,9 +136,7 @@ public partial class Change(
         }
     }
 
-    #endregion
-
-    #region Private Methods
+    // Private Methods
 
     /// <summary>
     /// Loads the available contact types that can be selected for this contact.
@@ -309,6 +296,4 @@ public partial class Change(
         var selected = false;
         return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
-
-    #endregion
 }
