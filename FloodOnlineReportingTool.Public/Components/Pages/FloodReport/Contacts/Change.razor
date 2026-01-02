@@ -14,7 +14,8 @@
     <AuthorizeView Context="authContext">
         <NotAuthorized>
             <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
-                @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
+                @* novalidate used to disable browser validation as this form needs to only validate on submit due to a validation glitch *@
+                @* <FluentValidationValidator /> *@
                 <GdsErrorSummary />
 
                 <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
@@ -26,27 +27,32 @@
             </EditForm>
         </NotAuthorized>
         <Authorized>
-            @if (!_isDataLoading)
+            @if (_isDataLoading)
             {
-                @if (_contactModel == null)
-                {
-                    <GdsWarning Text="Contact information not found" />
-                    <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a></div>
-                }
-                else
-                {
-                    <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact">
-                        <FluentValidationValidator />
-                        <GdsErrorSummary />
+                <GdsSpinner Show="true" />
+            }
+            else if (_contactModel is null)
+            {
+                @* Contact not found - show warning and link back to summary *@
+                <GdsWarning Text="Contact information not found" />
+                <div>
+                    <a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
+                </div>
+            }
+            else
+            {
+                <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="ChangeContact" novalidate>
+                    <FluentValidationValidator />
+                    <GdsErrorSummary />
 
-                        <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+                    @* Type dropdown only shows available types and the currently selected option (max one per type per report) *@
+                    <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
 
-                        <div class="govuk-button-group">
-                            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
-                            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
-                        </div>
-                    </EditForm>
-                }
+                    <div class="govuk-button-group">
+                        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                        <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
+                    </div>
+                </EditForm>
             }
         </Authorized>
     </AuthorizeView>
