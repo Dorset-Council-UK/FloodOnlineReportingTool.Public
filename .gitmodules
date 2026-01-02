@@ -1,3 +1,4 @@
 [submodule ".github/instructions"]
 	path = .github/instructions
 	url = https://github.com/Dorset-Council-UK/Standards
+	branch = task-modify-documentation-instructions
