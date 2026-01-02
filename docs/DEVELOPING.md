@@ -41,7 +41,13 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    ```
    You may need to initialize the submodule the first time you load it after cloning from the source repository. Use the init flag as follows:
    ```shell
-   git submodule update --init
+   git submodule update --init 
+   ```
+   Should you need to switch the submodule to a different branch, navigate to the `FloodOnlineReportingTool.Public` solution folder and run:
+   ```shell
+   git submodule set-branch --branch {branch-name} .github/instructions
+
+   git submodule update --remote .github/instructions
    ```
 5. **Set up your secrets**:
 
