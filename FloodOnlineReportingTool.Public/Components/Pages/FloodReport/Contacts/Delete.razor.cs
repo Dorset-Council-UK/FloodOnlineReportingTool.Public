@@ -19,7 +19,7 @@ public partial class Delete(
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
-    // Page order properties
+    // IPageOrder properties
     public string Title { get; set; } = ContactPages.Delete.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
@@ -27,22 +27,23 @@ public partial class Delete(
         ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
+    // Parameters
     [Parameter]
     public Guid ContactId { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
+    // Private Fields
     private ContactModel? _contactModel;
-
     private EditContext _editContext = default!;
+    private ValidationMessageStore _messageStore = default!;
     private Guid _floodReportId = Guid.Empty;
     private string _floodReportReference = string.Empty;
+    private Guid _userId;
     private bool _isLoading = true;
     private bool _deletePermited = true;
-    private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
 
     public async ValueTask DisposeAsync()
     {
@@ -53,6 +54,7 @@ public partial class Delete(
         }
         catch (Exception)
         {
+            // Suppressing exception during disposal to prevent issues during component teardown
         }
 
         GC.SuppressFinalize(this);
@@ -78,30 +80,8 @@ public partial class Delete(
 
             _isLoading = false;
             StateHasChanged();
-            
+
         }
-    }
-
-    private async Task<ContactModel?> GetContact()
-    {
-        // Set safe defaults
-        _deletePermited = false;
-        _floodReportReference = string.Empty;
-
-        var contactRecord = await contactRepository.GetContactById(ContactId, _cts.Token);
-        if (contactRecord == null)
-        {
-            return null;
-        }
-
-        var floodReport = contactRecord.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId);
-        if (contactRecord.FloodReports.Count == 1 && floodReport != null)
-        {
-            _deletePermited = true;
-            _floodReportReference = floodReport.Reference;
-        }
-
-        return contactRecord.ToContactModel();
     }
 
     private async Task OnValidSubmit()
@@ -135,14 +115,38 @@ public partial class Delete(
             }
 
             // Navigate back to contacts home
-            logger.LogInformation("Contact information deleted successfully for user {UserId}", _userId);
+            logger.LogInformation("Contact information deleted successfully for user");
             navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem deleting contact information");
-            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem deleting the contact information. Please try again but if this issue happens again then please report a bug.");
+            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem deleting the contact information. Please try again but if this issue persists then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
+    }
+
+    // Private Methods
+
+    private async Task<ContactModel?> GetContact()
+    {
+        // Set safe defaults
+        _deletePermited = false;
+        _floodReportReference = string.Empty;
+
+        var contactRecord = await contactRepository.GetContactById(ContactId, _cts.Token);
+        if (contactRecord == null)
+        {
+            return null;
+        }
+
+        var floodReport = contactRecord.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId);
+        if (contactRecord.FloodReports.Count == 1 && floodReport != null)
+        {
+            _deletePermited = true;
+            _floodReportReference = floodReport.Reference;
+        }
+
+        return contactRecord.ToContactModel();
     }
 }

@@ -30,7 +30,8 @@
         </AuthorizeView>
 
         <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact" novalidate>
-            @* <FluentValidationValidator /> This form needs to only validate on submit due to a validation glitch*@
+            @* novalidate used to disable browser validation as this form needs to only validate on submit due to a validation glitch *@
+            @* <FluentValidationValidator /> *@
             <GdsErrorSummary />
 
             <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
