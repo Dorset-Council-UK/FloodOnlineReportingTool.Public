@@ -294,6 +294,11 @@ public partial class Change(
     {
         var id = contactRecordType.ToString().AsSpan();
         var selected = false;
-        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
+        return new GdsOptionItem<ContactRecordType>(
+            id, 
+            contactRecordType.LabelText(), 
+            contactRecordType, 
+            selected, 
+            hint: contactRecordType.HintText());
     }
 }
