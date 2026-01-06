@@ -10,7 +10,7 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.PostcodeKnown" Id="location-or-address" Show="!_isLoading">
+    <GdsFormGroup For="() => Model.PostcodeKnown" Id="location-or-address">
         <InputRadioGroup @bind-Value="Model.PostcodeKnown">
             <GdsFieldsetGroup>
                 <Heading>

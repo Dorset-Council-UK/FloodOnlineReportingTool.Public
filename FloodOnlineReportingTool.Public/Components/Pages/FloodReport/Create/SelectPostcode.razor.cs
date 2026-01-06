@@ -30,7 +30,7 @@ public partial class SelectPostcode(
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _postcodeKnownOptions = [
+    private readonly ICollection<GdsOptionItem<bool>> _postcodeKnownOptions = [
         new("postcode-known-yes", "Yes", value: true),
         new("postcode-known-no", "No", value: false),
     ];
@@ -45,6 +45,7 @@ public partial class SelectPostcode(
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        logger.LogDebug("OnAfterRenderAsync first render {FirstRender} {Time} ", firstRender, DateTimeOffset.UtcNow);
         if (firstRender)
         {
             // Set any previously entered data
@@ -58,8 +59,6 @@ public partial class SelectPostcode(
 
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 
