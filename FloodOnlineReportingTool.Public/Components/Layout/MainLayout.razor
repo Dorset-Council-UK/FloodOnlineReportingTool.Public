@@ -17,7 +17,7 @@
 <div class="govuk-width-container">
 
 
-    @if (!Env.IsProduction())
+    @if (!environment.IsProduction())
     {
         // Show development banner in all non-production environments
         <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackText="" FeedbackLink="_feedbackUri" />
@@ -35,20 +35,3 @@
 </div>
 
 <GdsFooter />
-
-@code {
-    [Inject]
-    public IWebHostEnvironment Env { get; set; } = default!;
-    [Inject]
-    public IGdsJsInterop gdsJs { get; set; } = default!;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await gdsJs.InitGds();
-        }
-    } 
-
-    private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
-}
