@@ -19,7 +19,7 @@ public partial class Delete(
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
-    // IPageOrder properties
+    // Public Properties
     public string Title { get; set; } = ContactPages.Delete.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
