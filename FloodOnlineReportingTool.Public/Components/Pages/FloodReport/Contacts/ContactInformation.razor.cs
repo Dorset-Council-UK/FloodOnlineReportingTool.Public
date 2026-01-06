@@ -9,6 +9,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
 public partial class ContactInformation(IContactRecordRepository contactRepository) : IAsyncDisposable
 {
+    // Parameters
     [Parameter, EditorRequired]
     public required ContactModel Contact { get; set; }
 
@@ -26,6 +27,8 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    // Private Fields
     private readonly CancellationTokenSource _cts = new();
 
     public async ValueTask DisposeAsync()
@@ -37,6 +40,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
         }
         catch (Exception)
         {
+            // Suppressing exception during disposal to prevent issues during component teardown
         }
 
         GC.SuppressFinalize(this);
@@ -69,6 +73,9 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
         return [.. unusedRecordTypes.Select(CreateOption)];
     }
 
+    /// <summary>
+    /// Creates a GDS option item for a contact record type.
+    /// </summary>
     private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();
