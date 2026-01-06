@@ -17,25 +17,23 @@ public partial class Verify(
     NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
+    // Private Fields
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
     private SubscribeRecord? _subscribeRecord;
     private bool _isLoading = true;
     private bool? isResent;
+    private EditContext _editContext = default!;
+    private ValidationMessageStore _messageStore = default!;
+    private VerifyModel Model { get; set; } = default!;
 
-    // Page order properties
+    // Public Properties
     public string Title { get; set; } = SubscriptionPages.Verify.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
     ];
-
-    private EditContext _editContext = default!;
-
-    private VerifyModel Model { get; set; } = default!;
-
-    private ValidationMessageStore _messageStore = default!;
 
     public async ValueTask DisposeAsync()
     {
@@ -46,6 +44,7 @@ public partial class Verify(
         }
         catch (Exception)
         {
+            // Suppressing exception during disposal to prevent issues during component teardown
         }
 
         GC.SuppressFinalize(this);
@@ -92,7 +91,6 @@ public partial class Verify(
 
             _isLoading = false;
             StateHasChanged();
-            
         }
     }
 
@@ -115,7 +113,7 @@ public partial class Verify(
 
         if (!VerifiedResult)
         {
-            CustomLogError(nameof(Model.EnteredCodeNumber),"Incorrect verification code entered.", "The code you provided was not correct. Please try again or request a new code.", false);
+            CustomLogError(nameof(Model.EnteredCodeNumber), "Incorrect verification code entered.", "The code you provided was not correct. Please try again or request a new code.", false);
             _editContext.NotifyValidationStateChanged();
             return;
         }
@@ -127,7 +125,7 @@ public partial class Verify(
         isResent = false;
 
         var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
-        if ( subscribeRecord == null)
+        if (subscribeRecord == null)
         {
             StateHasChanged();
             return;
@@ -152,7 +150,7 @@ public partial class Verify(
                 returnedSubscription.ContactName,
                 returnedSubscription.VerificationCode,
                 expiry
-                );
+            );
             isResent = true;
         }
         catch (Exception ex)
