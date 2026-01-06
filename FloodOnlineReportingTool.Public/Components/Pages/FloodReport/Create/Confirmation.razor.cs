@@ -12,21 +12,23 @@ public partial class Confirmation(
     SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
-    // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
-
+    // Parameters
     [SupplyParameterFromQuery]
     private string? Reference { get; set; }
 
+    // Private Fields
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
+
+    // Public Properties
+    public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
+        GeneralPages.Home.ToGdsBreadcrumb(),
+        FloodReportPages.Home.ToGdsBreadcrumb(),
+    ];
 
     public async ValueTask DisposeAsync()
     {
@@ -37,6 +39,7 @@ public partial class Confirmation(
         }
         catch (Exception)
         {
+            // Suppressing exception during disposal to prevent issues during component teardown
         }
 
         GC.SuppressFinalize(this);
@@ -52,13 +55,13 @@ public partial class Confirmation(
                 {
                     var result = await eligibilityRepository.GetByReference(Reference, _cts.Token);
 
-                    if ( result?.FloodReport != null)
+                    if (result?.FloodReport != null)
                     {
                         _FloodReportId = result.FloodReport.Id;
                         // Store the current flood report to session storage
                         if (_FloodReportId != Guid.Empty)
                         {
-                            //Never save a blank Guid, only a real one
+                            // Never save a blank Guid, only a real one
                             await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
                         }
 
@@ -74,8 +77,6 @@ public partial class Confirmation(
 
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 }
