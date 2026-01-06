@@ -23,33 +23,32 @@ public partial class Index(
     ICurrentUserService currentUserService
 ) : IPageOrder, IAsyncDisposable
 {
-    private readonly CancellationTokenSource _cts = new();
-    private Guid _verificationId = Guid.Empty;
-    private Guid _floodReportId = Guid.Empty;
-    private Guid _userID = Guid.Empty;
-    private bool _isLoading = true;
-
+    // Parameters
     [SupplyParameterFromQuery]
     private bool Me { get; set; }
 
     [SupplyParameterFromQuery]
     private bool Owns { get; set; }
 
-    [CascadingParameter]
-    public Task<AuthenticationState>? AuthenticationState { get; set; }
-
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
 
-    private EditContext _editContext = default!;
-
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    [CascadingParameter]
+    public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     public required SubscribeModel Model { get; set; } = default!;
 
+    // Private Fields
+    private readonly CancellationTokenSource _cts = new();
+    private Guid _verificationId = Guid.Empty;
+    private Guid _floodReportId = Guid.Empty;
+    private Guid _userID = Guid.Empty;
+    private bool _isLoading = true;
+    private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
 
-    // Page order properties
+    // Public Properties
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
     public string Title { get; set; } = SubscriptionPages.Home.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
@@ -86,7 +85,6 @@ public partial class Index(
         // Check if user is authenticated
         if (AuthenticationState is not null)
         {
-
             var authState = await AuthenticationState;
             var user = authState.User;
 
@@ -252,7 +250,7 @@ public partial class Index(
                     returnedSubscription.ContactName,
                     returnedSubscription.VerificationCode,
                     expiry
-                    );
+                );
             }
             catch (Exception ex)
             {
@@ -272,7 +270,6 @@ public partial class Index(
             // TODO: pass that the email sending failed if emailSent is false
             navigationManager.NavigateTo(nextPageUrl);
         }
-
     }
 
     private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
@@ -287,12 +284,14 @@ public partial class Index(
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
     {
-
         var allTypes = Enum.GetValues<ContactRecordType>();
 
         return [.. allTypes.Select(CreateOption)];
     }
 
+    /// <summary>
+    /// Creates a GDS option item for a contact record type.
+    /// </summary>
     private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
     {
         var id = contactRecordType.ToString().AsSpan();

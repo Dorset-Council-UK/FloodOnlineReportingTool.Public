@@ -23,7 +23,7 @@ public partial class Create(
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
-    // Page order properties
+    // Public Properties
     public string Title { get; set; } = ContactPages.Create.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
@@ -31,22 +31,25 @@ public partial class Create(
         ContactPages.Summary.ToGdsBreadcrumb(),
     ];
 
+    // Parameters
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [CascadingParameter]
     public EditContext EditContext { get; set; } = default!;
+
+    // Private Fields
     private EditContext _editContext = default!;
-
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    private ValidationMessageStore _messageStore = default!;
     private ContactModel? _contactModel;
-
-    private bool _isLoading = true;
+    private Database.Models.Flood.FloodReport? _floodReport;
     private Guid _floodReportId;
     private Guid _userId = Guid.Empty;
-    private Database.Models.Flood.FloodReport? _floodReport;
-    private ValidationMessageStore _messageStore = default!;
+    private bool _isLoading = true;
     private readonly CancellationTokenSource _cts = new();
+
+    // Public Properties
+    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -57,6 +60,7 @@ public partial class Create(
         }
         catch (Exception)
         {
+            // Suppressing exception during disposal to prevent issues during component teardown
         }
 
         GC.SuppressFinalize(this);
@@ -86,27 +90,13 @@ public partial class Create(
         }
     }
 
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
-    {
-
-        var allTypes = Enum.GetValues<ContactRecordType>();
-
-        return [.. allTypes.Select(CreateOption)];
-    }
-
-    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
-    {
-        var id = contactRecordType.ToString().AsSpan();
-        var selected = false;
-        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {           
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
+            // This is a create page, so we need to get the unused contact types only
             var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
             ContactTypes = [.. allTypes.Select(CreateOption)];
 
@@ -115,6 +105,8 @@ public partial class Create(
             
         }
     }
+
+    // Private Methods
 
     private async Task OnSubmit()
     {
@@ -235,5 +227,23 @@ public partial class Create(
             _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem creating the contact information. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
+    }
+
+    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
+    {
+
+        var allTypes = Enum.GetValues<ContactRecordType>();
+
+        return [.. allTypes.Select(CreateOption)];
+    }
+
+    /// <summary>
+    /// Creates a GDS option item for a contact record type.
+    /// </summary>
+    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
+    {
+        var id = contactRecordType.ToString().AsSpan();
+        var selected = false;
+        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
     }
 }
