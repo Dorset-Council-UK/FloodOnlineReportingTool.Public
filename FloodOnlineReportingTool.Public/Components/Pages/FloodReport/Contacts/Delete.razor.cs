@@ -121,7 +121,9 @@ public partial class Delete(
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem deleting contact information");
-            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem deleting the contact information. Please try again but if this issue persists then please report a bug.");
+            _messageStore.Add(
+                _editContext.Field(nameof(_contactModel.ContactType)),
+                $"There was a problem deleting the contact information. Please try again. If the problem continues, please contact support using the details on the Help or Contact us page and include your flood report reference '{_floodReportReference}'.");
             _editContext.NotifyValidationStateChanged();
         }
     }
