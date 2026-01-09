@@ -39,16 +39,6 @@
 @code {
     [Inject]
     public IWebHostEnvironment Env { get; set; } = default!;
-    [Inject]
-    public IGdsJsInterop gdsJs { get; set; } = default!;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await gdsJs.InitGds();
-        }
-    } 
 
     private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
 }
