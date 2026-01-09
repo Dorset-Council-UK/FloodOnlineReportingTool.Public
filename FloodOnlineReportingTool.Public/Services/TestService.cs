@@ -14,7 +14,6 @@ namespace FloodOnlineReportingTool.Public.Services;
 public sealed class TestService(
     IPublishEndpoint publishEndpoint,
     IDbContextFactory<PublicDbContext> contextFactory,
-    ICommonRepository commonRepository,
     IFloodReportRepository floodReportRepository
 ) {
     internal async Task TestMessage(CancellationToken ct)

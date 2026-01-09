@@ -1,7 +1,6 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
-using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
@@ -59,7 +58,6 @@ builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<GdsBlazorComponents.IGdsJsInterop, GdsBlazorComponents.GdsJsInterop>();
 
 // Add the database connections
 var floodReportingConnectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");
