@@ -1,13 +1,13 @@
+[*]
+spelling_languages=en-gb
+
 [*.cs]
 # MA0004: Use Task.ConfigureAwait
 dotnet_diagnostic.MA0004.severity = none
+# CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.CA1873.severity = none
 
 # Disable all analyzers in Migrations folder
 [**/Migrations/*.cs]
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
-
-
-[*]
-spelling_languages=en-gb
-
