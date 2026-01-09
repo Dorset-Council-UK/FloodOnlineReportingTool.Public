@@ -8,7 +8,12 @@
     <FluentValidationValidator />
     <GdsErrorSummary />
 
-    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+    @* <GdsSpinner Show="_isLoading" ShowMessage="true" /> *@
+
+    <h2>TESTING</h2>
+    <p>Rendering: @RendererInfo.Name</p>
+    <p role="status">Postcode: @createState.Postcode</p>
+    <p role="status">Cache key: @CacheKey</p>
 
     <GdsFormGroup For="() => Model.PostcodeKnown" Id="location-or-address">
         <InputRadioGroup @bind-Value="Model.PostcodeKnown">
@@ -41,8 +46,188 @@
         </InputRadioGroup>
     </GdsFormGroup>
 
-    @if (!_isLoading)
-    {
+    <h2>TESTS BELOW</h2>
+
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="check-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    Test HTML checkboxes
+                </h1>
+            </legend>
+            <div id="check-hint" class="govuk-hint">
+                Select all options that are relevant to you
+            </div>
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="check-by-email" name="checks" type="checkbox" value="email" data-aria-controls="conditional-check-email">
+                    <label class="govuk-label govuk-checkboxes__label" for="check-by-email">
+                        Email
+                    </label>
+                </div>
+                <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="conditional-check-email">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="check-email">
+                            Email address
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="check-email" name="checkEmail" type="email" spellcheck="false" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="check-by-phone" name="checks" type="checkbox" value="phone" data-aria-controls="conditional-check-phone">
+                    <label class="govuk-label govuk-checkboxes__label" for="check-by-phone">
+                        Phone
+                    </label>
+                </div>
+                <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="conditional-check-phone">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="check-phone">
+                            Phone number
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="check-phone" name="checkPhone" type="tel" autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="check-by-text" name="checks" type="checkbox" value="text message" data-aria-controls="conditional-check-text">
+                    <label class="govuk-label govuk-checkboxes__label" for="check-by-text">
+                        Text message
+                    </label>
+                </div>
+                <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="conditional-check-text">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="check-mobile">
+                            Mobile phone number
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="check-mobile" name="checkMobile" type="tel" autocomplete="tel">
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="radio-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    Test HTML radio buttons
+                </h1>
+            </legend>
+            <div id="radio-hint" class="govuk-hint">
+                Select one option
+            </div>
+            <div class="govuk-radios" data-module="govuk-radios">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="radio-by-email" name="radios" type="radio" value="email" data-aria-controls="conditional-radio-by-email">
+                    <label class="govuk-label govuk-radios__label" for="radio-by-email">
+                        Email
+                    </label>
+                </div>
+                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-radio-by-email">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="radio-email">
+                            Email address
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="radio-email" name="radioEmail" type="email" spellcheck="false" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="radio-by-phone" name="radios" type="radio" value="phone" data-aria-controls="conditional-contact-2">
+                    <label class="govuk-label govuk-radios__label" for="contact-2">
+                        Phone
+                    </label>
+                </div>
+                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-contact-2">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="contact-by-phone">
+                            Phone number
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="contact-by-phone" name="contactByPhone" type="tel" autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="contact-3" name="radios" type="radio" value="text" data-aria-controls="conditional-contact-3">
+                    <label class="govuk-label govuk-radios__label" for="contact-3">
+                        Text message
+                    </label>
+                </div>
+                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-contact-3">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="contact-by-text">
+                            Mobile phone number
+                        </label>
+                        <input class="govuk-input govuk-!-width-one-third" id="contact-by-text" name="contactByText" type="tel" autocomplete="tel">
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <GdsFormGroup For="() => TestCheckboxOptions">
+        <GdsFieldsetGroup>
+            <Heading>
+                <h2 class="govuk-fieldset__heading">Test Blazor Checkboxes</h2>
+            </Heading>
+            <Content>
+                <GdsHint>Select all that apply.</GdsHint>
+                <GdsErrorMessage />
+                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                    @foreach (var option in TestCheckboxOptions)
+                    {
+                        var conditionalId = option.Value == 1 ? $"{option.Id}-conditional" : null;
+                        <GdsCheckbox Option="@option" ConditionalId="@conditionalId" />
+                        if (option.Value == 1)
+                        {
+                            <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="@conditionalId">
+                                <GdsFormGroup For="() => TestChecksPhoneNumber">
+                                    <GdsLabel Text="What is your phone number?" />
+                                    <GdsErrorMessage />
+                                    <GdsInputText @bind-Value=TestChecksPhoneNumber class="govuk-input govuk-input--width-50" />
+                                </GdsFormGroup>
+                            </div>
+                        }
+                    }
+                </div>
+            </Content>
+        </GdsFieldsetGroup>
+    </GdsFormGroup>
+
+    <GdsFormGroup For="() => TestRadio">
+        <InputRadioGroup @bind-Value="TestRadio">
+            <GdsFieldsetGroup>
+                <Heading>
+                    <h2 class="govuk-fieldset__heading">Test Blazor Radios</h2>
+                </Heading>
+                <Content>
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        @foreach (var option in TestRadioOptions)
+                        {
+                            var conditionalId = option.Value == 1 ? $"{option.Id}-conditional" : null;
+                            <GdsRadio Option="@option" ConditionalId="@conditionalId" />
+                            if (option.Value == 1)
+                            {
+                                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
+                                    <GdsFormGroup For="() => TestRadiosPhoneNumber">
+                                        <GdsLabel Text="What is your phone number?" />
+                                        <GdsErrorMessage />
+                                        <GdsInputText @bind-Value=TestRadiosPhoneNumber class="govuk-input govuk-input--width-50" />
+                                    </GdsFormGroup>
+                                </div>
+                            }
+                        }
+                    </div>
+                </Content>
+            </GdsFieldsetGroup>
+        </InputRadioGroup>
+    </GdsFormGroup>
+
+    @* @if (!_isLoading)
+    { *@
         <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
-    }
+    @* } *@
 </EditForm>

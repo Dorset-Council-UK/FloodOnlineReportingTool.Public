@@ -1,9 +1,10 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
-using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
+using FloodOnlineReportingTool.Public.State;
 using FluentValidation;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -55,11 +56,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<SessionStateService>();
 builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
+builder.Services.AddHybridCache();
+
 // Add Blazor services
+builder.Services.AddScoped<FloodReportCreateState>();
+//builder.Services.AddScoped<GdsBlazorComponents.IGdsJsInterop, GdsBlazorComponents.GdsJsInterop>();
 builder.Services
     .AddRazorComponents()
-    .AddInteractiveServerComponents();
-builder.Services.AddScoped<GdsBlazorComponents.IGdsJsInterop, GdsBlazorComponents.GdsJsInterop>();
+    .AddInteractiveServerComponents()
+    .RegisterPersistentService<FloodReportCreateState>(RenderMode.InteractiveAuto);
 
 // Add the database connections
 var floodReportingConnectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");

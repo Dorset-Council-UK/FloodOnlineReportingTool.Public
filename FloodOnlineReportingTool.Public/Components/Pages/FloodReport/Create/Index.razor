@@ -8,9 +8,14 @@
     <FluentValidationValidator />
     <GdsErrorSummary />
 
-    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+    @* <GdsSpinner Show="_isLoading" ShowMessage="true" /> *@
 
-    <GdsFormGroup For="() => Model.IsAddress" Id="location-or-address" Show="!_isLoading">
+    <h2>TESTING</h2>
+    <p>Rendering: @RendererInfo.Name</p>
+    <p role="status">Cache key: @CacheKey</p>
+    <p role="status">Cache key 2: @CacheKey2</p>
+
+    <GdsFormGroup For="() => Model.IsAddress" Id="location-or-address">
         <InputRadioGroup @bind-Value="Model.IsAddress">
             <GdsFieldsetGroup>
                 <Heading>
@@ -25,8 +30,5 @@
         </InputRadioGroup>
     </GdsFormGroup>
 
-    @if (!_isLoading)
-    {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
-    }
+    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
 </EditForm>

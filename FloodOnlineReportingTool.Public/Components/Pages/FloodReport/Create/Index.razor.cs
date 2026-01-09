@@ -16,10 +16,11 @@ public partial class Index(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Home.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
+
+    [SupplyParameterFromQuery(Name = "key")]
+    private long? CacheKey { get; set; }
+    private long? CacheKey2 { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -29,14 +30,21 @@ public partial class Index(
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _isAddressOptions = [
+    private readonly IReadOnlyCollection<GdsOptionItem<bool>> _isAddressOptions = [
         new("is-address-yes", "Yes", value: true),
         new("is-address-no", "No", value: false),
     ];
 
     protected override void OnInitialized()
     {
+        Breadcrumbs = [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+        ];
+
         // Setup model and edit context
+        CacheKey ??= DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        CacheKey2 ??= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         Model ??= new();
         editContext = new(Model);
         editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
@@ -83,12 +91,12 @@ public partial class Index(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            nextPageUrl += "?fromsummary=true";
-        }
+            { "key", CacheKey },
+            { "fromsummary", FromSummary ? true : null  },
+        };
+        var nextPageUrl = navigationManager.GetUriWithQueryParameters(GetNextPage().Url, parameters);
         navigationManager.NavigateTo(nextPageUrl);
     }
 

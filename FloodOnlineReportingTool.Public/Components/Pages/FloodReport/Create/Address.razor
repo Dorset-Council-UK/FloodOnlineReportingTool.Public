@@ -12,6 +12,11 @@
 
     <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Searching..." />
 
+    <h2>TESTING</h2>
+    <p>Rendering: @RendererInfo.Name</p>
+    <p role="status">Postcode: @createState.Postcode</p>
+    <p role="status">Cache key: @CacheKey</p>
+
     @if (!_isSearching && Model.AddressOptions.Count == 0 && Model.IsAddress)
     {
         <p class="govuk-error-message">

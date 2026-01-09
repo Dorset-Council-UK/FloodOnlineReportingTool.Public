@@ -28,11 +28,10 @@ public partial class Location(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Location.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
+
+    [SupplyParameterFromQuery(Name = "key")]
+    private long CacheKey { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -49,8 +48,28 @@ public partial class Location(
 
     private readonly GISOptions _gisOptions = gisOptions.Value;
 
+    private IReadOnlyCollection<GdsBreadcrumb> BuildBreadcrumbsWithQueryParameters()
+    {
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            { "key", CacheKey },
+            { "fromsummary", FromSummary ? true : null  },
+        };
+
+        var (url, title) = FloodReportCreatePages.Home;
+        var previousPageUrl = navigationManager.GetUriWithQueryParameters(url, parameters);
+
+        return [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            new(previousPageUrl, title),
+        ];
+    }
+
     protected override void OnInitialized()
     {
+        Breadcrumbs = BuildBreadcrumbsWithQueryParameters();
+
         // Setup model and edit context
         Model ??= new();
         _editContext = new(Model);
@@ -250,12 +269,12 @@ public partial class Location(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or pass back to the summary (user must return from property type page if reset)
-        var nextPage = GetNextPage(propertyTypeReset);
-        var nextPageUrl = nextPage.Url;
-        if (propertyTypeReset && FromSummary)
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            nextPageUrl += "?fromsummary=true";
-        }
+            { "key", CacheKey },
+            { "fromsummary", FromSummary ? true : null  },
+        };
+        var nextPageUrl = navigationManager.GetUriWithQueryParameters(GetNextPage(propertyTypeReset).Url, parameters);
         navigationManager.NavigateTo(nextPageUrl);
     }
     private PageInfo GetNextPage(bool propertyTypeReset)

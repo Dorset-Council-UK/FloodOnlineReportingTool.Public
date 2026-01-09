@@ -23,7 +23,7 @@ public partial class FloodSecondarySource(
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb()
+        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb(),
     ];
 
     private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;

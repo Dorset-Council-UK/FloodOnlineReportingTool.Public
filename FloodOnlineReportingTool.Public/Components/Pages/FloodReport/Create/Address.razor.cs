@@ -3,8 +3,8 @@ using FloodOnlineReportingTool.Database.Models.API;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.State;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -16,17 +16,16 @@ public partial class Address(
     ILogger<Address> logger,
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager
+    NavigationManager navigationManager,
+    FloodReportCreateState createState
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Address.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
+
+    [SupplyParameterFromQuery(Name = "key")]
+    private long CacheKey { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -52,12 +51,41 @@ public partial class Address(
         GC.SuppressFinalize(this);
     }
 
+    private IReadOnlyCollection<GdsBreadcrumb> BuildBreadcrumbsWithQueryParameters()
+    {
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            { "key", CacheKey },
+            { "fromsummary", FromSummary ? true : null  },
+        };
+
+        var (urlCreateHome, titleCreateHome) = FloodReportCreatePages.Home;
+        var (urlPostcode, titlePostcode) = FloodReportCreatePages.Postcode;
+        var previousCreateUrl = navigationManager.GetUriWithQueryParameters(urlCreateHome, parameters);
+        var previousPostcodeUrl = navigationManager.GetUriWithQueryParameters(urlPostcode, parameters);
+
+        return [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            new(previousCreateUrl, titleCreateHome),
+            new(previousPostcodeUrl, titlePostcode),
+        ];
+    }
+
     protected override void OnInitialized()
     {
+        Breadcrumbs = BuildBreadcrumbsWithQueryParameters();
+
         // Setup model and edit context
         Model ??= new();
         _editContext = new(Model);
         _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+
+        Model.Postcode = createState.Postcode;
+        if (!RendererInfo.IsInteractive)
+        {
+            logger.LogDebug("Prerendering");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -66,9 +94,9 @@ public partial class Address(
         {
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
-            var createExtraData = await GetCreateExtraData();
+            //var createExtraData = await GetCreateExtraData();
 
-            Model.Postcode = createExtraData.Postcode;
+            //Model.Postcode = createExtraData.Postcode;
             Model.Easting = eligibilityCheck.Easting == 0 ? null : eligibilityCheck.Easting;
             Model.Northing = eligibilityCheck.Northing == 0 ? null : eligibilityCheck.Northing;
             Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
@@ -77,8 +105,6 @@ public partial class Address(
             Model.AddressOptions = await CreateAddressOptions();
 
             StateHasChanged();
-
-            
         }
     }
 
@@ -89,7 +115,7 @@ public partial class Address(
         if (apiAddress != null)
         {
             var eligibilityCheck = await GetEligibilityCheck();
-            var createExtraData = await GetCreateExtraData();
+            //var createExtraData = await GetCreateExtraData();
 
             var updatedEligibilityCheck = eligibilityCheck with
             {
@@ -99,23 +125,26 @@ public partial class Address(
                 LocationDesc = apiAddress.ConcatenatedAddress,
             };
 
-            var updatedExtraData = createExtraData with
-            {
-                Postcode = apiAddress.Postcode.ToUpperInvariant(),
-                PrimaryClassification = apiAddress.PrimaryClassification,
-                SecondaryClassification = apiAddress.SecondaryClassification,
-            };
+            //var updatedExtraData = createExtraData with
+            //{
+            //    Postcode = apiAddress.Postcode.ToUpperInvariant(),
+            //    PrimaryClassification = apiAddress.PrimaryClassification,
+            //    SecondaryClassification = apiAddress.SecondaryClassification,
+            //};
+            createState.Postcode = apiAddress.Postcode.ToUpperInvariant();
+            createState.PrimaryClassification = apiAddress.PrimaryClassification;
+            createState.SecondaryClassification = apiAddress.SecondaryClassification;
 
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+            //await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
             // Go to the next page or pass back to the summary (user must return from property type page)
-            var nextPage = FloodReportCreatePages.PropertyType;
-            var nextPageUrl = nextPage.Url;
-            if (FromSummary)
+            var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
             {
-                nextPageUrl += "?fromsummary=true";
-            }
+                { "key", CacheKey },
+                { "fromsummary", FromSummary ? true : null  },
+            };
+            var nextPageUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.PropertyType.Url, parameters);
             navigationManager.NavigateTo(nextPageUrl);
         }
     }
@@ -135,20 +164,20 @@ public partial class Address(
         return new EligibilityCheckDto();
     }
 
-    private async Task<ExtraData> GetCreateExtraData()
-    {
-        var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
+    //private async Task<ExtraData> GetCreateExtraData()
+    //{
+    //    var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
+    //    if (data.Success)
+    //    {
+    //        if (data.Value != null)
+    //        {
+    //            return data.Value;
+    //        }
+    //    }
 
-        logger.LogDebug("Eligibility Check > Extra Data was not found in the protected storage.");
-        return new();
-    }
+    //    logger.LogDebug("Eligibility Check > Extra Data was not found in the protected storage.");
+    //    return new();
+    //}
 
     private async Task<IList<GdsOptionItem<long>>> CreateAddressOptions()
     {
