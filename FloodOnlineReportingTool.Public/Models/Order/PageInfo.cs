@@ -7,6 +7,12 @@ internal record PageInfo
     public string Url { get; }
     public string Title { get; }
 
+    public void Deconstruct(out string url, out string title)
+    {
+        url = Url;
+        title = Title;
+    }
+
     public PageInfo(ReadOnlySpan<char> url, ReadOnlySpan<char> title)
     {
         // Efficient allocation at construction only
