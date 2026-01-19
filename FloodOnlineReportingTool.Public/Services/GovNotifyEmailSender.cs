@@ -1,7 +1,11 @@
 ﻿using FloodOnlineReportingTool.Public.Options;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
+using System.Net.WebSockets;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
@@ -9,8 +13,8 @@ internal class GovNotifyEmailSender(
     ILogger<GovNotifyEmailSender> logger,
     IOptions<GovNotifyOptions> options,
     IWebHostEnvironment environment,
-    ICurrentUserService currentUserService,
-    NotificationClient notificationClient
+    NotificationClient notificationClient,
+    AuthenticationStateProvider authenticationStateProvider
 ) : IGovNotifyEmailSender
 {
     private readonly GovNotifyOptions _govNotifyOptions = options.Value;
@@ -53,13 +57,18 @@ internal class GovNotifyEmailSender(
         return string.Create(CultureInfo.InvariantCulture, $"{host}#map={zoom}/{easting}/{northing}/0/27700");
     }
 
-    private string GetUsermailAddress()
+    private async Task<string> GetUsermailAddress()
     {
-        if (environment.IsDevelopment() && currentUserService.IsAuthenticated)
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState is not null)
         {
-            return currentUserService.Email;
-        }
+            var user = authState.User;
+            if (environment.IsDevelopment() && user.Identity?.IsAuthenticated == true)
+            {
+                return user.Email();
+            }
 
+        }
         return "";
     }
 
@@ -223,7 +232,7 @@ internal class GovNotifyEmailSender(
             { "contactType", contactType },
         };
 
-        var emailAddress = GetUsermailAddress();
+        var emailAddress = await GetUsermailAddress();
         if (emailAddress == null)
         {
             return string.Empty;
