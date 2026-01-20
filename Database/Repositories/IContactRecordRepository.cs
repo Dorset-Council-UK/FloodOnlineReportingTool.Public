@@ -16,7 +16,7 @@ public interface IContactRecordRepository
     /// Get the report owner contact records associated with a flood report
     /// </summary>
     /// <returns></returns>
-    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct);
+    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, bool includePersonalData, CancellationToken ct);
 
     /// <summary>
     /// Get all other contact records associated with a flood report

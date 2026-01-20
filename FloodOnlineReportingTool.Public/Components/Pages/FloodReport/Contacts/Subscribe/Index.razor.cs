@@ -127,7 +127,7 @@ public partial class Index(
                     var linkResult = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
                     if (linkResult.IsSuccess)
                     {
-                        var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+                        var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, true, _cts.Token);
                         if (recordOwner == null)
                         {
                             // Can't proceed if not authenticated

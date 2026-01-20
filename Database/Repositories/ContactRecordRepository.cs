@@ -6,11 +6,15 @@ using FloodOnlineReportingTool.Database.Models.ResultModels;
 using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, IDbContextFactory<PublicDbContext> contextFactory) : IContactRecordRepository
+public class ContactRecordRepository(
+    ILogger<ContactRecordRepository> logger, 
+    IDbContextFactory<PublicDbContext> contextFactory
+    ) : IContactRecordRepository
 {
     private const int VerificationExpiryMinutesUserPresent = 30;
     private const int VerificationExpiryMinutesUserNotPresent = 4320; // 3 days
@@ -31,10 +35,10 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .FirstOrDefaultAsync(ct);
     }
     
-    public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct)
+    public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, bool includePersonalData, CancellationToken ct)
     {
         logger.LogInformation("Getting report owner contact records for flood report ID: {FloodReportId}", floodReportId);
-
+        
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var floodReport = await context.FloodReports
         .AsNoTracking()
@@ -45,6 +49,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         var ownerSubscribeRecord = floodReport?.ContactRecords
         .SelectMany(cr => cr.SubscribeRecords)
+        .FilterPersonalData(includePersonalData)
         .FirstOrDefault(sr => sr.IsRecordOwner == true);
 
         return ownerSubscribeRecord ?? null;
