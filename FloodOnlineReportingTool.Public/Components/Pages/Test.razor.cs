@@ -1,4 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
 public partial class Test(
+    ILogger<Test> logger,
     ProtectedSessionStorage protectedSessionStorage,
     TestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
@@ -88,11 +91,25 @@ public partial class Test(
     {
         if (firstRender)
         {
+            SubscribeRecord testContact = new()
+            {
+                Id = Guid.NewGuid(),
+                IsRecordOwner = true,
+                ContactType = ContactRecordType.Tenant,
+                ContactName = "Test User",
+                EmailAddress = "test@email.com",
+                PhoneNumber = "01234567890",
+                IsEmailVerified = true,
+                IsSubscribed = true,
+                CreatedUtc = DateTimeOffset.UtcNow,
+                RedactionDate = DateTimeOffset.UtcNow.AddYears(1)
+            };
+
+            logger.LogSubscriberRecord(testContact);
+
             _hasCreateData = await HasCreateData();
             _hasCreateExtraData = await HasCreateExtraData();
             _hasInvestigationData = await HasInvestigationData();
-
-            
         }
     }
 

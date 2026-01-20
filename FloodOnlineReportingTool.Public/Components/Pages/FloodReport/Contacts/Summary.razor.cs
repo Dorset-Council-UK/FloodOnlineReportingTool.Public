@@ -95,7 +95,8 @@ public partial class Summary(
     private async Task LoadContactData()
     {
         var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, true, _cts.Token);
-        logger.LogInformation("Contact Record {owner}", reportOwnerSubscribeRecord.ContactRecord.SubscribeRecords.FirstOrDefault());
+        logger.LogSubscriberRecord(reportOwnerSubscribeRecord.ContactRecord.SubscribeRecords.FirstOrDefault());
+        logger.LogInformation("Contact Record {owner}", reportOwnerSubscribeRecord);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
         var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);

@@ -6,7 +6,6 @@ using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Identity.Web;
 
@@ -36,24 +35,26 @@ builder.Services.AddFloodReportingOpenApi(identityOptions);
 
 // Configure logging
 builder.Services.AddApplicationInsightsTelemetry();
-builder.Logging.EnableRedaction();
 builder.Services.AddRedaction(x =>
 {
     // Configure erasing redactor for personal data
-    x.SetRedactor<StarRedactor>(new DataClassificationSet(PersonalDataClassifications.Pii));
+    x.SetRedactor<StarRedactor>(PersonalDataClassifications.Pii);
 
     // Or use HMAC redactor if you need to correlate values
-    var maskingKey = builder.Configuration["GIS:MaskingKey"];
-    if (maskingKey is not string key)
-    {
-        throw new InvalidOperationException("HMAC key not configured");
-    }
-    x.SetHmacRedactor(options =>
-    {
-        options.Key = key;
-        options.KeyId = 862;
-    }, new DataClassificationSet(PersonalDataClassifications.PiiRedaction));
+    // Do we actually want to use this? It should create a consistent fake output for the same 
+    // input but that could still sort of link back to an individual. Let's not use it?
+    //var maskingKey = builder.Configuration["GIS:MaskingKey"];
+    //if (maskingKey is not string key)
+    //{
+    //    throw new InvalidOperationException("HMAC key not configured");
+    //}
+    //x.SetHmacRedactor(options =>
+    //{
+    //    options.Key = key;
+    //    options.KeyId = 862;
+    //}, PersonalDataClassifications.PiiRedaction);
 });
+builder.Logging.EnableRedaction();
 
 // Add health checks
 builder.Services.AddFloodReportingHealthChecks();
