@@ -14,9 +14,9 @@ public record SubscribeRecord
 
     public bool IsRecordOwner { get; set; } = false;
     public ContactRecordType ContactType { get; set; } = ContactRecordType.Unknown;
-    [PiiRedaction]
+    [PersonalData]
     public string ContactName { get; set; } = "";
-    [PiiRedaction]
+    [PersonalData]
     public string EmailAddress { get; set; } = "";
     public bool IsEmailVerified { get; set; } = false;
     [PersonalData]
