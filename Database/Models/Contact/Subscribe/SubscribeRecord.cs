@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Compliance;
 using Microsoft.AspNetCore.Identity;
 
 namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;

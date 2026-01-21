@@ -1,7 +1,9 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -18,6 +20,7 @@ public partial class Test(
     TestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
     IConfiguration Configuration,
+    IContactRecordRepository contactRepository,
     NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
@@ -91,21 +94,7 @@ public partial class Test(
     {
         if (firstRender)
         {
-            SubscribeRecord testContact = new()
-            {
-                Id = Guid.NewGuid(),
-                IsRecordOwner = true,
-                ContactType = ContactRecordType.Tenant,
-                ContactName = "Test User",
-                EmailAddress = "test@email.com",
-                PhoneNumber = "01234567890",
-                IsEmailVerified = true,
-                IsSubscribed = true,
-                CreatedUtc = DateTimeOffset.UtcNow,
-                RedactionDate = DateTimeOffset.UtcNow.AddYears(1)
-            };
-
-            logger.LogSubscriberRecord(testContact);
+            await TestRedaction();
 
             _hasCreateData = await HasCreateData();
             _hasCreateExtraData = await HasCreateExtraData();
@@ -150,6 +139,39 @@ public partial class Test(
             ?? throw new InvalidOperationException("TestFloodReport did not work, investigate.");
 
         navigationManager.NavigateTo($"{FloodReportCreatePages.Confirmation.Url}?reference={reference}");
+    }
+
+    private async Task TestRedaction()
+    {
+        // Test with fake data - should return consistent output
+        SubscribeRecord testSubscriber = new()
+        {
+            Id = Guid.NewGuid(),
+            IsRecordOwner = true,
+            ContactType = ContactRecordType.Tenant,
+            ContactName = "Test User",
+            EmailAddress = "test@email.com",
+            PhoneNumber = "01234567890",
+            IsEmailVerified = true,
+            IsSubscribed = true,
+            CreatedUtc = DateTimeOffset.UtcNow,
+            RedactionDate = DateTimeOffset.UtcNow.AddYears(1)
+        };
+
+        ContactRecord testContact = new()
+        {
+            Id = Guid.NewGuid(),
+            CreatedUtc = DateTimeOffset.UtcNow,
+            RedactionDate = DateTimeOffset.UtcNow.AddYears(1),
+            SubscribeRecords = new List<SubscribeRecord> { testSubscriber }
+        };
+
+        logger.LogSubscriberRecord(testSubscriber);
+        logger.LogInformation("Contact Record {owner}", testContact);
+
+        // Trigger the redaction on real data
+        var testId = await contactRepository.GetRandomFloodReportWithSubscriber(_cts.Token);
+        var contact = contactRepository.GetReportOwnerContactByReport(testId, _cts.Token);
     }
 
     private async Task BlankCreateData()

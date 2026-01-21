@@ -1,17 +1,25 @@
-﻿namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+﻿using FloodOnlineReportingTool.Database.Compliance;
+
+namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 
 public static class PersonalDataExtensions
 {
-    public static IQueryable<SubscribeRecord> FilterPersonalData(
+    public static IQueryable<SubscribeRecord> RoleBasedFilterPersonalData(
         this IQueryable<SubscribeRecord> query,
-        bool includePersonalData)
+        bool hasPersonalDataRole)
     {
-        if (includePersonalData)
+        if (hasPersonalDataRole)
         {
             return query;
         }
 
-        return query.Select(sr => new SubscribeRecord
+        return FilterPersonalData(query);
+    }
+
+    public static IQueryable<SubscribeRecord> FilterPersonalData(
+        this IQueryable<SubscribeRecord> query)
+    {
+        return query.Select(static sr => new SubscribeRecord
         {
             Id = sr.Id,
             IsRecordOwner = sr.IsRecordOwner,
@@ -22,24 +30,34 @@ public static class PersonalDataExtensions
             RedactionDate = sr.RedactionDate,
             VerificationExpiryUtc = sr.VerificationExpiryUtc,
             ContactRecordId = sr.ContactRecordId,
-            ContactRecord = sr.ContactRecord
+            ContactRecord = sr.ContactRecord,
+            ContactName = StarRedactor.StarConverter(sr.ContactName, true),
+            EmailAddress = StarRedactor.StarConverter(sr.EmailAddress, true),
+            PhoneNumber = StarRedactor.StarConverter(sr.PhoneNumber ?? ""),
+            VerificationCode = null
         });
     }
 
-    public static IEnumerable<SubscribeRecord> FilterPersonalData(
+    public static IEnumerable<SubscribeRecord> RoleBasedFilterPersonalData(
         this IEnumerable<SubscribeRecord> collection,
-        bool includePersonalData)
+        bool hasPersonalDataRole)
     {
-        if (includePersonalData)
+        if (hasPersonalDataRole)
         {
             return collection;
         }
 
+        return FilterPersonalData(collection);
+    }
+
+    public static IEnumerable<SubscribeRecord> FilterPersonalData(
+        this IEnumerable<SubscribeRecord> collection)
+    {
         return collection.Select(sr => sr with
         {
-            ContactName = string.Empty,
-            EmailAddress = string.Empty,
-            PhoneNumber = null,
+            ContactName = StarRedactor.StarConverter(sr.ContactName, true),
+            EmailAddress = StarRedactor.StarConverter(sr.EmailAddress, true),
+            PhoneNumber = StarRedactor.StarConverter(sr.PhoneNumber ?? ""),
             VerificationCode = null
         });
     }

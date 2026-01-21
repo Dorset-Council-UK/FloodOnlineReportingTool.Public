@@ -1,7 +1,10 @@
-﻿using FloodOnlineReportingTool.Public.Authentication;
+﻿using FloodOnlineReportingTool.Database.Services;
+using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Endpoints.Account;
 using FloodOnlineReportingTool.Public.Options;
+using FloodOnlineReportingTool.Public.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 
@@ -37,6 +40,9 @@ internal static class AuthenticationExtensions
 
         // Add Blazor cascading authentication state
         builder.Services.AddCascadingAuthenticationState();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IUserContext, UserContext>();
+        builder.Services.AddScoped<CircuitHandler, UserContextCircuitHandler>();
 
         // Setup Authorization
         builder.Services

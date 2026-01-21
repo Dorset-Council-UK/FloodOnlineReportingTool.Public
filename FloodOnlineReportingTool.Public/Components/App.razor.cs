@@ -1,12 +1,14 @@
 ﻿using FloodOnlineReportingTool.Database.Options;
+using FloodOnlineReportingTool.Database.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
-public partial class App(IOptions<GISOptions> _options)
+public partial class App(IOptions<GISOptions> _options, IUserContext UserContext)
 {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -25,5 +27,4 @@ public partial class App(IOptions<GISOptions> _options)
             _pathBase = $"/{pathBase}/";
         }
     }
-
 }
