@@ -18,5 +18,4 @@ public class Address
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
     public string? Postcode { get; set; }
 
-    public IList<GdsOptionItem<long>> AddressOptions { get; set; } = [];
 }

@@ -31,8 +31,10 @@ public partial class TemporaryAddress(
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
 
-    private Models.FloodReport.Create.Address Model { get; set; } = default!;
+    [PersistentState]
+    public Models.FloodReport.Create.Address Model { get; set; } = null!;
 
+    private IList<GdsOptionItem<long>> _addressOptions = [];
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isSearching = true;
@@ -72,7 +74,7 @@ public partial class TemporaryAddress(
             Model.UPRN = eligibilityCheck.TemporaryUprn == 0 ? null : eligibilityCheck.TemporaryUprn;
             Model.IsAddress = true;
             Model.LocationDesc = eligibilityCheck.TemporaryLocationDesc;
-            Model.AddressOptions = await CreateAddressOptions();
+            _addressOptions = await CreateAddressOptions();
 
             StateHasChanged();
 
@@ -195,7 +197,7 @@ public partial class TemporaryAddress(
     private async Task SearchAgain()
     {
         Model.UPRN = null;
-        Model.AddressOptions = await CreateAddressOptions();
+        _addressOptions = await CreateAddressOptions();
     }
 
     private GdsOptionItem<long> CreateOption(ApiAddress apiAddress)

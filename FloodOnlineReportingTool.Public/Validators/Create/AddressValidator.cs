@@ -10,6 +10,6 @@ public class AddressValidator : AbstractValidator<Address>
         RuleFor(o => o.UPRN)
             .NotEmpty()
             .WithMessage("Select the affected property")
-            .When(o => o.AddressOptions.Count > 0 && o.IsAddress == true);
+            .When(o => o.IsAddress == true);
     }
 }

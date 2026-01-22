@@ -12,14 +12,14 @@
 
     <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Searching..." />
 
-    @if (!_isSearching && Model.AddressOptions.Count == 0 && Model.IsAddress)
+    @if (!_isSearching && _addressOptions.Count == 0 && Model.IsAddress)
     {
         <p class="govuk-error-message">
             <span class="govuk-visually-hidden">Error:</span> <span>No addresses were found, please check the postcode and search again</span>
         </p>
     }
 
-    <GdsFormGroup For="() => Model.UPRN" Show="Model.AddressOptions.Count > 0">
+    <GdsFormGroup For="() => Model.UPRN" Show="_addressOptions.Count > 0">
         @{
             var hintId = "UPRN-hint";
             var errorId = "UPRN-error";
@@ -30,7 +30,7 @@
         <GdsErrorMessage Id="@errorId" />
         <InputSelect id="@nameof(Model.UPRN)" @bind-Value="Model.UPRN" class="govuk-select" aria-describedby="@describedBy">
             <option value=""></option>
-            @foreach (var option in Model.AddressOptions)
+            @foreach (var option in _addressOptions)
             {
                 <option value="@option.Value" selected="@option.Selected">@option.Label</option>
             }

@@ -31,8 +31,10 @@ public partial class Address(
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
 
-    private Models.FloodReport.Create.Address Model { get; set; } = default!;
+    [PersistentState]
+    public Models.FloodReport.Create.Address Model { get; set; } = null!;
 
+    private IList<GdsOptionItem<long>> _addressOptions = [];
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isSearching = true;
@@ -74,7 +76,7 @@ public partial class Address(
             Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
             Model.IsAddress = eligibilityCheck.IsAddress;
             Model.LocationDesc = eligibilityCheck.LocationDesc;
-            Model.AddressOptions = await CreateAddressOptions();
+            _addressOptions = await CreateAddressOptions();
 
             StateHasChanged();
 
@@ -201,7 +203,7 @@ public partial class Address(
     private async Task SearchAgain()
     {
         Model.UPRN = null;
-        Model.AddressOptions = await CreateAddressOptions();
+        _addressOptions = await CreateAddressOptions();
     }
 
     private GdsOptionItem<long> CreateOption(ApiAddress apiAddress)
