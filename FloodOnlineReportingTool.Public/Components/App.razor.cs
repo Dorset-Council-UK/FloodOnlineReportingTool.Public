@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
-public partial class App(IOptions<GISOptions> _options, IUserContext UserContext)
+public partial class App(IOptions<GISOptions> _options)
 {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
