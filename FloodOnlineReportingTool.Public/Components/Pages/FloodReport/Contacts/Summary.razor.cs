@@ -1,6 +1,5 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
-using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
@@ -9,9 +8,7 @@ using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using MassTransit.Initializers;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Runtime.CompilerServices;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 

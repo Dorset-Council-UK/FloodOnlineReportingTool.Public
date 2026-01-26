@@ -95,4 +95,6 @@ public interface IContactRecordRepository
     Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default);
 
     Task<Guid?> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default);
+
+    Task<Guid> GetRandomFloodReportWithSubscriber(CancellationToken ct = default);
 }

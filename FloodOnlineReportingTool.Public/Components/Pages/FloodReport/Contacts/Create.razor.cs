@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -19,7 +20,6 @@ public partial class Create(
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
     SessionStateService scopedSessionStorage,
-    ICurrentUserService currentUserService,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
@@ -171,7 +171,14 @@ public partial class Create(
             {
                 contactRecordId = contactRecord.First().Id;
             }
-            var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, false, _cts.Token);
+            // Get authentication state
+            var currentUserEmail = string.Empty;
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                currentUserEmail = authState.User.Email();
+            }
+            var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, false, _cts.Token);
 
            if (generatedSubscribeRecord == null || !generatedSubscribeRecord.IsSuccess)
             {

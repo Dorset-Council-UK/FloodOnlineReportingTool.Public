@@ -11,6 +11,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.Subscribe;
 
@@ -19,8 +20,7 @@ public partial class Index(
     IContactRecordRepository contactRepository,
     IGovNotifyEmailSender govNotifyEmailSender,
     NavigationManager navigationManager,
-    SessionStateService scopedSessionStorage,
-    ICurrentUserService currentUserService
+    SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
     // Parameters
@@ -86,10 +86,7 @@ public partial class Index(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var user = authState.User;
-
-            var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            _userID = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
+            _userID = authState.User.UserOid();
         }
     }
 
@@ -107,6 +104,17 @@ public partial class Index(
                     navigationManager.NavigateTo(ContactPages.Summary.Url);
                     return;
                 }
+
+                // Get authentication state
+                var currentUserEmail = string.Empty;
+                var currentUserDisplayName = string.Empty;
+                if (AuthenticationState is not null)
+                {
+                    var authState = await AuthenticationState;
+                    currentUserEmail = authState.User.Email();
+                    currentUserDisplayName = authState.User.DisplayName();
+                }
+
                 // Check if this user already has a contact record
                 var contactRecord = await contactRepository.ContactRecordExistsForUser(_userID, _cts.Token);
                 if (contactRecord != Guid.Empty)
@@ -139,12 +147,12 @@ public partial class Index(
                 // Pre-fill email if known
                 if (string.IsNullOrWhiteSpace(Model.ContactName))
                 {
-                    Model.ContactName = currentUserService.Name;
+                    Model.ContactName = currentUserDisplayName;
                 }
 
                 if (string.IsNullOrWhiteSpace(Model.EmailAddress))
                 {
-                    Model.EmailAddress = currentUserService.Email;
+                    Model.EmailAddress = currentUserEmail;
                 }
 
                 // Notify EditContext of changes
@@ -213,7 +221,16 @@ public partial class Index(
         {
             contactRecordId = contactRecord.First().Id;
         }
-        CreateOrUpdateResult<SubscribeRecord> subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserService.Email, true, _cts.Token);
+
+        // Get authentication state
+        var currentUserEmail = string.Empty;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            currentUserEmail = authState.User.Email();
+        }
+
+        CreateOrUpdateResult<SubscribeRecord> subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, true, _cts.Token);
 
         if (subscriptionResult.ResultModel is not SubscribeRecord returnedSubscription)
         {

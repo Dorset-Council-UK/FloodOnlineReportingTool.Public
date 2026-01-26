@@ -1,3 +1,4 @@
+using FloodOnlineReportingTool.Database.Compliance;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -20,10 +21,12 @@ var gisOptions = builder.AddOptions_Required<GISOptions>(GISOptions.SectionName)
 // Configure authentication 
 var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Constants.AzureAd);
 builder.AddAuthentication();
+builder.Services.AddScoped<SessionStateService>();
 
 // Configure messaging system
 builder.AddMessageSystem();
 builder.AddGovNotify();
+builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Configure API versioning and OpenAPI
 builder.Services.AddFloodReportingVersioning();
@@ -31,28 +34,15 @@ builder.Services.AddFloodReportingOpenApi(identityOptions);
 
 // Configure logging
 builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddRedaction(x =>
+{
+    // Configure erasing redactor for personal data
+    x.SetRedactor<StarRedactor>(PersonalDataClassifications.Pii);
+});
+builder.Logging.EnableRedaction();
 
 // Add health checks
 builder.Services.AddFloodReportingHealthChecks();
-
-// Setup identity
-
-//builder.Services
-//    .AddIdentityCore<FortUser>(options =>
-//    {
-//        options.SignIn.RequireConfirmedEmail = false;
-//        options.Password.RequireDigit = false;
-//        options.Password.RequiredLength = 14;
-//        options.Password.RequiredUniqueChars = 0;
-//        options.Password.RequireLowercase = false;
-//        options.Password.RequireNonAlphanumeric = false;
-//        options.Password.RequireUppercase = false;
-//    })
-//    .AddEntityFrameworkStores<UserDbContext>()
-//    .AddApiEndpoints();
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-builder.Services.AddScoped<SessionStateService>();
-builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Add Blazor services
 builder.Services

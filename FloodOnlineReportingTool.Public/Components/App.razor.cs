@@ -1,5 +1,7 @@
 ﻿using FloodOnlineReportingTool.Database.Options;
+using FloodOnlineReportingTool.Database.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
@@ -25,5 +27,4 @@ public partial class App(IOptions<GISOptions> _options)
             _pathBase = $"/{pathBase}/";
         }
     }
-
 }
