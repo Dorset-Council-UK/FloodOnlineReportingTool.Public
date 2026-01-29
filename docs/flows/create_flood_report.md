@@ -2,19 +2,30 @@
 
 ```mermaid
 flowchart TB
-    Index((Start)) --> Postcode
+    Index((Start)) --> PostcodeOrLocation{Postcode or location?}
+    PostcodeOrLocation -- Postcode --> Postcode
     Postcode --> PostcodeKnown{Postcode<br>known?}
     PostcodeKnown -- Yes --> Address
     PostcodeKnown -- No --> Location
+    PostcodeOrLocation -- Location --> Location
     Location --> Address
     Address --> PropertyType[Property type]
     PropertyType --> FloodAreas[Flood areas]
-    FloodAreas --> Vulnerability
+    FloodAreas --> TemporaryAddress{Evacuated to <br>a temporary <br>address?}
+    TemporaryAddress -- Yes --> TempAddress[Temporary address postcode - optional]
+    TemporaryAddress -- No --> Vulnerability
+    TempAddress -- Yes --> ChooseTempAddress[Choose temporary address]
+    TempAddress -- No --> Vulnerability
+    ChooseTempAddress --> Vulnerability
     Vulnerability --> FloodStarted[Flood started]
     FloodStarted --> OngoingFlooding{Flooding<br>on going?}
     OngoingFlooding -- Yes --> FloodSource[Flood source]
     OngoingFlooding -- No --> FloodDuration[Flood duration]
     FloodDuration --> FloodSource
+    FloodSource --> SecondaryFloodSourceRainwater{Rainwater<br>flood source<br>chosen?}
+    SecondaryFloodSourceRainwater -- Yes --> SecondaryFloodSourceType[Secondary flood source]
+    SecondaryFloodSourceRainwater -- No --> Summary[Check your answers]
+    SecondaryFloodSourceType --> Summary
     FloodSource --> Summary[Check your answers]
     Summary --> Save[(Save to database)]
     Save --> Notifications{Choose Contacts}
