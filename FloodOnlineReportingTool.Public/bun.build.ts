@@ -66,7 +66,7 @@ function copyAssets() {
 	console.log("📦 Copying assets...");
 	mkdirSync("./wwwroot/css/images", { recursive: true });
 	mkdirSync("./wwwroot/favicons", { recursive: true });
-	mkdirSync("./wwwroot/images/logos", { recursive: true });
+	mkdirSync("./wwwroot/images", { recursive: true });
 
 	// Copy MapLibre GL CSS
 	copyFileSync("./node_modules/maplibre-gl/dist/maplibre-gl.css", "./wwwroot/css/maplibre-gl.css");
@@ -91,7 +91,7 @@ function copyAssets() {
 	}
 
 	// Copy logo images
-	copyDirectory("./Scripts/images/logos", "./wwwroot/images/logos");
+	copyDirectory("./Scripts/images", "./wwwroot/images");
 }
 
 function compileSass() {
