@@ -14,9 +14,8 @@
         </AuthorizeView>
     </NavLinks>
 </GdsHeader>
-<div class="govuk-width-container">
 
-
+<div class="govuk-width-container flex-fill">
     @if (!Env.IsProduction())
     {
         // Show development banner in all non-production environments
@@ -34,7 +33,18 @@
     </main>
 </div>
 
-<GdsFooter />
+<GdsFooter>
+    <Meta>
+        <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+            <a class="govuk-link govuk-link-image" href="https://www.dorsetcouncil.gov.uk" title="Go to Dorset Council">
+                <img src="@Assets["images/footer-x2.webp"]" alt="Dorset Council logo" width="188" height="80">
+            </a>
+        </div>
+        <div class="govuk-footer__meta-item">
+            <div>Copyright &copy; @(DateTimeOffset.UtcNow.Year) Dorset Council</div>
+        </div>
+    </Meta>
+</GdsFooter>
 
 @code {
     [Inject]
