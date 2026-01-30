@@ -202,7 +202,7 @@ public partial class Location(
         await OnValidSubmit();
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool IsNext = true)
     {
         var createExtraData = await GetCreateExtraData();
         var eligibilityCheck = await GetEligibilityCheck();
@@ -249,15 +249,30 @@ public partial class Location(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or pass back to the summary (user must return from property type page if reset)
-        var nextPage = GetNextPage(propertyTypeReset);
-        var nextPageUrl = nextPage.Url;
-        if (propertyTypeReset && FromSummary)
+        if (IsNext)
         {
-            nextPageUrl += "?fromsummary=true";
+            // Go to the next page or pass back to the summary (user must return from property type page if reset)
+            var nextPage = GetNextPage(propertyTypeReset);
+            var nextPageUrl = nextPage.Url;
+            if (propertyTypeReset && FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         }
-        navigationManager.NavigateTo(nextPageUrl);
+        else
+        {
+            // Get previous page or pass back to summary
+            var previousPage = FloodReportCreatePages.Home;
+            var previousPageUrl = previousPage.Url;
+            if (FromSummary)
+            {
+                previousPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(previousPageUrl);
+        }
     }
+    
     private PageInfo GetNextPage(bool propertyTypeReset)
     {
         if (!propertyTypeReset && FromSummary)

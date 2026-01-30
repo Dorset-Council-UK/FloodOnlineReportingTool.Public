@@ -27,6 +27,9 @@ public partial class FloodSource(
 
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
 
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
+
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
@@ -71,7 +74,7 @@ public partial class FloodSource(
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -91,15 +94,24 @@ public partial class FloodSource(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        if (isNext)
         {
-            // We need to know more if they have selected this option
-            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
+            if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+            {
+                // We need to know more if they have selected this option
+                navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
+            }
+            else
+            {
+                // Go to the next page, which is always the summary
+                navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+            }
         }
         else
         {
-            // Go to the next page, which is always the summary
-            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+            // Go to previous page or back to summary
+            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
+            navigationManager.NavigateTo(previousPage.Url);
         }
     }
 

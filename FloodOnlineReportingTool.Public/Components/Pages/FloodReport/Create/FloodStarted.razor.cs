@@ -73,7 +73,7 @@ public partial class FloodStarted(
             _isLoading = false;
             StateHasChanged();
 
-            
+
         }
     }
 
@@ -92,7 +92,7 @@ public partial class FloodStarted(
         return new EligibilityCheckDto();
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         var isOnGoing = Model.IsFloodOngoing == true;
 
@@ -106,11 +106,20 @@ public partial class FloodStarted(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page or back to the summary
-        navigationManager.NavigateTo(NextPage(isOnGoing).Url);
+        if (isNext)
+        {
+            // Go to the next page or back to the summary
+            navigationManager.NavigateTo(GetNextPage(isOnGoing).Url);
+        }
+        else
+        {
+            // Go back to previous page or back to the summary
+            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Vulnerability;
+            navigationManager.NavigateTo(previousPage.Url);
+        }
     }
 
-    private PageInfo NextPage(bool isOnGoing)
+    private PageInfo GetNextPage(bool isOnGoing)
     {
         if (FromSummary)
         {
@@ -124,5 +133,4 @@ public partial class FloodStarted(
 
         return FloodReportCreatePages.FloodDuration;
     }
-
 }

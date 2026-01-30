@@ -1,10 +1,11 @@
 ﻿@page "/floodreport/create/temporarypostcode"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit" FormName="CreateFloodReport">
+<EditForm EditContext="editContext" FormName="CreateFloodReport">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -43,6 +44,10 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <PaginationBlock>
+            <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@GetNextPage().Title" />
+            <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportCreatePages.FloodAreas.Title" />
+        </PaginationBlock>
     }
+
 </EditForm>

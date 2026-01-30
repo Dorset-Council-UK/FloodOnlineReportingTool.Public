@@ -27,6 +27,9 @@ public partial class FloodSecondarySource(
     ];
 
     private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;
+    
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -69,7 +72,7 @@ public partial class FloodSecondarySource(
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -80,8 +83,17 @@ public partial class FloodSecondarySource(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page, which is always the summary
-        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        if (isNext)
+        {
+            // Go to the next page, which is always the summary
+            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        }
+        else
+        {
+            // Go to the previous page or back to the summary
+            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
+            navigationManager.NavigateTo(previousPage.Url);
+        }
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/floodsource"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
@@ -6,7 +7,7 @@
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodSource">
+<EditForm EditContext="_editContext" FormName="FloodSource">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -27,6 +28,10 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <PaginationBlock>
+            <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@FloodReportCreatePages.Summary.Title" />
+            <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportCreatePages.FloodStarted.Title" />
+        </PaginationBlock>
     }
+
 </EditForm>

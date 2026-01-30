@@ -73,7 +73,7 @@ public partial class TemporarySelectPostcode(
         GC.SuppressFinalize(this);
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool IsNext = true)
     {
         // Save the postcode
         var createExtraData = await GetCreateExtraData();
@@ -95,14 +95,28 @@ public partial class TemporarySelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or pass back to the summary (user must return from property type page)
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
+        if (IsNext)
         {
-            nextPageUrl += "?fromsummary=true";
+            // Go to the next page or pass back to the summary (user must return from property type page)
+            var nextPage = GetNextPage();
+            var nextPageUrl = nextPage.Url;
+            if (FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         }
-        navigationManager.NavigateTo(nextPageUrl);
+        else 
+        { 
+            // Go to the previous page of back to the summary
+            var previousPage = FloodReportCreatePages.FloodAreas;
+            var previousPageUrl = previousPage.Url;
+            if (FromSummary)
+            {
+                previousPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(previousPageUrl);
+        }
     }
 
     private PageInfo GetNextPage()

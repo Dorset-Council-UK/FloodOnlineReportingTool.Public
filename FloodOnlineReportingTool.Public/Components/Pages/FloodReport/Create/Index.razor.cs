@@ -70,7 +70,7 @@ public partial class Index(
         GC.SuppressFinalize(this);
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         // Set the IsAddress so that location page knows if this is a postal search rather than location
         var eligibilityCheck = await GetEligibilityCheck();
@@ -82,14 +82,28 @@ public partial class Index(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
+        if (isNext)
         {
-            nextPageUrl += "?fromsummary=true";
+            // Go to the next page or pass back to the summary
+            var nextPage = GetNextPage();
+            var nextPageUrl = nextPage.Url;
+            if (FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         }
-        navigationManager.NavigateTo(nextPageUrl);
+        else
+        {
+            // Get previous page or pass back to summary
+            var previousPage = FloodReportPages.Home;
+            var previousPageUrl = previousPage.Url;
+            if (FromSummary)
+            {
+                previousPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(previousPageUrl);
+        }
     }
 
     private PageInfo GetNextPage()

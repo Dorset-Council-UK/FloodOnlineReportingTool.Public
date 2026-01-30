@@ -1,10 +1,11 @@
 ﻿@page "/floodreport/create/floodstarted"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodStarted">
+<EditForm EditContext="_editContext" FormName="FloodStarted">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -34,6 +35,10 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <PaginationBlock>
+            <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@FloodReportCreatePages.FloodSource.Title" />
+            <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportCreatePages.Vulnerability.Title" />
+        </PaginationBlock>
     }
+
 </EditForm>

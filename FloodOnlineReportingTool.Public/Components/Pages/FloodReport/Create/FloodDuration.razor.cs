@@ -109,7 +109,7 @@ public partial class FloodDuration(
         return new EligibilityCheckDto();
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         var eligibilityCheck = await GetEligibilityCheck();
         var updated = eligibilityCheck with
@@ -122,9 +122,18 @@ public partial class FloodDuration(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodSource;
-        navigationManager.NavigateTo(nextPage.Url);
+        if (isNext)
+        {
+            // Go to the next page or back to the summary
+            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodSource;
+            navigationManager.NavigateTo(nextPage.Url);
+        }
+        else
+        {
+            // Go to the previous page or back to the summary
+            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
+            navigationManager.NavigateTo(previousPage.Url);
+        }
     }
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateDurationOptions()

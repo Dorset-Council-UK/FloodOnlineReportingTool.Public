@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/location"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 @using Microsoft.JSInterop
 
 <HeadContent>
@@ -35,7 +36,11 @@
         }
 
         <div>
-            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
+            <PaginationBlock>
+                <PaginationNext OnNextPage="() => OnValidSubmit (true)" Label="@GetNextPage(true).Title" />
+                <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportCreatePages.Home.Title" />
+            </PaginationBlock>
         </div>
     }
+
 </EditForm>

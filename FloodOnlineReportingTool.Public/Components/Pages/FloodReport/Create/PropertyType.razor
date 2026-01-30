@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/propertytype"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
@@ -6,7 +7,7 @@
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="PropertyType">
+<EditForm EditContext="_editContext" FormName="PropertyType">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -74,5 +75,9 @@
         </InputRadioGroup>
     </GdsFormGroup>
 
-    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    <PaginationBlock>
+        <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@FloodReportCreatePages.FloodAreas.Title" />
+        <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@GetPreviousPage().Title" />
+    </PaginationBlock>
+
 </EditForm>

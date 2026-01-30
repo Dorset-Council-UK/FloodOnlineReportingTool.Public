@@ -77,7 +77,7 @@ public partial class SelectPostcode(
         GC.SuppressFinalize(this);
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool isNext = true)
     {
         // Save the postcode
         var createExtraData = await GetCreateExtraData();
@@ -88,14 +88,28 @@ public partial class SelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or pass back to the summary (user must return from property type page)
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
+        if (isNext)
         {
-            nextPageUrl += "?fromsummary=true";
+            // Go to the next page or pass back to the summary (user must return from property type page)
+            var nextPage = GetNextPage();
+            var nextPageUrl = nextPage.Url;
+            if (FromSummary)
+            {
+                nextPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(nextPageUrl);
         }
-        navigationManager.NavigateTo(nextPageUrl);
+        else
+        {
+            // Get previous page or pass back to summary
+            var previousPage = FloodReportCreatePages.Home;
+            var previousPageUrl = previousPage.Url;
+            if (FromSummary)
+            {
+                previousPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(previousPageUrl);
+        }
     }
 
     private PageInfo GetNextPage()

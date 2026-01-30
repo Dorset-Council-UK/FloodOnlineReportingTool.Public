@@ -112,7 +112,7 @@ public partial class FloodAreas(
         return floodImpact.Id;
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool IsNext = true)
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -143,10 +143,17 @@ public partial class FloodAreas(
         }
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page or back to the summary
-
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
-        navigationManager.NavigateTo(nextPage.Url);
+        if (IsNext)
+        {
+            // Go to the next page or back to the summary
+            var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
+            navigationManager.NavigateTo(nextPage.Url);
+        }
+        else
+        {   // Go to the previous page or back to the summary
+            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
+            navigationManager.NavigateTo(previousPage.Url);
+        }
     }
 
     private async Task<ExtraData> GetCreateExtraData()

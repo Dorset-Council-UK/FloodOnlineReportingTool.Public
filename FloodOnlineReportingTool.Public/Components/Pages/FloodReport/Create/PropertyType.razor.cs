@@ -100,7 +100,7 @@ public partial class PropertyType(
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task OnValidSubmit(bool IsNext = true)
     {
         // Save the selected property type
         var createExtraData = await GetCreateExtraData();
@@ -110,9 +110,33 @@ public partial class PropertyType(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodAreas;
-        navigationManager.NavigateTo(nextPage.Url);
+        if (IsNext)
+        {
+            // Go to the next page or back to the summary
+            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodAreas;
+            navigationManager.NavigateTo(nextPage.Url);
+        }
+        else
+        {
+            // Go back to the previous page or back to the summary
+            var previousPage = GetPreviousPage();
+            var previousPageUrl = previousPage.Url;
+            if (FromSummary)
+            {
+                previousPageUrl += "?fromsummary=true";
+            }
+            navigationManager.NavigateTo(previousPage.Url);
+        }
+    }
+
+    private PageInfo GetPreviousPage()
+    {
+        if (Model.IsAddress == true)
+        {
+            return FloodReportCreatePages.Address;
+        }
+
+        return FloodReportCreatePages.Location;
     }
 
     private static string Classification(ReadOnlySpan<char> primaryClassification, ReadOnlySpan<char> secondaryClassification)

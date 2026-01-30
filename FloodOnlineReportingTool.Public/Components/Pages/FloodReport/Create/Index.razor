@@ -1,10 +1,11 @@
 ﻿@page "/floodreport/create"
+@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit" FormName="CreateFloodReport">
+<EditForm EditContext="editContext" FormName="CreateFloodReport">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -17,7 +18,7 @@
                     <h1 class="govuk-fieldset__heading">Are you reporting an address or property?</h1>
                 </Heading>
                 <Content>
-                    <GdsHint>i.e. location with a Royal Mail postal address rather than a structure or land.</GdsHint>
+                    <GdsHint>This would be a location with a Royal Mail postal address rather than a structure or land.</GdsHint>
                     <GdsErrorMessage />
                     <GdsRadios Options="_isAddressOptions" />
                 </Content>
@@ -27,6 +28,10 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <PaginationBlock>
+            <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@GetNextPage().Title" />
+            <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportPages.Home.Title" />
+        </PaginationBlock>
     }
+
 </EditForm>
