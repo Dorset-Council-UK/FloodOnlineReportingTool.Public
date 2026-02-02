@@ -2,13 +2,15 @@
 
 ```mermaid
 flowchart TB
-    Index((Start)) --> PostcodeOrLocation{Postcode or location?}
+    Index((Start)) --> PostcodeOrLocation{Postcode <br>or location?}
+    subgraph FloodLocation[Location of the flood]
     PostcodeOrLocation -- Postcode --> Postcode
     Postcode --> PostcodeKnown{Postcode<br>known?}
     PostcodeKnown -- Yes --> Address
     PostcodeKnown -- No --> Location
     PostcodeOrLocation -- Location --> Location
     Location --> Address
+    end
     Address --> PropertyType[Property type]
     PropertyType --> FloodAreas[Flood areas]
     FloodAreas --> TemporaryAddress{Evacuated to <br>a temporary <br>address?}
@@ -32,6 +34,7 @@ flowchart TB
     Notifications -- Subscribe --> SubscribeFlow[/Subscribe for notifications/]
     Notifications -- Register/Login --> RegistrationFlow[/Register for an account/]
     Notifications -- No thanks --> Confirmation((( End )))
+
 ```
 ## After creating a flood report
 - The user can optionally choose to subscribe to notifications or more.
