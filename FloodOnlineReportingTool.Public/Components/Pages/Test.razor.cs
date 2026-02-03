@@ -171,7 +171,7 @@ public partial class Test(
 
         // Trigger the redaction on real data
         var testId = await contactRepository.GetRandomFloodReportWithSubscriber(_cts.Token);
-        var contact = contactRepository.GetReportOwnerContactByReport(testId, _cts.Token);
+        var contact = await contactRepository.GetReportOwnerContactByReport(testId, _cts.Token);
     }
 
     private async Task BlankCreateData()
