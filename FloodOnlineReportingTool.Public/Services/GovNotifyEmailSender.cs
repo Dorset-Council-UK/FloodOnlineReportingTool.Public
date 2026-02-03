@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Notify.Client;
 using System.Globalization;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
