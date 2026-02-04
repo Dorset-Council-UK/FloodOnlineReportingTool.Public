@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
+using FloodOnlineReportingTool.Database.Services;
 using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,11 @@ using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, IDbContextFactory<PublicDbContext> contextFactory) : IContactRecordRepository
+public class ContactRecordRepository(
+    ILogger<ContactRecordRepository> logger, 
+    IDbContextFactory<PublicDbContext> contextFactory,
+    IUserContext userContext
+    ) : IContactRecordRepository
 {
     private const int VerificationExpiryMinutesUserPresent = 30;
     private const int VerificationExpiryMinutesUserNotPresent = 4320; // 3 days
@@ -45,6 +50,7 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
 
         var ownerSubscribeRecord = floodReport?.ContactRecords
         .SelectMany(cr => cr.SubscribeRecords)
+        .RoleBasedFilterPersonalData(userContext.CanViewPersonalData)
         .FirstOrDefault(sr => sr.IsRecordOwner == true);
 
         return ownerSubscribeRecord ?? null;
@@ -423,5 +429,21 @@ public class ContactRecordRepository(ILogger<ContactRecordRepository> logger, ID
             .Where(o => o.ContactUserId == userId)
             .Select(o => o.Id)
             .FirstOrDefaultAsync(ct);
+    }
+
+    /// <summary>
+    /// This function is for use in integration tests only.
+    /// </summary>
+    public async Task<Guid> GetRandomFloodReportWithSubscriber(CancellationToken ct = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var reportLibrary = await context.FloodReports
+            .Include(fr => fr.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .Where(fr => fr.ContactRecords.First().SubscribeRecords.Any())
+            .Select(fr => fr.Id)
+            .ToArrayAsync(ct);
+
+        return reportLibrary.Length > 0 ? reportLibrary[Random.Shared.Next(reportLibrary.Length)] : Guid.Empty;
     }
 }
