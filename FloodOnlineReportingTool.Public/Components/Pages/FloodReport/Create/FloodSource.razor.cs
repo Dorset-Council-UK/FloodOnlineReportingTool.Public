@@ -29,6 +29,7 @@ public partial class FloodSource(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -74,7 +75,7 @@ public partial class FloodSource(
         }
     }
 
-    private async Task OnValidSubmit(bool isNext = true)
+    private async Task OnValidSubmit()
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -94,24 +95,15 @@ public partial class FloodSource(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (isNext)
+        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
         {
-            if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
-            {
-                // We need to know more if they have selected this option
-                navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
-            }
-            else
-            {
-                // Go to the next page, which is always the summary
-                navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
-            }
+            // We need to know more if they have selected this option
+            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
         }
         else
         {
-            // Go to previous page or back to summary
-            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
-            navigationManager.NavigateTo(previousPage.Url);
+            // Go to the next page, which is always the summary
+            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
         }
     }
 
@@ -145,6 +137,15 @@ public partial class FloodSource(
         var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 }
 

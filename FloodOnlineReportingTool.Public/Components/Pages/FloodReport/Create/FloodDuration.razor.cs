@@ -29,6 +29,8 @@ public partial class FloodDuration(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FloodReportCreatePages.FloodSource;
+    private PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
 
     private Models.FloodReport.Create.FloodDuration Model { get; set; } = default!;
 
@@ -109,7 +111,7 @@ public partial class FloodDuration(
         return new EligibilityCheckDto();
     }
 
-    private async Task OnValidSubmit(bool isNext = true)
+    private async Task OnValidSubmit()
     {
         var eligibilityCheck = await GetEligibilityCheck();
         var updated = eligibilityCheck with
@@ -122,18 +124,9 @@ public partial class FloodDuration(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (isNext)
-        {
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodSource;
-            navigationManager.NavigateTo(nextPage.Url);
-        }
-        else
-        {
-            // Go to the previous page or back to the summary
-            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
-            navigationManager.NavigateTo(previousPage.Url);
-        }
+        // Go to the next page or back to the summary
+        var nextPage = FromSummary ? FloodReportCreatePages.Summary : NextPage;
+        navigationManager.NavigateTo(nextPage.Url);
     }
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateDurationOptions()
@@ -151,5 +144,13 @@ public partial class FloodDuration(
         var isExclusive = floodProblem.Id == FloodDurationIds.DurationNotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+    }
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 }

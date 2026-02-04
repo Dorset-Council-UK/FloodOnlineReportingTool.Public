@@ -30,6 +30,8 @@ public partial class TemporaryAddress(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FloodReportCreatePages.Vulnerability;
+    private PageInfo PreviousPage => FloodReportCreatePages.TemporaryPostcode;
 
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
@@ -80,7 +82,7 @@ public partial class TemporaryAddress(
         }
     }
 
-    private async Task OnValidSubmit(bool IsNext = true)
+    private async Task OnValidSubmit()
     {
         // Remember the selected address
         var apiAddress = _addresses.FirstOrDefault(o => o.UPRN == Model.UPRN);
@@ -103,28 +105,9 @@ public partial class TemporaryAddress(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            if (IsNext)
-            {
-                // Go to the next page or pass back to the summary (user must return from property type page)
-                var nextPage = FloodReportCreatePages.Vulnerability;
-                var nextPageUrl = nextPage.Url;
-                if (FromSummary)
-                {
-                    nextPageUrl += "?fromsummary=true";
-                }
-                navigationManager.NavigateTo(nextPageUrl);
-            }
-            else
-            {
-                // Go to the previous page of back to the summary
-                var previousPage = FloodReportCreatePages.TemporaryPostcode;
-                var previousPageUrl = previousPage.Url;
-                if (FromSummary)
-                {
-                    previousPageUrl += "?fromsummary=true";
-                }
-                navigationManager.NavigateTo(previousPageUrl);
-            }
+            // Go to the next page or pass back to the summary
+            var nextPage = FromSummary ? FloodReportCreatePages.Summary : NextPage;
+            navigationManager.NavigateTo(nextPage.Url);
         }
     }
 
@@ -219,5 +202,14 @@ public partial class TemporaryAddress(
         var selected = value == Model.UPRN;
 
         return new GdsOptionItem<long>(id: "", label, value, selected);
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 }

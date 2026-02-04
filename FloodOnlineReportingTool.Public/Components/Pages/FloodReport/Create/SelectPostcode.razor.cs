@@ -24,6 +24,7 @@ public partial class SelectPostcode(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
@@ -77,7 +78,7 @@ public partial class SelectPostcode(
         GC.SuppressFinalize(this);
     }
 
-    private async Task OnValidSubmit(bool isNext = true)
+    private async Task OnValidSubmit()
     {
         // Save the postcode
         var createExtraData = await GetCreateExtraData();
@@ -88,28 +89,14 @@ public partial class SelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        if (isNext)
+        // Go to the next page or pass back to the summary
+        var nextPage = GetNextPage();
+        var nextPageUrl = nextPage.Url;
+        if (FromSummary)
         {
-            // Go to the next page or pass back to the summary (user must return from property type page)
-            var nextPage = GetNextPage();
-            var nextPageUrl = nextPage.Url;
-            if (FromSummary)
-            {
-                nextPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(nextPageUrl);
+            nextPageUrl += "?fromsummary=true";
         }
-        else
-        {
-            // Get previous page or pass back to summary
-            var previousPage = FloodReportCreatePages.Home;
-            var previousPageUrl = previousPage.Url;
-            if (FromSummary)
-            {
-                previousPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(previousPageUrl);
-        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private PageInfo GetNextPage()
@@ -120,6 +107,15 @@ public partial class SelectPostcode(
         }
 
         return FloodReportCreatePages.Location;
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 
     private async Task<ExtraData> GetCreateExtraData()

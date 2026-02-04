@@ -41,6 +41,7 @@ public partial class PropertyType(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FloodReportCreatePages.FloodAreas;
 
     private Models.FloodReport.Create.PropertyType Model { get; set; } = default!;
 
@@ -100,7 +101,7 @@ public partial class PropertyType(
         }
     }
 
-    private async Task OnValidSubmit(bool IsNext = true)
+    private async Task OnValidSubmit()
     {
         // Save the selected property type
         var createExtraData = await GetCreateExtraData();
@@ -110,23 +111,18 @@ public partial class PropertyType(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        if (IsNext)
-        {
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodAreas;
-            navigationManager.NavigateTo(nextPage.Url);
-        }
-        else
-        {
-            // Go back to the previous page or back to the summary
-            var previousPage = GetPreviousPage();
-            var previousPageUrl = previousPage.Url;
-            if (FromSummary)
-            {
-                previousPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(previousPage.Url);
-        }
+        // Go to the next page or back to the summary
+        var nextPage = FromSummary ? FloodReportCreatePages.Summary : NextPage;
+        navigationManager.NavigateTo(nextPage.Url);
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : GetPreviousPage();
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 
     private PageInfo GetPreviousPage()

@@ -24,6 +24,7 @@ public partial class FloodStarted(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
 
     private Models.FloodReport.Create.FloodStarted Model { get; set; } = default!;
 
@@ -92,7 +93,7 @@ public partial class FloodStarted(
         return new EligibilityCheckDto();
     }
 
-    private async Task OnValidSubmit(bool isNext = true)
+    private async Task OnValidSubmit()
     {
         var isOnGoing = Model.IsFloodOngoing == true;
 
@@ -106,17 +107,8 @@ public partial class FloodStarted(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (isNext)
-        {
-            // Go to the next page or back to the summary
-            navigationManager.NavigateTo(GetNextPage(isOnGoing).Url);
-        }
-        else
-        {
-            // Go back to previous page or back to the summary
-            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.Vulnerability;
-            navigationManager.NavigateTo(previousPage.Url);
-        }
+        // Go to the next page or back to the summary
+        navigationManager.NavigateTo(GetNextPage(isOnGoing).Url);
     }
 
     private PageInfo GetNextPage(bool isOnGoing)
@@ -132,5 +124,14 @@ public partial class FloodStarted(
         }
 
         return FloodReportCreatePages.FloodDuration;
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 }

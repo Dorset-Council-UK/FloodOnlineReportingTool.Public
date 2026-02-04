@@ -28,6 +28,9 @@ public partial class FloodAreas(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPageVulnerability => FloodReportCreatePages.Vulnerability;
+    private PageInfo NextPageTemporaryPostcode => FloodReportCreatePages.TemporaryPostcode;
+    private PageInfo PreviousPage => FloodReportCreatePages.PropertyType;
 
     private Models.FloodReport.Create.FloodAreas Model { get; set; } = default!;
 
@@ -112,7 +115,7 @@ public partial class FloodAreas(
         return floodImpact.Id;
     }
 
-    private async Task OnValidSubmit(bool IsNext = true)
+    private async Task OnValidSubmit()
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -143,17 +146,9 @@ public partial class FloodAreas(
         }
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (IsNext)
-        {
-            // Go to the next page or back to the summary
-            var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
-            navigationManager.NavigateTo(nextPage.Url);
-        }
-        else
-        {   // Go to the previous page or back to the summary
-            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.PropertyType;
-            navigationManager.NavigateTo(previousPage.Url);
-        }
+        // Go to the next page or back to the summary
+        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? NextPageTemporaryPostcode : NextPageVulnerability;
+        navigationManager.NavigateTo(nextPage.Url);
     }
 
     private async Task<ExtraData> GetCreateExtraData()
@@ -205,5 +200,21 @@ public partial class FloodAreas(
         var selected = selectedIds.Contains(floodImpact.Id);
 
         return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
+    }
+
+    private string NextPageTitleText()
+    {
+        bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
+
+        return runTemporaryAddress ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title;
     }
 }

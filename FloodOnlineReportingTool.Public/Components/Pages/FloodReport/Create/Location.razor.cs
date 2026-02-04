@@ -36,6 +36,7 @@ public partial class Location(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.Location Model { get; set; } = default!;
 
@@ -202,7 +203,7 @@ public partial class Location(
         await OnValidSubmit();
     }
 
-    private async Task OnValidSubmit(bool IsNext = true)
+    private async Task OnValidSubmit()
     {
         var createExtraData = await GetCreateExtraData();
         var eligibilityCheck = await GetEligibilityCheck();
@@ -249,28 +250,14 @@ public partial class Location(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        if (IsNext)
+        // Go to the next page or pass back to the summary
+        var nextPage = GetNextPage(propertyTypeReset);
+        var nextPageUrl = nextPage.Url;
+        if (propertyTypeReset && FromSummary)
         {
-            // Go to the next page or pass back to the summary (user must return from property type page if reset)
-            var nextPage = GetNextPage(propertyTypeReset);
-            var nextPageUrl = nextPage.Url;
-            if (propertyTypeReset && FromSummary)
-            {
-                nextPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(nextPageUrl);
+            nextPageUrl += "?fromsummary=true";
         }
-        else
-        {
-            // Get previous page or pass back to summary
-            var previousPage = FloodReportCreatePages.Home;
-            var previousPageUrl = previousPage.Url;
-            if (FromSummary)
-            {
-                previousPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(previousPageUrl);
-        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
     
     private PageInfo GetNextPage(bool propertyTypeReset)
@@ -286,6 +273,15 @@ public partial class Location(
         }
 
         return FloodReportCreatePages.PropertyType;
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

@@ -5,7 +5,7 @@
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<EditForm EditContext="editContext" FormName="CreateFloodReport">
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit" FormName="CreateFloodReport">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -45,8 +45,8 @@
     @if (!_isLoading)
     {
         <PaginationBlock>
-            <PaginationNext OnNextPage="() => OnValidSubmit(true)" Label="@GetNextPage().Title" />
-            <PaginationPrevious OnPreviousPage="() => OnValidSubmit(false)" Label="@FloodReportCreatePages.Home.Title" />
+            <PaginationNext OnNextPage="() => OnValidSubmit()" Label="@GetNextPage().Title" />
+            <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />
         </PaginationBlock>
     }
 

@@ -30,6 +30,8 @@ public partial class FloodSecondarySource(
     
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FloodReportCreatePages.Summary;
+    private PageInfo PreviousPage => FloodReportCreatePages.FloodSource;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -72,7 +74,7 @@ public partial class FloodSecondarySource(
         }
     }
 
-    private async Task OnValidSubmit(bool isNext = true)
+    private async Task OnValidSubmit()
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
@@ -83,17 +85,8 @@ public partial class FloodSecondarySource(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (isNext)
-        {
-            // Go to the next page, which is always the summary
-            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
-        }
-        else
-        {
-            // Go to the previous page or back to the summary
-            var previousPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodStarted;
-            navigationManager.NavigateTo(previousPage.Url);
-        }
+        // Go to the next page, which is always the summary
+        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -126,6 +119,15 @@ public partial class FloodSecondarySource(
         var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+    }
+
+    private Task OnPreviousPage()
+    {
+        // Go to previous page or return to summary
+        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
+        navigationManager.NavigateTo(previousPage.Url);
+
+        return Task.CompletedTask;
     }
 }
 
