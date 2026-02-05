@@ -41,7 +41,12 @@ public partial class PropertyType(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FloodReportCreatePages.FloodAreas;
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : FloodReportCreatePages.FloodAreas;
+    private PageInfo PreviousPage => Model.IsAddress 
+        ? FloodReportCreatePages.Address 
+        : FloodReportCreatePages.Location;
 
     private Models.FloodReport.Create.PropertyType Model { get; set; } = default!;
 
@@ -95,9 +100,7 @@ public partial class PropertyType(
             Model.ResponsibleOrganisations = organisations.AsReadOnly();
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();   
         }
     }
 
@@ -120,23 +123,12 @@ public partial class PropertyType(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : NextPage;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private void OnPreviousPage()
     {
-        navigationManager.NavigateTo(GetPreviousPage().Url);
-    }
-
-    private PageInfo GetPreviousPage()
-    {
-        if (Model.IsAddress == true)
-        {
-            return FloodReportCreatePages.Address;
-        }
-
-        return FloodReportCreatePages.Location;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private static string Classification(ReadOnlySpan<char> primaryClassification, ReadOnlySpan<char> secondaryClassification)

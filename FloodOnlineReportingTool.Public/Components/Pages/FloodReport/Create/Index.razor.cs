@@ -20,6 +20,9 @@ public partial class Index(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : (Model.IsAddress == true ? FloodReportCreatePages.Postcode : FloodReportCreatePages.Location);
     private PageInfo PreviousPage => FloodReportPages.Home;
 
     private Models.FloodReport.Create.Index Model { get; set; } = default!;
@@ -90,23 +93,7 @@ public partial class Index(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
-    }
-
-    private PageInfo GetNextPage()
-    {
-        if (Model.IsAddress == true)
-        {
-            return FloodReportCreatePages.Postcode;
-        }
-
-        return FloodReportCreatePages.Location;
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private void OnPreviousPage()

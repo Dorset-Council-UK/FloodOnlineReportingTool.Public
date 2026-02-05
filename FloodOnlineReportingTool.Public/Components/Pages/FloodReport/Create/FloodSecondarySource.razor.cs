@@ -90,7 +90,7 @@ public partial class FloodSecondarySource(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page, which is always the summary
-        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

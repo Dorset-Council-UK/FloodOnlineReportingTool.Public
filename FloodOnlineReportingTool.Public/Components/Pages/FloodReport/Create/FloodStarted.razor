@@ -36,7 +36,7 @@
     @if (!_isLoading)
     {
         <PaginationBlock>
-            <PaginationNext OnNextPage="() =>OnSubmit()" Label="@FloodReportCreatePages.FloodSource.Title" />
+            <PaginationNext OnNextPage="() =>OnSubmit()" Label="@NextPage.Title" />
             @if (!FromSummary)
             {
                 <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />

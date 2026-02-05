@@ -20,8 +20,10 @@ public partial class FloodStarted(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage;
-    private PageInfo PreviousPage;
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : (Model.IsFloodOngoing == true ? FloodReportCreatePages.FloodSource : FloodReportCreatePages.FloodDuration);
+    private PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
 
     private Models.FloodReport.Create.FloodStarted Model { get; set; } = default!;
 
@@ -64,9 +66,6 @@ public partial class FloodStarted(
                 Model.StartDate = new GdsDate(impactStart.Value);
                 Model.IsFloodOngoing = eligibilityCheck.OnGoing;
             }
-
-            NextPage = GetNextPage(Model.IsFloodOngoing == true);
-            PreviousPage = FloodReportCreatePages.Vulnerability;
 
             Breadcrumbs = CreateBreadcrumbs();
             _floodOngoingOptions = CreateFloodOptions();
@@ -113,22 +112,7 @@ public partial class FloodStarted(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        navigationManager.NavigateTo(GetNextPage(isOnGoing).Url);
-    }
-
-    private PageInfo GetNextPage(bool isOnGoing)
-    {
-        if (FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
-        if (isOnGoing)
-        {
-            return FloodReportCreatePages.FloodSource;
-        }
-
-        return FloodReportCreatePages.FloodDuration;
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private void OnPreviousPage()

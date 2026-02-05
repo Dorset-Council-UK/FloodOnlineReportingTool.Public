@@ -25,7 +25,9 @@ public partial class FloodDuration(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FloodReportCreatePages.FloodSource;
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : FloodReportCreatePages.FloodSource;
     private PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
 
     private Models.FloodReport.Create.FloodDuration Model { get; set; } = default!;
@@ -129,8 +131,7 @@ public partial class FloodDuration(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : NextPage;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateDurationOptions()

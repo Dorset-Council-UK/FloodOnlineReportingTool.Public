@@ -37,7 +37,7 @@
 
         <div>
             <PaginationBlock>
-                <PaginationNext OnNextPage="() => OnSubmit()" Label="@GetNextPage(true).Title" />
+                <PaginationNext OnNextPage="() => OnSubmit()" Label="@NextPage.Title" />
                 @if (!FromSummary)
                 {
                     <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />

@@ -32,6 +32,9 @@ public partial class Location(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : (Model.IsAddress == true ? FloodReportCreatePages.Address : FloodReportCreatePages.PropertyType);
     private PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.Location Model { get; set; } = default!;
@@ -248,28 +251,7 @@ public partial class Location(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage(propertyTypeReset);
-        var nextPageUrl = nextPage.Url;
-        if (propertyTypeReset && FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
-    }
-    
-    private PageInfo GetNextPage(bool propertyTypeReset)
-    {
-        if (!propertyTypeReset && FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
-        if (Model.IsAddress)
-        {
-            return FloodReportCreatePages.Address;
-        }
-
-        return FloodReportCreatePages.PropertyType;
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private void OnPreviousPage()
