@@ -9,6 +9,7 @@
     "bun:install": "bun install",
     "build": "bun run bun.build.ts --prod",
     "build:dev": "bun run bun.build.ts --dev",
+    "clean": "bun run bun.clean.ts",
     "watch": "bun run bun.build.ts --dev --watch",
     "audit": "bun audit",
     "outdated": "bun outdated",
