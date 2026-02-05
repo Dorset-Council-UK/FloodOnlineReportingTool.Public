@@ -26,7 +26,7 @@ public partial class FloodSource(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
+    private PageInfo PreviousPage;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -64,6 +64,10 @@ public partial class FloodSource(
             Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
 
             Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
+
+            PreviousPage = eligibilityCheck.OnGoing == true
+                ? FloodReportCreatePages.FloodStarted
+                : FloodReportCreatePages.FloodDuration;
 
             Breadcrumbs = CreateBreadcrumbs();
 
