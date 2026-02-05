@@ -7,7 +7,7 @@
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodSecondarySource">
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodSecondarySource">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -29,8 +29,11 @@
     @if (!_isLoading)
     {
         <PaginationBlock>
-            <PaginationNext OnNextPage="() => OnValidSubmit()" Label="@NextPage.Title" />
-            <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />
+            <PaginationNext OnNextPage="() => OnSubmit()" Label="@NextPage.Title" />
+            @if (!FromSummary)
+            {
+                <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />
+            }
         </PaginationBlock>
     }
 

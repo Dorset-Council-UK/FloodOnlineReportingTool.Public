@@ -28,11 +28,7 @@ public partial class Location(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Location.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -74,6 +70,7 @@ public partial class Location(
 
             await LoadJavaScriptAndMap();
 
+            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged();
         }
@@ -275,13 +272,9 @@ public partial class Location(
         return FloodReportCreatePages.PropertyType;
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -370,4 +363,13 @@ public partial class Location(
         return null;
     }
 
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
+    }
 }

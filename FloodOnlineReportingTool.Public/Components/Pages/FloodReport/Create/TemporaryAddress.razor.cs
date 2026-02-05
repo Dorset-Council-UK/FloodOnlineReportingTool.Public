@@ -21,12 +21,7 @@ public partial class TemporaryAddress(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.TemporaryAddress.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -76,9 +71,17 @@ public partial class TemporaryAddress(
             Model.LocationDesc = eligibilityCheck.TemporaryLocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
 
-            StateHasChanged();
+            Breadcrumbs = CreateBreadcrumbs();
 
-            
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 
@@ -204,12 +207,19 @@ public partial class TemporaryAddress(
         return new GdsOptionItem<long>(id: "", label, value, selected);
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
+        navigationManager.NavigateTo(PreviousPage.Url);
+    }
 
-        return Task.CompletedTask;
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            FloodReportCreatePages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }

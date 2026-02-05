@@ -16,11 +16,7 @@ public partial class TemporarySelectPostcode(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.TemporaryPostcode.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodAreas.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -53,10 +49,9 @@ public partial class TemporarySelectPostcode(
             Model.Postcode = createExtraData.TemporaryPostcode;
             Model.PostcodeKnown = Model.Postcode != null;
 
+            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();   
         }
     }
 
@@ -72,6 +67,14 @@ public partial class TemporarySelectPostcode(
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -116,13 +119,9 @@ public partial class TemporarySelectPostcode(
         return FloodReportCreatePages.Vulnerability;
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private async Task<ExtraData> GetCreateExtraData()
@@ -138,5 +137,15 @@ public partial class TemporarySelectPostcode(
 
         logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
         return new();
+    }
+
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }

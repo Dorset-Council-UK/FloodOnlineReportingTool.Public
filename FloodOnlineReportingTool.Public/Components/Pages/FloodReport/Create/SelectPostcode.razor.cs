@@ -16,11 +16,7 @@ public partial class SelectPostcode(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Postcode.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -57,10 +53,9 @@ public partial class SelectPostcode(
                 _postcodeKnownOptions.Single(o => o.Value).Selected = true;
             }
 
+            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -78,6 +73,14 @@ public partial class SelectPostcode(
         GC.SuppressFinalize(this);
     }
 
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         // Save the postcode
@@ -90,17 +93,16 @@ public partial class SelectPostcode(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
-        if (FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
+        navigationManager.NavigateTo(GetNextPage().Url);
     }
 
     private PageInfo GetNextPage()
     {
+        if (FromSummary)
+        {
+            return FloodReportCreatePages.Summary;
+        }
+
         if (Model.PostcodeKnown == true)
         {
             return FloodReportCreatePages.Address;
@@ -109,13 +111,9 @@ public partial class SelectPostcode(
         return FloodReportCreatePages.Location;
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private async Task<ExtraData> GetCreateExtraData()
@@ -131,5 +129,15 @@ public partial class SelectPostcode(
 
         logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
         return new();
+    }
+
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }

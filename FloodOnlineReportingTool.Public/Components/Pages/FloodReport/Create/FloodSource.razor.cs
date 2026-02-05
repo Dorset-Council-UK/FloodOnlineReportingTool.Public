@@ -20,10 +20,7 @@ public partial class FloodSource(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
 
@@ -68,10 +65,18 @@ public partial class FloodSource(
 
             Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
 
-            _isLoading = false;
-            StateHasChanged();
+            Breadcrumbs = CreateBreadcrumbs();
 
-            
+            _isLoading = false;
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 
@@ -139,13 +144,19 @@ public partial class FloodSource(
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
+        navigationManager.NavigateTo(PreviousPage.Url);
+    }
 
-        return Task.CompletedTask;
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }
 

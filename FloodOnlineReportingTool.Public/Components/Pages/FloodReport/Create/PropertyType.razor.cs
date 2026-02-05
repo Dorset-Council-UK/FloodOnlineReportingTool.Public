@@ -101,6 +101,14 @@ public partial class PropertyType(
         }
     }
 
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         // Save the selected property type
@@ -116,13 +124,9 @@ public partial class PropertyType(
         navigationManager.NavigateTo(nextPage.Url);
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : GetPreviousPage();
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(GetPreviousPage().Url);
     }
 
     private PageInfo GetPreviousPage()

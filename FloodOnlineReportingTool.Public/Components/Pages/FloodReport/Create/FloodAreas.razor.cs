@@ -20,11 +20,7 @@ public partial class FloodAreas(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodAreas.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.PropertyType.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -92,10 +88,9 @@ public partial class FloodAreas(
                 Model.CommercialOptions = [.. options];
             }
 
+            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -113,6 +108,14 @@ public partial class FloodAreas(
         }
 
         return floodImpact.Id;
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -202,13 +205,9 @@ public partial class FloodAreas(
         return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private string NextPageTitleText()
@@ -216,5 +215,15 @@ public partial class FloodAreas(
         bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
 
         return runTemporaryAddress ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title;
+    }
+
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }

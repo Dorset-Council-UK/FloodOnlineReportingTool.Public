@@ -21,11 +21,7 @@ public partial class FloodDuration(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodDuration.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodStarted.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -89,10 +85,10 @@ public partial class FloodDuration(
 
             _durationOptions = await CreateDurationOptions();
 
-            _isLoading = false;
-            StateHasChanged();
+            Breadcrumbs = CreateBreadcrumbs();
 
-            
+            _isLoading = false;
+            StateHasChanged(); 
         }
     }
 
@@ -109,6 +105,14 @@ public partial class FloodDuration(
 
         logger.LogDebug("Eligibility Check was not found in the protected storage.");
         return new EligibilityCheckDto();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -145,12 +149,18 @@ public partial class FloodDuration(
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
+        navigationManager.NavigateTo(PreviousPage.Url);
+    }
 
-        return Task.CompletedTask;
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+            PreviousPage.ToGdsBreadcrumb(),
+        ];
     }
 }
