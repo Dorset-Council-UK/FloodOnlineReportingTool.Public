@@ -16,10 +16,7 @@ public partial class Index(
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Home.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
+    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -52,6 +49,7 @@ public partial class Index(
             Model.IsAddress = eligibilityCheck.IsAddress;
             _isAddressOptions.Single(o => o.Value).Selected = true;
 
+            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged();
         }
@@ -69,6 +67,14 @@ public partial class Index(
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -103,13 +109,9 @@ public partial class Index(
         return FloodReportCreatePages.Location;
     }
 
-    private Task OnPreviousPage()
+    private void OnPreviousPage()
     {
-        // Go to previous page or return to summary
-        var previousPage = FromSummary ? FloodReportCreatePages.Summary : PreviousPage;
-        navigationManager.NavigateTo(previousPage.Url);
-
-        return Task.CompletedTask;
+        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -125,5 +127,14 @@ public partial class Index(
 
         logger.LogWarning("Eligibility Check was not found in the protected storage.");
         return new EligibilityCheckDto();
+    }
+
+    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    {
+        return
+        [
+            GeneralPages.Home.ToGdsBreadcrumb(),
+            FloodReportPages.Home.ToGdsBreadcrumb(),
+        ];
     }
 }
