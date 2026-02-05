@@ -1,6 +1,6 @@
 ﻿import Bun from "bun";
 import { watch } from "node:fs"
-import { relative, resolve } from "node:path";
+import { basename, relative, resolve } from "node:path";
 import { compile } from "sass";
 import clean from "./bun.clean";
 
@@ -105,20 +105,19 @@ async function copyAssets() {
 }
 
 async function buildBlazorComponents() {
+	console.log("📦 Building Blazor components...");
+
 	// Dynamically get all component typescript entry points
-	const entryPoints: string[] = [];
 	const glob = new Bun.Glob("./Components/**/*.razor.ts");
 	for await (const file of glob.scan(".")) {
-		entryPoints.push(file);
-	}
-
-	if (entryPoints.length > 0) {
-		console.log("📦 Building Blazor components...");
+		const jsName = basename(file, ".razor.ts");
+		const outdir = resolve("./wwwroot/js", file, "..");
 		await Bun.build({
-			entrypoints: entryPoints,
-			outdir: "./wwwroot/js/components",
+			entrypoints: [file],
+			outdir,
 			sourcemap: isDev ? "linked" : "none",
-            minify: !isDev,
+			minify: true,
+			naming: `[dir]/${jsName}.[ext]`,
 		});
 	}
 }
@@ -150,14 +149,14 @@ if (isWatch) {
 	// Watch the scripts directory
 	watch("./Scripts", { recursive: true }, async (eventType, filename) => {
 		if (filename && eventType === "change") {
-			console.log(`📝 ${filename} changed, rebuilding...`);
-
-			if (filename?.endsWith(".ts")) {
+			if (filename.endsWith(".ts")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
 				await buildScripts();
 				console.log("✅ Re-build complete!");
 			}
 
-			if (filename?.endsWith(".scss")) {
+			if (filename.endsWith(".scss")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
 				await compileSass();
 				console.log("✅ Re-build complete!");
 			}
@@ -167,7 +166,8 @@ if (isWatch) {
 	// Watch the blazor components directory
 	watch("./Components", { recursive: true }, async (eventType, filename) => {
 		if (filename && eventType === "change") {
-			if (filename?.endsWith(".razor.ts")) {
+			if (filename.endsWith(".razor.ts")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
 				await buildBlazorComponents();
 				console.log("✅ Re-build complete!");
 			}
