@@ -42,7 +42,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
 
     public async Task<EligibilityCheck?> GetByReference(string reference, CancellationToken ct)
     {
-        logger.LogInformation("Getting eligibility check by flood report reference {Reference}", reference);
+        logger.LogInformation("Getting eligibility check by flood report reference {Reference}", reference.Replace(Environment.NewLine, "", StringComparison.OrdinalIgnoreCase));
 
         return await context.EligibilityChecks
             .AsNoTracking()
