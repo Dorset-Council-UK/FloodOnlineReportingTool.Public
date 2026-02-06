@@ -11,10 +11,19 @@ async function build() {
 	console.log(`Building in ${isDev ? "development" : "production"} mode...`);
 
 	await clean();
-	await compileSass();
-	await copyAssets();
-	await buildBlazorComponents();
-	await buildScripts();
+	const results = await Promise.allSettled([
+		compileSass(),
+		copyAssets(),
+		buildBlazorComponents(),
+		buildScripts(),
+	]);
+
+	// check for any errors
+	results.forEach((result) => {
+		if (result.status === "rejected") {
+			console.error("Error during build:", result.reason);
+		}
+	});
 
 	console.log("✅ Build complete!");
 }
@@ -85,10 +94,10 @@ async function compileSass() {
 			});
 
 			if (result.sourceMap) {
-				Bun.write(to, `${result.css}\n/*# sourceMappingURL=${name}.css.map */\n`);
-				Bun.write(`${to}.map`, JSON.stringify(result.sourceMap));
+				await Bun.write(to, `${result.css}\n/*# sourceMappingURL=${name}.css.map */\n`);
+				await Bun.write(`${to}.map`, JSON.stringify(result.sourceMap));
 			} else {
-				Bun.write(to, result.css);
+				await Bun.write(to, result.css);
 			}
 		}
 	}
