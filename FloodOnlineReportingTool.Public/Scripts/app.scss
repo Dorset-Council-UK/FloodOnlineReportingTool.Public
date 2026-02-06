@@ -1,9 +1,58 @@
-﻿$govuk-brand-colour: #05476d;
+$dorset-colour-header: #09476d;
+$dorset-colour-footer: #2e3136;
 
-.govuk-template--rebranded .govuk-header {
-    background-color: $govuk-brand-colour;
-}
-.govuk-template--rebranded .govuk-header__link--homepage:not(:focus){
-    background-color:unset;
+// Adjustments for Dorset Council
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
+// Fill the space when the parent is flex
+.flex-fill {
+    flex: 1;
+}
+
+// Header
+.govuk-header, .govuk-template--rebranded .govuk-header {
+    background-color: $dorset-colour-header;
+
+    .govuk-header__link--homepage:not(:focus) {
+        background-color: unset;
+    }
+}
+
+// Footer
+.govuk-footer, .govuk-template--rebranded .govuk-footer {
+    background-color: $dorset-colour-footer;
+    border-top: 1px solid $dorset-colour-footer;
+    color: var(--govuk-frontend-color-white);
+
+    .govuk-footer__meta {
+        justify-content: flex-start;
+    }
+
+    .govuk-footer__heading {
+        color: var(--govuk-frontend-color-white);
+        border-bottom-color: var(--govuk-frontend-color-white);
+    }
+
+    .govuk-footer__section-break {
+        border-bottom-color: var(--govuk-frontend-color-white);
+    }
+
+    .govuk-footer__link {
+        // copied from govuk-link-style-inverse mixin
+        &:link, &:visited {
+            color: var(--govuk-frontend-color-white);
+        }
+
+        &:hover, &:active {
+            color: rgba(var(--govuk-frontend-color-white), 0.99);
+        }
+
+        &:focus {
+            color: #0b0c0c;
+        }
+    }
+}

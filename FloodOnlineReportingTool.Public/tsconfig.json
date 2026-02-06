@@ -4,20 +4,16 @@
     "noEmitOnError": true,
     "removeComments": true,
     "sourceMap": true,
-    "target": "ES2022",
-    "module": "ESNext",
+    "target": "es2022",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "strict": true,
-    "types": [
-      "bun-types"
-    ]
+    "strict": true
   },
   "exclude": [
     "node_modules",
-    "wwwroot",
-    "bun.build.ts"
+    "wwwroot"
   ]
 }
