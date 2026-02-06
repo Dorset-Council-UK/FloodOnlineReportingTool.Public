@@ -213,8 +213,10 @@ public partial class FloodAreas(
     private string NextPageTitleText()
     {
         bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
-
-        return runTemporaryAddress ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title;
+       
+        return FromSummary 
+            ? FloodReportCreatePages.Summary.Title 
+            : (runTemporaryAddress ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title);
     }
 
     private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
