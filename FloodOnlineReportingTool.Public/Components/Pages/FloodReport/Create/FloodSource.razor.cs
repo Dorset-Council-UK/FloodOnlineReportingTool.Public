@@ -60,9 +60,6 @@ public partial class FloodSource(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            var previousCrumb = eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
-            Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
-
             Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
 
             PreviousPage = eligibilityCheck.OnGoing == true
