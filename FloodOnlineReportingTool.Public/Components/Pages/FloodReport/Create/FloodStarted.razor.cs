@@ -120,6 +120,14 @@ public partial class FloodStarted(
         navigationManager.NavigateTo(PreviousPage.Url);
     }
 
+    private string NextPageTitleText()
+    {
+        return FromSummary
+            ? FloodReportCreatePages.Summary.Title
+            : (Model.IsFloodOngoing == true ? FloodReportCreatePages.FloodSource.Title : FloodReportCreatePages.FloodDuration.Title);
+
+    }
+
     private IReadOnlyCollection<GdsOptionItem<bool>> CreateFloodOptions()
     {
         return
