@@ -32,9 +32,11 @@ async function copyFaviconsDirectory(sourceDirectory: string, destinationDirecto
 	const glob = new Bun.Glob(`${sourceDirectory}/**/*.*`);
 	for await (const filePath of glob.scan(".")) {
 		const relativePath = relative(sourceDirectory, filePath);
-		const to = resolve(destinationDirectory, relativePath);
 
 		if (filePath.endsWith("site.webmanifest.template.json")) {
+			const newFilename = basename(relativePath, ".template.json");
+			const to = resolve(destinationDirectory, newFilename);
+
             // Transform template
 			const appSettings = await getAppSettings();
 			const pathBase = appSettings?.GIS?.PathBase || undefined;
@@ -47,6 +49,7 @@ async function copyFaviconsDirectory(sourceDirectory: string, destinationDirecto
 				await Bun.write(to, Bun.file(filePath));
 			}
 		} else {
+			const to = resolve(destinationDirectory, relativePath);
 			await Bun.write(to, Bun.file(filePath));
 		}
 	}
