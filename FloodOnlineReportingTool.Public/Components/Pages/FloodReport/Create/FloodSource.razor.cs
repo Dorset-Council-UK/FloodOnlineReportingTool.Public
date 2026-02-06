@@ -8,6 +8,8 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -148,6 +150,19 @@ public partial class FloodSource(
     private void OnPreviousPage()
     {
         navigationManager.NavigateTo(PreviousPage.Url);
+    }
+
+    private string NextPageTitle()
+    {
+        if (Model.FloodSourceOptions == null || !Model.FloodSourceOptions.Any(o => o.Selected))
+        {
+            return FloodReportCreatePages.Summary.Title;
+        }
+        if (Model.FloodSourceOptions.Any(o => o.Value == PrimaryCauseIds.RainwaterFlowingOverTheGround && o.Selected))
+        {
+            return FloodReportCreatePages.FloodSecondarySource.Title;
+        }
+        return FloodReportCreatePages.Summary.Title;
     }
 
     private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
