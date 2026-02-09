@@ -23,7 +23,7 @@ public class FloodReportRepository(
 {
     private readonly GISOptions _gisOptions = options.Value;
 
-    public async Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct)
+    public async Task<FloodReport?> ReportedByUser(string userId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -39,7 +39,7 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct)
+    public async Task<FloodReport?> ReportedByContact(string contactUserId, Guid floodReportId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -51,7 +51,7 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct)
+    public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(string contactUserId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -131,9 +131,9 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(o => o.Reference == reference, ct);
     }
 
-    public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(Guid userId, CancellationToken ct)
+    public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(string userId, CancellationToken ct)
     {
-        logger.LogInformation("Getting flood report details by user {UserId}.", userId);
+        logger.LogInformation("Getting flood report details by user.");
 
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
@@ -153,7 +153,7 @@ public class FloodReportRepository(
 
         if (result == null)
         {
-            logger.LogWarning("No flood report found for user {UserId}.", userId);
+            logger.LogWarning("No flood report found for user.");
             return (false, false, false, null);
         }
 

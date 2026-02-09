@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -48,6 +49,7 @@ public partial class Summary(
     private IReadOnlyCollection<FloodProblem> _floodProblems = [];
     private IReadOnlyCollection<RecordStatus> _recordStatuses = [];
     private IReadOnlyCollection<FloodMitigation> _floodMitigations = [];
+    private string? _userID;
 
     protected override void OnInitialized()
     {
@@ -77,8 +79,12 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                _userID = authState.User.Oid;
+            }
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, _cts.Token);
             var isInternal = eligibilityCheck?.IsInternal() == true;
 
             _floodProblems = await GetInvestigationFloodProblems();
@@ -209,14 +215,13 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            var userId = await AuthenticationState.IdentityUserId();
             var investigation = await GetInvestigation();
-            await investigationRepository.CreateForUser(userId.Value, investigation, _cts.Token);
+            await investigationRepository.CreateForUser(_userID, investigation, _cts.Token);
 
             // Clear the session data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
 
-            logger.LogInformation("Investigation created successfully for user {UserId}", userId);
+            logger.LogInformation("Investigation created successfully for user");
             navigationManager.NavigateTo(InvestigationPages.Confirmation.Url);
         }
         catch (Exception ex)

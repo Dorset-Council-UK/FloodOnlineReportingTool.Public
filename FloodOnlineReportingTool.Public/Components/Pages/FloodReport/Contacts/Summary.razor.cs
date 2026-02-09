@@ -134,7 +134,7 @@ public partial class Summary(
                     }
 
                     bool canEdit = false;
-                    if (contactRecord.ContactUserId != null && contactRecord.ContactUserId != Guid.Empty)
+                    if (contactRecord.ContactUserId != null && string.IsNullOrEmpty(contactRecord.ContactUserId))
                     {
                         canEdit = subscriptionRecord.IsRecordOwner;
                     }

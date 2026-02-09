@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 
@@ -33,7 +34,7 @@ public partial class Update(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
+    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -54,7 +55,11 @@ public partial class Update(
         // Setup model and edit context
         if (_updateModel == null)
         {
-            _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                _userID = authState.User.Oid;
+            }
             _updateModel = await GetUpdateModel();
 
             if (_updateModel != null)
@@ -98,8 +103,8 @@ public partial class Update(
         try
         {
             var dto = _updateModel.ToDto();
-            await eligibilityCheckRepository.UpdateForUser(_userId, EligibilityCheckId, dto, _cts.Token);
-            logger.LogInformation("Eligibility check updated successfully for user {UserId}", _userId);
+            await eligibilityCheckRepository.UpdateForUser(_userID, EligibilityCheckId, dto, _cts.Token);
+            logger.LogInformation("Eligibility check updated successfully for user");
             navigationManager.NavigateTo(FloodReportPages.Overview.Url);
         }
         catch (Exception ex)
@@ -112,7 +117,7 @@ public partial class Update(
 
     private async Task<UpdateModel?> GetUpdateModel()
     {
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userId, EligibilityCheckId, _cts.Token);
+        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, EligibilityCheckId, _cts.Token);
         if (eligibilityCheck == null)
         {
             return null;

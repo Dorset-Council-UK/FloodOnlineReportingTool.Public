@@ -4,6 +4,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -27,6 +28,7 @@ public partial class Index(
     private bool _hasInvestigation;
     private bool _hasInvestigationStarted;
     private DateTimeOffset? _investigationCreatedUtc;
+    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -44,10 +46,15 @@ public partial class Index(
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await AuthenticationState.IdentityUserId();
-        if (userId.HasValue)
+        if (AuthenticationState is not null)
         {
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
+            var authState = await AuthenticationState;
+            _userID = authState.User.Oid;
+        }
+
+        if (!string.IsNullOrEmpty(_userID))
+        {
+            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(_userID, _cts.Token);
         }
     }
 
@@ -55,7 +62,7 @@ public partial class Index(
     {
         if (firstRender)
         {
-            
+
         }
     }
 }

@@ -42,7 +42,7 @@ public partial class Index(
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
-    private Guid _userID = Guid.Empty;
+    private string? _userID;
     private bool _isLoading = true;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
@@ -86,7 +86,7 @@ public partial class Index(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _userID = authState.User.UserOid();
+            _userID = authState.User.Oid;
         }
     }
 
@@ -98,7 +98,7 @@ public partial class Index(
 
             if (Me)
             {
-                if (_userID == Guid.Empty)
+                if (string.IsNullOrEmpty(_userID))
                 {
                     // Can't proceed if not authenticated
                     navigationManager.NavigateTo(ContactPages.Summary.Url);
@@ -111,8 +111,8 @@ public partial class Index(
                 if (AuthenticationState is not null)
                 {
                     var authState = await AuthenticationState;
-                    currentUserEmail = authState.User.Email();
-                    currentUserDisplayName = authState.User.DisplayName();
+                    currentUserEmail = authState.User.Email;
+                    currentUserDisplayName = authState.User.DisplayName;
                 }
 
                 // Check if this user already has a contact record
@@ -199,7 +199,7 @@ public partial class Index(
         _floodReportId = await scopedSessionStorage.GetFloodReportId();
         ContactRecordDto dto = new ContactRecordDto
         {
-            UserId = _userID == Guid.Empty ? null : _userID,
+            UserId = _userID,
             ContactType = Model.ContactType,
             ContactName = Model.ContactName!,
             EmailAddress = Model.EmailAddress!,
@@ -227,7 +227,7 @@ public partial class Index(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            currentUserEmail = authState.User.Email();
+            currentUserEmail = authState.User.Email;
         }
 
         CreateOrUpdateResult<SubscribeRecord> subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, true, _cts.Token);

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -43,6 +44,7 @@ public partial class PeakDepth(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IReadOnlyCollection<GdsOptionItem<Guid>> _peakDepthKnownOptions = [];
+    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -60,8 +62,7 @@ public partial class PeakDepth(
 
     private async Task<IReadOnlyCollection<GdsBreadcrumb>> GetBreadcrumbs()
     {
-        var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, _cts.Token);
 
         var pageInfo = eligibilityCheck?.IsInternal() == true
             ? InvestigationPages.InternalWhen
@@ -82,6 +83,11 @@ public partial class PeakDepth(
     {
         if (firstRender)
         {
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                _userID = authState.User.Oid;
+            }
             Breadcrumbs = await GetBreadcrumbs();
 
             // Set any previously entered data
@@ -94,7 +100,6 @@ public partial class PeakDepth(
 
             _isLoading = false;
             StateHasChanged();
-
             
         }
     }

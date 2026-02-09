@@ -24,7 +24,7 @@ public class ContactModel
 
     public Guid? Id { get; set; }
 
-    public Guid? ContactUserId { get; set; }
+    public string? ContactUserId { get; set; }
 
 
 }

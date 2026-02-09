@@ -4,6 +4,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -25,6 +26,7 @@ public partial class Confirmation(
     private Database.Models.Investigate.Investigation? _investigation;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -44,8 +46,13 @@ public partial class Confirmation(
     {
         if (firstRender)
         {
-            var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _investigation = await investigationRepository.ReportedByUserBasicInformation(userId, _cts.Token);
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                _userID = authState.User.Oid;
+            }
+
+            _investigation = await investigationRepository.ReportedByUserBasicInformation(_userID, _cts.Token);
 
             _isLoading = false;
             StateHasChanged();

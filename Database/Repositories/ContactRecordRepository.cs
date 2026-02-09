@@ -92,7 +92,7 @@ public class ContactRecordRepository(
         // Does the user already have a contact record?
         if (dto.UserId != null)
         {
-            Guid userId = dto.UserId.Value;
+            string userId = dto.UserId;
             var existingContactRecordId = await context.ContactRecords
                 .AsNoTracking()
                 .Where(cr => cr.ContactUserId == userId)
@@ -100,7 +100,7 @@ public class ContactRecordRepository(
                 .FirstOrDefaultAsync(ct);
             if (existingContactRecordId != null)
             {
-                logger.LogInformation("User ID: {UserId} already has a contact record ID: {ContactRecordId}, trying to update the record instead", userId, existingContactRecordId.Value);
+                logger.LogInformation("User already has a contact record ID: {ContactRecordId}, trying to update the record instead", existingContactRecordId.Value);
                 return await UpdateForUser(userId, existingContactRecordId.Value, dto, ct);
             }
         }
@@ -145,9 +145,9 @@ public class ContactRecordRepository(
         return GetResult<ContactRecord>.Success(contactRecord);
     }
 
-    public async Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(Guid userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct)
+    public async Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct)
     {
-        logger.LogInformation("Updating contact record ID: {ContactRecordId} for user ID: {UserId}", contactRecordId, userId);
+        logger.LogInformation("Updating contact record ID: {ContactRecordId} for user", contactRecordId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
@@ -212,7 +212,7 @@ public class ContactRecordRepository(
 
     public async Task<CreateOrUpdateResult<SubscribeRecord>> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct)
     {
-        logger.LogInformation("Creating contact subscription record for email: {EmailAddress}", dto.EmailAddress);
+        logger.LogInformation("Creating contact subscription record for email");
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         SubscribeRecord contactModel = new()
@@ -421,7 +421,7 @@ public class ContactRecordRepository(
             .AnyAsync(o => o.Id == contactRecordId, ct);
     }
 
-    public async Task<Guid?> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default)
+    public async Task<Guid?> ContactRecordExistsForUser(string userId, CancellationToken ct = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords

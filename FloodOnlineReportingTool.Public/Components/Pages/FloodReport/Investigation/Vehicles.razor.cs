@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -43,6 +44,7 @@ public partial class Vehicles(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IReadOnlyCollection<GdsOptionItem<Guid>> _wereVehiclesDamagedOptions = [];
+    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -70,6 +72,12 @@ public partial class Vehicles(
     {
         if (firstRender)
         {
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                _userID = authState.User.Oid;
+            }
+
             // Set any previously entered data
             var investigation = await GetInvestigation();
             Model.WereVehiclesDamagedId = investigation.WereVehiclesDamagedId;
@@ -107,8 +115,7 @@ public partial class Vehicles(
             return InvestigationPages.Summary;
         }
 
-        var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, _cts.Token);
         if (eligibilityCheck?.IsInternal() == true)
         {
             return InvestigationPages.InternalHow;

@@ -38,7 +38,7 @@ public interface IContactRecordRepository
     /// Update the contact record, going via the flood report
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
-    Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(Guid userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
+    Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Delete the contact record by ID
@@ -94,7 +94,7 @@ public interface IContactRecordRepository
 
     Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default);
 
-    Task<Guid?> ContactRecordExistsForUser(Guid userId, CancellationToken ct = default);
+    Task<Guid?> ContactRecordExistsForUser(string userId, CancellationToken ct = default);
 
     Task<Guid> GetRandomFloodReportWithSubscriber(CancellationToken ct = default);
 }

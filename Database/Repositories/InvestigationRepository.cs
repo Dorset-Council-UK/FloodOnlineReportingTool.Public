@@ -10,7 +10,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class InvestigationRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IInvestigationRepository
 {
-    public async Task<Investigation?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
+    public async Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct)
     {
         return await context.ContactRecords
             .AsNoTracking()
@@ -20,7 +20,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
-    public async Task<Investigation> CreateForUser(Guid userId, InvestigationDto investigationDto, CancellationToken ct)
+    public async Task<Investigation> CreateForUser(string userId, InvestigationDto investigationDto, CancellationToken ct)
     {
         var floodReport = await context.ContactRecords
             .AsNoTracking()
@@ -65,7 +65,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         return investigation;
     }
 
-    public async Task<Investigation?> ReportedByUserBasicInformation(Guid userId, CancellationToken ct)
+    public async Task<Investigation?> ReportedByUserBasicInformation(string userId, CancellationToken ct)
     {
         return await context.ContactRecords
             .AsNoTracking()

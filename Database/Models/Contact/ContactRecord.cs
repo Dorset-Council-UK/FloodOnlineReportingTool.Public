@@ -19,7 +19,7 @@ public record ContactRecord
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset? UpdatedUtc { get; init; }
     public DateTimeOffset RedactionDate { get; init; }
-    public Guid? ContactUserId { get; set; }
+    public string? ContactUserId { get; set; }
 
     public ICollection<SubscribeRecord> SubscribeRecords { get; set; } = [];
 
