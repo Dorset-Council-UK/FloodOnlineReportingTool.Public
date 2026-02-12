@@ -11,4 +11,5 @@ public record GISOptions
     public required int AccessTokenIssueDurationMonths { get; init; } = 6;
     public required string OSApiKey { get; init; }
     public string? OSLicenceNumber { get; init; } = string.Empty;
+    public required int DataRetentionYears { get; init; } = 7;
 }
