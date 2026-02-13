@@ -1,44 +1,78 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using FloodOnlineReportingTool.Database.Options;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
-using System.IO;
 
 namespace FloodOnlineReportingTool.Public.Endpoints.Account;
 
 internal static class AccountEndpoints
 {
-    private static bool IsLocalPath(string? path)
+    /// <summary>
+    /// Determines whether the specified path represents an authentication-related flow.
+    /// </summary>
+    /// <remarks>The method checks for common authentication-related path prefixes, including 'signin', 'signout', 'signedout', and their 'account/' variants.</remarks>
+    /// <returns>true if the path starts with a recognized authentication flow segment; otherwise, false.</returns>
+    private static bool IsAuthenticationFlowPath(ReadOnlySpan<char> relativePath)
     {
+        ReadOnlySpan<string> authPaths = [
+            "/signin",
+            "/signout",
+            "/signedout",
+            "/account/signin",
+            "/account/signout",
+            "/account/signedout",
+        ];
 
-        if (string.IsNullOrWhiteSpace(path))
-            return false;
+        foreach (var authPath in authPaths)
+        {
+            if (relativePath.StartsWith(authPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
 
-        // Reject if it's an absolute URI (http://, https://, etc.)
-        if (Uri.TryCreate(path, UriKind.Absolute, out _))
-            return false;
+        return false;
+    }
 
-        // Reject protocol-relative URLs (//example.com)
-        if (path.StartsWith("//", StringComparison.OrdinalIgnoreCase))
-            return false;
+    private static string? NormaliseRedirectUrl(string? redirectUri, string pathBase)
+    {
+        if (string.IsNullOrWhiteSpace(redirectUri))
+        {
+            return null;
+        }
 
-        // Accept relative paths like "contacts", "report-flooding/contacts", or "/report-flooding"
-        return true;
-  
+        // Don't redirect to authentication-related paths to avoid loops
+        if (IsAuthenticationFlowPath(redirectUri))
+        {
+            return null;
+        }
+
+        if (RedirectHttpResult.IsLocalUrl(redirectUri))
+        {
+            return redirectUri;
+        }
+
+        // Convert relative to absolute by prepending /
+        var pathWithoutLeadingSlash = redirectUri.TrimStart('/');
+        var absolutePath = $"/{pathBase}/{pathWithoutLeadingSlash}";
+        return RedirectHttpResult.IsLocalUrl(absolutePath) ? absolutePath : null;
     }
 
     internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> SignIn(
+        IOptions<GISOptions> options,
         string? redirectUri,
         string? loginHint,
         string? domainHint
-        
-    )
-    {
+    ) {
+        var normalisedRedirectUri = NormaliseRedirectUrl(redirectUri, options.Value.PathBase);
+
         var properties = new AuthenticationProperties
         {
-            RedirectUri = IsLocalPath(redirectUri) ? redirectUri : "/report-flooding",
+            RedirectUri = normalisedRedirectUri ?? $"/{options.Value.PathBase}",
             Parameters =
             {
                 { Constants.LoginHint, loginHint },
@@ -49,11 +83,11 @@ internal static class AccountEndpoints
         return TypedResults.Challenge(properties, [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
     }
 
-    internal static Results<SignOutHttpResult, UnauthorizedHttpResult> SignOut()
+    internal static Results<SignOutHttpResult, UnauthorizedHttpResult> SignOut(IOptions<GISOptions> options)
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = "/report-flooding/Account/signedout",
+            RedirectUri = $"/{options.Value.PathBase}/Account/signedout",
         };
 
         return TypedResults.SignOut(properties, [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
@@ -67,8 +101,7 @@ internal static class AccountEndpoints
         string? claims,
         string? policy,
         string? scheme
-    )
-    {
+    ) {
         scheme ??= OpenIdConnectDefaults.AuthenticationScheme;
 
         Dictionary<string, string?> items = new(StringComparer.Ordinal)

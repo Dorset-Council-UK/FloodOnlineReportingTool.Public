@@ -11,3 +11,7 @@ dotnet_diagnostic.CA1873.severity = none
 [**/Migrations/**.cs]
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
+
+# Disable Namespace does not match folder structure in Extensions folder
+[**/Extensions/*.cs]
+dotnet_diagnostic.IDE0130.severity = none
