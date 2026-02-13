@@ -9,7 +9,7 @@
                 <GdsHeaderNavLink Href="signout" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
             </Authorized>
             <NotAuthorized>
-                <GdsHeaderNavLink Href="signin" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
+                <GdsHeaderNavLink Href="@_signInUrl" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
             </NotAuthorized>
         </AuthorizeView>
     </NavLinks>
@@ -19,7 +19,7 @@
     @if (!Env.IsProduction())
     {
         // Show development banner in all non-production environments
-        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackText="" FeedbackLink="_feedbackUri" />
+        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackLink="_feedbackUri" />
     }
     else
     {
@@ -64,5 +64,18 @@
     [Inject]
     public IWebHostEnvironment Env { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
+    private string _signInUrl
+    {
+        get
+        {
+            var relativePathWithoutBase = Navigation.ToBaseRelativePath(Navigation.Uri);
+            return string.IsNullOrWhiteSpace(relativePathWithoutBase)
+                ? "signin"
+                : $"signin?redirectUri={Uri.EscapeDataString(relativePathWithoutBase)}";
+        }
+    }
 }
