@@ -41,7 +41,7 @@ internal static class NavigationManagerExtensions
                 // ToBaseRelativePath strips the scheme, host, and base path
                 // e.g., https://localhost:7039/report-flooding/floodreport -> floodreport
                 var relativePath = navigationManager.ToBaseRelativePath(navigationManager.Uri);
-                Console.WriteLine($"Current relative path: '{relativePath}'");
+
                 // Don't redirect to authentication-related paths to avoid loops
                 if (string.IsNullOrWhiteSpace(relativePath) || IsAuthenticationFlowPath(relativePath))
                 {
