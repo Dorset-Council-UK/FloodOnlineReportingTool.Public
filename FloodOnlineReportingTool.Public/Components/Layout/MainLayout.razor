@@ -72,10 +72,8 @@
     {
         get
         {
-            var relativePathWithoutBase = Navigation.ToBaseRelativePath(Navigation.Uri);
-            return string.IsNullOrWhiteSpace(relativePathWithoutBase)
-                ? "signin"
-                : $"signin?redirectUri={Uri.EscapeDataString(relativePathWithoutBase)}";
+            var redirectUri = Navigation.SignInRedirectUri;
+            return string.IsNullOrWhiteSpace(redirectUri) ? "signin" : $"signin?redirectUri={redirectUri}";
         }
     }
 }
