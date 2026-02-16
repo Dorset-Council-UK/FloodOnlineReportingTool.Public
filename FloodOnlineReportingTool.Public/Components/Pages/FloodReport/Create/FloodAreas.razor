@@ -63,7 +63,7 @@
     </GdsFormGroup>
 
     <PaginationBlock>
-        <PaginationNext OnNextPage="() => OnSubmit()" Label="@NextPageTitleText()" />
+        <PaginationNext OnNextPage="OnSubmit" Label="@NextPageTitleText()" />
         @if (!FromSummary)
         {
             <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />

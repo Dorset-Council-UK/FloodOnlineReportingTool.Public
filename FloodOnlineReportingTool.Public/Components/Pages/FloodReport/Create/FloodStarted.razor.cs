@@ -23,7 +23,7 @@ public partial class FloodStarted(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : (Model.IsFloodOngoing == true ? FloodReportCreatePages.FloodSource : FloodReportCreatePages.FloodDuration);
-    private PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
 
     private Models.FloodReport.Create.FloodStarted Model { get; set; } = default!;
 
@@ -128,7 +128,7 @@ public partial class FloodStarted(
 
     }
 
-    private IReadOnlyCollection<GdsOptionItem<bool>> CreateFloodOptions()
+    private static IReadOnlyCollection<GdsOptionItem<bool>> CreateFloodOptions()
     {
         return
         [
@@ -137,7 +137,7 @@ public partial class FloodStarted(
         ];
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [
