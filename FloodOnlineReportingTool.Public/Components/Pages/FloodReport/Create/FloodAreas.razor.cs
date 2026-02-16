@@ -24,9 +24,9 @@ public partial class FloodAreas(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPageVulnerability => FloodReportCreatePages.Vulnerability;
-    private PageInfo NextPageTemporaryPostcode => FloodReportCreatePages.TemporaryPostcode;
-    private PageInfo PreviousPage => FloodReportCreatePages.PropertyType;
+    private static PageInfo NextPageVulnerability => FloodReportCreatePages.Vulnerability;
+    private static PageInfo NextPageTemporaryPostcode => FloodReportCreatePages.TemporaryPostcode;
+    private static PageInfo PreviousPage => FloodReportCreatePages.PropertyType;
 
     private Models.FloodReport.Create.FloodAreas Model { get; set; } = default!;
 
@@ -212,11 +212,10 @@ public partial class FloodAreas(
 
     private string NextPageTitleText()
     {
-        bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
-       
+        var isUninhabitable = Model.IsUninhabitable ?? false;
         return FromSummary 
             ? FloodReportCreatePages.Summary.Title 
-            : (runTemporaryAddress ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title);
+            : (isUninhabitable ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title);
     }
 
     private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
