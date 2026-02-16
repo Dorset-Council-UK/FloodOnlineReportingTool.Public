@@ -1,40 +1,55 @@
-﻿#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.AspNetCore.Components;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
+﻿namespace Microsoft.AspNetCore.Components;
 
 internal static class NavigationManagerExtensions
 {
     /// <summary>
-    /// Checks if the redirect URL is local to the application.
+    /// Determines whether the specified path represents an authentication-related flow.
     /// </summary>
-    internal static bool IsLocalPath(this NavigationManager navigationManager, string redirectUrl)
+    /// <remarks>The method checks for common authentication-related path prefixes, including 'signin', 'signout', 'signedout', and their 'account/' variants.</remarks>
+    /// <returns>true if the path starts with a recognized authentication flow segment; otherwise, false.</returns>
+    private static bool IsAuthenticationFlowPath(ReadOnlySpan<char> relativePath)
     {
-        var baseUri = new Uri(navigationManager.BaseUri, UriKind.Absolute);
-        var relativeUri = new Uri(baseUri, redirectUrl);
-        return relativeUri.AbsoluteUri.AsSpan().StartsWith(navigationManager.BaseUri.AsSpan(), StringComparison.Ordinal);
-    }
+        ReadOnlySpan<string> authPaths = [
+            "signin",
+            "signout",
+            "signedout",
+            "account/signin",
+            "account/signout",
+            "account/signedout",
+        ];
 
-    /// <summary>
-    /// Converts a redirect URL to a local application path.
-    /// </summary>
-    internal static string LocalPathAndQuery(this NavigationManager navigationManager, string redirectUrl)
-    {
-        var baseUri = new Uri(navigationManager.BaseUri, UriKind.Absolute);
-        var relativeUri = new Uri(baseUri, redirectUrl);
-
-        if (relativeUri.AbsoluteUri.AsSpan().StartsWith(navigationManager.BaseUri.AsSpan(), StringComparison.Ordinal))
+        foreach (var authPath in authPaths)
         {
-            return relativeUri.PathAndQuery;
+            if (relativePath.StartsWith(authPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
         }
 
-        return "/";
+        return false;
     }
-    /// <summary>
-    /// Navigate to a local application path.
-    /// </summary>
-    internal static void NavigateToLocal(this NavigationManager navigationManager, string redirectUrl, bool forceLoad = false)
+
+    extension(NavigationManager navigationManager)
     {
-        var uri = navigationManager.LocalPathAndQuery(redirectUrl);
-        navigationManager.NavigateTo(uri, forceLoad);
+        /// <summary>
+        /// Get the redirect URI for sign-in flows, ensuring it is properly escaped and does not lead to authentication-related loops.
+        /// </summary>
+        internal string SignInRedirectUri
+        {
+            get
+            {
+                // ToBaseRelativePath strips the scheme, host, and base path
+                // e.g., https://localhost:7039/report-flooding/floodreport -> floodreport
+                var relativePath = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+
+                // Don't redirect to authentication-related paths to avoid loops
+                if (string.IsNullOrWhiteSpace(relativePath) || IsAuthenticationFlowPath(relativePath))
+                {
+                    return string.Empty;
+                }
+
+                return Uri.EscapeDataString(relativePath);
+            }
+        }
     }
 }

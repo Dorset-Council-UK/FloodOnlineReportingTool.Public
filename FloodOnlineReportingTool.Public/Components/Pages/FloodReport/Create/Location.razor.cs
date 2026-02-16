@@ -87,7 +87,7 @@ public partial class Location(
         {
             _dotNetReference = DotNetObjectReference.Create(this);
             
-            _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/location.js");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/pages/floodreport/create/location.js");
             if (_module == null)
             {
                 logger.LogError("Failed to load the map JavaScript module.");
