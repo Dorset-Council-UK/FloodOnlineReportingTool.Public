@@ -41,9 +41,7 @@ public partial class PropertyType(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FromSummary 
-        ? FloodReportCreatePages.Summary 
-        : FloodReportCreatePages.FloodAreas;
+    private PageInfo NextPage => FloodReportCreatePages.FloodAreas;
     private PageInfo PreviousPage => Model.IsAddress 
         ? FloodReportCreatePages.Address 
         : FloodReportCreatePages.Location;
@@ -123,7 +121,12 @@ public partial class PropertyType(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
-        navigationManager.NavigateTo(NextPage.Url);
+        var nextPageUrl = NextPage.Url;
+        if (FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private void OnPreviousPage()

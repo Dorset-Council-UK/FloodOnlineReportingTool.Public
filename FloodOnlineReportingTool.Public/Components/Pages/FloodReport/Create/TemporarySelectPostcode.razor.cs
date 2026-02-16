@@ -20,9 +20,9 @@ public partial class TemporarySelectPostcode(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FromSummary 
-        ? FloodReportCreatePages.Summary 
-        : (Model.PostcodeKnown == true ? FloodReportCreatePages.TemporaryAddress : FloodReportCreatePages.Vulnerability);
+    private PageInfo NextPage => Model.PostcodeKnown == true
+        ? FloodReportCreatePages.TemporaryAddress
+        : FloodReportCreatePages.Vulnerability;
     private PageInfo PreviousPage => FloodReportCreatePages.FloodAreas;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
@@ -103,7 +103,12 @@ public partial class TemporarySelectPostcode(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or pass back to the summary
-        navigationManager.NavigateTo(NextPage.Url);
+        var nextPageUrl = NextPage.Url;
+        if (FromSummary)
+        {
+            nextPageUrl += "?fromsummary=true";
+        }
+        navigationManager.NavigateTo(nextPageUrl);
     }
 
     private void OnPreviousPage()
