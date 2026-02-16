@@ -41,7 +41,7 @@ public partial class PropertyType(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FloodReportCreatePages.FloodAreas;
+    private static PageInfo NextPage => FloodReportCreatePages.FloodAreas;
     private PageInfo PreviousPage => Model.IsAddress 
         ? FloodReportCreatePages.Address 
         : FloodReportCreatePages.Location;

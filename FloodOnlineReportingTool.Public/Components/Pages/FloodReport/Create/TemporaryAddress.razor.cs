@@ -28,7 +28,7 @@ public partial class TemporaryAddress(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : FloodReportCreatePages.Vulnerability;
-    private PageInfo PreviousPage => FloodReportCreatePages.TemporaryPostcode;
+    private static PageInfo PreviousPage => FloodReportCreatePages.TemporaryPostcode;
 
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
@@ -213,7 +213,7 @@ public partial class TemporaryAddress(
         navigationManager.NavigateTo(PreviousPage.Url);
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

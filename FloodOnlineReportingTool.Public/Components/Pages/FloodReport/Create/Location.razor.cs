@@ -35,7 +35,7 @@ public partial class Location(
     private PageInfo NextPage => Model.IsAddress == true
         ? FloodReportCreatePages.Address 
         : FloodReportCreatePages.PropertyType;
-    private PageInfo PreviousPage => FloodReportCreatePages.Home;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.Location Model { get; set; } = default!;
 
@@ -350,7 +350,7 @@ public partial class Location(
         return null;
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

@@ -218,7 +218,7 @@ public partial class FloodAreas(
             : (isUninhabitable ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title);
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

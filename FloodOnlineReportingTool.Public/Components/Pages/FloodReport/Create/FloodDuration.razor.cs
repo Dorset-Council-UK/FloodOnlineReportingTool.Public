@@ -28,7 +28,7 @@ public partial class FloodDuration(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : FloodReportCreatePages.FloodSource;
-    private PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
+    private static PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
 
     private Models.FloodReport.Create.FloodDuration Model { get; set; } = default!;
 
@@ -155,7 +155,7 @@ public partial class FloodDuration(
         navigationManager.NavigateTo(PreviousPage.Url);
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

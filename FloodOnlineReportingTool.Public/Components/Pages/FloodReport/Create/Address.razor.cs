@@ -25,8 +25,8 @@ public partial class Address(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FloodReportCreatePages.PropertyType;
-    private PageInfo PreviousPage => FloodReportCreatePages.Postcode;
+    private static PageInfo NextPage => FloodReportCreatePages.PropertyType;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Postcode;
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
@@ -221,7 +221,7 @@ public partial class Address(
         navigationManager.NavigateTo(PreviousPage.Url);
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

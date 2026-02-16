@@ -23,7 +23,7 @@ public partial class SelectPostcode(
     private PageInfo NextPage => Model.PostcodeKnown == true
         ? FloodReportCreatePages.Address
         : FloodReportCreatePages.Location;
-    private PageInfo PreviousPage => FloodReportCreatePages.Home;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
@@ -124,7 +124,7 @@ public partial class SelectPostcode(
         return new();
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

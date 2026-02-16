@@ -23,7 +23,7 @@ public partial class Index(
     private PageInfo NextPage => Model.IsAddress == true
         ? FloodReportCreatePages.Postcode 
         : FloodReportCreatePages.Location;
-    private PageInfo PreviousPage => FloodReportPages.Home;
+    private static PageInfo PreviousPage => FloodReportPages.Home;
 
     private Models.FloodReport.Create.Index Model { get; set; } = default!;
 
@@ -121,7 +121,7 @@ public partial class Index(
         return new EligibilityCheckDto();
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [

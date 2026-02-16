@@ -26,8 +26,8 @@ public partial class FloodSecondarySource(
     
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FloodReportCreatePages.Summary;
-    private PageInfo PreviousPage => FloodReportCreatePages.FloodSource;
+    private static PageInfo NextPage => FloodReportCreatePages.Summary;
+    private static PageInfo PreviousPage => FloodReportCreatePages.FloodSource;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -130,7 +130,7 @@ public partial class FloodSecondarySource(
         navigationManager.NavigateTo(PreviousPage.Url);
     }
 
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
+    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
     {
         return
         [
