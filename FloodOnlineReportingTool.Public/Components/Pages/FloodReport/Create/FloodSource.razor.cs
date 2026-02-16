@@ -8,9 +8,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
 public partial class FloodSource(
