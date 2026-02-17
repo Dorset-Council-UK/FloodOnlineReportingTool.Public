@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 
@@ -33,7 +34,6 @@ public partial class Update(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
 
     public async ValueTask DisposeAsync()
     {
@@ -54,7 +54,6 @@ public partial class Update(
         // Setup model and edit context
         if (_updateModel == null)
         {
-            _userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
             _updateModel = await GetUpdateModel();
 
             if (_updateModel != null)
@@ -63,14 +62,6 @@ public partial class Update(
                 _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
                 _messageStore = new(_editContext);
             }
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            
         }
     }
 
@@ -97,9 +88,10 @@ public partial class Update(
 
         try
         {
+            var userId = await GetUserIdAsGuid();
             var dto = _updateModel.ToDto();
-            await eligibilityCheckRepository.UpdateForUser(_userId, EligibilityCheckId, dto, _cts.Token);
-            logger.LogInformation("Eligibility check updated successfully for user {UserId}", _userId);
+            await eligibilityCheckRepository.UpdateForUser(userId.Value, EligibilityCheckId, dto, _cts.Token);
+            logger.LogInformation("Eligibility check updated successfully for user {UserId}", userId.Value);
             navigationManager.NavigateTo(FloodReportPages.Overview.Url);
         }
         catch (Exception ex)
@@ -112,11 +104,31 @@ public partial class Update(
 
     private async Task<UpdateModel?> GetUpdateModel()
     {
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userId, EligibilityCheckId, _cts.Token);
-        if (eligibilityCheck == null)
+        var userId = await GetUserIdAsGuid();
+        if (userId.HasValue)
+        {
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, EligibilityCheckId, _cts.Token);
+            if (eligibilityCheck is not null)
+            {
+                return eligibilityCheck.ToUpdateModel();
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
         {
             return null;
         }
-        return eligibilityCheck.ToUpdateModel();
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

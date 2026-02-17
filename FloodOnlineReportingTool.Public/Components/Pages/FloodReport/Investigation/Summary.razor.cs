@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -77,9 +78,13 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-            var isInternal = eligibilityCheck?.IsInternal() == true;
+            bool isInternal = false;
+            var userId = await GetUserIdAsGuid();
+            if (userId.HasValue)
+            {
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, _cts.Token);
+                isInternal = eligibilityCheck?.IsInternal() == true;
+            }
 
             _floodProblems = await GetInvestigationFloodProblems();
             _recordStatuses = await GetInvestigationRecordStatuses();
@@ -93,8 +98,6 @@ public partial class Summary(
             _isLoading = false;
             StateHasChanged();
             _editContext.NotifyValidationStateChanged();
-
-            
         }
     }
 
@@ -209,7 +212,7 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            var userId = await AuthenticationState.IdentityUserId();
+            var userId = await GetUserIdAsGuid();
             var investigation = await GetInvestigation();
             await investigationRepository.CreateForUser(userId.Value, investigation, _cts.Token);
 
@@ -378,5 +381,20 @@ public partial class Summary(
             .Where(o => ids.Contains(o.Id))
             .Select(o => o.TypeName ?? ""),
         ];
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
