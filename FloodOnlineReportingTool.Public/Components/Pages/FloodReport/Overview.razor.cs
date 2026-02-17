@@ -1,13 +1,11 @@
-﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Eligibility;
-using FloodOnlineReportingTool.Database.Models.Responsibilities;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using static MassTransit.ValidationResultExtensions;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 public partial class Overview(
@@ -23,8 +21,6 @@ public partial class Overview(
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private readonly CancellationTokenSource _cts = new();
-    private Guid _userId;
-    private Guid _floodReportId = Guid.Empty;
     private bool _isLoading = true;
     private Database.Models.Flood.FloodReport? _floodReport;
     private bool _accessHasExpired = true;
@@ -32,8 +28,8 @@ public partial class Overview(
 
     // These are returning information about the current record
     private EligibilityOptions _floodInvestigation;
-    private IList<Organisation> _leadLocalFloodAuthorities = [];
-    private IList<Organisation> _otherFloodAuthorities = [];
+    //private IList<Organisation> _leadLocalFloodAuthorities = [];
+    //private IList<Organisation> _otherFloodAuthorities = [];
 
     // These don't have any logic yet in the repository
     private bool _isEmergencyResponse;
@@ -56,35 +52,29 @@ public partial class Overview(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (AuthenticationState == null)
-        {
-            return;
-        }
-
-        // Get the user's ID and check if they have the admin role
-        var authState = await AuthenticationState;
-        if (authState == null)
-        {
-            return;
-        }
-
-        _userId = authState.User.IdentityUserId() ?? Guid.Empty;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            _floodReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
-            if (_floodReport != null)
+            var userId = await GetUserIdAsGuid();
+            if (userId.HasValue)
+            {
+                var floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
+                // TODO: Work out what to do when the user has reported multiple floods
+                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
+            }
+            else
+            {
+                var floodReportId = await scopedSessionStorage.GetFloodReportId();
+                _floodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+            }
+
+            if (_floodReport is not null)
             {
                 var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
 
-                _leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
-                _otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
+                //_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
+                //_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
 
                 // These don't have any logic yet in the repository
                 _floodInvestigation = result.FloodInvestigation;
@@ -102,11 +92,23 @@ public partial class Overview(
                 }
             }
 
-            
-
             _isLoading = false;
             StateHasChanged();
-            
         }
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
