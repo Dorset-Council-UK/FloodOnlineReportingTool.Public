@@ -15,17 +15,14 @@ public partial class FloodSource(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
 
-    [SupplyParameterFromQuery]
-    private bool FromSummary { get; set; }
-    private PageInfo PreviousPage;
+    private PageInfo? PreviousPage;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -64,8 +61,6 @@ public partial class FloodSource(
             PreviousPage = eligibilityCheck.OnGoing == true
                 ? FloodReportCreatePages.FloodStarted
                 : FloodReportCreatePages.FloodDuration;
-
-            Breadcrumbs = CreateBreadcrumbs();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -142,34 +137,6 @@ public partial class FloodSource(
         var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
-    private string NextPageTitle()
-    {
-        if (Model.FloodSourceOptions == null || !Model.FloodSourceOptions.Any(o => o.Selected))
-        {
-            return FloodReportCreatePages.Summary.Title;
-        }
-        if (Model.FloodSourceOptions.Any(o => o.Value == PrimaryCauseIds.RainwaterFlowingOverTheGround && o.Selected))
-        {
-            return FloodReportCreatePages.FloodSecondarySource.Title;
-        }
-        return FloodReportCreatePages.Summary.Title;
-    }
-
-    private IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }
 

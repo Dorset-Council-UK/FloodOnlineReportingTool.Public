@@ -17,11 +17,10 @@ public partial class TemporaryAddress(
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.TemporaryAddress.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -72,8 +71,6 @@ public partial class TemporaryAddress(
             Model.IsAddress = true;
             Model.LocationDesc = eligibilityCheck.TemporaryLocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
-
-            Breadcrumbs = CreateBreadcrumbs();
 
             StateHasChanged(); 
         }
@@ -206,21 +203,5 @@ public partial class TemporaryAddress(
         var selected = value == Model.UPRN;
 
         return new GdsOptionItem<long>(id: "", label, value, selected);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }

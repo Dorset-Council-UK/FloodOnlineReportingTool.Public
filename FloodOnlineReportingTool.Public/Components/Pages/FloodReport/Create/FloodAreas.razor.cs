@@ -16,11 +16,10 @@ public partial class FloodAreas(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodAreas.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -88,7 +87,6 @@ public partial class FloodAreas(
                 Model.CommercialOptions = [.. options];
             }
 
-            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged(); 
         }
@@ -203,28 +201,5 @@ public partial class FloodAreas(
         var selected = selectedIds.Contains(floodImpact.Id);
 
         return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
-    private string NextPageTitleText()
-    {
-        var isUninhabitable = Model.IsUninhabitable ?? false;
-        return FromSummary 
-            ? FloodReportCreatePages.Summary.Title 
-            : (isUninhabitable ? NextPageTemporaryPostcode.Title : NextPageVulnerability.Title);
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }

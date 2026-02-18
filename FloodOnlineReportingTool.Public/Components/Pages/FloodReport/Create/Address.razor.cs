@@ -17,11 +17,10 @@ public partial class Address(
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Address.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -71,8 +70,6 @@ public partial class Address(
             Model.IsAddress = eligibilityCheck.IsAddress;
             Model.LocationDesc = eligibilityCheck.LocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
-
-            Breadcrumbs = CreateBreadcrumbs();
 
             StateHasChanged();
         }
@@ -214,21 +211,5 @@ public partial class Address(
         var selected = value == Model.UPRN;
 
         return new GdsOptionItem<long>(id: "", label, value, selected);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }

@@ -16,11 +16,10 @@ public partial class FloodSecondarySource(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodSecondarySource.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;
     
@@ -62,8 +61,6 @@ public partial class FloodSecondarySource(
             var eligibilityCheck = await GetEligibilityCheck();
 
             Model.FloodSecondarySourceOptions = await CreateFloodSourceOptions(eligibilityCheck.SecondarySources);
-
-            Breadcrumbs = CreateBreadcrumbs();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -123,21 +120,6 @@ public partial class FloodSecondarySource(
         var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }
 

@@ -6,7 +6,6 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
-using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -24,11 +23,10 @@ public partial class Location(
     NavigationManager navigationManager,
     IJSRuntime JS,
     IOptions<GISOptions> gisOptions
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Location.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -73,7 +71,6 @@ public partial class Location(
 
             await LoadJavaScriptAndMap();
 
-            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged();
         }
@@ -259,11 +256,6 @@ public partial class Location(
         navigationManager.NavigateTo(nextPageUrl);
     }
 
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
@@ -348,15 +340,5 @@ public partial class Location(
         }
 
         return null;
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }

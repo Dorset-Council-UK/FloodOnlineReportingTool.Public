@@ -16,28 +16,10 @@ public partial class PropertyType(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.PropertyType.Title;
-
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
-
-    private async Task<IReadOnlyCollection<GdsBreadcrumb>> GetBreadcrumbs()
-    {
-
-        var eligibilityCheck = await GetEligibilityCheck();
-
-        var pageInfo = eligibilityCheck?.IsAddress == true
-            ? FloodReportCreatePages.Address
-            : FloodReportCreatePages.Location;
-
-        return Breadcrumbs.Append(pageInfo.ToGdsBreadcrumb()).ToList();
-    }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -80,8 +62,6 @@ public partial class PropertyType(
     {
         if (firstRender)
         {
-            Breadcrumbs = await GetBreadcrumbs();
-
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();
@@ -127,11 +107,6 @@ public partial class PropertyType(
             nextPageUrl += "?fromsummary=true";
         }
         navigationManager.NavigateTo(nextPageUrl);
-    }
-
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
     }
 
     private static string Classification(ReadOnlySpan<char> primaryClassification, ReadOnlySpan<char> secondaryClassification)

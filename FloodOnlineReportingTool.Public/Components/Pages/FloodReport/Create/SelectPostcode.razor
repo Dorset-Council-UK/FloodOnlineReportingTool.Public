@@ -1,9 +1,8 @@
 ﻿@page "/floodreport/create/postcode"
-@using FloodOnlineReportingTool.Public.Components.Pagination
 
 <PageTitle>@Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
 <EditForm EditContext="editContext" OnSubmit="OnSubmit" FormName="CreateFloodReport">
     <FluentValidationValidator />
@@ -44,13 +43,7 @@
 
     @if (!_isLoading)
     {
-        <PaginationBlock>
-            <PaginationNext OnNextPage="OnSubmit" Label="@NextPage.Title" />
-            @if (!FromSummary)
-            {
-                <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />
-            }
-        </PaginationBlock>
+        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
     }
 
 </EditForm>

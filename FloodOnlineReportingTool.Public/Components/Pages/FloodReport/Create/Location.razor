@@ -1,5 +1,4 @@
 ﻿@page "/floodreport/create/location"
-@using FloodOnlineReportingTool.Public.Components.Pagination
 @using Microsoft.JSInterop
 
 <HeadContent>
@@ -8,7 +7,7 @@
 
 <PageTitle>@Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
 <h1 class="govuk-heading-l">@Title</h1>
 
@@ -36,13 +35,7 @@
         }
 
         <div>
-            <PaginationBlock>
-                <PaginationNext OnNextPage="OnSubmit" Label="@NextPage.Title" />
-                @if (!FromSummary)
-                {
-                    <PaginationPrevious OnPreviousPage="OnPreviousPage" Label="@PreviousPage.Title" />
-                }
-            </PaginationBlock>
+            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
         </div>
     }
 

@@ -12,11 +12,10 @@ public partial class SelectPostcode(
     ILogger<SelectPostcode> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Postcode.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -56,7 +55,6 @@ public partial class SelectPostcode(
                 _postcodeKnownOptions.Single(o => o.Value).Selected = true;
             }
 
-            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged(); 
         }
@@ -104,11 +102,6 @@ public partial class SelectPostcode(
         navigationManager.NavigateTo(nextPageUrl);
     }
 
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
     private async Task<ExtraData> GetCreateExtraData()
     {
         var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
@@ -122,15 +115,5 @@ public partial class SelectPostcode(
 
         logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
         return new();
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-            PreviousPage.ToGdsBreadcrumb(),
-        ];
     }
 }

@@ -12,11 +12,10 @@ public partial class Index(
     ILogger<Index> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Home.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
@@ -52,7 +51,6 @@ public partial class Index(
             Model.IsAddress = eligibilityCheck.IsAddress;
             _isAddressOptions.Single(o => o.Value).Selected = true;
 
-            Breadcrumbs = CreateBreadcrumbs();
             _isLoading = false;
             StateHasChanged();
         }
@@ -101,11 +99,6 @@ public partial class Index(
         navigationManager.NavigateTo(nextPageUrl);
     }
 
-    private void OnPreviousPage()
-    {
-        navigationManager.NavigateTo(PreviousPage.Url);
-    }
-
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
@@ -119,14 +112,5 @@ public partial class Index(
 
         logger.LogWarning("Eligibility Check was not found in the protected storage.");
         return new EligibilityCheckDto();
-    }
-
-    private static IReadOnlyCollection<GdsBreadcrumb> CreateBreadcrumbs()
-    {
-        return
-        [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Home.ToGdsBreadcrumb(),
-        ];
     }
 }
