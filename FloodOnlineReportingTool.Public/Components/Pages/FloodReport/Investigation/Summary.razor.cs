@@ -50,6 +50,8 @@ public partial class Summary(
     private IReadOnlyCollection<RecordStatus> _recordStatuses = [];
     private IReadOnlyCollection<FloodMitigation> _floodMitigations = [];
 
+    private InvestigationDto? _investigationDto;
+
     protected override void OnInitialized()
     {
         // Setup model and edit context
@@ -90,9 +92,9 @@ public partial class Summary(
             _recordStatuses = await GetInvestigationRecordStatuses();
             _floodMitigations = await GetInvestigationFloodMitigations();
 
-            var investigation = await GetInvestigation();
+            _investigationDto = await GetInvestigation();
 
-            await CreateSummary(investigation, isInternal);
+            await CreateSummary(_investigationDto, isInternal);
 
             _editContext.Validate();
             _isLoading = false;
@@ -213,8 +215,7 @@ public partial class Summary(
         try
         {
             var userId = await GetUserIdAsGuid();
-            var investigation = await GetInvestigation();
-            await investigationRepository.CreateForUser(userId.Value, investigation, _cts.Token);
+            await investigationRepository.CreateForUser(userId.Value, _investigationDto, _cts.Token);
 
             // Clear the session data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
@@ -396,5 +397,13 @@ public partial class Summary(
     private async Task<Guid?> GetUserIdAsGuid()
     {
         return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
+    }
+
+
+
+    private bool _showWaterSpeed = true;
+    private async Task TestToggleWaterSpeed()
+    {
+        _showWaterSpeed = !_showWaterSpeed;
     }
 }
