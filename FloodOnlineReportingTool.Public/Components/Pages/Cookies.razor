@@ -1,4 +1,7 @@
 ﻿@page "/cookies"
+@using FloodOnlineReportingTool.Database.Options
+@using Microsoft.Extensions.Options
+@inject IOptions<GISOptions> GISOptions
 
 <PageTitle>Cookies</PageTitle>
 
@@ -30,6 +33,10 @@
 
 <h2 class="govuk-heading-l">How long we keep your data</h2>
 <div>
-    <p>Data you give us about flooding is kept for a maximum of 7 years.</p>
+    <p>Data you give us about flooding is kept for a maximum of @(DataRetentionYears) years.</p>
     <p><a href="/privacy">Find out more about how we use your data.</a></p>
 </div>
+
+@code {
+    private int DataRetentionYears => GISOptions.Value.DataRetentionYears;
+}
