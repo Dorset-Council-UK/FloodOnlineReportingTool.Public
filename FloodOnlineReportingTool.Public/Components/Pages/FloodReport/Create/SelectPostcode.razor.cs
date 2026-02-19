@@ -12,18 +12,17 @@ public partial class SelectPostcode(
     ILogger<SelectPostcode> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Postcode.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => Model.PostcodeKnown == true
+        ? FloodReportCreatePages.Address
+        : FloodReportCreatePages.Location;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
@@ -57,9 +56,7 @@ public partial class SelectPostcode(
             }
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -77,6 +74,14 @@ public partial class SelectPostcode(
         GC.SuppressFinalize(this);
     }
 
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         // Save the postcode
@@ -88,24 +93,13 @@ public partial class SelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or pass back to the summary (user must return from property type page)
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
+        // Go to the next page or pass back to the summary
+        var nextPageUrl = NextPage.Url;
         if (FromSummary)
         {
             nextPageUrl += "?fromsummary=true";
         }
         navigationManager.NavigateTo(nextPageUrl);
-    }
-
-    private PageInfo GetNextPage()
-    {
-        if (Model.PostcodeKnown == true)
-        {
-            return FloodReportCreatePages.Address;
-        }
-
-        return FloodReportCreatePages.Location;
     }
 
     private async Task<ExtraData> GetCreateExtraData()

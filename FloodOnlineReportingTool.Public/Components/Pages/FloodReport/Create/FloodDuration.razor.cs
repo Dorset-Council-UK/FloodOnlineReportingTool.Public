@@ -17,18 +17,17 @@ public partial class FloodDuration(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodDuration.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodStarted.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : FloodReportCreatePages.FloodSource;
+    private static PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
 
     private Models.FloodReport.Create.FloodDuration Model { get; set; } = default!;
 
@@ -88,9 +87,7 @@ public partial class FloodDuration(
             _durationOptions = await CreateDurationOptions();
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -109,6 +106,14 @@ public partial class FloodDuration(
         return new EligibilityCheckDto();
     }
 
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         var eligibilityCheck = await GetEligibilityCheck();
@@ -123,8 +128,7 @@ public partial class FloodDuration(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : FloodReportCreatePages.FloodSource;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateDurationOptions()

@@ -2,11 +2,11 @@
 
 <PageTitle>@Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
 <h1 class="govuk-heading-xl">@Title</h1>
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Address">
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Address">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -53,7 +53,6 @@
         <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="SearchAgain">Search again</button>
     </GdsFormGroup>
     
-
-    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button>
+    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
 
 </EditForm>

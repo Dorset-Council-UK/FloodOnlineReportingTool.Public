@@ -12,28 +12,24 @@ public partial class FloodStarted(
     ILogger<FloodStarted> logger,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodStarted.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Vulnerability.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : (Model.IsFloodOngoing == true ? FloodReportCreatePages.FloodSource : FloodReportCreatePages.FloodDuration);
+    private static PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
 
     private Models.FloodReport.Create.FloodStarted Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private readonly IReadOnlyCollection<GdsOptionItem<bool>> _floodOngoingOptions = [
-        new ("flood-ongoing-yes", "Yes", value: true),
-        new ("flood-ongoing-no", "No", value: false),
-    ];
+    private IReadOnlyCollection<GdsOptionItem<bool>> _floodOngoingOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -70,10 +66,9 @@ public partial class FloodStarted(
                 Model.IsFloodOngoing = eligibilityCheck.OnGoing;
             }
 
+            _floodOngoingOptions = CreateFloodOptions();
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 
@@ -92,6 +87,14 @@ public partial class FloodStarted(
         return new EligibilityCheckDto();
     }
 
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         var isOnGoing = Model.IsFloodOngoing == true;
@@ -107,22 +110,15 @@ public partial class FloodStarted(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        navigationManager.NavigateTo(NextPage(isOnGoing).Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
-    private PageInfo NextPage(bool isOnGoing)
+    private static IReadOnlyCollection<GdsOptionItem<bool>> CreateFloodOptions()
     {
-        if (FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
-        if (isOnGoing)
-        {
-            return FloodReportCreatePages.FloodSource;
-        }
-
-        return FloodReportCreatePages.FloodDuration;
+        return
+        [
+            new("flood-ongoing-yes", "Yes", value: true),
+            new("flood-ongoing-no", "No", value: false),
+        ];
     }
-
 }

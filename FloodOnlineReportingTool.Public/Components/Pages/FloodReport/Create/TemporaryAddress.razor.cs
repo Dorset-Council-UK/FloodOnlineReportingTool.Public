@@ -17,19 +17,17 @@ public partial class TemporaryAddress(
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.TemporaryAddress.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary 
+        ? FloodReportCreatePages.Summary 
+        : FloodReportCreatePages.Vulnerability;
+    private static PageInfo PreviousPage => FloodReportCreatePages.TemporaryPostcode;
 
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
@@ -74,9 +72,15 @@ public partial class TemporaryAddress(
             Model.LocationDesc = eligibilityCheck.TemporaryLocationDesc;
             Model.AddressOptions = await CreateAddressOptions();
 
-            StateHasChanged();
+            StateHasChanged(); 
+        }
+    }
 
-            
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 
@@ -103,14 +107,8 @@ public partial class TemporaryAddress(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or pass back to the summary (user must return from property type page)
-            var nextPage = FloodReportCreatePages.Vulnerability;
-            var nextPageUrl = nextPage.Url;
-            if (FromSummary)
-            {
-                nextPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(nextPageUrl);
+            // Go to the next page or pass back to the summary
+            navigationManager.NavigateTo(NextPage.Url);
         }
     }
 
