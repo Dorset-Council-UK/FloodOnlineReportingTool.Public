@@ -10,7 +10,9 @@ using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
@@ -21,12 +23,16 @@ public partial class Test(
     IGovNotifyEmailSender govNotifyEmailSender,
     IConfiguration Configuration,
     IContactRecordRepository contactRepository,
+    IFloodReportRepository floodReportRepository,
     NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = GeneralPages.Test.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
+
+    [CascadingParameter]
+    public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private readonly IReadOnlyCollection<PageInfoWithNote> _floodReportCreatePages = [
         new (FloodReportCreatePages.Home),
@@ -74,7 +80,20 @@ public partial class Test(
     private readonly CancellationTokenSource _cts = new();
     private bool _hasCreateData;
     private bool _hasCreateExtraData;
-    private bool _hasInvestigationData;
+
+    // Investigation
+    private bool _investigationInProtectedStorage;
+    private bool? _investigationHasStarted;
+    private string? _floodReportStatusText;
+
+    private string SignInUrl
+    {
+        get
+        {
+            var redirectUri = navigationManager.SignInRedirectUri;
+            return string.IsNullOrWhiteSpace(redirectUri) ? "signin" : $"signin?redirectUri={redirectUri}";
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -98,7 +117,22 @@ public partial class Test(
 
             _hasCreateData = await HasCreateData();
             _hasCreateExtraData = await HasCreateExtraData();
-            _hasInvestigationData = await HasInvestigationData();
+
+            // investigation
+            var yourLastFloodReport = await GetYourLastFloodReport();
+            if (yourLastFloodReport is null)
+            {
+                _investigationHasStarted = null;
+                _floodReportStatusText = null;
+            }
+            else
+            {
+                _investigationHasStarted = floodReportRepository.HasInvestigationStarted(yourLastFloodReport.StatusId);
+                _floodReportStatusText = yourLastFloodReport.Status?.Text;
+            }
+            _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+
+            StateHasChanged();
         }
     }
 
@@ -110,11 +144,6 @@ public partial class Test(
     private async Task<bool> HasCreateExtraData()
     {
         var data = await protectedSessionStorage.GetAsync<ExtraData?>(SessionConstants.EligibilityCheck_ExtraData);
-        return data.Success && data.Value != null;
-    }
-    private async Task<bool> HasInvestigationData()
-    {
-        var data = await protectedSessionStorage.GetAsync<InvestigationDto?>(SessionConstants.Investigation);
         return data.Success && data.Value != null;
     }
 
@@ -184,11 +213,6 @@ public partial class Test(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, new ExtraData());
         _hasCreateExtraData = await HasCreateExtraData();
     }
-    private async Task BlankInvestigationData()
-    {
-        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, new InvestigationDto());
-        _hasInvestigationData = await HasInvestigationData();
-    }
 
     private async Task DeleteCreateData()
     {
@@ -200,9 +224,67 @@ public partial class Test(
         await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
         _hasCreateExtraData = await HasCreateExtraData();
     }
-    private async Task DeleteInvestigationData()
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
+    }
+
+    // Investigation actions
+    private async Task<bool> InvestigationExistsInProtectedStorage()
+    {
+        var data = await protectedSessionStorage.GetAsync<InvestigationDto?>(SessionConstants.Investigation);
+        return data.Success && data.Value is not null;
+    }
+    private async Task InvestigationRemove()
     {
         await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
-        _hasInvestigationData = await HasInvestigationData();
+        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+    }
+    private async Task InvestigationAddEmpty()
+    {
+        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, new InvestigationDto());
+        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+    }
+    private async Task InvestigationAddTest()
+    {
+        var investigationDto = new InvestigationDto
+        {
+            ActionsTaken = [],
+        };
+        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigationDto);
+        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+    }
+    private async Task InvestigationActionNeededStatus()
+    {
+        var floodReport = await GetYourLastFloodReport();
+        if (floodReport is null)
+        {
+            return;
+        }
+        await testService.TestFloodReportActionNeededStatus(floodReport.Id, _cts.Token);
+        StateHasChanged();
+    }
+    private async Task<Database.Models.Flood.FloodReport?> GetYourLastFloodReport()
+    {
+        var userId = await GetUserIdAsGuid();
+        if (userId is null)
+        {
+            return null;
+        }
+
+        // TODO: Work out what to do when the user has reported multiple floods
+        var floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
+        return floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
     }
 }

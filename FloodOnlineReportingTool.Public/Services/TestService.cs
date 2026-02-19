@@ -5,6 +5,7 @@ using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -114,6 +115,104 @@ public sealed class TestService(
 #else
         await Task.CompletedTask;
         return null;
+#endif
+    }
+
+    internal static async Task<Investigation?> TestInvestigation(CancellationToken ct)
+    {
+#if DEBUG
+        var now = DateTimeOffset.UtcNow;
+
+        return new()
+        {
+            Id = Guid.CreateVersion7(),
+            CreatedUtc = now,
+
+            // Water speed
+            BeginId = Guid.Empty, // FloodProblem
+            WaterSpeedId = Guid.Empty, // FloodProblem
+            AppearanceId = Guid.Empty, // FloodProblem
+            MoreAppearanceDetails = "TEST The water looked like it was made of strawberry milkshake",
+
+            // Internal how / Water entry
+            Entries = [], // InvestigationEntry
+            WaterEnteredOther = "TEST The shower is wet but I think thats normal",
+
+            // Internal when
+            WhenWaterEnteredKnownId = null, // RecordStatus
+            FloodInternalUtc = null,
+
+            // Water destination
+            Destinations = [], // InvestigationDestination
+
+            // Damaged vehicles
+            WereVehiclesDamagedId = Guid.Empty, // RecordStatus
+            NumberOfVehiclesDamaged = 6,
+
+            // Peak depth
+            IsPeakDepthKnownId = Guid.Empty, // RecordStatus
+            PeakInsideCentimetres = null,
+            PeakOutsideCentimetres = null,
+
+            // Community impacts
+            CommunityImpacts = [], // InvestigationCommunityImpact
+
+            // Blockages
+            HasKnownProblems = false, // TODO fix
+            KnownProblemDetails = "TEST The drain was blocked with legos",
+
+            // Actions taken
+            ActionsTaken = [], // InvestigationActionsTaken
+            OtherAction = "TEST I built a lego dam to stop the water, there was even fire engines!!",
+
+            // Warnings - Help received
+            HelpReceived = [], // InvestigationHelpReceived
+
+            // Warnings ??
+            FloodlineId = Guid.Empty, // RecordStatus
+            WarningReceivedId = Guid.Empty, // RecordStatus
+
+            // Warnings - Sources
+            WarningSources = [], // InvestigationWarningSource
+            WarningSourceOther = "TEST Many people were screaming, shouting, and letting it all out in the street",
+
+            // Warnings - Floodline
+            WarningTimelyId = null, // RecordStatus
+            WarningAppropriateId = null, // RecordStatus
+
+            // History
+            HistoryOfFloodingId = Guid.Empty, // RecordStatus
+            HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
+        };
+#else
+        await Task.CompletedTask;
+        return null;
+#endif
+    }
+
+    internal static async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
+    {
+        var investigation = await TestInvestigation(ct);
+        return investigation?.ToDto();
+    }
+
+    internal async Task TestFloodReportActionNeededStatus(Guid floodReportId, CancellationToken ct)
+    {
+#if DEBUG
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var floodReport = await context.FloodReports.FindAsync([floodReportId], ct);
+        if (floodReport is null)
+        {
+            return;
+        }
+
+        if (floodReport.StatusId != RecordStatusIds.ActionNeeded)
+        {
+            floodReport.StatusId = RecordStatusIds.ActionNeeded;
+            await context.SaveChangesAsync(ct);
+        }
+#else
+        await Task.CompletedTask;
 #endif
     }
 }
