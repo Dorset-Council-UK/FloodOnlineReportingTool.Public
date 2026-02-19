@@ -79,18 +79,28 @@ public partial class Update(
 
     private async Task UpdateFloodReport()
     {
-        logger.LogDebug("Updating flood report");
-
-        if (_updateModel == null)
+        if (_updateModel is null)
         {
+            logger.LogError("Update model was null. Cannot update flood report.");
+        }
+
+        var userId = await GetUserIdAsGuid();
+        if (userId is null)
+        {
+            logger.LogError("User ID was not found.");
+        }
+
+        if (_updateModel is null || userId is null)
+        {
+            _messageStore.Add(_editContext.Field(nameof(_updateModel.UprnText)), "There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
+            _editContext.NotifyValidationStateChanged();
             return;
         }
 
+        logger.LogDebug("Updating flood report");
         try
         {
-            var userId = await GetUserIdAsGuid();
-            var dto = _updateModel.ToDto();
-            await eligibilityCheckRepository.UpdateForUser(userId.Value, EligibilityCheckId, dto, _cts.Token);
+            await eligibilityCheckRepository.UpdateForUser(userId.Value, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
             logger.LogInformation("Eligibility check updated successfully for user {UserId}", userId.Value);
             navigationManager.NavigateTo(FloodReportPages.Overview.Url);
         }

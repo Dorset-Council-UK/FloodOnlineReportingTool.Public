@@ -211,10 +211,27 @@ public partial class Summary(
 
     private async Task SaveInvestigation()
     {
+        if (_investigationDto is null)
+        {
+            logger.LogError("Investigation information was not found. Investigation: {Investigation}", _investigationDto);
+        }
+
+        var userId = await GetUserIdAsGuid();
+        if (userId is null)
+        {
+            logger.LogError("User ID was not found.");
+        }
+
+        if (_investigationDto is null || userId is null)
+        {
+            _messageStore.Add(errorField, "There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
+            _editContext.NotifyValidationStateChanged();
+            return;
+        }
+
         logger.LogDebug("Saving investigation information..");
         try
         {
-            var userId = await GetUserIdAsGuid();
             await investigationRepository.CreateForUser(userId.Value, _investigationDto, _cts.Token);
 
             // Clear the session data
@@ -379,13 +396,5 @@ public partial class Summary(
     private async Task<Guid?> GetUserIdAsGuid()
     {
         return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
-    }
-
-
-
-    private bool _showWaterSpeed = true;
-    private async Task TestToggleWaterSpeed()
-    {
-        _showWaterSpeed = !_showWaterSpeed;
     }
 }
