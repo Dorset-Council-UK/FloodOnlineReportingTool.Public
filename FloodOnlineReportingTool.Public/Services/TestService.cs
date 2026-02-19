@@ -122,66 +122,94 @@ public sealed class TestService(
     {
 #if DEBUG
         var now = DateTimeOffset.UtcNow;
+        var investigationId = Guid.CreateVersion7();
 
         return new()
         {
-            Id = Guid.CreateVersion7(),
+            Id = investigationId,
             CreatedUtc = now,
 
-            // Water speed
-            BeginId = Guid.Empty, // FloodProblem
-            WaterSpeedId = Guid.Empty, // FloodProblem
-            AppearanceId = Guid.Empty, // FloodProblem
+            // Water speed (FloodProblem's)
+            BeginId = FloodOnsetIds.Gradually,
+            WaterSpeedId = FloodSpeedIds.Slow,
+            AppearanceId = FloodAppearanceIds.Muddy,
             MoreAppearanceDetails = "TEST The water looked like it was made of strawberry milkshake",
 
-            // Internal how / Water entry
-            Entries = [], // InvestigationEntry
+            // Internal how / Water entry (FloodProblem's)
+            Entries = [
+                new(investigationId, FloodEntryIds.Windows),
+                new(investigationId, FloodEntryIds.Walls),
+                new(investigationId, FloodEntryIds.ExternalOnly),
+                new(investigationId, FloodEntryIds.Other),
+            ],
             WaterEnteredOther = "TEST The shower is wet but I think thats normal",
 
-            // Internal when
-            WhenWaterEnteredKnownId = null, // RecordStatus
-            FloodInternalUtc = null,
+            // Internal when (RecordStatus)
+            WhenWaterEnteredKnownId = Database.Models.Status.RecordStatusIds.Yes,
+            FloodInternalUtc = now.AddDays(-2),
 
-            // Water destination
-            Destinations = [], // InvestigationDestination
+            // Water destination (FloodProblem's)
+            Destinations = [
+                new(investigationId, FloodDestinationIds.StreamOrWatercourse),
+                new(investigationId, FloodDestinationIds.DitchesAndDrainageChannels),
+            ],
 
-            // Damaged vehicles
-            WereVehiclesDamagedId = Guid.Empty, // RecordStatus
+            // Damaged vehicles (RecordStatus)
+            WereVehiclesDamagedId = Database.Models.Status.RecordStatusIds.Yes,
             NumberOfVehiclesDamaged = 6,
 
-            // Peak depth
-            IsPeakDepthKnownId = Guid.Empty, // RecordStatus
-            PeakInsideCentimetres = null,
-            PeakOutsideCentimetres = null,
+            // Peak depth (RecordStatus)
+            IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
+            PeakInsideCentimetres = 35,
+            PeakOutsideCentimetres = 50,
 
-            // Community impacts
-            CommunityImpacts = [], // InvestigationCommunityImpact
+            // Community impacts (FloodImpact's)
+            CommunityImpacts = [
+                new(investigationId, FloodImpactIds.SomeRoadAccessBlocked),
+                new(investigationId, FloodImpactIds.PublicTransportDisrupted),
+            ],
 
             // Blockages
-            HasKnownProblems = false, // TODO fix
+            HasKnownProblems = true,
             KnownProblemDetails = "TEST The drain was blocked with legos",
 
-            // Actions taken
-            ActionsTaken = [], // InvestigationActionsTaken
+            // Actions taken (FloodMitigation's)
+            ActionsTaken = [
+                new(investigationId, FloodMitigationIds.SandlessSandbag),
+                new(investigationId, FloodMitigationIds.FloodDoor),
+                new(investigationId, FloodMitigationIds.AirBrickCover),
+                new(investigationId, FloodMitigationIds.MoveValuables),
+                new(investigationId, FloodMitigationIds.OtherAction),
+            ],
             OtherAction = "TEST I built a lego dam to stop the water, there was even fire engines!!",
 
-            // Warnings - Help received
-            HelpReceived = [], // InvestigationHelpReceived
+            // Warnings - Help received (FloodMitigation's)
+            HelpReceived = [
+                new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
+                new(investigationId, FloodMitigationIds.EnvironmentAgency),
+                new(investigationId, FloodMitigationIds.LocalAuthority),
+                new(investigationId, FloodMitigationIds.FloodlineHelp),
+            ],
 
-            // Warnings ??
-            FloodlineId = Guid.Empty, // RecordStatus
-            WarningReceivedId = Guid.Empty, // RecordStatus
+            // Warnings - Before the flooding (RecordStatus)
+            FloodlineId = Database.Models.Status.RecordStatusIds.Yes,
+            WarningReceivedId = Database.Models.Status.RecordStatusIds.Yes,
 
-            // Warnings - Sources
-            WarningSources = [], // InvestigationWarningSource
+            // Warnings - Sources (FloodMitigation's)
+            WarningSources = [
+                new(investigationId, FloodMitigationIds.FloodlineWarning),
+                new(investigationId, FloodMitigationIds.Radio),
+                new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
+                new(investigationId, FloodMitigationIds.OtherWarning),
+            ],
             WarningSourceOther = "TEST Many people were screaming, shouting, and letting it all out in the street",
 
-            // Warnings - Floodline
-            WarningTimelyId = null, // RecordStatus
-            WarningAppropriateId = null, // RecordStatus
+            // Warnings - Floodline (RecordStatus)
+            WarningTimelyId = Database.Models.Status.RecordStatusIds.No,
+            WarningAppropriateId = Database.Models.Status.RecordStatusIds.No,
 
-            // History
-            HistoryOfFloodingId = Guid.Empty, // RecordStatus
+            // History (RecordStatus)
+            HistoryOfFloodingId = Database.Models.Status.RecordStatusIds.Yes,
             HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
         };
 #else
