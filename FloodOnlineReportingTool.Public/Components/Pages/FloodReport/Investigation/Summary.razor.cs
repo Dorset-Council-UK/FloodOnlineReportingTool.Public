@@ -231,30 +231,12 @@ public partial class Summary(
         }
     }
 
-    private async Task<EligibilityCheckDto> GetEligibilityCheck()
-    {
-        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
-
-        logger.LogDebug("Eligibility Check was not found in the protected storage.");
-        return new();
-    }
-
     private async Task<InvestigationDto> GetInvestigation()
     {
         var data = await protectedSessionStorage.GetAsync<InvestigationDto>(SessionConstants.Investigation);
-        if (data.Success)
+        if (data.Success && data.Value is not null)
         {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
+            return data.Value;
         }
 
         logger.LogWarning("Investigation was not found in the protected storage.");

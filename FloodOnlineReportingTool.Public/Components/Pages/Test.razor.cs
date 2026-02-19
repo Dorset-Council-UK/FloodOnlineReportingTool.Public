@@ -258,10 +258,13 @@ public partial class Test(
     }
     private async Task InvestigationAddTest()
     {
-        var investigationDto = new InvestigationDto
+        var investigationDto = await testService.TestInvestigationDto(_cts.Token);
+        if (investigationDto is null)
         {
-            ActionsTaken = [],
-        };
+            logger.LogError("TestInvestigationDto returned null, cannot add to protected storage.");
+            return;
+        }
+
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigationDto);
         _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
     }

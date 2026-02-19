@@ -118,7 +118,7 @@ public sealed class TestService(
 #endif
     }
 
-    internal static async Task<Investigation?> TestInvestigation(CancellationToken ct)
+    internal async Task<Investigation?> TestInvestigation(CancellationToken ct)
     {
 #if DEBUG
         var now = DateTimeOffset.UtcNow;
@@ -218,7 +218,7 @@ public sealed class TestService(
 #endif
     }
 
-    internal static async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
+    internal async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
     {
         var investigation = await TestInvestigation(ct);
         return investigation?.ToDto();
