@@ -20,16 +20,6 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <InvestigationDtoSummary
-                InvestigationDto="@_investigationDto"
-                ShowWaterSpeed="@_showWaterSpeed"
-            />
-
-            <div>
-                <h2 class="govuk-heading-l">TESTING</h2>
-                <div><button type="button" @onclick="TestToggleWaterSpeed">Toggle water speed</button></div>
-            </div>
-
             @if (!_isLoading)
             {
                 <h2 class="govuk-heading-l">Investigation details</h2>

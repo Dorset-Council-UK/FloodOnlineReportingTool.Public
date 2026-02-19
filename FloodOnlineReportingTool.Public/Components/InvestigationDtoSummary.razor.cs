@@ -14,9 +14,8 @@ public partial class InvestigationDtoSummary(
     [Parameter, EditorRequired]
     public InvestigationDto InvestigationDto { get; set; }
 
-    [PersistentState]
+    [PersistentState(AllowUpdates = true)]
     public IReadOnlyCollection<FloodProblem>? FloodProblems { get; set; }
-
 
     // Water speed
     [Parameter]
@@ -24,6 +23,10 @@ public partial class InvestigationDtoSummary(
     private string _beginLabel = "";
     private string _waterSpeedLabel = "";
     private string _appearanceLabel = "";
+
+    // Internal how / Water entry
+
+    // Internal when
 
     // Water destination
     [Parameter]
@@ -35,27 +38,34 @@ public partial class InvestigationDtoSummary(
     public bool ShowDamagedVehicles { get; set; } = true;
     private string _vehiclesDamagedMessage = "";
 
+    // Peak depth
 
+    // Community impacts
 
+    // Blockages
 
-    // Help received warnings
+    // Actions taken
+
+    // Warnings - Help received
     [Parameter]
     public bool ShowHelpReceivedWarnings { get; set; } = true;
     private string[] _helpReceivedLabels = [];
 
-    // Before the flooding warnings
+    // Warnings - Before the flooding
     public bool ShowBeforeFloodingWarnings { get; set; } = true;
     private string _registeredWithFloodlineLabel = "";
     private string _otherWarningReceivedLabel = "";
 
-    // Floodline warnings
+    // Warnings - Sources
+
+    // Warnings - Floodline
     [Parameter]
     public bool ShowFloodlineWarnings { get; set; } = true;
     private bool _isFloodlineWarning;
     private string _warningTimelyLabel = "";
     private string _warningAppropriateLabel = "";
 
-
+    // History
 
     private readonly CancellationTokenSource _cts = new();
     
@@ -64,6 +74,8 @@ public partial class InvestigationDtoSummary(
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         if (FloodProblems is null)
         {
             FloodProblems = await GetInvestigationFloodProblems();
@@ -74,9 +86,16 @@ public partial class InvestigationDtoSummary(
 
     protected override async Task OnParametersSetAsync()
     {
+        await base.OnParametersSetAsync();
+
         await WaterSpeed();
         await WaterDestination();
         await DamagedVehicles();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
     }
 
     public async ValueTask DisposeAsync()
