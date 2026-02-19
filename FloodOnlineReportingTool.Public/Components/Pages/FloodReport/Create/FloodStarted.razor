@@ -2,9 +2,9 @@
 
 <PageTitle>@Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="FloodStarted">
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodStarted">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -36,4 +36,5 @@
     {
         <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
     }
+
 </EditForm>

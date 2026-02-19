@@ -12,18 +12,17 @@ public partial class TemporarySelectPostcode(
     ILogger<TemporarySelectPostcode> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.TemporaryPostcode.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodAreas.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => Model.PostcodeKnown == true
+        ? FloodReportCreatePages.TemporaryAddress
+        : FloodReportCreatePages.Vulnerability;
+    private PageInfo PreviousPage => FloodReportCreatePages.FloodAreas;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
@@ -53,9 +52,7 @@ public partial class TemporarySelectPostcode(
             Model.PostcodeKnown = Model.Postcode != null;
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();   
         }
     }
 
@@ -71,6 +68,14 @@ public partial class TemporarySelectPostcode(
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -95,24 +100,13 @@ public partial class TemporarySelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or pass back to the summary (user must return from property type page)
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
+        // Go to the next page or pass back to the summary
+        var nextPageUrl = NextPage.Url;
         if (FromSummary)
         {
             nextPageUrl += "?fromsummary=true";
         }
         navigationManager.NavigateTo(nextPageUrl);
-    }
-
-    private PageInfo GetNextPage()
-    {
-        if (Model.PostcodeKnown == true)
-        {
-            return FloodReportCreatePages.TemporaryAddress;
-        }
-
-        return FloodReportCreatePages.Vulnerability;
     }
 
     private async Task<ExtraData> GetCreateExtraData()

@@ -2,9 +2,9 @@
 
 <PageTitle>@Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit" FormName="CreateFloodReport">
+<EditForm EditContext="editContext" OnSubmit="OnSubmit" FormName="CreateFloodReport">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
@@ -17,7 +17,7 @@
                     <h1 class="govuk-fieldset__heading">Are you reporting an address or property?</h1>
                 </Heading>
                 <Content>
-                    <GdsHint>i.e. location with a Royal Mail postal address rather than a structure or land.</GdsHint>
+                    <GdsHint>This would be a location with a Royal Mail postal address rather than a structure or land.</GdsHint>
                     <GdsErrorMessage />
                     <GdsRadios Options="_isAddressOptions" />
                 </Content>
@@ -29,4 +29,5 @@
     {
         <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
     }
+
 </EditForm>

@@ -16,18 +16,16 @@ public partial class FloodAreas(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodAreas.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.PropertyType.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private static PageInfo NextPageVulnerability => FloodReportCreatePages.Vulnerability;
+    private static PageInfo NextPageTemporaryPostcode => FloodReportCreatePages.TemporaryPostcode;
+    private static PageInfo PreviousPage => FloodReportCreatePages.PropertyType;
 
     private Models.FloodReport.Create.FloodAreas Model { get; set; } = default!;
 
@@ -90,9 +88,7 @@ public partial class FloodAreas(
             }
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -110,6 +106,14 @@ public partial class FloodAreas(
         }
 
         return floodImpact.Id;
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
     }
 
     private async Task OnValidSubmit()
@@ -144,8 +148,7 @@ public partial class FloodAreas(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
+        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? NextPageTemporaryPostcode : NextPageVulnerability;
         navigationManager.NavigateTo(nextPage.Url);
     }
 
