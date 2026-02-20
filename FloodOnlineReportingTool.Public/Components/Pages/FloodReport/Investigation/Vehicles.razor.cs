@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Identity.Web;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
@@ -21,21 +22,17 @@ public partial class Vehicles(
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Vehicles.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Destination.ToGdsBreadcrumb(),
-    ];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private static PageInfo PreviousPage => InvestigationPages.Destination;
 
     private Models.FloodReport.Investigation.Vehicles Model { get; set; } = default!;
 
@@ -79,9 +76,7 @@ public partial class Vehicles(
             _wereVehiclesDamagedOptions = await CreateVehiclesDamagedOptions();
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();  
         }
     }
 
@@ -107,11 +102,14 @@ public partial class Vehicles(
             return InvestigationPages.Summary;
         }
 
-        var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-        if (eligibilityCheck?.IsInternal() == true)
+        var userId = await GetUserIdAsGuid();
+        if (userId.HasValue)
         {
-            return InvestigationPages.InternalHow;
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, _cts.Token);
+            if (eligibilityCheck?.IsInternal() == true)
+            {
+                return InvestigationPages.InternalHow;
+            }
         }
 
         return InvestigationPages.PeakDepth;
@@ -146,5 +144,20 @@ public partial class Vehicles(
         var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

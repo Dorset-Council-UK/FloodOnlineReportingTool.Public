@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Identity.Web;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
@@ -22,20 +23,20 @@ public partial class PeakDepth(
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.PeakDepth.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-    ];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.CommunityImpact;
+    private PageInfo? PreviousPage;
 
     private Models.FloodReport.Investigation.PeakDepth Model { get; set; } = default!;
 
@@ -58,32 +59,34 @@ public partial class PeakDepth(
         GC.SuppressFinalize(this);
     }
 
-    private async Task<IReadOnlyCollection<GdsBreadcrumb>> GetBreadcrumbs()
+    private async Task<PageInfo> GetPreviousPage()
     {
-        var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+        bool isInternal = false;
+        var userId = await GetUserIdAsGuid();
+        if (userId.HasValue)
+        {
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, _cts.Token);
+            isInternal = eligibilityCheck?.IsInternal() == true;
+        }
 
-        var pageInfo = eligibilityCheck?.IsInternal() == true
-            ? InvestigationPages.InternalWhen
+        return PreviousPage = isInternal 
+            ? InvestigationPages.InternalWhen 
             : InvestigationPages.Vehicles;
-
-        return Breadcrumbs.Append(pageInfo.ToGdsBreadcrumb()).ToList();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
         Model ??= new();
         _editContext = new(Model);
         _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        PreviousPage = await GetPreviousPage();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            Breadcrumbs = await GetBreadcrumbs();
-
             // Set any previously entered data
             var investigation = await GetInvestigation();
             Model.IsPeakDepthKnownId = investigation.IsPeakDepthKnownId;
@@ -94,8 +97,6 @@ public partial class PeakDepth(
 
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 
@@ -112,8 +113,7 @@ public partial class PeakDepth(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.CommunityImpact;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()
@@ -146,5 +146,20 @@ public partial class PeakDepth(
         var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

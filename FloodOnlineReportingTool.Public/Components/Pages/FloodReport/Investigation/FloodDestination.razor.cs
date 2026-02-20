@@ -18,18 +18,17 @@ public partial class FloodDestination(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Speed.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Speed.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.Vehicles;
+    private static PageInfo PreviousPage => InvestigationPages.Speed;
 
     private Models.FloodReport.Investigation.FloodDestination Model { get; set; } = default!;
 
@@ -69,9 +68,7 @@ public partial class FloodDestination(
             Model.DestinationOptions = [.. options];
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();  
         }
     }
 
@@ -85,8 +82,7 @@ public partial class FloodDestination(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.Vehicles;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()
