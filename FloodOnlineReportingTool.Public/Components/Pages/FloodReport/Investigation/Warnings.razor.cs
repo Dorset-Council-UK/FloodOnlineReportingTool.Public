@@ -65,6 +65,8 @@ public partial class Warnings(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
+            Model.OtherWarningId = investigation.WarningReceivedId;
+            Model.RegisteredWithFloodlineId = investigation.FloodlineId;
             var recordStatuses = await GetRecordStatusesWithoutNotSure();
             _registeredWithFloodlineOptions = [.. recordStatuses.Select(o => CreateOption(o, "registered", investigation.FloodlineId))];
             _otherWarningOptions = [.. recordStatuses.Select(o => CreateOption(o, "other-warning", investigation.WarningReceivedId))];
