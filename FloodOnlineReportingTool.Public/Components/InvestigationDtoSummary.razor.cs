@@ -14,19 +14,37 @@ public partial class InvestigationDtoSummary(
     [Parameter, EditorRequired]
     public InvestigationDto InvestigationDto { get; set; }
 
+    [Parameter, EditorRequired]
+    public bool IsInternal { get; set; }
+
     [PersistentState(AllowUpdates = true)]
-    public IReadOnlyCollection<FloodProblem>? FloodProblems { get; set; }
+    public IReadOnlyCollection<FloodProblem>? InvestigationFloodProblems { get; set; }
+
+    [PersistentState(AllowUpdates = true)]
+    public IReadOnlyCollection<RecordStatus>? InvestigationRecordStatuses { get; set; }
+
+    [PersistentState(AllowUpdates = true)]
+    public IReadOnlyCollection<FloodImpact>? InvestigationFloodImpacts { get; set; }
+
+    [PersistentState(AllowUpdates = true)]
+    public IReadOnlyCollection<FloodMitigation>? InvestigationFloodMitigations { get; set; }
 
     // Water speed
     [Parameter]
     public bool ShowWaterSpeed { get; set; } = true;
-    private string _beginLabel = "";
-    private string _waterSpeedLabel = "";
-    private string _appearanceLabel = "";
+    private string? _beginLabel;
+    private string? _waterSpeedLabel;
+    private string? _appearanceLabel;
 
     // Internal how / Water entry
+    [Parameter]
+    public bool ShowInternalHow { get; set; } = true;
+    private string[] _entryLabels = [];
 
     // Internal when
+    [Parameter]
+    public bool ShowInternalWhen { get; set; } = true;
+    public string? _internalWhen;
 
     // Water destination
     [Parameter]
@@ -36,15 +54,28 @@ public partial class InvestigationDtoSummary(
     // Damaged vehicles
     [Parameter]
     public bool ShowDamagedVehicles { get; set; } = true;
-    private string _vehiclesDamagedMessage = "";
+    private string? _vehiclesDamagedMessage;
 
     // Peak depth
+    [Parameter]
+    public bool ShowPeakDepth { get; set; } = true;
+    private bool _isPeakDepthKnown;
+    private string? _peakDepthInsideMessage;
+    private string? _peakDepthOutsideMessage;
+    private string? _peakDepthNotKnownMessage;
 
     // Community impacts
+    [Parameter]
+    public bool ShowCommunityImpacts { get; set; } = true;
+    private string[] _communityImpactLabels = [];
 
     // Blockages
+    public bool ShowBlockages { get; set; } = true;
+    private string? _blockagesKnownProblemsLabel;
 
     // Actions taken
+    public bool ShowActionsTaken { get; set; } = true;
+    private string[] _actionsTakenLabels = [];
 
     // Warnings - Help received
     [Parameter]
@@ -53,49 +84,66 @@ public partial class InvestigationDtoSummary(
 
     // Warnings - Before the flooding
     public bool ShowBeforeFloodingWarnings { get; set; } = true;
-    private string _registeredWithFloodlineLabel = "";
-    private string _otherWarningReceivedLabel = "";
+    private string? _registeredWithFloodlineLabel;
+    private string? _otherWarningReceivedLabel;
 
     // Warnings - Sources
+    public bool ShowWarningSources { get; set; } = true;
+    private string[] _warningSourcesLabels = [];
 
     // Warnings - Floodline
     [Parameter]
     public bool ShowFloodlineWarnings { get; set; } = true;
     private bool _isFloodlineWarning;
-    private string _warningTimelyLabel = "";
-    private string _warningAppropriateLabel = "";
+    private string? _warningTimelyLabel;
+    private string? _warningAppropriateLabel;
 
     // History
+    [Parameter]
+    public bool ShowHistory { get; set; } = true;
+    private string? _historyOfFloodingLabel;
 
     private readonly CancellationTokenSource _cts = new();
-    
-    private IReadOnlyCollection<RecordStatus> _recordStatuses = [];
-    private IReadOnlyCollection<FloodMitigation> _floodMitigations = [];
+    const string Unknown = "Unknown";
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
-        if (FloodProblems is null)
+        if (InvestigationFloodProblems is null)
         {
-            FloodProblems = await GetInvestigationFloodProblems();
+            InvestigationFloodProblems = await GetInvestigationFloodProblems();
         }
-        _recordStatuses = await GetInvestigationRecordStatuses();
-        _floodMitigations = await GetInvestigationFloodMitigations();
+        if (InvestigationRecordStatuses is null)
+        {
+            InvestigationRecordStatuses = await GetInvestigationRecordStatuses();
+        }
+        if (InvestigationFloodImpacts is null)
+        {
+            InvestigationFloodImpacts = await GetInvestigationFloodImpacts();
+        }
+        if (InvestigationFloodMitigations is null)
+        {
+            InvestigationFloodMitigations = await GetInvestigationFloodMitigations();
+        }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await base.OnParametersSetAsync();
+        GetWaterSpeed();
+        GetWaterDestination();
+        GetDamagedVehicles();
+        GetInternalHow();
+        GetInternalWhen();
+        GetPeakDepth();
+        GetCommunityImpact();
+        GetBlockages();
+        GetActionsTaken();
+        GetHistory();
 
-        await WaterSpeed();
-        await WaterDestination();
-        await DamagedVehicles();
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
+        // warnings
+        GetHelpReceivedWarnings();
+        GetBeforeTheFloodingWarnings();
+        GetWarningSources();
+        GetFloodlineWarnings();
     }
 
     public async ValueTask DisposeAsync()
@@ -142,6 +190,19 @@ public partial class InvestigationDtoSummary(
     }
 
     /// <summary>
+    /// Get all the flood impacts used in investigations, this is only for community impacts, one call makes it more efficient
+    /// </summary>
+    private async Task<IReadOnlyCollection<FloodImpact>> GetInvestigationFloodImpacts()
+    {
+        var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
+        if (floodImpacts.Count == 0)
+        {
+            logger.LogError("There were no flood imapcts found.");
+        }
+        return [.. floodImpacts];
+    }
+
+    /// <summary>
     /// Get all the flood mitigations used in investigations, one call makes it more efficient
     /// </summary>
     private async Task<IReadOnlyCollection<FloodMitigation>> GetInvestigationFloodMitigations()
@@ -159,13 +220,13 @@ public partial class InvestigationDtoSummary(
         return [.. floodMitigations];
     }
 
-    private async Task WaterSpeed()
+    private void GetWaterSpeed()
     {
         if (!ShowWaterSpeed)
         {
-            _beginLabel = "";
-            _waterSpeedLabel = "";
-            _appearanceLabel = "";
+            _beginLabel = null;
+            _waterSpeedLabel = null;
+            _appearanceLabel = null;
             return;
         }
 
@@ -174,7 +235,7 @@ public partial class InvestigationDtoSummary(
         _appearanceLabel = FloodProblemLabel(InvestigationDto.AppearanceId);
     }
 
-    private async Task WaterDestination()
+    private void GetWaterDestination()
     {
         if (!ShowWaterDestination)
         {
@@ -182,14 +243,20 @@ public partial class InvestigationDtoSummary(
             return;
         }
 
+        if (InvestigationDto.Destinations.Count == 0)
+        {
+            _destinationLabels = [Unknown];
+            return;
+        }
+
         _destinationLabels = FloodProblemLabels(InvestigationDto.Destinations);
     }
 
-    private async Task DamagedVehicles()
+    private void GetDamagedVehicles()
     {
         if (!ShowDamagedVehicles || InvestigationDto.WereVehiclesDamagedId is null)
         {
-            _vehiclesDamagedMessage = "";
+            _vehiclesDamagedMessage = null;
             return;
         }
 
@@ -206,43 +273,260 @@ public partial class InvestigationDtoSummary(
         _vehiclesDamagedMessage = RecordStatusLabel(InvestigationDto.WereVehiclesDamagedId);
     }
 
+    private void GetInternalHow()
+    {
+        if (!IsInternal || !ShowInternalHow)
+        {
+            _entryLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.Entries.Count == 0)
+        {
+            _entryLabels = [Unknown];
+            return;
+        }
+
+        _entryLabels = FloodProblemLabels(InvestigationDto.Entries);
+    }
+
+    private void GetInternalWhen()
+    {
+        if (!IsInternal || !ShowInternalWhen)
+        {
+            _internalWhen = null;
+            return;
+        }
+
+        _internalWhen = InvestigationDto.WhenWaterEnteredKnownId switch
+        {
+            var id when id == RecordStatusIds.Yes => InvestigationDto.FloodInternalUtc.GdsReadable(),
+            var id when id == RecordStatusIds.No => RecordStatusLabel(RecordStatusIds.No),
+            _ => Unknown,
+        };
+    }
+
+    private void GetPeakDepth()
+    {
+        // Reset all peak depth fields
+        _isPeakDepthKnown = false;
+        _peakDepthNotKnownMessage = null;
+        _peakDepthInsideMessage = null;
+        _peakDepthOutsideMessage = null;
+
+        if (!ShowPeakDepth)
+        {
+            return;
+        }
+
+        if (InvestigationDto.IsPeakDepthKnownId == RecordStatusIds.Yes)
+        {
+            _isPeakDepthKnown = true;
+            _peakDepthInsideMessage = BuildMessage(InvestigationDto.PeakInsideCentimetres, "{0} centimetre", "{0} centimetres");
+            _peakDepthOutsideMessage = BuildMessage(InvestigationDto.PeakOutsideCentimetres, "{0} centimetre", "{0} centimetres");
+        }
+        else if (InvestigationDto.IsPeakDepthKnownId == RecordStatusIds.No)
+        {
+            _peakDepthNotKnownMessage = "Not known";
+        }
+        else
+        {
+            _peakDepthNotKnownMessage = Unknown;
+        }
+    }
+
+    private void GetCommunityImpact()
+    {
+        if (!ShowCommunityImpacts)
+        {
+            _communityImpactLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.CommunityImpacts.Count == 0)
+        {
+            _communityImpactLabels = [Unknown];
+            return;
+        }
+
+        _communityImpactLabels = FloodImpactLabels(InvestigationDto.CommunityImpacts);
+    }
+
+    private void GetBlockages()
+    {
+        if (!ShowBlockages)
+        {
+            _blockagesKnownProblemsLabel = null;
+            return;
+        }
+
+        _blockagesKnownProblemsLabel = InvestigationDto.HasKnownProblems switch
+        {
+            var hasProblems when hasProblems == true => RecordStatusLabel(RecordStatusIds.Yes),
+            var hasProblems when hasProblems == false => RecordStatusLabel(RecordStatusIds.No),
+            _ => Unknown,
+        };
+    }
+
+    private void GetActionsTaken()
+    {
+        if (!ShowActionsTaken)
+        {
+            _actionsTakenLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.ActionsTaken.Count == 0)
+        {
+            _actionsTakenLabels = [Unknown];
+            return;
+        }
+
+        _actionsTakenLabels = FloodMitigationLabels(InvestigationDto.ActionsTaken);
+    }
+
+    private void GetHelpReceivedWarnings()
+    {
+        if (!ShowHelpReceivedWarnings)
+        {
+            _helpReceivedLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.HelpReceived.Count == 0)
+        {
+            _helpReceivedLabels = [Unknown];
+            return;
+        }
+
+        _helpReceivedLabels = FloodMitigationLabels(InvestigationDto.HelpReceived);
+    }
+
+    private void GetBeforeTheFloodingWarnings()
+    {
+        if (!ShowBeforeFloodingWarnings)
+        {
+            _registeredWithFloodlineLabel = null;
+            _otherWarningReceivedLabel = null;
+            return;
+        }
+
+        _registeredWithFloodlineLabel = RecordStatusLabel(InvestigationDto.FloodlineId);
+        _otherWarningReceivedLabel = RecordStatusLabel(InvestigationDto.WarningReceivedId);
+    }
+
+    private void GetWarningSources()
+    {
+        if (!ShowWarningSources)
+        {
+            _warningSourcesLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.WarningSources.Count == 0)
+        {
+            _warningSourcesLabels = [Unknown];
+            return;
+        }
+
+        _warningSourcesLabels = FloodMitigationLabels(InvestigationDto.WarningSources);
+    }
+
+    private void GetFloodlineWarnings()
+    {
+        // Reset all floodline warning fields
+        _isFloodlineWarning = false;
+        _warningTimelyLabel = null;
+        _warningAppropriateLabel = null;
+
+        if (!ShowFloodlineWarnings)
+        {
+            return;
+        }
+
+        if (InvestigationDto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
+        {
+            _isFloodlineWarning = true;
+            _warningTimelyLabel = RecordStatusLabel(InvestigationDto.WarningTimelyId);
+            _warningAppropriateLabel = RecordStatusLabel(InvestigationDto.WarningAppropriateId);
+        }
+    }
+
+    private void GetHistory()
+    {
+        if (!ShowHistory)
+        {
+            _historyOfFloodingLabel = null;
+            return;
+        }
+
+        _historyOfFloodingLabel = RecordStatusLabel(InvestigationDto.HistoryOfFloodingId);
+    }
+
+
     private string FloodProblemLabel(Guid? id)
     {
-        if (FloodProblems is null || FloodProblems.Count == 0 || id is null)
+        if (InvestigationFloodProblems is null || InvestigationFloodProblems.Count == 0 || id is null)
         {
             return "";
         }
 
-        return FloodProblems
+        return InvestigationFloodProblems
             .Where(o => o.Id == id)
-            .Select(o => o.TypeName ?? "")
-            .FirstOrDefault("");
+            .Select(o => o.TypeName ?? Unknown)
+            .FirstOrDefault(Unknown);
     }
 
     private string[] FloodProblemLabels(IList<Guid> ids)
     {
-        if (FloodProblems is null || FloodProblems.Count == 0 || ids.Count == 0)
+        if (InvestigationFloodProblems is null || InvestigationFloodProblems.Count == 0 || ids.Count == 0)
         {
             return [];
         }
 
-        return [.. FloodProblems
+        return [.. InvestigationFloodProblems
             .Where(o => ids.Contains(o.Id))
-            .Select(o => o.TypeName ?? ""),
+            .Select(o => o.TypeName ?? Unknown),
         ];
     }
 
     private string RecordStatusLabel(Guid? id)
     {
-        if (id is null)
+        if (InvestigationRecordStatuses is null || InvestigationRecordStatuses.Count == 0 || id is null)
         {
             return "";
         }
 
-        return _recordStatuses
+        return InvestigationRecordStatuses
             .Where(o => o.Id == id)
-            .Select(o => o.Text ?? "")
-            .FirstOrDefault("");
+            .Select(o => o.Text ?? Unknown)
+            .FirstOrDefault(Unknown);
+    }
+
+    private string[] FloodImpactLabels(IList<Guid> ids)
+    {
+        if (InvestigationFloodImpacts is null || InvestigationFloodImpacts.Count == 0 || ids.Count == 0)
+        {
+            return [];
+        }
+
+        return [.. InvestigationFloodImpacts
+            .Where(o => ids.Contains(o.Id))
+            .Select(o => o.TypeName ?? Unknown),
+        ];
+    }
+
+    private string[] FloodMitigationLabels(IList<Guid> ids)
+    {
+        if (InvestigationFloodMitigations is null || InvestigationFloodMitigations.Count == 0 || ids.Count == 0)
+        {
+            return [];
+        }
+
+        return [.. InvestigationFloodMitigations
+            .Where(o => ids.Contains(o.Id))
+            .Select(o => o.TypeName ?? Unknown),
+        ];
     }
 
     private static string BuildMessage(int? number, string singularFormat, string pluralFormat)
@@ -252,94 +536,13 @@ public partial class InvestigationDtoSummary(
             return "";
         }
 
-        if (number > 1)
+        if (number == 1)
         {
+            // examples: 1 centimetre,
             return string.Format(singularFormat, number);
         }
 
+        // examples: 0 centimetres, 2 centimetres, 99 centimetres
         return string.Format(pluralFormat, number);
     }
-
-    //private async Task CreateSummary(InvestigationDto dto, bool isInternal)
-    //{
-
-
-
-    //    // Internal
-    //    if (isInternal)
-    //    {
-    //        Model.IsInternal = true;
-
-    //        // Internal - How it entered - Water entry
-    //        Model.EntryLabels = FloodProblemLabels(dto.Entries);
-
-    //        // Internal - When it entered
-    //        if (dto.WhenWaterEnteredKnownId == RecordStatusIds.Yes)
-    //        {
-    //            Model.InternalMessage = dto.FloodInternalUtc.GdsReadable();
-    //        }
-    //        else if (dto.WhenWaterEnteredKnownId == RecordStatusIds.No)
-    //        {
-    //            Model.InternalMessage = RecordStatusLabel(RecordStatusIds.No);
-    //        }
-    //        else
-    //        {
-    //            Model.InternalMessage = "Unknown";
-    //        }
-    //    }
-
-    //    // Peak depth
-    //    if (dto.IsPeakDepthKnownId != null)
-    //    {
-    //        Model.IsPeakDepthKnownId = dto.IsPeakDepthKnownId.Value;
-    //    }
-    //    if (Model.IsPeakDepthKnownId == RecordStatusIds.Yes)
-    //    {
-    //        Model.PeakDepthInsideMessage = BuildMessage(dto.PeakInsideCentimetres, UnitCentimetres, UnitCentimetre);
-    //        Model.PeakDepthOutsideMessage = BuildMessage(dto.PeakOutsideCentimetres, UnitCentimetres, UnitCentimetre);
-    //    }
-    //    else if (Model.IsPeakDepthKnownId == RecordStatusIds.No)
-    //    {
-    //        Model.PeakDepthMessage = "Not known";
-    //    }
-    //    else
-    //    {
-    //        Model.PeakDepthMessage = "Unknown";
-    //    }
-
-    //    // Community impact
-    //    Model.CommunityImpactLabels = await GetCommunityImpactLabels(dto.CommunityImpacts);
-
-    //    // Blockages
-    //    if (dto.HasKnownProblems != null)
-    //    {
-    //        Model.HasKnownProblemsMessage = dto.HasKnownProblems.Value
-    //            ? RecordStatusLabel(RecordStatusIds.Yes)
-    //            : RecordStatusLabel(RecordStatusIds.No);
-    //    }
-
-    //    // Actions taken
-    //    Model.ActionsTakenLabels = FloodMitigationLabels(dto.ActionsTaken);
-
-    //    // Help received
-    //    Model.HelpReceivedLabels = FloodMitigationLabels(dto.HelpReceived);
-
-    //    // Before the flooding - Warnings
-    //    Model.RegisteredWithFloodlineLabel = RecordStatusLabel(dto.FloodlineId);
-    //    Model.OtherWarningReceivedLabel = RecordStatusLabel(dto.WarningReceivedId);
-
-    //    // Warning sources
-    //    Model.WarningSourceLabels = FloodMitigationLabels(dto.WarningSources);
-
-    //    // Floodline warnings
-    //    if (dto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
-    //    {
-    //        Model.IsFloodlineWarning = true;
-    //        Model.WarningTimelyLabel = RecordStatusLabel(dto.WarningTimelyId);
-    //        Model.WarningAppropriateLabel = RecordStatusLabel(dto.WarningAppropriateId);
-    //    }
-
-    //    // History
-    //    Model.HistoryOfFloodingLabel = RecordStatusLabel(dto.HistoryOfFloodingId);
-    //}
 }
