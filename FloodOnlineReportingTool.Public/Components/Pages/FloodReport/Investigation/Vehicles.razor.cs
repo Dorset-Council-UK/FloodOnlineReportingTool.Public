@@ -22,21 +22,17 @@ public partial class Vehicles(
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Vehicles.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Destination.ToGdsBreadcrumb(),
-    ];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private static PageInfo PreviousPage => InvestigationPages.Destination;
 
     private Models.FloodReport.Investigation.Vehicles Model { get; set; } = default!;
 
@@ -80,9 +76,7 @@ public partial class Vehicles(
             _wereVehiclesDamagedOptions = await CreateVehiclesDamagedOptions();
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();  
         }
     }
 

@@ -17,18 +17,15 @@ public partial class WarningSources(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.WarningSources.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Warnings.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo? NextPage;
+    private static PageInfo PreviousPage => InvestigationPages.Warnings;
 
     private Models.FloodReport.Investigation.WarningSources Model { get; set; } = default!;
 
@@ -68,9 +65,7 @@ public partial class WarningSources(
             Model.WarningOther = investigation.WarningSourceOther;
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -86,8 +81,8 @@ public partial class WarningSources(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = GetNextPage();
-        navigationManager.NavigateTo(nextPage.Url);
+        NextPage = GetNextPage();
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private PageInfo GetNextPage()
