@@ -54,7 +54,7 @@ public partial class Summary(
             }
 
             _investigationDto = await GetInvestigation();
-            _investigationIsComplete = _investigationDto.IsComplete();
+            _investigationIsComplete = _investigationDto.IsComplete(_isInternal);
 
             _isLoading = false;
             StateHasChanged();

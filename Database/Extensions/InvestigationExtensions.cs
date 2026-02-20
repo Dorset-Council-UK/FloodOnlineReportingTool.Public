@@ -170,7 +170,7 @@ public static class InvestigationExtensions
     extension(InvestigationDto investigationDto)
     {
 #pragma warning disable MA0051 // Method is too long
-        public bool IsComplete()
+        public bool IsComplete(bool isInternal)
         {
             // Water speed (FloodProblem's)
             if (investigationDto is { WaterSpeedId: null } or { BeginId: null } or { AppearanceId: null })
@@ -179,21 +179,21 @@ public static class InvestigationExtensions
             }
 
             // Internal how / Water entry (FloodProblem's)
-            if (investigationDto.Entries.Count == 0)
+            if (isInternal && investigationDto.Entries.Count == 0)
             {
                 return false;
             }
-            if (investigationDto.Entries.Contains(FloodEntryIds.Other) && investigationDto.WaterEnteredOther is null)
+            if (isInternal && investigationDto.Entries.Contains(FloodEntryIds.Other) && investigationDto.WaterEnteredOther is null)
             {
                 return false;
             }
 
             // Internal when (RecordStatus)
-            if (investigationDto.WhenWaterEnteredKnownId is null)
+            if (isInternal && investigationDto.WhenWaterEnteredKnownId is null)
             {
                 return false;
             }
-            if (investigationDto.WhenWaterEnteredKnownId == RecordStatusIds.Yes && investigationDto.FloodInternalUtc is null)
+            if (isInternal && investigationDto.WhenWaterEnteredKnownId == RecordStatusIds.Yes && investigationDto.FloodInternalUtc is null)
             {
                 return false;
             }
