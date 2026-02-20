@@ -254,9 +254,15 @@ public partial class InvestigationDtoSummary(
 
     private void GetDamagedVehicles()
     {
-        if (!ShowDamagedVehicles || InvestigationDto.WereVehiclesDamagedId is null)
+        if (!ShowDamagedVehicles)
         {
             _vehiclesDamagedMessage = null;
+            return;
+        }
+
+        if (InvestigationDto.WereVehiclesDamagedId is null)
+        {
+            _vehiclesDamagedMessage = Unknown;
             return;
         }
 
@@ -468,7 +474,7 @@ public partial class InvestigationDtoSummary(
     {
         if (InvestigationFloodProblems is null || InvestigationFloodProblems.Count == 0 || id is null)
         {
-            return "";
+            return Unknown;
         }
 
         return InvestigationFloodProblems
@@ -481,7 +487,7 @@ public partial class InvestigationDtoSummary(
     {
         if (InvestigationFloodProblems is null || InvestigationFloodProblems.Count == 0 || ids.Count == 0)
         {
-            return [];
+            return [Unknown];
         }
 
         return [.. InvestigationFloodProblems
@@ -494,7 +500,7 @@ public partial class InvestigationDtoSummary(
     {
         if (InvestigationRecordStatuses is null || InvestigationRecordStatuses.Count == 0 || id is null)
         {
-            return "";
+            return Unknown;
         }
 
         return InvestigationRecordStatuses
@@ -507,7 +513,7 @@ public partial class InvestigationDtoSummary(
     {
         if (InvestigationFloodImpacts is null || InvestigationFloodImpacts.Count == 0 || ids.Count == 0)
         {
-            return [];
+            return [Unknown];
         }
 
         return [.. InvestigationFloodImpacts
@@ -520,7 +526,7 @@ public partial class InvestigationDtoSummary(
     {
         if (InvestigationFloodMitigations is null || InvestigationFloodMitigations.Count == 0 || ids.Count == 0)
         {
-            return [];
+            return [Unknown];
         }
 
         return [.. InvestigationFloodMitigations
@@ -533,7 +539,7 @@ public partial class InvestigationDtoSummary(
     {
         if (number is null)
         {
-            return "";
+            return Unknown;
         }
 
         if (number == 1)
