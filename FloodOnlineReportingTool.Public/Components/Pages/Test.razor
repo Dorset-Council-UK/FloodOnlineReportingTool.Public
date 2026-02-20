@@ -48,7 +48,7 @@
                         <dt class="govuk-summary-list__key">Fort user is signed in</dt>
                         <dd class="govuk-summary-list__value">false</dd>
                         <dd class="govuk-summary-list__actions">
-                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignIn.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignIn.Title</a>
+                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@SignInUrl">@AccountPages.SignIn.Title</a>
                         </dd>
                     </div>
                 </NotAuthorized>
@@ -96,25 +96,6 @@
             }
         </dd>
     </div>
-
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Has investigation data</dt>
-        <dd class="govuk-summary-list__value">@_hasInvestigationData</dd>
-        <dd class="govuk-summary-list__actions">
-            @if (_hasInvestigationData)
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteInvestigationData" title="Delete the investigation data in the session">
-                    Delete<span class="govuk-visually-hidden"> the investigation data in the session</span>
-                </a>
-            }
-            else
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankInvestigationData" title="Create blank investigation data in the session">
-                    Create<span class="govuk-visually-hidden"> blank investigation data in the session</span>
-                </a>
-            }
-        </dd>
-    </div>
 </dl>
 
 <div>
@@ -142,8 +123,77 @@
 
 <div>
     <h2 class="govuk-heading-l">Investigation pages</h2>
-    <div>Secured pages</div>
-    <div>Status needed is 'Action needed'</div>
+
+    <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">Status</h2>
+            <ul class="govuk-summary-card__actions">
+                <AuthorizeView>
+                    <Authorized>
+                        @if (_investigationHasStarted == true && _investigationInProtectedStorage)
+                        {
+                            <li class="govuk-summary-card__action">
+                                <a href="@InvestigationPages.Summary.Url" class="govuk-link govuk-link--no-visited-state" draggable="false">View<span class="govuk-visually-hidden"> the investigation</span></a>
+                            </li>
+                        }
+                    </Authorized>
+                </AuthorizeView>
+            </ul>
+        </div>
+        <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Investigation started</dt>
+                            <dd class="govuk-summary-list__value">@(_investigationHasStarted is null ? "?" : _investigationHasStarted)</dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Flood report status</dt>
+                            <dd class="govuk-summary-list__value">@(_floodReportStatusText ?? "?")</dd>
+                            @if (_investigationHasStarted == false)
+                            {
+                                <dd class="govuk-summary-list__actions">
+                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationActionNeededStatus" @onclick:preventDefault>Set 'Action needed'<span class="govuk-visually-hidden"> flood report status</span></a>
+                                </dd>
+                            }
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Last flood report found</dt>
+                            <dd class="govuk-summary-list__value">?</dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a href="@SignInUrl" class="govuk-link govuk-link--no-visited-state" draggable="false">@AccountPages.SignIn.Title</a>
+                            </dd>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">In protected storage</dt>
+                    <dd class="govuk-summary-list__value">@_investigationInProtectedStorage</dd>
+                    <dd class="govuk-summary-list__actions">
+                        @if (_investigationInProtectedStorage)
+                        {
+                            <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationRemove" @onclick:preventDefault>Remove<span class="govuk-visually-hidden"> the investigation</span></a>
+                        }
+                        else
+                        {
+                            <ul class="govuk-summary-list__actions-list">
+                                <li class="govuk-summary-list__actions-list-item">
+                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddEmpty" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> empty investigation</span></a>
+                                </li>
+                                <li class="govuk-summary-list__actions-list-item">
+                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddTest" @onclick:preventDefault>Add test data<span class="govuk-visually-hidden"> investigation</span></a>
+                                </li>
+                            </ul>
+                        }
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
         <ol class="govuk-breadcrumbs__list">
             @foreach (var info in _investigationPages)

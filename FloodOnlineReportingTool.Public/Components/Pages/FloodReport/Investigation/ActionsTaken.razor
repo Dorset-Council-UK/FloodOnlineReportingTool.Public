@@ -39,7 +39,7 @@
                             @foreach (var option in Model.ActionsTakenOptions)
                             {
                                 var conditionalId = option.Value == FloodMitigationIds.OtherAction ? "conditional-other" : null;
-                                <GdsCheckbox Option="option" ConditionalId="@conditionalId" />
+                                <GdsCheckbox Option="option" ConditionalId="@conditionalId" Name="ActionsTaken" />
                                 if (conditionalId != null)
                                 {
                                     <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="@conditionalId">

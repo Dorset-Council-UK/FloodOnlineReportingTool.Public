@@ -4,6 +4,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -24,7 +25,6 @@ public partial class Confirmation(
 
     private Database.Models.Investigate.Investigation? _investigation;
     private readonly CancellationTokenSource _cts = new();
-    private bool _isLoading = true;
 
     public async ValueTask DisposeAsync()
     {
@@ -40,17 +40,27 @@ public partial class Confirmation(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
+        var userId = await GetUserIdAsGuid();
+        if (userId.HasValue)
         {
-            var userId = await AuthenticationState.IdentityUserId() ?? Guid.Empty;
-            _investigation = await investigationRepository.ReportedByUserBasicInformation(userId, _cts.Token);
-
-            _isLoading = false;
-            StateHasChanged();
-
-            
+            _investigation = await investigationRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
         }
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
