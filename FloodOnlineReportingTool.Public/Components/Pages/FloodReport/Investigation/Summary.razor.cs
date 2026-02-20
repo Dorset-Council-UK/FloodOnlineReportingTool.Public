@@ -33,8 +33,15 @@ public partial class Summary(
 
     public async ValueTask DisposeAsync()
     {
-        await _cts.CancelAsync();
-        _cts.Dispose();
+        try
+        {
+            await _cts.CancelAsync();
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+            // Ignore any exceptions that occur during disposal
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -55,6 +62,12 @@ public partial class Summary(
 
             _investigationDto = await GetInvestigation();
             _investigationIsComplete = _investigationDto.IsComplete(_isInternal);
+
+            if (!_investigationIsComplete)
+            {
+                logger.LogWarning("Investigation information is not complete. Investigation: {Investigation}", _investigationDto);
+                _saveErrors.Add("Your investigation information is not complete. Please check the information below and complete any missing information.");
+            }
 
             _isLoading = false;
             StateHasChanged();
@@ -78,7 +91,7 @@ public partial class Summary(
             _saveErrors.Add("Not able to identify you.");
         }
 
-        if (_saveErrors.Count != 0)
+        if (_saveErrors.Count > 0)
         {
             _saveErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
             return;
@@ -87,7 +100,7 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            await investigationRepository.CreateForUser(userId.Value, _investigationDto, _cts.Token);
+            await investigationRepository.CreateForUser(userId!.Value, _investigationDto!, _cts.Token);
 
             // Clear the stored data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);

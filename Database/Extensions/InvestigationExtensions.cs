@@ -219,10 +219,12 @@ public static class InvestigationExtensions
             {
                 return false;
             }
-            if (investigationDto.IsPeakDepthKnownId == RecordStatusIds.Yes &&
-               (investigationDto.PeakInsideCentimetres is null || investigationDto.PeakOutsideCentimetres is null)
-            ) {
-                return false;
+            if (investigationDto.IsPeakDepthKnownId == RecordStatusIds.Yes)
+            {
+                if (investigationDto is { PeakInsideCentimetres: null } or { PeakOutsideCentimetres: null })
+                {
+                    return false;
+                }
             }
             // Community impacts (FloodImpact's)
             if (investigationDto.CommunityImpacts.Count == 0)
@@ -269,9 +271,12 @@ public static class InvestigationExtensions
             }
 
             // Warnings - Floodline (RecordStatus)
-            if (investigationDto is { WarningTimelyId: null } or { WarningAppropriateId: null })
+            if (investigationDto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
             {
-                return false;
+                if (investigationDto is { WarningTimelyId: null } or { WarningAppropriateId: null })
+                {
+                    return false;
+                }
             }
 
             // History (RecordStatus)

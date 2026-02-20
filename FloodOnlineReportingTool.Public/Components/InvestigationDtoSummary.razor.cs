@@ -70,10 +70,12 @@ public partial class InvestigationDtoSummary(
     private string[] _communityImpactLabels = [];
 
     // Blockages
+    [Parameter]
     public bool ShowBlockages { get; set; } = true;
     private string? _blockagesKnownProblemsLabel;
 
     // Actions taken
+    [Parameter]
     public bool ShowActionsTaken { get; set; } = true;
     private string[] _actionsTakenLabels = [];
 
@@ -83,11 +85,13 @@ public partial class InvestigationDtoSummary(
     private string[] _helpReceivedLabels = [];
 
     // Warnings - Before the flooding
+    [Parameter]
     public bool ShowBeforeFloodingWarnings { get; set; } = true;
     private string? _registeredWithFloodlineLabel;
     private string? _otherWarningReceivedLabel;
 
     // Warnings - Sources
+    [Parameter]
     public bool ShowWarningSources { get; set; } = true;
     private string[] _warningSourcesLabels = [];
 
@@ -197,7 +201,7 @@ public partial class InvestigationDtoSummary(
         var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
         if (floodImpacts.Count == 0)
         {
-            logger.LogError("There were no flood imapcts found.");
+            logger.LogError("There were no flood impacts found.");
         }
         return [.. floodImpacts];
     }
