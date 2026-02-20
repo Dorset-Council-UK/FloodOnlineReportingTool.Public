@@ -18,16 +18,15 @@ public partial class History(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.History.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-    ];
 
     private Models.FloodReport.Investigation.History Model { get; set; } = default!;
+
+    private PageInfo NextPage => InvestigationPages.Summary;
+    private PageInfo? PreviousPage;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -63,8 +62,9 @@ public partial class History(
             // Set any previously entered data
             var investigation = await GetInvestigation();
 
-            var pageInfo = investigation.WarningSources.Contains(FloodMitigationIds.FloodlineWarning) ? InvestigationPages.Floodline : InvestigationPages.WarningSources;
-            Breadcrumbs = Breadcrumbs.Append(pageInfo.ToGdsBreadcrumb()).ToList();
+            PreviousPage = investigation.WarningSources.Contains(FloodMitigationIds.FloodlineWarning) 
+                ? InvestigationPages.Floodline 
+                : InvestigationPages.WarningSources;
 
             Model.HistoryOfFloodingId = investigation.HistoryOfFloodingId;
             Model.HistoryOfFloodingDetails = investigation.HistoryOfFloodingDetails;
@@ -72,8 +72,6 @@ public partial class History(
 
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 
@@ -88,7 +86,7 @@ public partial class History(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the summary
-        navigationManager.NavigateTo(InvestigationPages.Summary.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()
