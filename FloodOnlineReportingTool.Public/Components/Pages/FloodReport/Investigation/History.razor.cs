@@ -7,7 +7,6 @@ using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -27,7 +26,7 @@ public partial class History(
     private Models.FloodReport.Investigation.History Model { get; set; } = default!;
 
     private PageInfo NextPage => InvestigationPages.Summary;
-    private static PageInfo? PreviousPage;
+    private PageInfo? PreviousPage;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
