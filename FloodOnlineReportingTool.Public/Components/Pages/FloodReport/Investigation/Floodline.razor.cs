@@ -17,18 +17,17 @@ public partial class Floodline(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Floodline.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.WarningSources.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.History;
+    private static PageInfo PreviousPage => InvestigationPages.WarningSources;
 
     private Models.FloodReport.Investigation.Floodline Model { get; set; } = default!;
 
@@ -74,8 +73,6 @@ public partial class Floodline(
 
             _isLoading = false;
             StateHasChanged();
-
-            
         }
     }
 
@@ -90,8 +87,7 @@ public partial class Floodline(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.History;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()

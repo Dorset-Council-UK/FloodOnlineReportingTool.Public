@@ -23,17 +23,20 @@ public partial class PeakDepth(
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.PeakDepth.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.CommunityImpact;
+    private PageInfo? PreviousPage;
 
     private Models.FloodReport.Investigation.PeakDepth Model { get; set; } = default!;
 
@@ -56,7 +59,7 @@ public partial class PeakDepth(
         GC.SuppressFinalize(this);
     }
 
-    private async Task<IReadOnlyCollection<GdsBreadcrumb>> GetBreadcrumbs()
+    private async Task<PageInfo> GetPreviousPage()
     {
         bool isInternal = false;
         var userId = await GetUserIdAsGuid();
@@ -66,12 +69,9 @@ public partial class PeakDepth(
             isInternal = eligibilityCheck?.IsInternal() == true;
         }
 
-        var pageInfo = isInternal ? InvestigationPages.InternalWhen : InvestigationPages.Vehicles;
-        return [
-            GeneralPages.Home.ToGdsBreadcrumb(),
-            FloodReportPages.Overview.ToGdsBreadcrumb(),
-            pageInfo.ToGdsBreadcrumb(),
-        ];
+        return PreviousPage = isInternal 
+            ? InvestigationPages.InternalWhen 
+            : InvestigationPages.Vehicles;
     }
 
     protected override async Task OnInitializedAsync()
@@ -80,7 +80,7 @@ public partial class PeakDepth(
         Model ??= new();
         _editContext = new(Model);
         _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
-        Breadcrumbs = await GetBreadcrumbs();
+        PreviousPage = await GetPreviousPage();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -113,8 +113,7 @@ public partial class PeakDepth(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.CommunityImpact;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()
