@@ -24,7 +24,6 @@ public partial class WarningSources(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo? NextPage;
     private static PageInfo PreviousPage => InvestigationPages.Warnings;
 
     private Models.FloodReport.Investigation.WarningSources Model { get; set; } = default!;
@@ -81,8 +80,7 @@ public partial class WarningSources(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        NextPage = GetNextPage();
-        navigationManager.NavigateTo(NextPage.Url);
+        navigationManager.NavigateTo(GetNextPage().Url);
     }
 
     private PageInfo GetNextPage()
