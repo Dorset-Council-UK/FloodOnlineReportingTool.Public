@@ -88,11 +88,11 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            userID = authState.User.Oid;
-            if (userId is null)
-            {
-                logger.LogError("User ID was not found.");
-            }
+            userId = authState.User.Oid;
+        }
+        if (userId is null)
+        {
+            logger.LogError("User ID was not found.");
         }
 
         if (_updateModel is null || userId is null)
@@ -122,7 +122,7 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userID = authState.User.Oid;
+            var userId = authState.User.Oid;
             var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
             if (eligibilityCheck is not null)
             {

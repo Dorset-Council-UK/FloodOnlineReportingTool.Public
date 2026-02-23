@@ -84,7 +84,7 @@ public partial class Summary(
             if (AuthenticationState is not null)
             {
                 var authState = await AuthenticationState;
-                var userID = authState.User.Oid;
+                var userId = authState.User.Oid;
                 var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
                 isInternal = eligibilityCheck?.IsInternal() == true;
             }
@@ -217,14 +217,15 @@ public partial class Summary(
             logger.LogError("Investigation information was not found. Investigation: {Investigation}", _investigationDto);
         }
 
+        string? userId = null;
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userID = authState.User.Oid;
-            if (userId is null)
-            {
-                logger.LogError("User ID was not found.");
-            }
+            userId = authState.User.Oid;
+        }
+        if (userId is null)
+        {
+            logger.LogError("User ID was not found.");
         }
 
         if (_investigationDto is null || userId is null)
@@ -237,7 +238,7 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            await investigationRepository.CreateForUser(userId.Value, _investigationDto, _cts.Token);
+            await investigationRepository.CreateForUser(userId, _investigationDto, _cts.Token);
 
             // Clear the session data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);

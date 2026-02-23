@@ -65,11 +65,12 @@ public partial class PeakDepth(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userID = authState.User.Oid;
+            var userId = authState.User.Oid;
             var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
             isInternal = eligibilityCheck?.IsInternal() == true;
 
         }
+
         return PreviousPage = isInternal 
             ? InvestigationPages.InternalWhen 
             : InvestigationPages.Vehicles;
@@ -147,20 +148,5 @@ public partial class PeakDepth(
         var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

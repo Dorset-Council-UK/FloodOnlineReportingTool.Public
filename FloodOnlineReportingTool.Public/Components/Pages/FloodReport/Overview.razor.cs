@@ -5,7 +5,7 @@ using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 public partial class Overview(
@@ -56,11 +56,12 @@ public partial class Overview(
     {
         if (firstRender)
         {
-            var userId = await GetUserIdAsGuid();
-            if (userId.HasValue)
+            if (AuthenticationState is not null)
             {
-                var floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
+                var authState = await AuthenticationState;
+                var userId = authState.User.Oid;
                 // TODO: Work out what to do when the user has reported multiple floods
+                var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
                 _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
             }
             else
@@ -95,20 +96,5 @@ public partial class Overview(
             _isLoading = false;
             StateHasChanged();
         }
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
