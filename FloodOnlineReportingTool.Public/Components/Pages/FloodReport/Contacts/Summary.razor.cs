@@ -133,11 +133,7 @@ public partial class Summary(
                         continue;
                     }
 
-                    bool canEdit = false;
-                    if (contactRecord.ContactUserId != null && string.IsNullOrEmpty(contactRecord.ContactUserId))
-                    {
-                        canEdit = subscriptionRecord.IsRecordOwner;
-                    }
+                    bool canEdit = !string.IsNullOrWhiteSpace(contactRecord.ContactUserId) && subscriptionRecord.IsRecordOwner;
 
                     if (subscriptionRecord.IsRecordOwner)
                     {

@@ -11,7 +11,6 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
     public async Task SendConfirmationLinkAsync(FortUser user, string email, string confirmationLink)
     {
         logger.LogDebug("Creating confirmation link 'message' for user");
-        logger.LogDebug("Confirmation link: {ConfirmationLink}", confirmationLink);
 
         var message = new ConfirmationLinkSent(user.Id, email, confirmationLink);
         await PublishMessage(message);
@@ -22,7 +21,6 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
     public async Task SendPasswordResetCodeAsync(FortUser user, string email, string resetCode)
     {
         logger.LogDebug("Creating password reset code 'message' for user");
-        logger.LogDebug("Reset code: {ResetCode}", resetCode);
 
         var message = new PasswordResetCodeSent(user.Id, email, resetCode);
         await PublishMessage(message);
@@ -33,7 +31,6 @@ internal sealed class FortEmailSender(ILogger<FortEmailSender> logger, IServiceS
     public async Task SendPasswordResetLinkAsync(FortUser user, string email, string resetLink)
     {
         logger.LogDebug("Creating password reset link 'message' for user");
-        logger.LogDebug("Reset link: {ResetLink}", resetLink);
 
         var message = new PasswordResetLinkSent(user.Id, email, resetLink);
         await PublishMessage(message);

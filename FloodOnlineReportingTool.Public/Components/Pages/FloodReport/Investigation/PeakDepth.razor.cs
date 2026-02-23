@@ -66,9 +66,11 @@ public partial class PeakDepth(
         {
             var authState = await AuthenticationState;
             var userId = authState.User.Oid;
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-            isInternal = eligibilityCheck?.IsInternal() == true;
-
+            if (userId is not null)
+            {
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                isInternal = eligibilityCheck?.IsInternal() == true;
+            }
         }
 
         return PreviousPage = isInternal 

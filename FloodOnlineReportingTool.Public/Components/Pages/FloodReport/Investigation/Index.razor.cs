@@ -49,7 +49,10 @@ public partial class Index(
         {
             var authState = await AuthenticationState;
             var userID = authState.User.Oid;
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userID, _cts.Token);
+            if (userID is not null)
+            {
+                (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userID, _cts.Token);
+            }
         }
     }
 }

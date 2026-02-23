@@ -56,18 +56,22 @@ public partial class Overview(
     {
         if (firstRender)
         {
+            string? userId = null;
             if (AuthenticationState is not null)
             {
                 var authState = await AuthenticationState;
-                var userId = authState.User.Oid;
-                // TODO: Work out what to do when the user has reported multiple floods
-                var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
-                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
+                userId = authState.User.Oid;
             }
-            else
+            if (userId is null)
             {
                 var floodReportId = await scopedSessionStorage.GetFloodReportId();
                 _floodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+            }
+            else
+            {
+                // TODO: Work out what to do when the user has reported multiple floods
+                var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
+                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
             }
 
             if (_floodReport is not null)

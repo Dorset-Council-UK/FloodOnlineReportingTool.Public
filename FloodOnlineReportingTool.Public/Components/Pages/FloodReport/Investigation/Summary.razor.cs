@@ -53,8 +53,11 @@ public partial class Summary(
             {
                 var authState = await AuthenticationState;
                 var userId = authState.User.Oid;
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                _isInternal = eligibilityCheck?.IsInternal() == true;
+                if (userId is not null)
+                {
+                    var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                    _isInternal = eligibilityCheck?.IsInternal() == true;
+                }
             }
             else
             {

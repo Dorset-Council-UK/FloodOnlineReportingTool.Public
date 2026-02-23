@@ -64,8 +64,9 @@ internal static class ClaimsPrincipalExtensions
         internal string UserId => claimsPrincipal?.GetNameIdentifierId() ?? Unknown;
 
         /// <summary>
-        /// Get the object identifier claim which is http://schemas.microsoft.com/identity/claims/objectidentifier
+        /// Gets the unique object ID associated with the <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        internal string Oid => claimsPrincipal?.GetObjectId() ?? Unknown;
+        /// <remarks>Checking the claims in the order oid, http://schemas.microsoft.com/identity/claims/objectidentifier</remarks>
+        internal string? Oid => claimsPrincipal?.GetObjectId();
     }
 }

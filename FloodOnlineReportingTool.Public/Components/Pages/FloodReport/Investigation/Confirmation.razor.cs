@@ -46,7 +46,10 @@ public partial class Confirmation(
         {
             var authState = await AuthenticationState;
             var userId = authState.User.Oid;
-            _investigation = await investigationRepository.ReportedByUserBasicInformation(userId, _cts.Token);
+            if (userId is not null)
+            {
+                _investigation = await investigationRepository.ReportedByUserBasicInformation(userId, _cts.Token);
+            }
         }
     }
 }
