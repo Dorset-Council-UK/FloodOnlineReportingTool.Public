@@ -63,7 +63,7 @@ internal class GovNotifyEmailSender(
             var user = authState.User;
             if (environment.IsDevelopment() && user.Identity?.IsAuthenticated == true)
             {
-                return user.Email();
+                return user.Email;
             }
 
         }

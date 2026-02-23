@@ -18,8 +18,7 @@ internal static class SubscribeRecordExtensions
             IsEmailVerified = subscribeRecord.IsEmailVerified,
             IsRecordOwner = subscribeRecord.IsRecordOwner,
             IsSubscribed = subscribeRecord.IsSubscribed,
-            PhoneNumber = subscribeRecord.PhoneNumber,
-            ContactUserId = subscribeRecord.ContactRecordId
+            PhoneNumber = subscribeRecord.PhoneNumber
         };
     }
 }

@@ -44,7 +44,7 @@ public partial class Create(
     private ContactModel? _contactModel;
     private Database.Models.Flood.FloodReport? _floodReport;
     private Guid _floodReportId;
-    private Guid _userId = Guid.Empty;
+    private string? _userId;
     private bool _isLoading = true;
     private readonly CancellationTokenSource _cts = new();
 
@@ -84,9 +84,7 @@ public partial class Create(
 
             var authState = await AuthenticationState;
             var user = authState.User;
-
-            var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            _userId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
+            _userId = user.Oid;
         }
     }
 
@@ -148,7 +146,7 @@ public partial class Create(
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
             ContactRecordDto dto = new ContactRecordDto
             {
-                UserId = _userId == Guid.Empty ? null: _userId,
+                UserId = _userId,
                 ContactType = _contactModel.ContactType!.Value,
                 ContactName = _contactModel.ContactName!,
                 EmailAddress = _contactModel.EmailAddress!,
@@ -176,7 +174,7 @@ public partial class Create(
             if (AuthenticationState is not null)
             {
                 var authState = await AuthenticationState;
-                currentUserEmail = authState.User.Email();
+                currentUserEmail = authState.User.Email;
             }
             var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, false, _cts.Token);
 

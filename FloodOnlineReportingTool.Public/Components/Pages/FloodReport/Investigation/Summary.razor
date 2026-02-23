@@ -1,270 +1,45 @@
 ﻿@page "/floodreport/investigation/summary"
-@using FloodOnlineReportingTool.Database.Models
-@using FloodOnlineReportingTool.Database.Models.Status
 @using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@InvestigationPages.Summary.Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<h1 class="govuk-heading-xl">@InvestigationPages.Summary.Title</h1>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+@if (_saveErrors.Count > 0)
+{
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+            <h2 class="govuk-error-summary__title">There is a problem</h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                    @foreach (var message in _saveErrors)
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
 
-<AuthorizeView Context="authContext">
+<AuthorizeView>
     <NotAuthorized>
         <AccessDenied />
     </NotAuthorized>
     <Authorized>
-        <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="InvestigationSummary">
-            <FluentValidationValidator />
-            <GdsErrorSummary />
+        <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsSpinner Show="_isLoading" ShowMessage="true" />
+        @if (!_isLoading)
+        {
+            <InvestigationDtoSummary InvestigationDto="@_investigationDto" IsInternal="@_isInternal" />
 
-            @if (!_isLoading)
+            @if (_investigationIsComplete)
             {
-                <h2 class="govuk-heading-l">Investigation details</h2>
-                <dl class="govuk-summary-list">
-                    @* Water speed *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started</dt>
-                        <dd class="govuk-summary-list__value">@Model.BeginLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how quickly the flooding started</span></a>
-                        </dd>
-                    </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Water movement</dt>
-                        <dd class="govuk-summary-list__value">@Model.WaterSpeedLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how fast the water was moving</span></a>
-                        </dd>
-                    </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The water looked</dt>
-                        <dd class="govuk-summary-list__value">@Model.AppearanceLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the apperance of the water</span></a>
-                        </dd>
-                    </div>
-
-                    @* Water destination *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Where the water was going</dt>
-                        <dd class="govuk-summary-list__value">
-                            <ul class="govuk-list">
-                                @foreach (var label in Model.DestinationLabels)
-                                {
-                                    <li>@label</li>
-                                }
-                            </ul>
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Destination.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> where the water was going</span></a>
-                        </dd>
-                    </div>
-
-                    @* Damaged vehicles *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vehicles damaged</dt>
-                        <dd class="govuk-summary-list__value">@Model.VehiclesDamagedMessage</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Vehicles.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if any vehicles were damaged</span></a>
-                        </dd>
-                    </div>
-
-                    @if (Model.IsInternal)
-                    {
-                        // Internal - How it entered - Water entry
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">How the water entered</dt>
-                            @if (Model.EntryLabels.Count == 0)
-                            {
-                                <dd class="govuk-summary-list__value">Unknown</dd>
-                            }
-                            else
-                            {
-                                <dd class="govuk-summary-list__value">
-                                    <ul class="govuk-list">
-                                    @foreach (var label in Model.EntryLabels)
-                                    {
-                                        <li>@label</li>
-                                    }
-                                    </ul>
-                                </dd>
-                            }
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.InternalHow.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the water entered</span></a>
-                            </dd>
-                        </div>
-
-                        // Internal - When it entered
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">When the water entered</dt>
-                            <dd class="govuk-summary-list__value">@Model.InternalMessage</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.InternalWhen.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> when the water entered</span></a>
-                            </dd>
-                        </div>
-                    }
-
-                    @* Peak depth *@
-                    @if (Model.IsPeakDepthKnownId == RecordStatusIds.Yes)
-                    {
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth inside</dt>
-                            <dd class="govuk-summary-list__value">@Model.PeakDepthInsideMessage</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth inside</span></a>
-                            </dd>
-                        </div>
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth outside</dt>
-                            <dd class="govuk-summary-list__value">@Model.PeakDepthOutsideMessage</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth outside</span></a>
-                            </dd>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth</dt>
-                            <dd class="govuk-summary-list__value">@Model.PeakDepthMessage</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth</span></a>
-                            </dd>
-                        </div>
-                    }
-
-                    @* Community impact *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on the community</dt>
-                        <dd class="govuk-summary-list__value">
-                            <ul class="govuk-list">
-                            @foreach (var label in Model.CommunityImpactLabels)
-                            {
-                                <li>@label</li>
-                            }
-                            </ul>
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.CommunityImpact.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the flooding restricted parts of the community</span></a>
-                        </dd>
-                    </div>
-
-                    @* Blockages *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Known problems</dt>
-                        <dd class="govuk-summary-list__value">@Model.HasKnownProblemsMessage</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Blockages.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if there are known problems, blockages, or recent repair works</span></a>
-                        </dd>
-                    </div>
-
-                    @* Actions taken *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Actions taken</dt>
-                        <dd class="govuk-summary-list__value">
-                            <ul class="govuk-list">
-                            @foreach (var label in Model.ActionsTakenLabels)
-                            {
-                                <li>@label</li>
-                            }
-                            </ul>
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.ActionsTaken.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> what actions were taken</span></a>
-                        </dd>
-                    </div>
-
-                    @* Help received *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Help received</dt>
-                        <dd class="govuk-summary-list__value">
-                            <ul class="govuk-list">
-                            @foreach (var label in Model.HelpReceivedLabels)
-                            {
-                                <li>@label</li>
-                            }
-                            </ul>
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.HelpReceived.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> any help you received</span></a>
-                        </dd>
-                    </div>
-
-                    @* History *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Has a history of flooding</dt>
-                        <dd class="govuk-summary-list__value">@Model.HistoryOfFloodingLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.History.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the location has a history of flooding</span></a>
-                        </dd>
-                    </div>
-                </dl>
-
-                <h2 class="govuk-heading-l">Warnings</h2>
-                <dl class="govuk-summary-list">
-                    @* Help received *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Received warnings from</dt>
-                        <dd class="govuk-summary-list__value">
-                            <ul class="govuk-list">
-                            @foreach (var label in Model.HelpReceivedLabels)
-                            {
-                                <li>@label</li>
-                            }
-                            </ul>
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.WarningSources.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> where you receive warnings from</span></a>
-                        </dd>
-                    </div>
-
-                    @* Before the flooding - Warnings *@
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Registered with Floodline</dt>
-                        <dd class="govuk-summary-list__value">@Model.RegisteredWithFloodlineLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Warnings.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you are registered to receive floodline warnings</span></a>
-                        </dd>
-                    </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Other warnings received</dt>
-                        <dd class="govuk-summary-list__value">@Model.OtherWarningReceivedLabel</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Warnings.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you received other warnings</span></a>
-                        </dd>
-                    </div>
-
-                    @* Floodline warnings *@
-                    @if (Model.IsFloodlineWarning)
-                    {
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Timely floodline warning</dt>
-                            <dd class="govuk-summary-list__value">@Model.WarningTimelyLabel</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Floodline.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the floodline warning was timely</span></a>
-                            </dd>
-                        </div>
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Warning correctly worded</dt>
-                            <dd class="govuk-summary-list__value">@Model.WarningAppropriateLabel</dd>
-                            <dd class="govuk-summary-list__actions">
-                                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Floodline.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the warning was worded correctly</span></a>
-                            </dd>
-                        </div>
-                    }
-                </dl>
-
-                @if (!_editContext.GetValidationMessages().Any())
-                {
-                    <h2 class="govuk-heading-l">Now send the investigation</h2>
-                    <p>You are confirming that, to the best of your knowledge, the details you are providing are correct.</p>
-                    <p>You also agree that the information provided may be used by flood authorities to help with work to better understand flooding.</p>
-                    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Accept and send</button></p>
-                }
+                <h2 class="govuk-heading-l">Now send the investigation</h2>
+                <p>You are confirming that, to the best of your knowledge, the details you are providing are correct.</p>
+                <p>You also agree that the information provided may be used by flood authorities to help with work to better understand flooding.</p>
+                <p><button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" @onclick="SaveInvestigation">Accept and send</button></p>
             }
-        </EditForm>
+        }
     </Authorized>
 </AuthorizeView>

@@ -9,17 +9,17 @@ public interface IFloodReportRepository
     /// <summary>
     /// Get a flood report, for the given user
     /// </summary>
-    Task<FloodReport?> ReportedByUser(Guid userId, CancellationToken ct);
+    Task<FloodReport?> ReportedByUser(string userId, CancellationToken ct);
 
     /// <summary>
     /// Get the contact record, for the given user, going via the flood report
     /// </summary>
-    Task<FloodReport?> ReportedByContact(Guid contactUserId, Guid floodReportId, CancellationToken ct);
+    Task<FloodReport?> ReportedByContact(string contactUserId, Guid floodReportId, CancellationToken ct);
 
     /// <summary>
     /// Get all contact records for the given user, going via the flood report
     /// </summary>
-    Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(Guid contactUserId, CancellationToken ct);
+    Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(string contactUserId, CancellationToken ct);
 
     /// <summary>
     /// This enables contact subscriptions for the flood report
@@ -41,7 +41,7 @@ public interface IFloodReportRepository
     /// <summary>
     /// Get basic flood report information for the given user
     /// </summary>
-    Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(Guid userId, CancellationToken ct);
+    Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(string userId, CancellationToken ct);
 
     /// <summary>
     ///     <para>Create a new flood report.</para>
