@@ -123,10 +123,13 @@ public partial class Update(
         {
             var authState = await AuthenticationState;
             var userId = authState.User.Oid;
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
-            if (eligibilityCheck is not null)
+            if (userId is not null)
             {
-                return eligibilityCheck.ToUpdateModel();
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
+                if (eligibilityCheck is not null)
+                {
+                    return eligibilityCheck.ToUpdateModel();
+                }
             }
         }
 
