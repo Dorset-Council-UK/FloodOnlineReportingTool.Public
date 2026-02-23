@@ -12,17 +12,17 @@ public partial class Index(
     ILogger<Index> logger,
     NavigationManager navigationManager,
     ProtectedSessionStorage protectedSessionStorage
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Home.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => Model.IsAddress == true
+        ? FloodReportCreatePages.Postcode 
+        : FloodReportCreatePages.Location;
+    private static PageInfo PreviousPage => FloodReportPages.Home;
 
     private Models.FloodReport.Create.Index Model { get; set; } = default!;
 
@@ -70,6 +70,14 @@ public partial class Index(
         GC.SuppressFinalize(this);
     }
 
+    private async Task OnSubmit()
+    {
+        if (editContext.Validate())
+        {
+            await OnValidSubmit();
+        }
+    }
+
     private async Task OnValidSubmit()
     {
         // Set the IsAddress so that location page knows if this is a postal search rather than location
@@ -83,23 +91,12 @@ public partial class Index(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or pass back to the summary
-        var nextPage = GetNextPage();
-        var nextPageUrl = nextPage.Url;
+        var nextPageUrl = NextPage.Url;
         if (FromSummary)
         {
             nextPageUrl += "?fromsummary=true";
         }
         navigationManager.NavigateTo(nextPageUrl);
-    }
-
-    private PageInfo GetNextPage()
-    {
-        if (Model.IsAddress == true)
-        {
-            return FloodReportCreatePages.Postcode;
-        }
-
-        return FloodReportCreatePages.Location;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

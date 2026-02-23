@@ -19,14 +19,13 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="Dorset-Council-UK.GdsBlazorComponents" Version="2.0.2" />
+    <PackageReference Include="Dorset-Council-UK.GdsBlazorComponents" Version="2.2.0" />
     <PackageReference Include="FluentValidation" Version="12.1.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
     <PackageReference Include="GovukNotify" Version="7.2.0" />
@@ -45,7 +44,7 @@
     <PackageReference Include="Microsoft.Extensions.Compliance.Redaction" Version="10.2.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" Version="10.0.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="4.3.0" />
@@ -56,12 +55,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\css\images\" />
-    <Folder Include="wwwroot\favicons\" />
-    <Folder Include="wwwroot\js\components\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties NpmRestoreOnProjectOpen="True" /></VisualStudio></ProjectExtensions>

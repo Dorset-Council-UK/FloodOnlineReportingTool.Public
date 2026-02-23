@@ -17,18 +17,17 @@ public partial class ActionsTaken(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.ActionsTaken.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Blockages.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.HelpReceived;
+    private static PageInfo PreviousPage => InvestigationPages.Blockages;
 
     private Models.FloodReport.Investigation.ActionsTaken Model { get; set; } = default!;
 
@@ -68,9 +67,7 @@ public partial class ActionsTaken(
             Model.OtherAction = investigation.OtherAction;
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -90,8 +87,7 @@ public partial class ActionsTaken(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.HelpReceived;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()

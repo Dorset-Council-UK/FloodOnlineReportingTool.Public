@@ -16,17 +16,17 @@ public partial class FloodSecondarySource(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodSecondarySource.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb()
-    ];
 
     private Models.FloodReport.Create.FloodSecondarySource Model { get; set; } = default!;
+    
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
+    private static PageInfo NextPage => FloodReportCreatePages.Summary;
+    private static PageInfo PreviousPage => FloodReportCreatePages.FloodSource;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -63,9 +63,15 @@ public partial class FloodSecondarySource(
             Model.FloodSecondarySourceOptions = await CreateFloodSourceOptions(eligibilityCheck.SecondarySources);
 
             _isLoading = false;
-            StateHasChanged();
+            StateHasChanged(); 
+        }
+    }
 
-            
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 
@@ -81,7 +87,7 @@ public partial class FloodSecondarySource(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page, which is always the summary
-        navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

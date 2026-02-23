@@ -22,21 +22,17 @@ public partial class Vehicles(
     IEligibilityCheckRepository eligibilityCheckRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Vehicles.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.Destination.ToGdsBreadcrumb(),
-    ];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private static PageInfo PreviousPage => InvestigationPages.Destination;
 
     private Models.FloodReport.Investigation.Vehicles Model { get; set; } = default!;
 
@@ -44,7 +40,6 @@ public partial class Vehicles(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IReadOnlyCollection<GdsOptionItem<Guid>> _wereVehiclesDamagedOptions = [];
-    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -72,12 +67,6 @@ public partial class Vehicles(
     {
         if (firstRender)
         {
-            if (AuthenticationState is not null)
-            {
-                var authState = await AuthenticationState;
-                _userID = authState.User.Oid;
-            }
-
             // Set any previously entered data
             var investigation = await GetInvestigation();
             Model.WereVehiclesDamagedId = investigation.WereVehiclesDamagedId;
@@ -87,9 +76,7 @@ public partial class Vehicles(
             _wereVehiclesDamagedOptions = await CreateVehiclesDamagedOptions();
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();  
         }
     }
 
@@ -115,10 +102,15 @@ public partial class Vehicles(
             return InvestigationPages.Summary;
         }
 
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, _cts.Token);
-        if (eligibilityCheck?.IsInternal() == true)
+        if (AuthenticationState is not null)
         {
-            return InvestigationPages.InternalHow;
+            var authState = await AuthenticationState;
+            var userID = authState.User.Oid;
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+            if (eligibilityCheck?.IsInternal() == true)
+            {
+                return InvestigationPages.InternalHow;
+            }
         }
 
         return InvestigationPages.PeakDepth;

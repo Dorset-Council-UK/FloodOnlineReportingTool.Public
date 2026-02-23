@@ -17,18 +17,17 @@ public partial class Warnings(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Warnings.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.HelpReceived.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.WarningSources;
+    private static PageInfo PreviousPage => InvestigationPages.HelpReceived;
 
     private Models.FloodReport.Investigation.Warnings Model { get; set; } = default!;
 
@@ -66,14 +65,14 @@ public partial class Warnings(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
+            Model.OtherWarningId = investigation.WarningReceivedId;
+            Model.RegisteredWithFloodlineId = investigation.FloodlineId;
             var recordStatuses = await GetRecordStatusesWithoutNotSure();
             _registeredWithFloodlineOptions = [.. recordStatuses.Select(o => CreateOption(o, "registered", investigation.FloodlineId))];
             _otherWarningOptions = [.. recordStatuses.Select(o => CreateOption(o, "other-warning", investigation.WarningReceivedId))];
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged();  
         }
     }
 
@@ -88,8 +87,7 @@ public partial class Warnings(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.WarningSources;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()

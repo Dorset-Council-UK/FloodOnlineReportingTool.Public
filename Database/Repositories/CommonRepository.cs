@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class CommonRepository(PublicDbContext context, BoundariesDbContext boundariesDb) : ICommonRepository
+public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory, BoundariesDbContext boundariesDb) : ICommonRepository
 {
     private const string SqlAllCounties = @"SELECT name, area_description, admin_unit_id FROM dc_boundaries.uk_county WHERE public.ST_Contains(geom, public.ST_SetSRID(public.ST_MakePoint({0}, {1}), 27700)) ORDER BY name";
 
     public async Task<FloodImpact?> GetFloodImpact(Guid id, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodImpacts.FindAsync([id], ct);
     }
 
     public async Task<IList<FloodImpact>> GetFloodImpactsByCategory(string category, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodImpacts
             .AsNoTracking()
             .Where(o => o.Category == category)
@@ -28,11 +30,13 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems.FindAsync([id], ct);
     }
 
     public async Task<FloodProblem?> GetFloodProblemByCategory(string category, Guid id, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Category == category && o.Id == id, ct);
@@ -40,6 +44,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<IList<FloodProblem>> GetFloodProblemsByCategory(string category, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
             .Where(o => o.Category == category)
@@ -49,6 +54,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<IList<FloodProblem>> GetFloodProblemsByCategories(string[] categories, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
@@ -77,6 +83,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
         var allSources = primarySources.Concat(secondarySources);
 
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         IList<FloodProblem> fullFloodSource = await context.FloodProblems
             .Where(f => allSources.Contains(f.Id))
             .ToListAsync(ct);
@@ -86,6 +93,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategory(string category, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodMitigations
             .AsNoTracking()
             .Where(o => o.Category == category)
@@ -95,6 +103,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategories(string[] categories, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodMitigations
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
@@ -104,11 +113,13 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<RecordStatus?> GetRecordStatus(Guid id, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.RecordStatuses.FindAsync([id], ct);
     }
 
     public async Task<IList<RecordStatus>> GetRecordStatusesByCategory(string category, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.RecordStatuses
             .AsNoTracking()
             .Where(o => o.Category == category)
@@ -118,6 +129,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
 
     public async Task<IList<RecordStatus>> GetRecordStatusesByCategories(string[] categories, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.RecordStatuses
             .AsNoTracking()
             .Where(o => categories.Contains(o.Category))
@@ -150,6 +162,7 @@ public class CommonRepository(PublicDbContext context, BoundariesDbContext bound
         // By starting with the FloodResponsibilities table instead of the Organisations table
         // Entity Framework will generate 2 efficient INNER JOIN's in the SQL because of the configured auto includes
         // CalculateEligibility() needs the flood authority for each organisation, which is then used in the Confirmation view model
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         var organisations = await context.FloodResponsibilities
             .AsNoTracking()
             .Where(fr => adminUnitIds.Contains(fr.AdminUnitId))

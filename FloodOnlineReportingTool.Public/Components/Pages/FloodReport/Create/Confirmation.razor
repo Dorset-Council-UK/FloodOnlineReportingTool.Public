@@ -88,7 +88,7 @@
 
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
-                                        <a href="signin?redirectUri=@($"{ContactPages.Summary.Url}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
+                                        <a href="@($"signin?redirectUri={Uri.EscapeDataString(ContactPages.Summary.Url)}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
                                         <div id="report-and-check-2-contacts-login-hint" class="govuk-task-list__hint">
                                             You will be allowed to login and manage your notifications and reports on this website.
                                         </div>
@@ -166,7 +166,7 @@
             {
                 <p>You need to give us contact details if want to:</p>
                 <ul class="govuk-list govuk-list--bullet">
-                    <li>recieve updates</li>
+                    <li>receive updates</li>
                     <li>speed up applications for any support that may be available</li>
                 </ul>
                 <p>Using an account is the best way to manage your record and allows you to edit the information you have provided.</p>

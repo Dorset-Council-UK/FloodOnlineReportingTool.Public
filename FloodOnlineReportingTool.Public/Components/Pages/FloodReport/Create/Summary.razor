@@ -106,7 +106,7 @@
                     @(Model.TemporaryAddressPreview ?? "Not given")
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> temporary address</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.TemporaryAddress.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> temporary address</span></a>
                 </dd>
             </div>
         </dl>
@@ -228,6 +228,6 @@
         <p>Your input will help flood authorities build a clearer picture of where and when flooding has occurred. This contributes to a better understanding of flood patterns and supports future planning and response efforts.</p>
         <p>Flooding reports will be stored as part of a historical record. Since no personal data is collected at this stage, entries will only be removed if they are found to be factually incorrect.</p>
 
-        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Accept and send</button>
+        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Accept and send</button></p>
     }
 </EditForm>

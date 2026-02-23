@@ -3,11 +3,9 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Status;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace FloodOnlineReportingTool.Database.Models.Investigate;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
-internal static class InvestigationExtensions
+public static class InvestigationExtensions
 {
     internal static InvestigationCreated ToMessageCreated(this Investigation investigation, string floodReportReference)
     {
@@ -42,7 +40,7 @@ internal static class InvestigationExtensions
         };
     }
 
-    internal static InvestigationDto ToDto(this Investigation investigation)
+    public static InvestigationDto ToDto(this Investigation investigation)
     {
         return new InvestigationDto
         {

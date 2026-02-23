@@ -344,20 +344,12 @@ healthchecksdb
 **/wwwroot/js/**/*.js
 **/wwwroot/js/**/*.js.map
 **/wwwroot/js/*.js.LICENSE.txt
-# ignore GDS frontend files copied from node_modules
-**/wwwroot/assets/manifest.json
-**/wwwroot/assets/fonts/*.woff
-**/wwwroot/assets/fonts/*.woff2
-**/wwwroot/assets/images/*.ico
-**/wwwroot/assets/images/*.svg
-**/wwwroot/assets/images/*.png
 # ignore generated css files
 **/wwwroot/css/**/*.css
 **/wwwroot/css/**/*.css.map
 **/wwwroot/css/**/*.png
 # ignore generated image files
-**/wwwroot/assets/images/*.webp
-**/wwwroot/assets/images/logos/*.webp
+**/wwwroot/images/**/*.*
 # ignore our favicons
 **/wwwroot/favicons/*.*
 *.dtmp

@@ -49,7 +49,8 @@ public partial class Summary(
     private IReadOnlyCollection<FloodProblem> _floodProblems = [];
     private IReadOnlyCollection<RecordStatus> _recordStatuses = [];
     private IReadOnlyCollection<FloodMitigation> _floodMitigations = [];
-    private string? _userID;
+
+    private InvestigationDto? _investigationDto;
 
     protected override void OnInitialized()
     {
@@ -79,28 +80,27 @@ public partial class Summary(
     {
         if (firstRender)
         {
+            bool isInternal = false;
             if (AuthenticationState is not null)
             {
                 var authState = await AuthenticationState;
-                _userID = authState.User.Oid;
+                var userID = authState.User.Oid;
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                isInternal = eligibilityCheck?.IsInternal() == true;
             }
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, _cts.Token);
-            var isInternal = eligibilityCheck?.IsInternal() == true;
 
             _floodProblems = await GetInvestigationFloodProblems();
             _recordStatuses = await GetInvestigationRecordStatuses();
             _floodMitigations = await GetInvestigationFloodMitigations();
 
-            var investigation = await GetInvestigation();
+            _investigationDto = await GetInvestigation();
 
-            await CreateSummary(investigation, isInternal);
+            await CreateSummary(_investigationDto, isInternal);
 
             _editContext.Validate();
             _isLoading = false;
             StateHasChanged();
             _editContext.NotifyValidationStateChanged();
-
-            
         }
     }
 
@@ -212,11 +212,32 @@ public partial class Summary(
 
     private async Task SaveInvestigation()
     {
+        if (_investigationDto is null)
+        {
+            logger.LogError("Investigation information was not found. Investigation: {Investigation}", _investigationDto);
+        }
+
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var userID = authState.User.Oid;
+            if (userId is null)
+            {
+                logger.LogError("User ID was not found.");
+            }
+        }
+
+        if (_investigationDto is null || userId is null)
+        {
+            _messageStore.Add(errorField, "There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
+            _editContext.NotifyValidationStateChanged();
+            return;
+        }
+
         logger.LogDebug("Saving investigation information..");
         try
         {
-            var investigation = await GetInvestigation();
-            await investigationRepository.CreateForUser(_userID, investigation, _cts.Token);
+            await investigationRepository.CreateForUser(userId.Value, _investigationDto, _cts.Token);
 
             // Clear the session data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
@@ -232,30 +253,12 @@ public partial class Summary(
         }
     }
 
-    private async Task<EligibilityCheckDto> GetEligibilityCheck()
-    {
-        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
-
-        logger.LogDebug("Eligibility Check was not found in the protected storage.");
-        return new();
-    }
-
     private async Task<InvestigationDto> GetInvestigation()
     {
         var data = await protectedSessionStorage.GetAsync<InvestigationDto>(SessionConstants.Investigation);
-        if (data.Success)
+        if (data.Success && data.Value is not null)
         {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
+            return data.Value;
         }
 
         logger.LogWarning("Investigation was not found in the protected storage.");

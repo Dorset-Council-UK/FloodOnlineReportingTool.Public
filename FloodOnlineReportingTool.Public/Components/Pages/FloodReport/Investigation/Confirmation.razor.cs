@@ -25,8 +25,6 @@ public partial class Confirmation(
 
     private Database.Models.Investigate.Investigation? _investigation;
     private readonly CancellationTokenSource _cts = new();
-    private bool _isLoading = true;
-    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -42,22 +40,12 @@ public partial class Confirmation(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
+        if (AuthenticationState is not null)
         {
-            if (AuthenticationState is not null)
-            {
-                var authState = await AuthenticationState;
-                _userID = authState.User.Oid;
-            }
-
-            _investigation = await investigationRepository.ReportedByUserBasicInformation(_userID, _cts.Token);
-
-            _isLoading = false;
-            StateHasChanged();
-
-            
+            var authState = await AuthenticationState;
+            var uuserID = authState.User.Oid;
+            _investigation = await investigationRepository.ReportedByUserBasicInformation(userID, _cts.Token);
         }
-    }
 }

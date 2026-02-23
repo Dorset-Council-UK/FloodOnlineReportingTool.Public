@@ -8,7 +8,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
 public partial class FloodSource(
@@ -16,16 +15,14 @@ public partial class FloodSource(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-    ];
 
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
+
+    private PageInfo? PreviousPage;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -59,15 +56,22 @@ public partial class FloodSource(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            var previousCrumb = eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
-            Breadcrumbs = Breadcrumbs.Append(previousCrumb.ToGdsBreadcrumb()).ToList();
-
             Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
 
-            _isLoading = false;
-            StateHasChanged();
+            PreviousPage = eligibilityCheck.OnGoing == true
+                ? FloodReportCreatePages.FloodStarted
+                : FloodReportCreatePages.FloodDuration;
 
-            
+            _isLoading = false;
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 

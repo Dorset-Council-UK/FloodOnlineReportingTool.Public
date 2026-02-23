@@ -28,7 +28,6 @@ public partial class Index(
     private bool _hasInvestigation;
     private bool _hasInvestigationStarted;
     private DateTimeOffset? _investigationCreatedUtc;
-    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -49,20 +48,8 @@ public partial class Index(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _userID = authState.User.Oid;
-        }
-
-        if (!string.IsNullOrEmpty(_userID))
-        {
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(_userID, _cts.Token);
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-
+            var userID = authState.User.Oid;
+            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userID, _cts.Token);
         }
     }
 }

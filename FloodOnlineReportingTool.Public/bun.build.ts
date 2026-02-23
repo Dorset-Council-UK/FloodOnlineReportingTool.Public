@@ -1,159 +1,188 @@
-﻿/* eslint-disable no-console */
-import { BuildConfig } from "bun";
-import path from "path";
-import { globSync } from "glob";
-import * as sass from "sass";
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
+﻿import Bun from "bun";
+import { watch } from "node:fs"
+import { basename, relative, resolve } from "node:path";
+import { compile } from "sass";
+import clean from "./bun.clean";
 
 const isDev = process.argv.includes("--dev");
 const isWatch = process.argv.includes("--watch");
 
-// Get the base path from app settings, if available
-const appSettingsPath = isDev ? "./appsettings.Development.json" : "./appsettings.json";
-const appSettingsFile = existsSync(appSettingsPath) ? appSettingsPath : "./appsettings.json";
-let pathBase = "";
-try {
-	const appOptions = JSON.parse(readFileSync(appSettingsFile, "utf-8"));
-	pathBase = appOptions?.GIS?.PathBase || "";
-} catch (error) {
-	console.error(`Failed to read or parse app settings from ${appSettingsFile}:`, error);
-}
-
-// Dynamically load all *.razor.ts files under the Components folder
-const componentEntries = globSync("./Components/**/*.razor.ts").map((file) => ({
-	entrypoint: file,
-	outName: path.basename(file, ".razor.ts").toLowerCase(),
-}));
-
-const commonConfig: Partial<BuildConfig> = {
-	minify: !isDev,
-	sourcemap: isDev ? "inline" : "external",
-	target: "browser",
-};
-
-// Main app bundle
-const appBundle: BuildConfig = {
-	...commonConfig,
-	entrypoints: ["./Scripts/app.ts"],
-	outdir: "./wwwroot/js",
-	naming: "[dir]/app.[ext]",
-};
-
-// Component bundles - dynamically generated from *.razor.ts files
-const componentBundles: BuildConfig[] = componentEntries.map(({ entrypoint, outName }) => ({
-	...commonConfig,
-	entrypoints: [entrypoint],
-	outdir: "./wwwroot/js/components",
-	naming: `[dir]/${outName}.[ext]`,
-}));
-
-function copyDirectory(src: string, dest: string) {
-	if (!existsSync(src)) return;
-	mkdirSync(dest, { recursive: true });
-	const entries = readdirSync(src);
-	for (const entry of entries) {
-		const srcPath = path.join(src, entry);
-		const destPath = path.join(dest, entry);
-		if (statSync(srcPath).isDirectory()) {
-			copyDirectory(srcPath, destPath);
-		} else {
-			copyFileSync(srcPath, destPath);
-		}
-	}
-}
-
-function copyAssets() {
-	console.log("📦 Copying assets...");
-	mkdirSync("./wwwroot/css/images", { recursive: true });
-	mkdirSync("./wwwroot/favicons", { recursive: true });
-	mkdirSync("./wwwroot/images/logos", { recursive: true });
-
-	// Copy MapLibre GL CSS
-	copyFileSync("./node_modules/maplibre-gl/dist/maplibre-gl.css", "./wwwroot/css/maplibre-gl.css");
-
-	// Copy favicons (excluding template)
-	if (existsSync("./Scripts/favicons")) {
-		const faviconFiles = readdirSync("./Scripts/favicons");
-		for (const file of faviconFiles) {
-			if (file === "site.webmanifest.template.json") continue;
-			const srcPath = path.join("./Scripts/favicons", file);
-			if (statSync(srcPath).isFile()) {
-				copyFileSync(srcPath, path.join("./wwwroot/favicons", file));
-			}
-		}
-		// Transform site.webmanifest template with path base
-		const templatePath = "./Scripts/favicons/site.webmanifest.template.json";
-		if (existsSync(templatePath)) {
-			const template = readFileSync(templatePath, "utf-8");
-			const transformed = template.replace(/__MANIFEST_PATH_BASE__/g, pathBase);
-			writeFileSync("./wwwroot/favicons/site.webmanifest", transformed);
-		}
-	}
-
-	// Copy logo images
-	copyDirectory("./Scripts/images/logos", "./wwwroot/images/logos");
-}
-
-function compileSass() {
-	console.log("🎨 Compiling SCSS...");
-	mkdirSync("./wwwroot/css", { recursive: true });
-
-	const scssPath = "./Scripts/app.scss";
-	if (existsSync(scssPath)) {
-		const result = sass.compile(scssPath, {
-			style: isDev ? "expanded" : "compressed",
-			sourceMap: isDev,
-			loadPaths: ["node_modules"],
-			quietDeps: true,
-		});
-		writeFileSync("./wwwroot/css/app.css", result.css);
-		if (isDev && result.sourceMap) {
-			writeFileSync("./wwwroot/css/app.css.map", JSON.stringify(result.sourceMap));
-		}
-	}
-}
-
 async function build() {
 	console.log(`Building in ${isDev ? "development" : "production"} mode...`);
-	copyAssets();
-	compileSass();
 
-	const allBundles = [appBundle, ...componentBundles];
-	const results = await Promise.all(allBundles.map((bundle) => Bun.build(bundle)));
+	await clean();
+	const results = await Promise.allSettled([
+		compileSass(),
+		copyAssets(),
+		buildBlazorComponents(),
+		buildScripts(),
+	]);
 
-	for (const result of results) {
-		if (!result.success) {
-			console.error("Build failed:");
-			for (const log of result.logs) {
-				console.error(log);
-			}
-			process.exit(1);
+	// check for any errors
+	results.forEach((result) => {
+		if (result.status === "rejected") {
+			console.error("Error during build:", result.reason);
 		}
-	}
+	});
+
 	console.log("✅ Build complete!");
 }
 
+async function copyDirectory(sourceDirectory: string, destinationDirectory: string) {
+	const glob = new Bun.Glob(`${sourceDirectory}/**/*.*`);
+	for await (const filePath of glob.scan(".")) {
+		const relativePath = relative(sourceDirectory, filePath);
+		const to = resolve(destinationDirectory, relativePath);
+		await Bun.write(to, Bun.file(filePath));
+	}
+}
+
+async function copyFaviconsDirectory(sourceDirectory: string, destinationDirectory: string) {
+	const glob = new Bun.Glob(`${sourceDirectory}/**/*.*`);
+	for await (const filePath of glob.scan(".")) {
+		const relativePath = relative(sourceDirectory, filePath);
+
+		if (filePath.endsWith("site.webmanifest.template.json")) {
+			const newFilename = basename(relativePath, ".template.json");
+			const to = resolve(destinationDirectory, newFilename);
+
+            // Transform template
+			const appSettings = await getAppSettings();
+			const pathBase = appSettings?.GIS?.PathBase || undefined;
+			if (pathBase) {
+				const templateContent = await Bun.file(filePath).text();
+				const transformed = templateContent.replace(/__MANIFEST_PATH_BASE__/g, pathBase);
+				await Bun.write(to, transformed);
+			} else {
+                console.error("Error: PathBase not found in app settings, cannot transform site.webmanifest.template.json.");
+				await Bun.write(to, Bun.file(filePath));
+			}
+		} else {
+			const to = resolve(destinationDirectory, relativePath);
+			await Bun.write(to, Bun.file(filePath));
+		}
+	}
+}
+
+async function getAppSettings(): Promise<any | undefined> {
+	const appSettingsPath = isDev ? "./appsettings.Development.json" : "./appsettings.json";
+	const file = Bun.file(appSettingsPath);
+
+	if (!(await file.exists())) {
+		console.error(`Error: App settings file not found at ${appSettingsPath}.`);
+		return undefined;
+	}
+
+	return await file.json();
+}
+
+async function compileSass() {
+	console.log("🎨 Compiling SCSS...");
+
+	const names = ["app"];
+
+	for (const name of names) {
+		const from = `./Scripts/${name}.scss`;
+		const to = `./wwwroot/css/${name}.css`;
+
+		const scssFile = Bun.file(from)
+		if (await scssFile.exists()) {
+			const result = compile(from, {
+				style: isDev ? "expanded" : "compressed",
+				sourceMap: isDev,
+				quietDeps: true,
+			});
+
+			if (result.sourceMap) {
+				await Bun.write(to, `${result.css}\n/*# sourceMappingURL=${name}.css.map */\n`);
+				await Bun.write(`${to}.map`, JSON.stringify(result.sourceMap));
+			} else {
+				await Bun.write(to, result.css);
+			}
+		}
+	}
+}
+
+async function copyAssets() {
+	console.log("📦 Copying assets...");
+
+	// Copy MapLibre GL CSS
+	await Bun.write("./wwwroot/css/maplibre-gl.css", Bun.file("./node_modules/maplibre-gl/dist/maplibre-gl.css"));
+
+	// Favicons
+	await copyFaviconsDirectory("./Scripts/favicons", "./wwwroot/favicons");
+
+	// Images
+    await copyDirectory("./Scripts/images", "./wwwroot/images");
+}
+
+async function buildBlazorComponents() {
+	console.log("📦 Building Blazor components...");
+
+	// Dynamically get all component typescript entry points
+	const glob = new Bun.Glob("./Components/**/*.razor.ts");
+	for await (const file of glob.scan(".")) {
+		const jsName = basename(file, ".razor.ts");
+		const outdir = resolve("./wwwroot/js", file, "..");
+		await Bun.build({
+			entrypoints: [file],
+			outdir,
+			sourcemap: isDev ? "linked" : "none",
+			minify: true,
+			naming: `[dir]/${jsName}.[ext]`,
+		});
+	}
+}
+
+async function buildScripts() {
+	// Dynamically get all typescript entry points
+	const entryPoints: string[] = [];
+	const glob = new Bun.Glob("./Scripts/**/*.ts");
+	for await (const file of glob.scan(".")) {
+		entryPoints.push(file);
+	}
+
+	if (entryPoints.length > 0) {
+		console.log("📦 Building scripts...");
+		await Bun.build({
+			entrypoints: entryPoints,
+			outdir: "./wwwroot/js",
+			sourcemap: isDev ? "linked" : "none",
+			minify: !isDev,
+		});
+	}
+}
+
+await build();
+
 if (isWatch) {
 	console.log("👀 Watching for changes...");
-	const { watch } = await import("fs");
-	const scriptsPath = path.resolve("./Scripts");
-	const componentsPath = path.resolve("./Components");
 
-	const handleChange = async (filename: string | null) => {
-		if (filename?.endsWith(".ts") || filename?.endsWith(".scss")) {
-			console.log(`\n📝 ${filename} changed, rebuilding...`);
-			await build();
+	// Watch the scripts directory
+	watch("./Scripts", { recursive: true }, async (eventType, filename) => {
+		if (filename && eventType === "change") {
+			if (filename.endsWith(".ts")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
+				await buildScripts();
+				console.log("✅ Re-build complete!");
+			}
+
+			if (filename.endsWith(".scss")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
+				await compileSass();
+				console.log("✅ Re-build complete!");
+			}
 		}
-	};
-
-	watch(scriptsPath, { recursive: true }, async (event, filename) => {
-		await handleChange(filename as string | null);
-	});
-	watch(componentsPath, { recursive: true }, async (event, filename) => {
-		await handleChange(filename as string | null);
 	});
 
-	await build();
-} else {
-	await build();
+	// Watch the blazor components directory
+	watch("./Components", { recursive: true }, async (eventType, filename) => {
+		if (filename && eventType === "change") {
+			if (filename.endsWith(".razor.ts")) {
+				console.log(`📝 ${filename} changed, rebuilding...`);
+				await buildBlazorComponents();
+				console.log("✅ Re-build complete!");
+			}
+		}
+	});
 }

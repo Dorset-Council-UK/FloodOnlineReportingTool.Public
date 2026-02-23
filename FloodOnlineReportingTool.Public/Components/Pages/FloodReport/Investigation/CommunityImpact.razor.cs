@@ -17,18 +17,17 @@ public partial class CommunityImpact(
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.CommunityImpact.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Overview.ToGdsBreadcrumb(),
-        InvestigationPages.PeakDepth.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => FromSummary
+        ? InvestigationPages.Summary
+        : InvestigationPages.Blockages;
+    private static PageInfo PreviousPage => InvestigationPages.PeakDepth;
 
     private Models.FloodReport.Investigation.CommunityImpact Model { get; set; } = default!;
 
@@ -68,9 +67,7 @@ public partial class CommunityImpact(
             Model.CommunityImpactOptions = [.. options];
 
             _isLoading = false;
-            StateHasChanged();
-
-            
+            StateHasChanged(); 
         }
     }
 
@@ -84,8 +81,7 @@ public partial class CommunityImpact(
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? InvestigationPages.Summary : InvestigationPages.Blockages;
-        navigationManager.NavigateTo(nextPage.Url);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()

@@ -6,7 +6,6 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
-using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -24,18 +23,17 @@ public partial class Location(
     NavigationManager navigationManager,
     IJSRuntime JS,
     IOptions<GISOptions> gisOptions
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Location.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
+    private PageInfo NextPage => Model.IsAddress == true
+        ? FloodReportCreatePages.Address 
+        : FloodReportCreatePages.PropertyType;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.Location Model { get; set; } = default!;
 
@@ -86,7 +84,7 @@ public partial class Location(
         {
             _dotNetReference = DotNetObjectReference.Create(this);
             
-            _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/location.js");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", _cts.Token, "/js/components/pages/floodreport/create/location.js");
             if (_module == null)
             {
                 logger.LogError("Failed to load the map JavaScript module.");
@@ -249,28 +247,13 @@ public partial class Location(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or pass back to the summary (user must return from property type page if reset)
-        var nextPage = GetNextPage(propertyTypeReset);
-        var nextPageUrl = nextPage.Url;
-        if (propertyTypeReset && FromSummary)
+        // Go to the next page or pass back to the summary
+        var nextPageUrl = NextPage.Url;
+        if (FromSummary)
         {
             nextPageUrl += "?fromsummary=true";
         }
         navigationManager.NavigateTo(nextPageUrl);
-    }
-    private PageInfo GetNextPage(bool propertyTypeReset)
-    {
-        if (!propertyTypeReset && FromSummary)
-        {
-            return FloodReportCreatePages.Summary;
-        }
-
-        if (Model.IsAddress)
-        {
-            return FloodReportCreatePages.Address;
-        }
-
-        return FloodReportCreatePages.PropertyType;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
@@ -358,5 +341,4 @@ public partial class Location(
 
         return null;
     }
-
 }

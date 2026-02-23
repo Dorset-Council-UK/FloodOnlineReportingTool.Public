@@ -34,7 +34,6 @@ public partial class Update(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
-    private string? _userID;
 
     public async ValueTask DisposeAsync()
     {
@@ -55,11 +54,6 @@ public partial class Update(
         // Setup model and edit context
         if (_updateModel == null)
         {
-            if (AuthenticationState is not null)
-            {
-                var authState = await AuthenticationState;
-                _userID = authState.User.Oid;
-            }
             _updateModel = await GetUpdateModel();
 
             if (_updateModel != null)
@@ -68,14 +62,6 @@ public partial class Update(
                 _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
                 _messageStore = new(_editContext);
             }
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            
         }
     }
 
@@ -93,17 +79,33 @@ public partial class Update(
 
     private async Task UpdateFloodReport()
     {
-        logger.LogDebug("Updating flood report");
-
-        if (_updateModel == null)
+        if (_updateModel is null)
         {
+            logger.LogError("Update model was null. Cannot update flood report.");
+        }
+
+        string? userId = null;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            userID = authState.User.Oid;
+            if (userId is null)
+            {
+                logger.LogError("User ID was not found.");
+            }
+        }
+
+        if (_updateModel is null || userId is null)
+        {
+            _messageStore.Add(_editContext.Field(nameof(_updateModel.UprnText)), "There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
+            _editContext.NotifyValidationStateChanged();
             return;
         }
 
+        logger.LogDebug("Updating flood report");
         try
         {
-            var dto = _updateModel.ToDto();
-            await eligibilityCheckRepository.UpdateForUser(_userID, EligibilityCheckId, dto, _cts.Token);
+            await eligibilityCheckRepository.UpdateForUser(userId, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
             logger.LogInformation("Eligibility check updated successfully for user");
             navigationManager.NavigateTo(FloodReportPages.Overview.Url);
         }
@@ -117,11 +119,17 @@ public partial class Update(
 
     private async Task<UpdateModel?> GetUpdateModel()
     {
-        var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(_userID, EligibilityCheckId, _cts.Token);
-        if (eligibilityCheck == null)
+        if (AuthenticationState is not null)
         {
-            return null;
+            var authState = await AuthenticationState;
+            var userID = authState.User.Oid;
+            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
+            if (eligibilityCheck is not null)
+            {
+                return eligibilityCheck.ToUpdateModel();
+            }
         }
-        return eligibilityCheck.ToUpdateModel();
+
+        return null;
     }
 }

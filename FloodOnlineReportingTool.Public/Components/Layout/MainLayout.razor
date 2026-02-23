@@ -9,18 +9,17 @@
                 <GdsHeaderNavLink Href="signout" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
             </Authorized>
             <NotAuthorized>
-                <GdsHeaderNavLink Href="signin" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
+                <GdsHeaderNavLink Href="@_signInUrl" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
             </NotAuthorized>
         </AuthorizeView>
     </NavLinks>
 </GdsHeader>
-<div class="govuk-width-container">
 
-
+<div class="govuk-width-container flex-fill">
     @if (!Env.IsProduction())
     {
         // Show development banner in all non-production environments
-        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackText="" FeedbackLink="_feedbackUri" />
+        <GdsPhaseBanner Phase="GdsPhaseBanner.Phases.Development" FeedbackLink="_feedbackUri" />
     }
     else
     {
@@ -34,11 +33,47 @@
     </main>
 </div>
 
-<GdsFooter />
+<GdsFooter>
+    <Meta>
+        <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+            <h2 class="govuk-visually-hidden">Support links</h2>
+            <ul class="govuk-footer__inline-list">
+                <li class="govuk-footer__inline-list-item">
+                    <a class="govuk-footer__link" href="privacy">
+                        Privacy
+                    </a>
+                </li>
+                <li class="govuk-footer__inline-list-item">
+                    <a class="govuk-footer__link" href="cookies">
+                        Cookies
+                    </a>
+                </li>
+            </ul>
+
+            <a class="govuk-link govuk-link-image" href="https://www.dorsetcouncil.gov.uk" title="Go to Dorset Council">
+                <img src="@Assets["images/footer-x2.webp"]" alt="Dorset Council logo" width="188" height="80">
+            </a>
+        </div>
+        <div class="govuk-footer__meta-item">
+            <div>Copyright &copy; @(DateTimeOffset.UtcNow.Year) Dorset Council</div>
+        </div>
+    </Meta>
+</GdsFooter>
 
 @code {
     [Inject]
     public IWebHostEnvironment Env { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
+    private string _signInUrl
+    {
+        get
+        {
+            var redirectUri = Navigation.SignInRedirectUri;
+            return string.IsNullOrWhiteSpace(redirectUri) ? "signin" : $"signin?redirectUri={redirectUri}";
+        }
+    }
 }

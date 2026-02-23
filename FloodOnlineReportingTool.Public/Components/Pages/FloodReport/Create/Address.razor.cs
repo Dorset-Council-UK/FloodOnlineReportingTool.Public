@@ -17,20 +17,15 @@ public partial class Address(
     ISearchRepository searchRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = FloodReportCreatePages.Address.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
-        GeneralPages.Home.ToGdsBreadcrumb(),
-        FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.Postcode.ToGdsBreadcrumb(),
-    ];
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-
+    private static PageInfo NextPage => FloodReportCreatePages.PropertyType;
+    private static PageInfo PreviousPage => FloodReportCreatePages.Postcode;
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
@@ -77,8 +72,14 @@ public partial class Address(
             Model.AddressOptions = await CreateAddressOptions();
 
             StateHasChanged();
+        }
+    }
 
-            
+    private async Task OnSubmit()
+    {
+        if (_editContext.Validate())
+        {
+            await OnValidSubmit();
         }
     }
 
@@ -109,9 +110,8 @@ public partial class Address(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or pass back to the summary (user must return from property type page)
-            var nextPage = FloodReportCreatePages.PropertyType;
-            var nextPageUrl = nextPage.Url;
+            // Go to the next page or pass back to the summary
+            var nextPageUrl = NextPage.Url;
             if (FromSummary)
             {
                 nextPageUrl += "?fromsummary=true";

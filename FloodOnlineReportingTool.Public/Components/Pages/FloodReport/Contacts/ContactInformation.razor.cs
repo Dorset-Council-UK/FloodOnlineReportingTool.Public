@@ -4,6 +4,7 @@ using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Identity.Web;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -59,7 +60,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
 
     private async Task<IReadOnlyCollection<GdsOptionItem<ContactRecordType>>> CreateContactTypeOptions()
     {
-        var userId = await AuthenticationState.IdentityUserId();
+        var userId = await GetUserIdAsGuid();
         if (userId == null)
         {
             return [];
@@ -82,5 +83,20 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
         var selected = contactRecordType == Contact.ContactType;
 
         return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
+    }
+
+    private async Task<string?> GetUserId()
+    {
+        if (AuthenticationState is null)
+        {
+            return null;
+        }
+        var authState = await AuthenticationState;
+        return authState.User.GetObjectId();
+    }
+
+    private async Task<Guid?> GetUserIdAsGuid()
+    {
+        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
