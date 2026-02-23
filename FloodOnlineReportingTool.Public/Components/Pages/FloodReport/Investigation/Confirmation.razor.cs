@@ -4,7 +4,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -42,25 +42,14 @@ public partial class Confirmation(
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await GetUserIdAsGuid();
-        if (userId.HasValue)
+        if (AuthenticationState is not null)
         {
-            _investigation = await investigationRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
+            var authState = await AuthenticationState;
+            var userId = authState.User.Oid;
+            if (userId is not null)
+            {
+                _investigation = await investigationRepository.ReportedByUserBasicInformation(userId, _cts.Token);
+            }
         }
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

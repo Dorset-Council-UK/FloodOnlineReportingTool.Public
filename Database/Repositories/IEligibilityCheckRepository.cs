@@ -7,12 +7,12 @@ public interface IEligibilityCheckRepository
     /// <summary>
     /// Get the eligibility check reported by the user
     /// </summary>
-    Task<EligibilityCheck?> ReportedByUser(Guid userId, CancellationToken ct);
+    Task<EligibilityCheck?> ReportedByUser(string userId, CancellationToken ct);
 
     /// <summary>
     /// Get the eligibility check reported by the user
     /// </summary>
-    Task<EligibilityCheck?> ReportedByUser(Guid userId, Guid id, CancellationToken ct);
+    Task<EligibilityCheck?> ReportedByUser(string userId, Guid id, CancellationToken ct);
 
     Task<EligibilityCheck?> GetById(Guid id, CancellationToken ct);
     Task<EligibilityCheck?> GetByReference(string reference, CancellationToken ct);
@@ -21,5 +21,5 @@ public interface IEligibilityCheckRepository
     /// <summary>
     /// Update the eligibility check reported by the user
     /// </summary>
-    Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct);
+    Task<EligibilityCheck> UpdateForUser(string userId, Guid id, EligibilityCheckDto dto, CancellationToken ct);
 }

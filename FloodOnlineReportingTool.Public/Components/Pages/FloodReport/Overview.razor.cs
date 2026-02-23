@@ -5,7 +5,7 @@ using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 public partial class Overview(
@@ -56,17 +56,22 @@ public partial class Overview(
     {
         if (firstRender)
         {
-            var userId = await GetUserIdAsGuid();
-            if (userId.HasValue)
+            string? userId = null;
+            if (AuthenticationState is not null)
             {
-                var floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
-                // TODO: Work out what to do when the user has reported multiple floods
-                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
+                var authState = await AuthenticationState;
+                userId = authState.User.Oid;
             }
-            else
+            if (userId is null)
             {
                 var floodReportId = await scopedSessionStorage.GetFloodReportId();
                 _floodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+            }
+            else
+            {
+                // TODO: Work out what to do when the user has reported multiple floods
+                var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
+                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
             }
 
             if (_floodReport is not null)
@@ -95,20 +100,5 @@ public partial class Overview(
             _isLoading = false;
             StateHasChanged();
         }
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

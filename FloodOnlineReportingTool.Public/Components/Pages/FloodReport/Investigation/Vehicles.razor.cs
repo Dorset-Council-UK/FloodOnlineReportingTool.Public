@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Identity.Web;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -102,17 +102,19 @@ public partial class Vehicles(
             return InvestigationPages.Summary;
         }
 
-        var userId = await GetUserIdAsGuid();
-        if (userId.HasValue)
+        bool isInternal = false;
+        if (AuthenticationState is not null)
         {
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, _cts.Token);
-            if (eligibilityCheck?.IsInternal() == true)
+            var authState = await AuthenticationState;
+            var userId = authState.User.Oid;
+            if (userId is not null)
             {
-                return InvestigationPages.InternalHow;
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                isInternal = eligibilityCheck?.IsInternal() == true;
             }
         }
 
-        return InvestigationPages.PeakDepth;
+        return isInternal ? InvestigationPages.InternalHow : InvestigationPages.PeakDepth;
     }
 
     private async Task<InvestigationDto> GetInvestigation()
@@ -144,20 +146,5 @@ public partial class Vehicles(
         var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
@@ -49,11 +49,15 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            var userId = await GetUserIdAsGuid();
-            if (userId.HasValue)
+            if (AuthenticationState is not null)
             {
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, _cts.Token);
-                _isInternal = eligibilityCheck?.IsInternal() == true;
+                var authState = await AuthenticationState;
+                var userId = authState.User.Oid;
+                if (userId is not null)
+                {
+                    var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                    _isInternal = eligibilityCheck?.IsInternal() == true;
+                }
             }
             else
             {
@@ -84,14 +88,19 @@ public partial class Summary(
             _saveErrors.Add("Not able to find the investigation information.");
         }
 
-        var userId = await GetUserIdAsGuid();
+        string? userId = null;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            userId = authState.User.Oid;
+        }
         if (userId is null)
         {
             logger.LogError("User ID was not found.");
             _saveErrors.Add("Not able to identify you.");
         }
 
-        if (_saveErrors.Count > 0)
+        if (_saveErrors.Count > 0 || _investigationDto is null || userId is null)
         {
             _saveErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
             return;
@@ -100,7 +109,7 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            await investigationRepository.CreateForUser(userId!.Value, _investigationDto!, _cts.Token);
+            await investigationRepository.CreateForUser(userId, _investigationDto, _cts.Token);
 
             // Clear the stored data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
@@ -125,20 +134,5 @@ public partial class Summary(
 
         logger.LogWarning("Investigation was not found in the protected storage.");
         return new InvestigationDto();
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

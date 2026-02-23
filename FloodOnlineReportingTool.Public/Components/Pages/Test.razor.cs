@@ -12,7 +12,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
@@ -232,12 +232,7 @@ public partial class Test(
             return null;
         }
         var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
+        return authState.User.Oid;
     }
 
     // Investigation actions
@@ -280,14 +275,14 @@ public partial class Test(
     }
     private async Task<Database.Models.Flood.FloodReport?> GetYourLastFloodReport()
     {
-        var userId = await GetUserIdAsGuid();
+        var userId = await GetUserId();
         if (userId is null)
         {
             return null;
         }
 
         // TODO: Work out what to do when the user has reported multiple floods
-        var floodReports = await floodReportRepository.AllReportedByContact(userId.Value, _cts.Token);
+        var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
         return floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
     }
 }

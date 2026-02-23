@@ -4,12 +4,14 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
 [Authorize]
-public partial class Index(IFloodReportRepository floodReportRepository) : IPageOrder, IAsyncDisposable
+public partial class Index(
+    IFloodReportRepository floodReportRepository
+) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = InvestigationPages.Home.Title;
@@ -43,26 +45,14 @@ public partial class Index(IFloodReportRepository floodReportRepository) : IPage
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await GetUserIdAsGuid();
-
-        if (userId.HasValue)
+        if (AuthenticationState is not null)
         {
-            (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userId.Value, _cts.Token);
+            var authState = await AuthenticationState;
+            var userID = authState.User.Oid;
+            if (userID is not null)
+            {
+                (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userID, _cts.Token);
+            }
         }
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }
