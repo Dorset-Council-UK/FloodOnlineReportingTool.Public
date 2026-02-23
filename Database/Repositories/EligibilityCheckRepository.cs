@@ -10,7 +10,7 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logger, PublicDbContext context, IPublishEndpoint publishEndpoint, ICommonRepository commonRepository) : IEligibilityCheckRepository
 {
-    public async Task<EligibilityCheck?> ReportedByUser(Guid userId, CancellationToken ct)
+    public async Task<EligibilityCheck?> ReportedByUser(string userId, CancellationToken ct)
     {
         // TODO: Might need to check a status on the flood report
         return await context.ContactRecords
@@ -21,7 +21,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<EligibilityCheck?> ReportedByUser(Guid userId, Guid id, CancellationToken ct)
+    public async Task<EligibilityCheck?> ReportedByUser(string userId, Guid id, CancellationToken ct)
     {
         // TODO: Might need to check a status on the flood report
         return await context.ContactRecords
@@ -102,7 +102,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         return updatedCheck;
     }
 
-    public async Task<EligibilityCheck> UpdateForUser(Guid userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
+    public async Task<EligibilityCheck> UpdateForUser(string userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
     {
         var eligibilityCheck = await context.ContactRecords
             .AsNoTracking()

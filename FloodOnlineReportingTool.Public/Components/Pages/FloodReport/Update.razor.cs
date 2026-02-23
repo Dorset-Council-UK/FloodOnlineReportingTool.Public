@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
 
@@ -84,7 +84,12 @@ public partial class Update(
             logger.LogError("Update model was null. Cannot update flood report.");
         }
 
-        var userId = await GetUserIdAsGuid();
+        string? userId = null;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            userId = authState.User.Oid;
+        }
         if (userId is null)
         {
             logger.LogError("User ID was not found.");
@@ -100,8 +105,8 @@ public partial class Update(
         logger.LogDebug("Updating flood report");
         try
         {
-            await eligibilityCheckRepository.UpdateForUser(userId.Value, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
-            logger.LogInformation("Eligibility check updated successfully for user {UserId}", userId.Value);
+            await eligibilityCheckRepository.UpdateForUser(userId, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
+            logger.LogInformation("Eligibility check updated successfully for user");
             navigationManager.NavigateTo(FloodReportPages.Overview.Url);
         }
         catch (Exception ex)
@@ -114,31 +119,20 @@ public partial class Update(
 
     private async Task<UpdateModel?> GetUpdateModel()
     {
-        var userId = await GetUserIdAsGuid();
-        if (userId.HasValue)
+        if (AuthenticationState is not null)
         {
-            var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId.Value, EligibilityCheckId, _cts.Token);
-            if (eligibilityCheck is not null)
+            var authState = await AuthenticationState;
+            var userId = authState.User.Oid;
+            if (userId is not null)
             {
-                return eligibilityCheck.ToUpdateModel();
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
+                if (eligibilityCheck is not null)
+                {
+                    return eligibilityCheck.ToUpdateModel();
+                }
             }
         }
 
         return null;
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.GetObjectId();
-    }
-
-    private async Task<Guid?> GetUserIdAsGuid()
-    {
-        return Guid.TryParse(await GetUserId(), out var userId) ? userId : null;
     }
 }

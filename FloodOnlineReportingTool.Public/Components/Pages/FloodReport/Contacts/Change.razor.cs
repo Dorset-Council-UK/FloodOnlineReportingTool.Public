@@ -9,6 +9,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 
@@ -48,7 +49,7 @@ public partial class Change(
     private ContactModel? _contactModel;
     private SubscribeRecord? _subscribeModel;
     private Guid _floodReportId = Guid.Empty;
-    private Guid _userId = Guid.Empty;
+    private string? _userID;
     private bool _isLoading = true;
     private bool _isDataLoading = true;
     private bool _isResent;
@@ -85,11 +86,7 @@ public partial class Change(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var user = authState.User;
-
-            // Extract the Entra ID (formerly Azure AD) object identifier claim
-            var oidClaim = user.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
-            _userId = Guid.TryParse(oidClaim, out var parsedOid) ? parsedOid : Guid.Empty;
+            _userID = authState.User.Oid;
         }
     }
 
@@ -117,7 +114,7 @@ public partial class Change(
                 _contactModel.Id = _subscribeModel.Id;
                 _contactModel.IsRecordOwner = _subscribeModel.IsRecordOwner;
                 _contactModel.PhoneNumber = _subscribeModel.PhoneNumber;
-                _contactModel.ContactUserId = _subscribeModel.ContactRecordId;
+                _contactModel.ContactUserId = _userID;
             }
 
             // Load available contact types for the dropdown
@@ -222,7 +219,7 @@ public partial class Change(
 
             var updatedSubscription = await contactRepository.UpdateSubscriptionRecord(selectedRecord, _cts.Token);
 
-            logger.LogInformation("Contact information updated successfully for ContactId {ContactId}, UserId {UserId}", ContactId, _userId);
+            logger.LogInformation("Contact information updated successfully for ContactId {ContactId}", ContactId);
 
             if (updatedSubscription.ResultModel is not SubscribeRecord sub)
             {

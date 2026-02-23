@@ -166,4 +166,126 @@ public static class InvestigationExtensions
             WarningAppropriateId = dto.WarningAppropriateId,
         };
     }
+
+    extension(InvestigationDto investigationDto)
+    {
+#pragma warning disable MA0051 // Method is too long
+        public bool IsComplete(bool isInternal)
+        {
+            // Water speed (FloodProblem's)
+            if (investigationDto is { WaterSpeedId: null } or { BeginId: null } or { AppearanceId: null })
+            {
+                return false;
+            }
+
+            // Internal how / Water entry (FloodProblem's)
+            if (isInternal && investigationDto.Entries.Count == 0)
+            {
+                return false;
+            }
+            if (isInternal && investigationDto.Entries.Contains(FloodEntryIds.Other) && investigationDto.WaterEnteredOther is null)
+            {
+                return false;
+            }
+
+            // Internal when (RecordStatus)
+            if (isInternal && investigationDto.WhenWaterEnteredKnownId is null)
+            {
+                return false;
+            }
+            if (isInternal && investigationDto.WhenWaterEnteredKnownId == RecordStatusIds.Yes && investigationDto.FloodInternalUtc is null)
+            {
+                return false;
+            }
+
+            // Water destination (FloodProblem's)
+            if (investigationDto.Destinations.Count == 0)
+            {
+                return false;
+            }
+
+            // Damaged vehicles (RecordStatus)
+            if (investigationDto.WereVehiclesDamagedId is null)
+            {
+                return false;
+            }
+            if (investigationDto.WereVehiclesDamagedId == RecordStatusIds.Yes && investigationDto.NumberOfVehiclesDamaged is null)
+            {
+                return false;
+            }
+
+            // Peak depth (RecordStatus)
+            if (investigationDto.IsPeakDepthKnownId is null)
+            {
+                return false;
+            }
+            if (investigationDto.IsPeakDepthKnownId == RecordStatusIds.Yes)
+            {
+                if (investigationDto is { PeakInsideCentimetres: null } or { PeakOutsideCentimetres: null })
+                {
+                    return false;
+                }
+            }
+            // Community impacts (FloodImpact's)
+            if (investigationDto.CommunityImpacts.Count == 0)
+            {
+                return false;
+            }
+
+            // Blockages
+            if (investigationDto.HasKnownProblems is null)
+            {
+                return false;
+            }
+
+            // Actions taken (FloodMitigation's)
+            if (investigationDto.ActionsTaken.Count == 0)
+            {
+                return false;
+            }
+            if (investigationDto.ActionsTaken.Contains(FloodMitigationIds.OtherAction) && investigationDto.OtherAction is null)
+            {
+                return false;
+            }
+
+            // Warnings - Help received (FloodMitigation's)
+            if (investigationDto.HelpReceived.Count == 0)
+            {
+                return false;
+            }
+
+            // Warnings - Before the flooding (RecordStatus)
+            if (investigationDto is { FloodlineId: null } or { WarningReceivedId: null })
+            {
+                return false;
+            }
+
+            // Warnings - Sources (FloodMitigation's)
+            if (investigationDto.WarningSources.Count == 0)
+            {
+                return false;
+            }
+            if (investigationDto.WarningSources.Contains(FloodMitigationIds.OtherWarning) && investigationDto.WarningSourceOther is null)
+            {
+                return false;
+            }
+
+            // Warnings - Floodline (RecordStatus)
+            if (investigationDto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
+            {
+                if (investigationDto is { WarningTimelyId: null } or { WarningAppropriateId: null })
+                {
+                    return false;
+                }
+            }
+
+            // History (RecordStatus)
+            if (investigationDto.HistoryOfFloodingId is null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
 }
