@@ -78,4 +78,6 @@ public record Investigation
     public required Guid HistoryOfFloodingId { get; init; }
     public RecordStatus HistoryOfFlooding { get; init; } = default!;
     public string? HistoryOfFloodingDetails { get; init; }
+    public required Guid PropertyInsuredId { get; init; }
+    public RecordStatus PropertyInsured { get; init; } = default!;
 }
