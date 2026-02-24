@@ -61,6 +61,25 @@
                 </InputRadioGroup>
             </GdsFormGroup>
 
+            <GdsFormGroup For="() => Model.PropertyInsuredId" Show="!_isLoading">
+                <InputRadioGroup @bind-Value="Model.PropertyInsuredId">
+                    <GdsFieldsetGroup>
+                        <Heading>
+                            <h2 class="govuk-fieldset__heading">Is the property insured against flood damage?</h2>
+                        </Heading>
+                        <Content>
+                            <GdsErrorMessage />
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                @foreach (var option in _propertyInsuredOptions)
+                                {
+                                    <GdsRadio Option="option" /> 
+                                }
+                            </div>
+                        </Content>
+                    </GdsFieldsetGroup>
+                </InputRadioGroup>
+            </GdsFormGroup>
+
             @if (!_isLoading)
             {
                 <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>

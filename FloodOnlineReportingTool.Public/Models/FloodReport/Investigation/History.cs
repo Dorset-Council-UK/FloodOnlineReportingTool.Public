@@ -9,4 +9,8 @@ public class History
 
     [GdsFieldErrorClass(GdsFieldTypes.Textarea)]
     public string? HistoryOfFloodingDetails { get; set; }
+
+    [GdsFieldErrorClass(GdsFieldTypes.Radio)]
+    public Guid? PropertyInsuredId { get; set; }
+
 }

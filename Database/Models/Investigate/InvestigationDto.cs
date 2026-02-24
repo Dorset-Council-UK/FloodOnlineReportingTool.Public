@@ -14,6 +14,7 @@ public record InvestigationDto
     // History fields
     public Guid? HistoryOfFloodingId { get; init; }
     public string? HistoryOfFloodingDetails { get; init; }
+    public Guid? PropertyInsuredId { get; init; }
 
     // Water speed fields, which are related flood problems
     public Guid? BeginId { get; init; }

@@ -106,6 +106,9 @@ public partial class InvestigationDtoSummary(
     [Parameter]
     public bool ShowHistory { get; set; } = true;
     private string? _historyOfFloodingLabel;
+    [Parameter]
+    public bool ShowInsurance { get; set; } = true;
+    private string? _propertyInsuredLabel;
 
     private readonly CancellationTokenSource _cts = new();
     const string Unknown = "Unknown";
@@ -142,6 +145,7 @@ public partial class InvestigationDtoSummary(
         GetBlockages();
         GetActionsTaken();
         GetHistory();
+        GetInsurance();
 
         // warnings
         GetHelpReceivedWarnings();
@@ -471,6 +475,16 @@ public partial class InvestigationDtoSummary(
         }
 
         _historyOfFloodingLabel = RecordStatusLabel(InvestigationDto.HistoryOfFloodingId);
+    }
+
+    private void GetInsurance()
+    {
+        if (!ShowInsurance)
+        {
+            _propertyInsuredLabel = null;
+            return;
+        }
+        _propertyInsuredLabel = RecordStatusLabel(InvestigationDto.PropertyInsuredId);
     }
 
 
