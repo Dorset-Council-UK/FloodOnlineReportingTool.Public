@@ -211,6 +211,7 @@ public sealed class TestService(
             // History (RecordStatus)
             HistoryOfFloodingId = Database.Models.Status.RecordStatusIds.Yes,
             HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
+            PropertyInsuredId = Database.Models.Status.RecordStatusIds.Yes,
         };
 #else
         await Task.CompletedTask;

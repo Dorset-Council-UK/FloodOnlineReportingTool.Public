@@ -32,6 +32,7 @@ public partial class History(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IReadOnlyCollection<GdsOptionItem<Guid>> _historyOfFloodingOptions = [];
+    private IReadOnlyCollection<GdsOptionItem<Guid>> _propertyInsuredOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -69,6 +70,8 @@ public partial class History(
             Model.HistoryOfFloodingId = investigation.HistoryOfFloodingId;
             Model.HistoryOfFloodingDetails = investigation.HistoryOfFloodingDetails;
             _historyOfFloodingOptions = await CreateHistoryOfFloodingOptions(investigation.HistoryOfFloodingId);
+            Model.PropertyInsuredId = investigation.PropertyInsuredId;
+            _propertyInsuredOptions = await CreatePropertyInsuredOptions(investigation.PropertyInsuredId);
 
             _isLoading = false;
             StateHasChanged();
@@ -82,6 +85,7 @@ public partial class History(
         {
             HistoryOfFloodingId = Model.HistoryOfFloodingId,
             HistoryOfFloodingDetails = Model.HistoryOfFloodingId == RecordStatusIds.Yes ? Model.HistoryOfFloodingDetails : null,
+            PropertyInsuredId = Model.PropertyInsuredId,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -107,6 +111,13 @@ public partial class History(
     private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateHistoryOfFloodingOptions(Guid? selectedValue)
     {
         const string idPrefix = "history-of-flooding";
+        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
+        return [.. recordStatuses.Select(o => CreateOption(o, idPrefix, selectedValue))];
+    }
+
+    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreatePropertyInsuredOptions(Guid? selectedValue)
+    {
+        const string idPrefix = "property-insured";
         var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
         return [.. recordStatuses.Select(o => CreateOption(o, idPrefix, selectedValue))];
     }

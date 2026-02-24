@@ -129,6 +129,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             // History
             HistoryOfFloodingId = dto.HistoryOfFloodingId!.Value,
             HistoryOfFloodingDetails = dto.HistoryOfFloodingDetails,
+            PropertyInsuredId = dto.PropertyInsuredId!.Value,
         };
     }
 }
