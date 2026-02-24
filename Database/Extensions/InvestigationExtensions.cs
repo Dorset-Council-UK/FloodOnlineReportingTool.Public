@@ -26,6 +26,7 @@ public static class InvestigationExtensions
             CreatedUtc = investigation.CreatedUtc,
             HasEntries = investigation.Entries.Any(o => o.FloodProblemId != FloodEntryIds.NotSure),
             HasHistory = investigation.HistoryOfFloodingId == RecordStatusIds.Yes,
+            HasPropertyInsurance = investigation.PropertyInsuredId == RecordStatusIds.Yes,
             HasPeakDepth = investigation.IsPeakDepthKnownId == RecordStatusIds.Yes,
             HasInternalFlooding = investigation.WhenWaterEnteredKnownId == RecordStatusIds.Yes,
             HasDestination = investigation.Destinations.Any(o => o.FloodProblemId != FloodDestinationIds.NotSure),
@@ -56,6 +57,7 @@ public static class InvestigationExtensions
             // History fields
             HistoryOfFloodingId = investigation.HistoryOfFloodingId,
             HistoryOfFloodingDetails = investigation.HistoryOfFloodingDetails,
+            PropertyInsuredId = investigation.PropertyInsuredId,
 
             // Water speed fields, which are related flood problems
             BeginId = investigation.BeginId,

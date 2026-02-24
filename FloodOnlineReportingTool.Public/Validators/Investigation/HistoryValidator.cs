@@ -18,5 +18,9 @@ public class HistoryValidator : AbstractValidator<History>
             .MaximumLength(200)
             .WithMessage("History of flooding must be {MaxLength} characters or less")
             .When(o => o.HistoryOfFloodingId == RecordStatusIds.Yes);
+
+        RuleFor(o => o.PropertyInsuredId)
+            .NotEmpty()
+            .WithMessage("Select if the property is insured or select 'Not sure'");
     }
 }

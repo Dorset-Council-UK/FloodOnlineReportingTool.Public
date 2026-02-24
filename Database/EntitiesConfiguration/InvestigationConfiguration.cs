@@ -102,5 +102,9 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
         builder
             .Navigation(o => o.WarningAppropriate)
             .AutoInclude();
+
+        builder
+            .Navigation(o => o.PropertyInsured)
+            .AutoInclude();
     }
 }
