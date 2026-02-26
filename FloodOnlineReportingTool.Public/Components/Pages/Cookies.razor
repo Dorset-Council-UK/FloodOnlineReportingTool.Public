@@ -1,43 +1,48 @@
 ﻿@page "/cookies"
+@using FloodOnlineReportingTool.Database.Options
+@using Microsoft.Extensions.Options
+@inject IOptions<GISOptions> GISOptions
 
 <PageTitle>Cookies</PageTitle>
 
 <GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
 <h1 class="govuk-heading-xl">Cookies</h1>
-
-<h2 class="govuk-heading-l">Cookies on FORT</h2>
 <div>
     <p>Cookies are files saved on your phone, tablet or computer when you visit a website.</p>
-    <p>We use cookies to collect and store information about how you use the FORT website, such as the pages you visit.</p>
-    <p>We use secure session and time limited cookies to record whether or not a user is logged in.</p>
+    <p>We use some essential cookies to make this website work.</p>
 </div>
 
-<h2 class="govuk-heading-l">Third-party cookies</h2>
-<div>
-    <p>FORT does not use cookies for marketing purposes but does collect anonymised statistics via Google Analytics.</p>
-    <p>
-        The Google cookies are anonymised and cannot be traced back to you.
-        Learn more about <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/cookie-usage">Google Analytics cookies</a>
-    </p>
-</div>
-
-<h2 class="govuk-heading-l">Site personalisation</h2>
+<h2 class="govuk-heading-l">Analytics cookies</h2>
 <div>
     <p>
-        FORT uses an HTML5 feature called Session storage to store answers from forms with multiple pages.
-    </p>
-    <p>
-        Session storage is very similar to a cookie but is more secure and faster as the settings are not sent to our servers with every request like a cookie but is stored locally within your browser cache.
-    </p>
-    <p>
-        Session storage is not shared between browsers or computers and is deleted when clearing your "Offline Web Site Data".
+        We don't use cookies for marketing purposes but we do collect anonymised statistics
+        using <a href="@WebStatisticsProviderUrl">@WebStatisticsProviderName</a>.
+        These cookies are anonymised and cannot be traced back to you.
     </p>
 </div>
 
-<h2 class="govuk-heading-l">What are my options?</h2>
+<h2 class="govuk-heading-l">Session storage</h2>
 <div>
     <p>
-        Unfortunately the site would not function correctly without the use of cookies therefore you must accept the use of cookies to use this site.
+        This website uses session storage in your browser to store answers while you are completing a flood report. Session 
+        storage is similar to a cookie but is only stored on your own device. Session storage is not shared 
+        between browsers or devices and is deleted when closing your browser.
     </p>
 </div>
+
+<h2 class="govuk-heading-l">How long we keep your data</h2>
+<div>
+    <p>
+        Personal data you give us (contact details, comments and media) is kept for a maximum of @(DataRetentionYears) years.
+        Data about the flood itself including the address or location is kept for as long as needed.
+    </p>
+    <p><a href="/privacy">Find out more about how we use your data.</a></p>
+</div>
+
+@code {
+    private GISOptions options => GISOptions.Value;
+    private int DataRetentionYears => options.DataRetentionYears;
+    private string WebStatisticsProviderName => options.WebStatisticsProviderName;
+    private Uri WebStatisticsProviderUrl => options.WebStatisticsProviderUrl;
+}
