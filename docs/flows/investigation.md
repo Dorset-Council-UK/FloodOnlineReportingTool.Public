@@ -25,7 +25,8 @@ flowchart TB
     IsInternalFlooding -- Yes --> Entry["Water entry"]
     Entry --> InternalWhen["Internal flooding"]
     InternalWhen --> PeakDepth
-    PeakDepth --> CommunityImpact[Impact on the community]
+    PeakDepth --> ServiceImpact[Impact on services]
+    ServiceImpact --> CommunityImpact[Impact on the community]
     CommunityImpact --> Blockages
     Blockages --> ActionsTaken[Actions taken]
     ActionsTaken --> HelpReceived[Help received]

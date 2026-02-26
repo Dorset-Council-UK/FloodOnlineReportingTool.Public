@@ -12,7 +12,7 @@ The FloodImpact represents the broader impacts of a flood, such as health risks,
 - Priority
 - Property Type
 - Residential / Zone-R
-- Service Impact
+- Service Impact / Zone-E
 
 ## Priorities
 

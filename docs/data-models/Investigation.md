@@ -25,9 +25,11 @@ erDiagram
     Guid WarningTimelyId "RecordStatus"
     Guid WarningAppropriateId "RecordStatus"
     Guid HistoryOfFloodingId "RecordStatus"
+    Guid PropertyInsuredId "RecordStatus"
   }
   Investigation ||--o{ InvestigationDestination : Destinations
   Investigation ||--o{ InvestigationEntry : "Entries (how the water entered)"
+  Investigation ||--o{ InvestigationServiceImpact : ServiceImpacts
   Investigation ||--o{ InvestigationCommunityImpact : CommunityImpacts
   Investigation ||--o{ InvestigationActionsTaken : ActionsTaken
   Investigation ||--o{ InvestigationHelpReceived : HelpReceived
@@ -35,6 +37,7 @@ erDiagram
 
   InvestigationDestination ||--|| FloodProblem : FloodProblemId
   InvestigationEntry ||--|| FloodProblem : FloodProblemId
+  InvestigationServiceImpact ||--|| FloodImpact : FloodImpactId
   InvestigationCommunityImpact ||--|| FloodImpact : FloodImpactId
   InvestigationActionsTaken ||--|| FloodMitigation : FloodMitigationId
   InvestigationHelpReceived ||--|| FloodMitigation : FloodMitigationId
