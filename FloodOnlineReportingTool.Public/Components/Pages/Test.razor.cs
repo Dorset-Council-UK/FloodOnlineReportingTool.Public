@@ -59,6 +59,7 @@ public partial class Test(
         new (InvestigationPages.InternalHow, "(optional)"),
         new (InvestigationPages.InternalWhen, "(optional)"),
         new (InvestigationPages.PeakDepth),
+        new (InvestigationPages.ServiceImpact),
         new (InvestigationPages.CommunityImpact),
         new (InvestigationPages.Blockages),
         new (InvestigationPages.ActionsTaken),
@@ -184,7 +185,7 @@ public partial class Test(
             IsEmailVerified = true,
             IsSubscribed = true,
             CreatedUtc = DateTimeOffset.UtcNow,
-            RedactionDate = DateTimeOffset.UtcNow.AddYears(1)
+            RedactionDate = DateTimeOffset.UtcNow.AddYears(1),
         };
 
         ContactRecord testContact = new()
@@ -192,7 +193,7 @@ public partial class Test(
             Id = Guid.NewGuid(),
             CreatedUtc = DateTimeOffset.UtcNow,
             RedactionDate = DateTimeOffset.UtcNow.AddYears(1),
-            SubscribeRecords = new List<SubscribeRecord> { testSubscriber }
+            SubscribeRecords = [testSubscriber],
         };
 
         logger.LogSubscriberRecord(testSubscriber);
@@ -201,6 +202,10 @@ public partial class Test(
         // Trigger the redaction on real data
         var testId = await contactRepository.GetRandomFloodReportWithSubscriber(_cts.Token);
         var contact = await contactRepository.GetReportOwnerContactByReport(testId, _cts.Token);
+        if (contact is not null)
+        {
+            logger.LogDebug("Testing redaction on contact with id {contactId}", contact.Id);
+        }
     }
 
     private async Task BlankCreateData()
@@ -223,16 +228,6 @@ public partial class Test(
     {
         await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
         _hasCreateExtraData = await HasCreateExtraData();
-    }
-
-    private async Task<string?> GetUserId()
-    {
-        if (AuthenticationState is null)
-        {
-            return null;
-        }
-        var authState = await AuthenticationState;
-        return authState.User.Oid;
     }
 
     // Investigation actions
@@ -275,14 +270,20 @@ public partial class Test(
     }
     private async Task<Database.Models.Flood.FloodReport?> GetYourLastFloodReport()
     {
-        var userId = await GetUserId();
-        if (userId is null)
+        string? objectId = null;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            objectId = authState.User.Oid;
+        }
+
+        if (objectId is null)
         {
             return null;
         }
 
         // TODO: Work out what to do when the user has reported multiple floods
-        var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
+        var floodReports = await floodReportRepository.AllReportedByContact(objectId, _cts.Token);
         return floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
     }
 }

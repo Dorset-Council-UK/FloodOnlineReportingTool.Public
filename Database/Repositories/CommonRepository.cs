@@ -28,6 +28,16 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
             .ToListAsync(ct);
     }
 
+    public async Task<IList<FloodImpact>> GetFloodImpactsByCategories(string[] categories, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        return await context.FloodImpacts
+            .AsNoTracking()
+            .Where(o => categories.Contains(o.Category))
+            .OrderBy(o => o.OptionOrder)
+            .ToListAsync(ct);
+    }
+
     public async Task<FloodProblem?> GetFloodProblem(Guid id, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
@@ -67,19 +77,13 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         var filterHashSet = (await GetFloodProblemsByCategories(categories, ct))
             .Select(f => f.Id)
             .ToHashSet();
-        return problemList.Where(p => filterHashSet.Contains(p.Id)).ToList();
+        return [.. problemList.Where(p => filterHashSet.Contains(p.Id))];
     }
 
     public async Task<IList<FloodProblem>> GetFullEligibilityFloodProblemSourceList(EligibilityCheck eligibilityCheck, CancellationToken ct)
     {
-        IList<Guid> primarySources =
-            eligibilityCheck.Sources
-            .Select(r => r.FloodProblemId)
-            .ToList();
-        IList<Guid> secondarySources =
-            eligibilityCheck.SecondarySources
-            .Select(r => r.FloodProblemId)
-            .ToList();
+        IList<Guid> primarySources = [.. eligibilityCheck.Sources.Select(r => r.FloodProblemId)];
+        IList<Guid> secondarySources = [.. eligibilityCheck.SecondarySources.Select(r => r.FloodProblemId)];
 
         var allSources = primarySources.Concat(secondarySources);
 

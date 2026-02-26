@@ -64,6 +64,11 @@ public partial class InvestigationDtoSummary(
     private string? _peakDepthOutsideMessage;
     private string? _peakDepthNotKnownMessage;
 
+    // Service impacts
+    [Parameter]
+    public bool ShowServiceImpacts { get; set; } = true;
+    private string[] _serviceImpactLabels = [];
+
     // Community impacts
     [Parameter]
     public bool ShowCommunityImpacts { get; set; } = true;
@@ -115,22 +120,10 @@ public partial class InvestigationDtoSummary(
 
     protected override async Task OnInitializedAsync()
     {
-        if (InvestigationFloodProblems is null)
-        {
-            InvestigationFloodProblems = await GetInvestigationFloodProblems();
-        }
-        if (InvestigationRecordStatuses is null)
-        {
-            InvestigationRecordStatuses = await GetInvestigationRecordStatuses();
-        }
-        if (InvestigationFloodImpacts is null)
-        {
-            InvestigationFloodImpacts = await GetInvestigationFloodImpacts();
-        }
-        if (InvestigationFloodMitigations is null)
-        {
-            InvestigationFloodMitigations = await GetInvestigationFloodMitigations();
-        }
+        InvestigationFloodProblems ??= await GetInvestigationFloodProblems();
+        InvestigationRecordStatuses ??= await GetInvestigationRecordStatuses();
+        InvestigationFloodImpacts ??= await GetInvestigationFloodImpacts();
+        InvestigationFloodMitigations ??= await GetInvestigationFloodMitigations();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -141,6 +134,7 @@ public partial class InvestigationDtoSummary(
         GetInternalHow();
         GetInternalWhen();
         GetPeakDepth();
+        GetServiceImpact();
         GetCommunityImpact();
         GetBlockages();
         GetActionsTaken();
@@ -198,11 +192,15 @@ public partial class InvestigationDtoSummary(
     }
 
     /// <summary>
-    /// Get all the flood impacts used in investigations, this is only for community impacts, one call makes it more efficient
+    /// Get all the flood impacts used in investigations, one call makes it more efficient
     /// </summary>
     private async Task<IReadOnlyCollection<FloodImpact>> GetInvestigationFloodImpacts()
     {
-        var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
+        string[] categories = [
+            FloodImpactCategory.ServiceImpact,
+            FloodImpactCategory.CommunityImpact,
+        ];
+        var floodImpacts = await commonRepository.GetFloodImpactsByCategories(categories, _cts.Token);
         if (floodImpacts.Count == 0)
         {
             logger.LogError("There were no flood impacts found.");
@@ -347,6 +345,23 @@ public partial class InvestigationDtoSummary(
         {
             _peakDepthNotKnownMessage = Unknown;
         }
+    }
+
+    private void GetServiceImpact()
+    {
+        if (!ShowServiceImpacts)
+        {
+            _serviceImpactLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.ServiceImpacts.Count == 0)
+        {
+            _serviceImpactLabels = [Unknown];
+            return;
+        }
+
+        _serviceImpactLabels = FloodImpactLabels(InvestigationDto.ServiceImpacts);
     }
 
     private void GetCommunityImpact()

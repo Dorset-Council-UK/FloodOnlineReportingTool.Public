@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FloodOnlineReportingTool.Database.EntitiesConfiguration;
 
+#pragma warning disable MA0051 // Method is too long
+
 internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigation>
 {
     public void Configure(EntityTypeBuilder<Investigation> builder)
@@ -76,7 +78,11 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
             .AutoInclude();
 
         builder
-           .Navigation(o => o.CommunityImpacts)
+            .Navigation(o => o.ServiceImpacts)
+            .AutoInclude();
+
+        builder
+            .Navigation(o => o.CommunityImpacts)
             .AutoInclude();
 
         builder

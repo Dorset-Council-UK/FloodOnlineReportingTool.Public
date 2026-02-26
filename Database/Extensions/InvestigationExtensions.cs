@@ -3,12 +3,16 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Status;
 
+#pragma warning disable MA0051 // Method is too long
+
 namespace FloodOnlineReportingTool.Database.Models.Investigate;
 
 public static class InvestigationExtensions
 {
-    internal static InvestigationCreated ToMessageCreated(this Investigation investigation, string floodReportReference)
+    extension(Investigation investigation)
     {
+        internal InvestigationCreated ToMessageCreated(string floodReportReference)
+        {
         var registeredWithFloodline = investigation.FloodlineId == RecordStatusIds.Yes;
 
         // Received other warnings are when WarningReceivedId is Yes, WarningSources is not NoWarning, and dont count WarningSources of FloodMitigationIds.FloodlineWarning
@@ -31,6 +35,7 @@ public static class InvestigationExtensions
             HasInternalFlooding = investigation.WhenWaterEnteredKnownId == RecordStatusIds.Yes,
             HasDestination = investigation.Destinations.Any(o => o.FloodProblemId != FloodDestinationIds.NotSure),
             HasDamagedVehicles = investigation.WereVehiclesDamagedId == RecordStatusIds.Yes,
+                HasImpactedServices = investigation.ServiceImpacts.Any(o => o.FloodImpactId != FloodImpactIds.ServicesNotAffected && o.FloodImpactId != FloodImpactIds.ServiceImpactNotSure),
             HasImpactedTheCommunity = investigation.CommunityImpacts.Any(o => o.FloodImpactId != FloodImpactIds.CommunityImpactNotSure),
             HasBlockages = investigation.HasKnownProblems,
             ActionsWereTaken = investigation.ActionsTaken.Any(o => o.FloodMitigationId != FloodMitigationIds.NoActionTaken),
@@ -41,7 +46,7 @@ public static class InvestigationExtensions
         };
     }
 
-    public static InvestigationDto ToDto(this Investigation investigation)
+        public InvestigationDto ToDto()
     {
         return new InvestigationDto
         {
@@ -80,6 +85,9 @@ public static class InvestigationExtensions
             HasKnownProblems = investigation.HasKnownProblems,
             KnownProblemDetails = investigation.KnownProblemDetails,
 
+                // Service impact fields, which are related flood impacts
+                ServiceImpacts = [.. investigation.ServiceImpacts.Select(o => o.FloodImpactId)],
+
             // Community impact fields, which are related flood impacts
             CommunityImpacts = [.. investigation.CommunityImpacts.Select(o => o.FloodImpactId)],
 
@@ -107,7 +115,7 @@ public static class InvestigationExtensions
     /// <summary>
     /// Applies internal fields to the investigation only if it is internal.
     /// </summary>
-    internal static Investigation ApplyInternalFields(this Investigation investigation, InvestigationDto dto, bool isInternal)
+        internal Investigation ApplyInternalFields(InvestigationDto dto, bool isInternal)
     {
         if (!isInternal)
         {
@@ -129,7 +137,7 @@ public static class InvestigationExtensions
     /// <summary>
     /// Applies peak depth fields to the investigation only if it is known.
     /// </summary>
-    internal static Investigation ApplyPeakDepth(this Investigation investigation, InvestigationDto dto)
+        internal Investigation ApplyPeakDepth(InvestigationDto dto)
     {
         if (dto.IsPeakDepthKnownId == null)
         {
@@ -155,7 +163,7 @@ public static class InvestigationExtensions
     /// <summary>
     /// Applies floodline warnings to the investigation only if the floodline warning source is present.
     /// </summary>
-    internal static Investigation ApplyFloodlineWarnings(this Investigation investigation, InvestigationDto dto)
+        internal Investigation ApplyFloodlineWarnings(InvestigationDto dto)
     {
         if (!dto.WarningSources.Contains(FloodMitigationIds.FloodlineWarning))
         {

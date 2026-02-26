@@ -124,6 +124,24 @@
         }
     }
 
+    @if (ShowServiceImpacts)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on services</dt>
+            <dd class="govuk-summary-list__value">
+                <ul class="govuk-list">
+                    @foreach (var label in _serviceImpactLabels)
+                    {
+                        <li>@label</li>
+                    }
+                </ul>
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.ServiceImpact.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the flooding impacted services</span></a>
+            </dd>
+        </div>
+    }
+
     @if (ShowCommunityImpacts)
     {
         <div class="govuk-summary-list__row">
