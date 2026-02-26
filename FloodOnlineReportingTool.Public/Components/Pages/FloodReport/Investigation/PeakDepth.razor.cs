@@ -35,7 +35,7 @@ public partial class PeakDepth(
     private bool FromSummary { get; set; }
     private PageInfo NextPage => FromSummary
         ? InvestigationPages.Summary
-        : InvestigationPages.CommunityImpact;
+        : InvestigationPages.ServiceImpact;
     private PageInfo? PreviousPage;
 
     private Models.FloodReport.Investigation.PeakDepth Model { get; set; } = default!;
