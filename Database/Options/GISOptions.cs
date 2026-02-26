@@ -12,4 +12,6 @@ public record GISOptions
     public required string OSApiKey { get; init; }
     public string? OSLicenceNumber { get; init; } = string.Empty;
     public required int DataRetentionYears { get; init; } = 7;
+    public required string WebStatisticsProviderName { get; init; } = "Microsoft Application Insights";
+    public required string WebStatisticsProviderUrl { get; init; } = "https://azure.microsoft.com/en-us/products/monitor";
 }

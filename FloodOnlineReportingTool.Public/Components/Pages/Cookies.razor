@@ -17,17 +17,17 @@
 <div>
     <p>
         We don't use cookies for marketing purposes but we do collect anonymised statistics
-        using <a href="https://developers.google.com/analytics">Google Analytics</a>. 
-        Google cookies are anonymised and cannot be traced back to you.
+        using <a href="@WebStatisticsProviderUrl">@WebStatisticsProviderName</a>.
+        These cookies are anonymised and cannot be traced back to you.
     </p>
 </div>
 
 <h2 class="govuk-heading-l">Session storage</h2>
 <div>
     <p>
-        This website uses session storage to store answers from forms with multiple pages. Session storage is similar to a 
-        cookie but is more secure. Session storage is not shared between browsers or computers and is deleted when 
-        closing your browser.
+        This website uses session storage in your browser to store answers while you are completing a flood report. Session 
+        storage is similar to a cookie but is more secure and is only stored on your own device. Session storage is not shared 
+        between browsers or devices and is deleted when closing your browser.
     </p>
 </div>
 
@@ -39,4 +39,6 @@
 
 @code {
     private int DataRetentionYears => GISOptions.Value.DataRetentionYears;
+    private string WebStatisticsProviderName => GISOptions.Value.WebStatisticsProviderName;
+    private string WebStatisticsProviderUrl => GISOptions.Value.WebStatisticsProviderUrl;
 }
