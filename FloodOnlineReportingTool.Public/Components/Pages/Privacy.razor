@@ -18,7 +18,8 @@
     <p>
         We do not keep contact information, comments or media containing personal data for longer than 
         @(DataRetentionYears) years unless agreed with you and where there is a valid reason. Personal data may be removed 
-        in advance of this by the relevant record lead.
+        in advance of this by the relevant record lead. Data about the flood itself (including the address or location of 
+        where the flood happened) is kept for as long as needed and can help with historic flood investigation work.
     </p>  
 </div>
 
@@ -57,10 +58,6 @@
     <p>
         Data may be used to plan future flood defence schemes and to inform the public about flood risks. 
         All non-personal data is subject to Freedom of Information and Environmental Information Requests.
-    </p>
-    <p>
-        Personal data is only available to record leads, however as this can change during an investigation all the 
-        privacy statements for the geographical area are provided.
     </p>
     <p>
         We will not share your personal data with external companies or use it for marketing purposes unless you have 
@@ -104,22 +101,21 @@
     </p>
 </div>
 
-@* TODO - rewrite this section once process is clear *@
 <h2 class="govuk-heading-l">Access, deletion and updating of records</h2>
 <div>
     <p>
-        You can update your report for as long as the record is being processed.
-        This will allow you to remove personal data but a historical copy of the original text will be retained until the processing is completed or the data retention period is exceeded.
-        It is only possible to completely remove a record if it can be proved that the record was incorrectly entered and it may not be possible if the data has been used in a report.
-        In such cases it is possible to record an updated version to prevent its inclusion in further reports and analysis.
+        In line with current laws you have a right to be forgotten and that data held about you is accurate. If you choose to 
+        register when you report a flood, you can log in and update your personal details (contact details, comments and media) 
+        at any time. If you choose not to register, the flood report will not include any personal data and you cannot change it 
+        yourself. If you want to have your report removed, contact the relevant data controller (Lead Local Flood Authority) and 
+        they will be able to help you with this.
+    </p>
+    <p>
+        If you have any concerns about the way your data is being used, contact the relevant data controller in the first instance. 
+        If you are not satisfied with their response, you can contact the 
+        <a href="https://ico.org.uk/make-a-complaint/">Information Commissioner’s Office (ICO)</a> to make a complaint.
     </p>
 </div>
-
-<p>
-    <strong>Please Note:</strong> we use email as the primary method of communication relating to processing of your report.
-    You will be sent details of how to access and update your record via an email from fort@dorsetcouncil.gov.uk.
-    Should you wish to prevent further communication you should update your record and remove the email address.
-</p>
 
 @code {
     private int DataRetentionYears => GISOptions.Value.DataRetentionYears;
