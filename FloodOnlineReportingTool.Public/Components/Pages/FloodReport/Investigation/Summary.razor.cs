@@ -94,7 +94,7 @@ public partial class Summary(
     {
         _summaryErrors.Clear();
 
-        if (true || _investigationDto is null)
+        if (_investigationDto is null)
         {
             logger.LogError("Investigation information was not found");
             _summaryErrors.Add("Not able to find the investigation information");
@@ -107,7 +107,7 @@ public partial class Summary(
             var authState = await AuthenticationState;
             userId = authState.User.Oid;
         }
-        if (true || userId is null)
+        if (userId is null)
         {
             logger.LogError("User ID was not found.");
             _summaryErrors.Add("Not able to identify you");

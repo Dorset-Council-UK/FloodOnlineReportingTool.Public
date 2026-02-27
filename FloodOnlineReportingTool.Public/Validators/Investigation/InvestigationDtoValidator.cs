@@ -150,7 +150,7 @@ public class InvestigationDtoValidator : AbstractValidator<InvestigationDto>
             .NotEmpty()
             .WithMessage("Select where you received warnings from")
             .WithState(dto => InvestigationPages.WarningSources);
-        RuleFor(dto => dto.KnownProblemDetails)
+        RuleFor(dto => dto.WarningSourceOther)
             .NotEmpty()
             .WithMessage("Enter the other warning source")
             .WithState(dto => InvestigationPages.WarningSources)

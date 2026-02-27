@@ -78,7 +78,7 @@ public partial class ServiceImpact(
             _wereServicesImpactedOptions = await CreateWereServicesImpactedOptions(floodImpacts, selectedValue);
 
             // Build the yes > services impacted checkboxes
-            Model.ImpactedServicesOptions = await CreateImpactedServicesOptions(floodImpacts, investigation.ServiceImpacts);
+            Model.ImpactedServicesOptions = CreateImpactedServicesOptions(floodImpacts, investigation.ServiceImpacts);
 
             _isLoading = false;
             StateHasChanged();
@@ -102,7 +102,7 @@ public partial class ServiceImpact(
     private IList<Guid> GetSelectedServiceImpacts()
     {
         // no or not sure selected, return the service impact id
-        if (Model.WereServicesImpactedId.Equals(FloodImpactIds.ServicesNotAffected) || Model.WereServicesImpactedId.Equals(FloodImpactIds.ServiceImpactNotSure))
+        if (Model.WereServicesImpactedId == FloodImpactIds.ServicesNotAffected || Model.WereServicesImpactedId == FloodImpactIds.ServiceImpactNotSure)
         {
             return [Model.WereServicesImpactedId.Value];
         }
@@ -150,7 +150,7 @@ public partial class ServiceImpact(
         ];
     }
 
-    private static async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateImpactedServicesOptions(IList<FloodImpact> floodImpacts, IList<Guid> selectedValues)
+    private static IReadOnlyCollection<GdsOptionItem<Guid>> CreateImpactedServicesOptions(IList<FloodImpact> floodImpacts, IList<Guid> selectedValues)
     {
         const string idPrefix = "impacted-services";
         var withoutNotSureAndNotAffected = floodImpacts.Where(fi => fi.Id != FloodImpactIds.ServicesNotAffected && fi.Id != FloodImpactIds.ServiceImpactNotSure);

@@ -15,6 +15,6 @@ public class ServiceImpactValidator : AbstractValidator<ServiceImpact>
         RuleFor(o => o.ImpactedServicesOptions)
             .Must(o => o.Any(x => x.Selected))
             .WithMessage("Select which services were impacted")
-            .When(o => o.WereServicesImpactedId.Equals(RecordStatusIds.Yes));
+            .When(o => o.WereServicesImpactedId == RecordStatusIds.Yes);
     }
 }
