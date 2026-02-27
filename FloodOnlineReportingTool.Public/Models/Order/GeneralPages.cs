@@ -6,4 +6,6 @@ internal static class GeneralPages
     public static readonly PageInfo Error = new("error", "Error");
     public static readonly PageInfo Test = new("test", "Testing");
     public static readonly PageInfo AccessDenied = new("access-denied", "Access denied");
+    public static readonly PageInfo Cookies = new("cookies", "Cookies");
+    public static readonly PageInfo Privacy = new("privacy", "Privacy");
 }
