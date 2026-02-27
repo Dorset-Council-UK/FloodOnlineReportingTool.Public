@@ -5,6 +5,8 @@ using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
 using RecordStatusIds = FloodOnlineReportingTool.Contracts.Shared.RecordStatusIds;
 
+#pragma warning disable MA0051 // Method is too long
+
 namespace FloodOnlineReportingTool.Database.Seed;
 
 /// <summary>
@@ -116,15 +118,15 @@ internal static class InitialData
             new FloodImpact(FloodImpactIds.ZoneCRoad, FloodImpactCategory.Commercial, "Road",  FloodImpactPriority.External, 9),
             new FloodImpact(FloodImpactIds.ZoneCNotSure, FloodImpactCategory.Commercial, "Not Sure", FloodImpactPriority.Other, 99),
 
-            // Zone-E
-            new FloodImpact(FloodImpactIds.ServicesNotAffected, "Service Impact", "Services not affected", FloodImpactPriority.None, 1),
-            new FloodImpact(FloodImpactIds.PrivateSewer, "Service Impact", "Private Sewer", FloodImpactPriority.None, 2),
-            new FloodImpact(FloodImpactIds.MainsSewer, "Service Impact", "Mains Sewer", FloodImpactPriority.None, 3),
-            new FloodImpact(FloodImpactIds.WaterSupply, "Service Impact", "Water Supply", FloodImpactPriority.None, 4),
-            new FloodImpact(FloodImpactIds.Gas, "Service Impact", "Gas", FloodImpactPriority.None, 5),
-            new FloodImpact(FloodImpactIds.Electricity, "Service Impact", "Electricity", FloodImpactPriority.None, 6),
-            new FloodImpact(FloodImpactIds.Phoneline, "Service Impact", "Phoneline", FloodImpactPriority.None, 7),
-            new FloodImpact(FloodImpactIds.ZoneENotSure, "Service Impact", "Not Sure", FloodImpactPriority.None, 99),
+            // Service impacts / Zone-E
+            new FloodImpact(FloodImpactIds.PrivateSewer, FloodImpactCategory.ServiceImpact, "Private sewer", FloodImpactPriority.None, 2),
+            new FloodImpact(FloodImpactIds.MainsSewer, FloodImpactCategory.ServiceImpact, "Mains sewer", FloodImpactPriority.None, 3),
+            new FloodImpact(FloodImpactIds.WaterSupply, FloodImpactCategory.ServiceImpact, "Water supply", FloodImpactPriority.None, 4),
+            new FloodImpact(FloodImpactIds.Gas, FloodImpactCategory.ServiceImpact, "Gas", FloodImpactPriority.None, 5),
+            new FloodImpact(FloodImpactIds.Electricity, FloodImpactCategory.ServiceImpact, "Electricity", FloodImpactPriority.None, 6),
+            new FloodImpact(FloodImpactIds.Phoneline, FloodImpactCategory.ServiceImpact, "Phoneline", FloodImpactPriority.None, 7),
+            new FloodImpact(FloodImpactIds.ServicesNotAffected, FloodImpactCategory.ServiceImpact, "Services not affected", FloodImpactPriority.None, 98),
+            new FloodImpact(FloodImpactIds.ServiceImpactNotSure, FloodImpactCategory.ServiceImpact, "Not sure", FloodImpactPriority.None, 99),
 
             // Community Impact
             new FloodImpact(FloodImpactIds.AllRoadAccessBlocked, FloodImpactCategory.CommunityImpact, "All road access blocked", FloodImpactPriority.None, 1),
@@ -234,7 +236,7 @@ internal static class InitialData
             new FloodProblem(FloodDurationIds.Duration24, FloodProblemCategory.Duration, "24", "1 hour to 24 hours", 2),
             new FloodProblem(FloodDurationIds.Duration168, FloodProblemCategory.Duration, "168", "24 hours to 1 week", 3),
             new FloodProblem(FloodDurationIds.Duration744, FloodProblemCategory.Duration, "744", "More than 1 week", 4),
-            new FloodProblem(FloodDurationIds.DurationKnown, FloodProblemCategory.Duration, null, "I know how many days/hours", 5),
+            new FloodProblem(FloodDurationIds.DurationKnown, FloodProblemCategory.Duration, typeName: null, "I know how many days/hours", 5),
             new FloodProblem(FloodDurationIds.DurationNotSure, FloodProblemCategory.Duration, "48", "Not Sure", 99),
 
             // Water Entry

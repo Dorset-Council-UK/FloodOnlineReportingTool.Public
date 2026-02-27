@@ -44,7 +44,7 @@ public static class FloodImpactIds
     public readonly static Guid ZoneCRoad = new("018fd6eb-0e80-78a6-b74e-8a65c9293f90");
     public readonly static Guid ZoneCNotSure = new("018fd6eb-f8e0-7844-b002-405ef83ab875");
 
-    // Zone-E Id's
+    // Service impact Id's / Zone-E Id's
     public readonly static Guid ServicesNotAffected = new("018fd71a-aa00-7ac0-b521-ccf27f194875");
     public readonly static Guid PrivateSewer = new("018fd71b-9460-715b-aa13-d9eabd5b7ef1");
     public readonly static Guid MainsSewer = new("018fd71c-7ec0-7a1b-94a6-c7d7ae52b977");
@@ -52,7 +52,7 @@ public static class FloodImpactIds
     public readonly static Guid Gas = new("018fd71e-5380-79a2-8e37-ab4e24f063a2");
     public readonly static Guid Electricity = new("018fd71f-3de0-7551-b3a4-7916759c83fe");
     public readonly static Guid Phoneline = new("018fd720-2840-7273-bfcd-4ce03f7f249e");
-    public readonly static Guid ZoneENotSure = new("018fd721-12a0-7341-a0fb-818543c14e0f");
+    public readonly static Guid ServiceImpactNotSure = new("018fd721-12a0-7341-a0fb-818543c14e0f");
 
     // Community impact Id's
     public readonly static Guid AllRoadAccessBlocked = new("018fd751-9880-7fe6-812e-3683961317a9");

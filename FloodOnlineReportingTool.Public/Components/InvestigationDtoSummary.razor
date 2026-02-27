@@ -4,21 +4,21 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started</dt>
-            <dd class="govuk-summary-list__value">@_beginLabel</dd>
+            @SummaryValueOrMissing(_beginLabel, InvestigationPages.Speed)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how quickly the flooding started</span></a>
             </dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Water movement</dt>
-            <dd class="govuk-summary-list__value">@_waterSpeedLabel</dd>
+            @SummaryValueOrMissing(_waterSpeedLabel, InvestigationPages.Speed)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how fast the water was moving</span></a>
             </dd>
         </div>
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The water looked</dt>
-            <dd class="govuk-summary-list__value">@_appearanceLabel</dd>
+            @SummaryValueOrMissing(_appearanceLabel, InvestigationPages.Speed)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Speed.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the appearance of the water</span></a>
             </dd>
@@ -29,14 +29,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Where the water was going</dt>
-            <dd class="govuk-summary-list__value">
-                <ul class="govuk-list">
-                    @foreach (var label in _destinationLabels)
-                    {
-                        <li>@label</li>
-                    }
-                </ul>
-            </dd>
+            @SummaryValuesOrMissing(_destinationLabels, InvestigationPages.Destination)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Destination.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> where the water was going</span></a>
             </dd>
@@ -47,7 +40,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vehicles damaged</dt>
-            <dd class="govuk-summary-list__value">@_vehiclesDamagedMessage</dd>
+            @SummaryValueOrMissing(_vehiclesDamagedMessage, InvestigationPages.Vehicles)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Vehicles.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if any vehicles were damaged</span></a>
             </dd>
@@ -60,21 +53,7 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">How the water entered</dt>
-                @if (_entryLabels.Length == 0)
-                {
-                    <dd class="govuk-summary-list__value">Unknown</dd>
-                }
-                else
-                {
-                    <dd class="govuk-summary-list__value">
-                        <ul class="govuk-list">
-                            @foreach (var label in _entryLabels)
-                            {
-                                <li>@label</li>
-                            }
-                        </ul>
-                    </dd>
-                }
+                @SummaryValuesOrMissing(_entryLabels, InvestigationPages.InternalHow)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.InternalHow.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the water entered</span></a>
                 </dd>
@@ -85,7 +64,7 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">When the water entered</dt>
-                <dd class="govuk-summary-list__value">@_internalWhen</dd>
+                @SummaryValueOrMissing(_internalWhen, InvestigationPages.InternalWhen)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.InternalWhen.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> when the water entered</span></a>
                 </dd>
@@ -99,14 +78,14 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth inside</dt>
-                <dd class="govuk-summary-list__value">@_peakDepthInsideMessage</dd>
+                @SummaryValueOrMissing(_peakDepthInsideMessage, InvestigationPages.PeakDepth)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth inside</span></a>
                 </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth outside</dt>
-                <dd class="govuk-summary-list__value">@_peakDepthOutsideMessage</dd>
+                @SummaryValueOrMissing(_peakDepthOutsideMessage, InvestigationPages.PeakDepth)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth outside</span></a>
                 </dd>
@@ -116,7 +95,7 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth</dt>
-                <dd class="govuk-summary-list__value">@_peakDepthNotKnownMessage</dd>
+                @SummaryValueOrMissing(_peakDepthNotKnownMessage, InvestigationPages.PeakDepth)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth</span></a>
                 </dd>
@@ -124,18 +103,22 @@
         }
     }
 
+    @if (ShowServiceImpacts)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on services</dt>
+            @SummaryValuesOrMissing(_serviceImpactLabels, InvestigationPages.ServiceImpact)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.ServiceImpact.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the flooding impacted services</span></a>
+            </dd>
+        </div>
+    }
+
     @if (ShowCommunityImpacts)
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on the community</dt>
-            <dd class="govuk-summary-list__value">
-                <ul class="govuk-list">
-                    @foreach (var label in _communityImpactLabels)
-                    {
-                        <li>@label</li>
-                    }
-                </ul>
-            </dd>
+            @SummaryValuesOrMissing(_communityImpactLabels, InvestigationPages.CommunityImpact)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.CommunityImpact.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how the flooding restricted parts of the community</span></a>
             </dd>
@@ -146,7 +129,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Known problems</dt>
-            <dd class="govuk-summary-list__value">@_blockagesKnownProblemsLabel</dd>
+            @SummaryValueOrMissing(_blockagesKnownProblemsLabel, InvestigationPages.Blockages)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Blockages.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if there are known problems, blockages, or recent repair works</span></a>
             </dd>
@@ -157,14 +140,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Actions taken</dt>
-            <dd class="govuk-summary-list__value">
-                <ul class="govuk-list">
-                    @foreach (var label in _actionsTakenLabels)
-                    {
-                        <li>@label</li>
-                    }
-                </ul>
-            </dd>
+            @SummaryValuesOrMissing(_actionsTakenLabels, InvestigationPages.ActionsTaken)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.ActionsTaken.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> what actions were taken</span></a>
             </dd>
@@ -175,7 +151,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Has a history of flooding</dt>
-            <dd class="govuk-summary-list__value">@_historyOfFloodingLabel</dd>
+            @SummaryValueOrMissing(_historyOfFloodingLabel, InvestigationPages.History)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.History.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the location has a history of flooding</span></a>
             </dd>
@@ -186,7 +162,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Is the property insured</dt>
-            <dd class="govuk-summary-list__value">@_propertyInsuredLabel</dd>
+            @SummaryValueOrMissing(_propertyInsuredLabel, InvestigationPages.History)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.History.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the property is insured</span></a>
             </dd>
@@ -203,14 +179,7 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Help received</dt>
-                <dd class="govuk-summary-list__value">
-                    <ul class="govuk-list">
-                        @foreach (var label in @_helpReceivedLabels)
-                        {
-                            <li>@label</li>
-                        }
-                    </ul>
-                </dd>
+                @SummaryValuesOrMissing(_helpReceivedLabels, InvestigationPages.HelpReceived)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.HelpReceived.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> any help you received</span></a>
                 </dd>
@@ -221,14 +190,14 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Registered with Floodline</dt>
-                <dd class="govuk-summary-list__value">@_registeredWithFloodlineLabel</dd>
+                @SummaryValueOrMissing(_registeredWithFloodlineLabel, InvestigationPages.Warnings)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Warnings.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you are registered to receive floodline warnings</span></a>
                 </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Other warnings received</dt>
-                <dd class="govuk-summary-list__value">@_otherWarningReceivedLabel</dd>
+                @SummaryValueOrMissing(_otherWarningReceivedLabel, InvestigationPages.Warnings)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Warnings.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you received other warnings</span></a>
                 </dd>
@@ -239,14 +208,7 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Received warnings from</dt>
-                <dd class="govuk-summary-list__value">
-                    <ul class="govuk-list">
-                        @foreach (var label in @_warningSourcesLabels)
-                        {
-                            <li>@label</li>
-                        }
-                    </ul>
-                </dd>
+                @SummaryValuesOrMissing(_warningSourcesLabels, InvestigationPages.WarningSources)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.WarningSources.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> where you receive warnings from</span></a>
                 </dd>
@@ -257,18 +219,43 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Timely floodline warning</dt>
-                <dd class="govuk-summary-list__value">@_warningTimelyLabel</dd>
+                @SummaryValueOrMissing(_warningTimelyLabel, InvestigationPages.Floodline)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Floodline.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the floodline warning was timely</span></a>
                 </dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Warning correctly worded</dt>
-                <dd class="govuk-summary-list__value">@_warningAppropriateLabel</dd>
+                @SummaryValueOrMissing(_warningAppropriateLabel, InvestigationPages.Floodline)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.Floodline.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if the warning was worded correctly</span></a>
                 </dd>
             </div>
         }
     </dl>
+}
+
+@code {
+    private RenderFragment SummaryValueOrMissing(string? label, PageInfo pageInfo)
+    {
+        var hasFailures = _validationFailures.Exists(failure => failure.CustomState.Equals(pageInfo));
+        return hasFailures
+            ? @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>
+            : @<dd class="govuk-summary-list__value">@label</dd>;
+    }
+
+    private RenderFragment SummaryValuesOrMissing(string[] labels, PageInfo pageInfo)
+    {
+        var hasFailures = _validationFailures.Exists(failure => failure.CustomState.Equals(pageInfo));
+        return hasFailures
+            ? @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>
+            : @<dd class="govuk-summary-list__value">
+                <ul class="govuk-list">
+                    @foreach (var label in labels)
+                    {
+                        <li>@label</li>
+                    }
+                </ul>
+              </dd>;
+    }
 }

@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
+#pragma warning disable MA0051 // Method is too long
+#pragma warning disable CA1822 // Mark members as static
+
 public sealed class TestService(
     IPublishEndpoint publishEndpoint,
     IDbContextFactory<PublicDbContext> contextFactory,
@@ -162,6 +165,13 @@ public sealed class TestService(
             IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
             PeakInsideCentimetres = 35,
             PeakOutsideCentimetres = 50,
+
+            // Service impacts (FloodImpact's)
+            ServiceImpacts = [
+                new(investigationId, FloodImpactIds.MainsSewer),
+                new(investigationId, FloodImpactIds.Gas),
+                new(investigationId, FloodImpactIds.Phoneline),
+            ],
 
             // Community impacts (FloodImpact's)
             CommunityImpacts = [

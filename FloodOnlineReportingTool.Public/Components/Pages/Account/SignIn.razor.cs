@@ -12,17 +12,18 @@ public partial class SignIn(NavigationManager navigationManager)
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationState;
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated ?? false)
+        if (AuthenticationState is not null)
         {
-            // Get the return URL from query string
-            var uri = new Uri(navigationManager.Uri);
-            var returnUrl = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("returnUrl");
+            var authState = await AuthenticationState;
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                // Get the return URL from query string
+                var uri = new Uri(navigationManager.Uri);
+                var returnUrl = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("returnUrl");
 
-            // Redirect to original page or fallback
-            navigationManager.NavigateTo(returnUrl ?? "/", true);
+                // Redirect to original page or fallback
+                navigationManager.NavigateTo(returnUrl ?? "/", forceLoad: true);
+            }
         }
     }
 

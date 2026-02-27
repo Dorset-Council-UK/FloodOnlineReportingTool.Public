@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
-using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
@@ -25,11 +24,10 @@ public partial class Summary(
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private InvestigationDto? _investigationDto;
-    private bool _investigationIsComplete;
+    private readonly ICollection<string> _summaryErrors = [];
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private bool _isInternal;
-    private ICollection<string> _saveErrors = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -49,43 +47,58 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            if (AuthenticationState is not null)
-            {
-                var authState = await AuthenticationState;
-                var userId = authState.User.Oid;
-                if (userId is not null)
-                {
-                    var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                    _isInternal = eligibilityCheck?.IsInternal() == true;
-                }
-            }
-            else
-            {
-                _isInternal = false;
-            }
-
+            _isInternal = await GetIsInternalFloodImpacts();
             _investigationDto = await GetInvestigation();
-            _investigationIsComplete = _investigationDto.IsComplete(_isInternal);
-
-            if (!_investigationIsComplete)
-            {
-                logger.LogWarning("Investigation information is not complete. Investigation: {Investigation}", _investigationDto);
-                _saveErrors.Add("Your investigation information is not complete. Please check the information below and complete any missing information.");
-            }
 
             _isLoading = false;
             StateHasChanged();
         }
     }
 
-    private async Task SaveInvestigation()
+    /// <summary>
+    /// Get one of the users eligibility checks and read if it has any internal flood impacts.
+    /// </summary>
+    private async Task<bool> GetIsInternalFloodImpacts()
     {
-        _saveErrors.Clear();
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var userId = authState.User.Oid;
+            if (userId is not null)
+            {
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                return eligibilityCheck?.IsInternal() == true;
+            }
+        }
+
+        return false;
+    }
+
+    private void OnValidationStatusChanged(bool isValid)
+    {
+        if (isValid)
+        {
+            _summaryErrors.Clear();
+            return;
+        }
+
+        logger.LogWarning("Investigation summary is not valid.");
+        const string generalMessage = "Your investigation information is not complete. Please check the information below and complete any missing information.";
+        if (!_summaryErrors.Contains(generalMessage, StringComparer.OrdinalIgnoreCase))
+        {
+            _summaryErrors.Add(generalMessage);
+        }
+    }
+
+    private async Task OnAcceptAndSend()
+    {
+        _summaryErrors.Clear();
 
         if (_investigationDto is null)
         {
-            logger.LogError("Investigation information was not found. Investigation: {Investigation}", _investigationDto);
-            _saveErrors.Add("Not able to find the investigation information.");
+            logger.LogError("Investigation information was not found");
+            _summaryErrors.Add("Not able to find the investigation information");
+            return;
         }
 
         string? userId = null;
@@ -97,19 +110,19 @@ public partial class Summary(
         if (userId is null)
         {
             logger.LogError("User ID was not found.");
-            _saveErrors.Add("Not able to identify you.");
-        }
-
-        if (_saveErrors.Count > 0 || _investigationDto is null || userId is null)
-        {
-            _saveErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
+            _summaryErrors.Add("Not able to identify you");
             return;
         }
 
+        await SaveInvestigation(_investigationDto, userId);
+    }
+
+    private async Task SaveInvestigation(InvestigationDto dto, string userId)
+    {
         logger.LogDebug("Saving investigation information..");
         try
         {
-            await investigationRepository.CreateForUser(userId, _investigationDto, _cts.Token);
+            await investigationRepository.CreateForUser(userId, dto, _cts.Token);
 
             // Clear the stored data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
@@ -120,7 +133,7 @@ public partial class Summary(
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem creating the investigation information");
-            _saveErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
+            _summaryErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
         }
     }
 

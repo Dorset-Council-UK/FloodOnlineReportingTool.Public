@@ -10,4 +10,5 @@ public static class FloodImpactCategory
     public const string PropertyType = "Property Type";
     public const string Residential = "Zone-R";
     public const string CommunityImpact = "Community Impact";
+    public const string ServiceImpact = "Service Impact";
 }

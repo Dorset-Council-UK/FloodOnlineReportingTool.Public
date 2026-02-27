@@ -27,7 +27,7 @@ public partial class CommunityImpact(
     private PageInfo NextPage => FromSummary
         ? InvestigationPages.Summary
         : InvestigationPages.Blockages;
-    private static PageInfo PreviousPage => InvestigationPages.PeakDepth;
+    private static PageInfo PreviousPage => InvestigationPages.ServiceImpact;
 
     private Models.FloodReport.Investigation.CommunityImpact Model { get; set; } = default!;
 

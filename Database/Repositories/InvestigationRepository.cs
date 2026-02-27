@@ -104,6 +104,9 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             // Peak depth (handled with ApplyPeakDepth)
             IsPeakDepthKnownId = Guid.Empty,
 
+            // Service impacts
+            ServiceImpacts = [.. dto.ServiceImpacts.Select(floodImpactId => new InvestigationServiceImpact(investigationId, floodImpactId))],
+
             // Community impact
             CommunityImpacts = [.. dto.CommunityImpacts.Select(floodImpactId => new InvestigationCommunityImpact(investigationId, floodImpactId))],
 

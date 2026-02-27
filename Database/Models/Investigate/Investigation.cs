@@ -44,6 +44,9 @@ public record Investigation
     public int? PeakInsideCentimetres { get; init; }
     public int? PeakOutsideCentimetres { get; init; }
 
+    // Service impact, which are related flood impacts
+    public IList<InvestigationServiceImpact> ServiceImpacts { get; init; } = [];
+
     // Community impact, which are related flood impacts
     public IList<InvestigationCommunityImpact> CommunityImpacts { get; init; } = [];
 

@@ -37,6 +37,9 @@ public record InvestigationDto
     public bool? HasKnownProblems { get; init; }
     public string? KnownProblemDetails { get; init; }
 
+    // Service impact fields, which are related flood impacts
+    public IList<Guid> ServiceImpacts { get; init; } = [];
+
     // Community impact fields, which are related flood impacts
     public IList<Guid> CommunityImpacts { get; init; } = [];
 

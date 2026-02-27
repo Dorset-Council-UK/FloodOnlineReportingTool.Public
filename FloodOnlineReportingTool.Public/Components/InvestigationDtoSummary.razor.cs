@@ -2,20 +2,30 @@
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.Order;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Components;
 
 namespace FloodOnlineReportingTool.Public.Components;
 
 public partial class InvestigationDtoSummary(
     ILogger<InvestigationDtoSummary> logger,
-    ICommonRepository commonRepository
+    ICommonRepository commonRepository,
+    IValidator<InvestigationDto> validator
 ) : IAsyncDisposable
 {
     [Parameter, EditorRequired]
     public InvestigationDto InvestigationDto { get; set; }
+    private InvestigationDto? _previousInvestigationDto;
 
     [Parameter, EditorRequired]
     public bool IsInternal { get; set; }
+    private bool _previousIsInternal;
+
+    [Parameter]
+    public EventCallback<bool> ValidationStatusChanged { get; set; }
+    private List<ValidationFailure> _validationFailures = [];
 
     [PersistentState(AllowUpdates = true)]
     public IReadOnlyCollection<FloodProblem>? InvestigationFloodProblems { get; set; }
@@ -63,6 +73,11 @@ public partial class InvestigationDtoSummary(
     private string? _peakDepthInsideMessage;
     private string? _peakDepthOutsideMessage;
     private string? _peakDepthNotKnownMessage;
+
+    // Service impacts
+    [Parameter]
+    public bool ShowServiceImpacts { get; set; } = true;
+    private string[] _serviceImpactLabels = [];
 
     // Community impacts
     [Parameter]
@@ -115,32 +130,30 @@ public partial class InvestigationDtoSummary(
 
     protected override async Task OnInitializedAsync()
     {
-        if (InvestigationFloodProblems is null)
-        {
-            InvestigationFloodProblems = await GetInvestigationFloodProblems();
-        }
-        if (InvestigationRecordStatuses is null)
-        {
-            InvestigationRecordStatuses = await GetInvestigationRecordStatuses();
-        }
-        if (InvestigationFloodImpacts is null)
-        {
-            InvestigationFloodImpacts = await GetInvestigationFloodImpacts();
-        }
-        if (InvestigationFloodMitigations is null)
-        {
-            InvestigationFloodMitigations = await GetInvestigationFloodMitigations();
-        }
+        InvestigationFloodProblems ??= await GetInvestigationFloodProblems();
+        InvestigationRecordStatuses ??= await GetInvestigationRecordStatuses();
+        InvestigationFloodImpacts ??= await GetInvestigationFloodImpacts();
+        InvestigationFloodMitigations ??= await GetInvestigationFloodMitigations();
     }
 
     protected override async Task OnParametersSetAsync()
     {
+        var parametersUnchanged = ReferenceEquals(_previousInvestigationDto, InvestigationDto)
+            && _previousIsInternal == IsInternal;
+        if (parametersUnchanged)
+        {
+            return;
+        }
+        _previousInvestigationDto = InvestigationDto;
+        _previousIsInternal = IsInternal;
+
         GetWaterSpeed();
         GetWaterDestination();
         GetDamagedVehicles();
         GetInternalHow();
         GetInternalWhen();
         GetPeakDepth();
+        GetServiceImpact();
         GetCommunityImpact();
         GetBlockages();
         GetActionsTaken();
@@ -152,12 +165,21 @@ public partial class InvestigationDtoSummary(
         GetBeforeTheFloodingWarnings();
         GetWarningSources();
         GetFloodlineWarnings();
+
+        await ValidateAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _cts.CancelAsync();
-        _cts.Dispose();
+        try
+        {
+            await _cts.CancelAsync();
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+            // Ignore any exceptions that occur during disposal
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -198,11 +220,15 @@ public partial class InvestigationDtoSummary(
     }
 
     /// <summary>
-    /// Get all the flood impacts used in investigations, this is only for community impacts, one call makes it more efficient
+    /// Get all the flood impacts used in investigations, one call makes it more efficient
     /// </summary>
     private async Task<IReadOnlyCollection<FloodImpact>> GetInvestigationFloodImpacts()
     {
-        var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
+        string[] categories = [
+            FloodImpactCategory.ServiceImpact,
+            FloodImpactCategory.CommunityImpact,
+        ];
+        var floodImpacts = await commonRepository.GetFloodImpactsByCategories(categories, _cts.Token);
         if (floodImpacts.Count == 0)
         {
             logger.LogError("There were no flood impacts found.");
@@ -349,6 +375,23 @@ public partial class InvestigationDtoSummary(
         }
     }
 
+    private void GetServiceImpact()
+    {
+        if (!ShowServiceImpacts)
+        {
+            _serviceImpactLabels = [];
+            return;
+        }
+
+        if (InvestigationDto.ServiceImpacts.Count == 0)
+        {
+            _serviceImpactLabels = [Unknown];
+            return;
+        }
+
+        _serviceImpactLabels = FloodImpactLabels(InvestigationDto.ServiceImpacts);
+    }
+
     private void GetCommunityImpact()
     {
         if (!ShowCommunityImpacts)
@@ -487,6 +530,17 @@ public partial class InvestigationDtoSummary(
         _propertyInsuredLabel = RecordStatusLabel(InvestigationDto.PropertyInsuredId);
     }
 
+    private async Task ValidateAsync()
+    {
+        var validationContext = new ValidationContext<InvestigationDto>(InvestigationDto)
+        {
+            IsInternal = IsInternal,
+        };
+        var validationResult = await validator.ValidateAsync(validationContext, _cts.Token);
+        _validationFailures = validationResult.Errors;
+
+        await ValidationStatusChanged.InvokeAsync(validationResult.IsValid);
+    }
 
     private string FloodProblemLabel(Guid? id)
     {

@@ -11,6 +11,7 @@ internal static class InvestigationPages
     public static readonly PageInfo InternalHow = new(BaseUrl, "/entry", "Water entry");
     public static readonly PageInfo InternalWhen = new(BaseUrl, "/internal", "Internal flooding");
     public static readonly PageInfo PeakDepth = new(BaseUrl, "/peakdepth", "Peak depth");
+    public static readonly PageInfo ServiceImpact = new(BaseUrl, "/serviceimpact", "Impact on services");
     public static readonly PageInfo CommunityImpact = new(BaseUrl, "/communityimpact", "Impact on the community");
     public static readonly PageInfo Blockages = new(BaseUrl, "/blockages", "Blockages");
     public static readonly PageInfo ActionsTaken = new(BaseUrl, "/actionstaken", "Actions taken");
