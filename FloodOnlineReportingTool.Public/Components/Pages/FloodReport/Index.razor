@@ -1,17 +1,27 @@
 ﻿@page "/floodreport"
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@FloodReportPages.Home.Title</PageTitle>
 
-<GdsBreadcrumbs Items="@Breadcrumbs" />
+<GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<h1 class="govuk-heading-xl">@FloodReportPages.Home.Title</h1>
 
-<h2 class="govuk-heading-l">Overview</h2>
+<p>Use this service to report flooding at your property to relevant organisations and groups.</p>
+<p>The organisations who can help you during a flood depend on the type and location of the flooding.</p>
+<p>By reporting a flood, you are helping communities to protect properties from flooding.</p>
+<GdsWarning Text="Call 999 if you or someone else is in immediate danger." />
+
+<h2 class="govuk-heading-l">Before you start</h2>
+<ul class="govuk-list govuk-list--bullet">
+    <li>it is a legal requirement to report past flooding to potential buyers when selling a property</li>
+    <li>if the flooding only affects a road please report it to the relevant highways authority</li>
+    <li>filling out this form will assist with multi-agency flood response</li>
+    <li>this will not trigger an immediate response from any agency</li>
+    <li>you may be asked to provide an update to what happened at a later date</li>
+</ul>
+<p>Read our <a href="@GeneralPages.Privacy.Url" class="govuk-link">@GeneralPages.Privacy.Title.ToLowerInvariant()</a> notice to find out how your personal data is used and shared.</p>
+
 <div>
-    <p>Use this service to report flooding at your property to relevant organisations and groups.</p>
-    <p>The organisations who can help you during a flood depend on the type and location of the flooding. This service will help you work out who to contact and where possible report the event directly.</p>
-    <p>By reporting a flood, you are helping communities to protect properties from flooding.</p>
-
     <a href="@FloodReportCreatePages.Home.Url" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
         Start now
         <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
@@ -20,16 +30,21 @@
     </a>
 </div>
 
-<h2 class="govuk-heading-l">Before you start</h2>
-<div>
-    <p>You will be asked for your contact details and about the affected property.</p>
-    <p>Your personal details will only be shared with departments and groups helping you and those who collect flood data to create flood strategies. This helps organisations to plan flood defences in the places that need them, and stops developments being built in the wrong places.</p>
-    <GdsWarning Text="It is a legal requirement to report past flooding to potential buyers when selling a property." />
-</div>
-
 <h2 class="govuk-heading-l">Need help?</h2>
 <div>
-    <p>If you still have concerns or need help reporting or updating your details, <a href="https://www.gov.uk/find-local-council" class="govuk-link">contact your local authority</a>.</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>for reporting or updating your flood, <a href="https://www.gov.uk/find-local-council" class="govuk-link">contact your local authority</a></li>
+        <li>for advice on how to deal with flooding, <a href="#get-advice" class="govuk-link">contact Floodline</a></li>
+    </ul>
+
+    <h3 class="govuk-heading-m" id="get-advice">Get advice</h3>
+    <div class="govuk-inset-text">
+        <div><strong>Floodline helpline</strong></div>
+        <div>Telephone: 0345 988 1188</div>
+        <div>Textphone: 0345 602 6340</div>
+        <div>Open 24 hours a day, 7 days a week</div>
+        <div><a href="https://www.gov.uk/call-charges" target="_blank" class="govuk-link">Find out more about call charges</a></div>
+    </div>
 </div>
 
 <h2 class="govuk-heading-l">Further information about flooding</h2>

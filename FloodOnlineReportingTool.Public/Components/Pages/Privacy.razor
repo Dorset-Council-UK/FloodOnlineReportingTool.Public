@@ -3,11 +3,11 @@
 @using Microsoft.Extensions.Options
 @inject IOptions<GISOptions> GISOptions
 
-<PageTitle>Privacy</PageTitle>
+<PageTitle>@GeneralPages.Privacy.Title</PageTitle>
 
 <GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
-<h1 class="govuk-heading-xl">Privacy</h1>
+<h1 class="govuk-heading-xl">@GeneralPages.Privacy.Title</h1>
 
 <div>
     <p>
@@ -73,7 +73,7 @@
 <div>
     <p>
         The lawful basis for processing your information is explained below. For more information about lawful basis, 
-        see the <a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/">ICO guidance</a>.
+        see the <a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/" class="govuk-link">ICO guidance</a>.
     </p>
     <p>
         <strong>Article 6.1(e) of the GDPR: “Public Task”</strong> “processing is necessary for the performance of a task

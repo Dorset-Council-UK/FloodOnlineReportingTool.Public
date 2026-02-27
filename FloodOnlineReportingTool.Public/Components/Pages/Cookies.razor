@@ -3,11 +3,11 @@
 @using Microsoft.Extensions.Options
 @inject IOptions<GISOptions> GISOptions
 
-<PageTitle>Cookies</PageTitle>
+<PageTitle>@GeneralPages.Cookies.Title</PageTitle>
 
 <GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
-<h1 class="govuk-heading-xl">Cookies</h1>
+<h1 class="govuk-heading-xl">GeneralPages.Cookies.Title</h1>
 <div>
     <p>Cookies are files saved on your phone, tablet or computer when you visit a website.</p>
     <p>We use some essential cookies to make this website work.</p>
@@ -17,7 +17,7 @@
 <div>
     <p>
         We don't use cookies for marketing purposes but we do collect anonymised statistics
-        using <a href="@WebStatisticsProviderUrl">@WebStatisticsProviderName</a>.
+        using <a href="@WebStatisticsProviderUrl" class="govuk-link">@WebStatisticsProviderName</a>.
         These cookies are anonymised and cannot be traced back to you.
     </p>
 </div>
@@ -37,7 +37,7 @@
         Personal data you give us (contact details, comments and media) is kept for a maximum of @(DataRetentionYears) years.
         Data about the flood itself including the address or location is kept for as long as needed.
     </p>
-    <p><a href="/privacy">Find out more about how we use your data.</a></p>
+    <p><a href="@GeneralPages.Privacy.Url" class="govuk-link">Find out more about how we use your data.</a></p>
 </div>
 
 @code {
