@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="AppHost/AppHost.csproj" />
+  <Project Path="Database/Database.csproj" />
+  <Project Path="docs/docs.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="FloodOnlineReportingTool.Public/FloodOnlineReportingTool.Public.csproj" />
+  <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+</Solution>
