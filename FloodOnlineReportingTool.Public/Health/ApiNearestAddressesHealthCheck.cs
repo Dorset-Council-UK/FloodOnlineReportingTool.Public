@@ -1,6 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models.API;
 using FloodOnlineReportingTool.Database.Repositories;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace FloodOnlineReportingTool.Public.Health;
@@ -28,7 +27,6 @@ public class ApiNearestAddressesHealthCheck(ISearchRepository searchRepository, 
             return null;
         }
 
-        var referer = context.Request.GetTypedHeaders()?.Referer;
-        return referer ?? context.Request.GetUri();
+        return context.Request.GetTypedHeaders().Referer;
     }
 }
