@@ -12,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var assembly = typeof(Program).Assembly;
 
+// Add Aspire service defaults
+builder.AddServiceDefaults();
+
 // Configure Key Vault access
 builder.AddKeyVaults();
 
@@ -33,7 +36,6 @@ builder.Services.AddFloodReportingVersioning();
 builder.Services.AddFloodReportingOpenApi(identityOptions);
 
 // Configure logging
-builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddRedaction(x =>
 {
     // Configure erasing redactor for personal data
@@ -41,8 +43,8 @@ builder.Services.AddRedaction(x =>
 });
 builder.Logging.EnableRedaction();
 
-// Add health checks
-builder.Services.AddFloodReportingHealthChecks();
+// Add project related health checks
+builder.AddFloodReportingHealthChecks();
 
 // Add Blazor services
 builder.Services
@@ -65,8 +67,7 @@ builder.Services.AddScoped<TestService>();
 
 var app = builder.Build();
 
-var pathBase = string.IsNullOrWhiteSpace(gisOptions.PathBase) ? "/" : $"/{gisOptions.PathBase}";
-app.UsePathBase(pathBase);
+app.UsePathBase($"/{gisOptions.PathBase}");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -83,7 +84,7 @@ else
 }
 
 app.UseHttpsRedirection();
-app.MapFloodReportingHealthChecks();
+app.MapDefaultEndpoints();
 app.UseRouting();
 app.UseAntiforgery();
 app.UseAuthentication();
