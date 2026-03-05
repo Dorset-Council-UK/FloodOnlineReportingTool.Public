@@ -4,121 +4,87 @@ using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class DatabaseExtensions
 {
-    internal static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString)
+    private static (string ConnectionString, string SearchPath) GetConnectionStringAndSearchPath(string? connectionString)
     {
-        if (string.IsNullOrWhiteSpace(connectionString))
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString);
+
+        if (string.IsNullOrWhiteSpace(connectionStringBuilder.ConnectionString))
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the flood reporting database is is missing.");
+            throw new ConfigurationMissingException("Missing configuration setting: The connection string is missing.");
         }
 
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
+        if (string.IsNullOrWhiteSpace(connectionStringBuilder.SearchPath))
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the flood reporting database needs a schema set in the Search Path parameter.");
+            throw new ConfigurationMissingException("Missing configuration setting: The connection string needs a schema set in the Search Path parameter.");
         }
 
-        // Add the database context
-        services.AddDbContextFactory<PublicDbContext>(
-            options =>
+        return (connectionStringBuilder.ConnectionString, connectionStringBuilder.SearchPath);
+    }
+
+    extension(IHostApplicationBuilder builder)
+    {
+        internal IHostApplicationBuilder AddFloodReportingDatabase()
+        {
+            // It looks like the standard way to add the DbContext with Aspire is:
+            // builder.AddNpgsqlDbContext<MyDbContext>("postgresdb");
+            // But when more setup is needed, like with Blazor you can use:
+            // var connectionString = builder.Configuration.GetConnectionString("postgresdb");
+            // builder.Services.AddDbContextFactory<MyDbContext>(dbContextOptionsBuilder => dbContextOptionsBuilder.UseNpgsql(connectionString));
+            // builder.EnrichNpgsqlDbContext<MyDbContext>();
+
+            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("FloodReportingPublic"));
+            builder.Services.AddDbContextFactory<PublicDbContext>(options =>
             {
-                options.UseNpgsql(builder.ToString(), o =>
+                options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    //o.EnableRetryOnFailure(5);
-                    o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", searchPath);
                 });
-#if DEBUG
-                options.EnableSensitiveDataLogging(true);
-#endif
             });
+            builder.EnrichNpgsqlDbContext<PublicDbContext>();
 
-        services.AddFloodReportingDatabaseRepositories();
-
-        return services;
-    }
-
-    private static IServiceCollection AddFloodReportingDatabaseRepositories(this IServiceCollection services)
-    {
-        services
-            .AddScoped<ICommonRepository, CommonRepository>()
-            .AddScoped<IContactRecordRepository, ContactRecordRepository>()
-            .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
-            .AddScoped<IFloodReportRepository, FloodReportRepository>()
-            .AddScoped<IInvestigationRepository, InvestigationRepository>()
-            .AddScoped<ISearchRepository, SearchRepository>();
-
-        return services;
-    }
-
-    internal static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(connectionString))
+            return builder;
+        }
+        
+        internal IHostApplicationBuilder AddBoundariesDatabase()
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the boundaries database is is missing.");
+            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("boundariesdb"));
+
+            // Add the database context (Because I am using OnConfiguring the DbContextPool cannot be used)
+            builder.AddNpgsqlDbContext<BoundariesDbContext>("boundariesdb");
+
+            return builder;
         }
 
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
+        internal IHostApplicationBuilder AddFloodReportingUsersDatabase()
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the boundaries database needs a schema set in the Search Path parameter.");
-        }
-
-        // Add the database context (Because I am using OnConfiguring the DbContextPool cannot be used)
-        services.AddDbContext<BoundariesDbContext>(
-            options =>
+            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("FloodReportingUsers"));
+            builder.Services.AddDbContextFactory<UserDbContext>(options =>
             {
-                options.UseNpgsql(builder.ToString());
-            });
-
-        return services;
-    }
-
-    internal static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the identity database is is missing.");
-        }
-
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the identity database needs a schema set in the Search Path parameter.");
-        }
-
-        // Add the database context
-        services.AddDbContextPool<UserDbContext>(
-            options =>
-            {
-                options.UseNpgsql(builder.ToString(), o =>
+                options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", searchPath);
                 });
-#if DEBUG
-                options.EnableSensitiveDataLogging(true);
-#endif
             });
+            builder.EnrichNpgsqlDbContext<UserDbContext>();
 
-        return services;
+            return builder;
+        }
+
+        internal IHostApplicationBuilder AddFloodReportingDatabaseRepositories()
+        {
+            builder.Services
+                .AddScoped<ICommonRepository, CommonRepository>()
+                .AddScoped<IContactRecordRepository, ContactRecordRepository>()
+                .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
+                .AddScoped<IFloodReportRepository, FloodReportRepository>()
+                .AddScoped<IInvestigationRepository, InvestigationRepository>()
+                .AddScoped<ISearchRepository, SearchRepository>();
+
+            return builder;
+        }
     }
 }

@@ -51,14 +51,12 @@ builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add the database connections
-var floodReportingConnectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");
-var boundariesConnectionString = builder.Configuration.GetConnectionString("Boundaries");
-var identityConnectionString = builder.Configuration.GetConnectionString("FloodReportingUsers");
-builder.Services
-    .AddFloodReportingDatabase(floodReportingConnectionString)
-    .AddBoundariesDatabase(boundariesConnectionString)
-    .AddFloodReportingUsersDatabase(identityConnectionString);
+// Add the databases
+builder
+    .AddFloodReportingDatabase()
+    .AddFloodReportingDatabaseRepositories()
+    .AddBoundariesDatabase()
+    .AddFloodReportingUsersDatabase();
 
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
