@@ -2,46 +2,26 @@
 using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Microsoft.AspNetCore.Builder;
 
 internal static class DatabaseExtensions
 {
-    private static (string ConnectionString, string SearchPath) GetConnectionStringAndSearchPath(string? connectionString)
-    {
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString);
-
-        if (string.IsNullOrWhiteSpace(connectionStringBuilder.ConnectionString))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string is missing.");
-        }
-
-        if (string.IsNullOrWhiteSpace(connectionStringBuilder.SearchPath))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string needs a schema set in the Search Path parameter.");
-        }
-
-        return (connectionStringBuilder.ConnectionString, connectionStringBuilder.SearchPath);
-    }
-
     extension(IHostApplicationBuilder builder)
     {
         internal IHostApplicationBuilder AddFloodReportingDatabase()
         {
-            // It looks like the standard way to add the DbContext with Aspire is:
-            // builder.AddNpgsqlDbContext<MyDbContext>("postgresdb");
-            // But when more setup is needed, like with Blazor you can use:
-            // var connectionString = builder.Configuration.GetConnectionString("postgresdb");
-            // builder.Services.AddDbContextFactory<MyDbContext>(dbContextOptionsBuilder => dbContextOptionsBuilder.UseNpgsql(connectionString));
-            // builder.EnrichNpgsqlDbContext<MyDbContext>();
+            var connectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ConfigurationMissingException("Missing configuration setting: The public connection string 'FloodReportingPublic' is missing.");
+            }
 
-            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("FloodReportingPublic"));
             builder.Services.AddDbContextFactory<PublicDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", searchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortPublic);
                 });
             });
             builder.EnrichNpgsqlDbContext<PublicDbContext>();
@@ -51,22 +31,26 @@ internal static class DatabaseExtensions
         
         internal IHostApplicationBuilder AddBoundariesDatabase()
         {
-            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("boundariesdb"));
-
-            // Add the database context (Because I am using OnConfiguring the DbContextPool cannot be used)
-            builder.AddNpgsqlDbContext<BoundariesDbContext>("boundariesdb");
+            builder.AddNpgsqlDbContext<BoundariesDbContext>("Boundaries",
+                configureDbContextOptions: options =>
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
             return builder;
         }
 
         internal IHostApplicationBuilder AddFloodReportingUsersDatabase()
         {
-            var (connectionString, searchPath) = GetConnectionStringAndSearchPath(builder.Configuration.GetConnectionString("FloodReportingUsers"));
+            var connectionString = builder.Configuration.GetConnectionString("FloodReportingUsers");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ConfigurationMissingException("Missing configuration setting: The users connection string 'FloodReportingUsers' is missing.");
+            }
+
             builder.Services.AddDbContextFactory<UserDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", searchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortUsers);
                 });
             });
             builder.EnrichNpgsqlDbContext<UserDbContext>();

@@ -1,16 +1,22 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// From 18+ PGDATA is /var/lib/postgresql/18/docker VOLUME is /var/lib/postgresql
-var db = builder.AddPostgres("postgres")
-    //.WithImage("postgis/postgis", "18.3.6")
-    //.WithDataVolume("/var/lib/postgresql")
-    .WithLifetime(ContainerLifetime.Persistent)
-    .WithPgAdmin()
-    .AddDatabase("FloodReportingPublic");
+var postgres = builder.AddPostgres("postgres")
+    //.WithLifetime(ContainerLifetime.Persistent)
+    .WithPgAdmin();
 
-builder.AddProject<Projects.FloodOnlineReportingTool_Public>("webfrontend")
+var databasePublic = postgres.AddDatabase("FloodReportingPublic");
+var databaseUsers = postgres.AddDatabase("FloodReportingUsers");
+
+var connectionStringBoundaries = builder.AddConnectionString("Boundaries");
+
+builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
+    .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
-    .WithReference(db)
-    .WaitFor(db);
+    .WithReference(databasePublic)
+    .WithReference(databaseUsers)
+    .WithReference(connectionStringBoundaries)    
+    .WaitFor(databasePublic)
+    .WaitFor(databaseUsers)
+    .WaitFor(connectionStringBoundaries);
 
 await builder.Build().RunAsync();
