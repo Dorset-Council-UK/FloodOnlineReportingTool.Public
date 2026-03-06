@@ -43,9 +43,6 @@ builder.Services.AddRedaction(x =>
 });
 builder.Logging.EnableRedaction();
 
-// Add project related health checks
-builder.AddFloodReportingHealthChecks();
-
 // Add Blazor services
 builder.Services
     .AddRazorComponents()
@@ -57,6 +54,9 @@ builder
     .AddFloodReportingDatabaseRepositories()
     .AddBoundariesDatabase()
     .AddFloodReportingUsersDatabase();
+
+// Add project related health checks
+builder.AddFloodReportingHealthChecks();
 
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
