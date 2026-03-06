@@ -10,23 +10,23 @@ public class ApiNearestAddressesHealthCheck(ISearchRepository searchRepository, 
     {
         try
         {
-            await searchRepository.IsNearestAddressAvailable(GetReferrer(), SearchAreaOptions.dorset, ct);
+            await searchRepository.IsNearestAddressAvailable(GetBaseUri(), SearchAreaOptions.dorset, ct);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)
         {
-            return HealthCheckResult.Unhealthy(exception: ex);
+            return HealthCheckResult.Unhealthy("Nearest addresses health check failed", ex);
         }
     }
 
-    private Uri? GetReferrer()
+    private Uri? GetBaseUri()
     {
-        var context = httpContextAccessor.HttpContext;
-        if (context is null)
+        var request = httpContextAccessor.HttpContext?.Request;
+        if (request is null)
         {
             return null;
         }
 
-        return context.Request.GetTypedHeaders().Referer;
+        return new Uri($"{request.Scheme}://{request.Host}");
     }
 }
