@@ -1,8 +1,10 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithImage("postgis/postgis", "18-3.6")
+    .WithVolume("postgres-data", "/var/lib/postgresql")
     //.WithLifetime(ContainerLifetime.Persistent)
-    .WithPgAdmin();
+    .WithPgAdmin(options => options.WithImageTag("latest"));
 
 var databasePublic = postgres.AddDatabase("FloodReportingPublic");
 var databaseUsers = postgres.AddDatabase("FloodReportingUsers");
