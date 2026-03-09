@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" />
+    <ProjectReference Include="..\MigrationService\MigrationService.csproj" />
   </ItemGroup>
 
 </Project>
