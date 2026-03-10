@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -56,7 +57,8 @@ public static class HostApplicationBuilderExtensions
                 {
                     metrics.AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
-                        .AddRuntimeInstrumentation();
+                        .AddRuntimeInstrumentation()
+                        .AddNpgsqlInstrumentation();
                 })
                 .WithTracing(tracing =>
                 {
@@ -67,7 +69,8 @@ public static class HostApplicationBuilderExtensions
                                 !context.Request.Path.StartsWithSegments(HealthCheckPatterns.Health, StringComparison.OrdinalIgnoreCase)
                                 && !context.Request.Path.StartsWithSegments(HealthCheckPatterns.Aliveness, StringComparison.OrdinalIgnoreCase)
                         )
-                        .AddHttpClientInstrumentation();
+                        .AddHttpClientInstrumentation()
+                        .AddNpgsql();
                 });
 
             builder.AddOpenTelemetryExporters();
