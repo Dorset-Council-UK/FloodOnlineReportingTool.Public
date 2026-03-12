@@ -37,6 +37,24 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithReference(serviceBus)
     .WaitFor(connectionStringBoundaries)
     .WaitFor(serviceBus)
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithUrls(context =>
+    {
+        // shorten public-web URLs in the Dashboard
+        foreach (var resource in context.Urls)
+        {
+            resource.DisplayText ??= resource.Endpoint?.Scheme.ToLowerInvariant();
+        }
+
+        // add Scalar, Swagger, and Test helper URLs in the Dashboard
+        foreach (var url in context.Urls.Where(u => u.Endpoint?.Scheme is "https").ToList())
+        {
+            context.Urls.AddRange(
+                new ResourceUrlAnnotation { DisplayText = "Scalar", Url = $"{url.Url}/scalar" },
+                new ResourceUrlAnnotation { DisplayText = "Swagger", Url = $"{url.Url}/swagger" },
+                new ResourceUrlAnnotation { DisplayText = "Test", Url = $"{url.Url}/test" }
+            );
+        }
+    });
 
 await builder.Build().RunAsync();
