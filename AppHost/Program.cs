@@ -26,6 +26,7 @@ var migrations = builder.AddProject<Projects.MigrationService>("migrations")
 var connectionStringBoundaries = builder.AddConnectionString("Boundaries");
 
 builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
+    .WithDeveloperCertificateTrust(true)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(databasePublic)
