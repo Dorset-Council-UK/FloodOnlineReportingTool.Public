@@ -34,8 +34,6 @@ internal static class MessageSystemExtensions
 
             builder.Services.AddMassTransit(o =>
             {
-                var assembly = typeof(Program).Assembly;
-
                 // Add the outbox pattern
                 o.AddEntityFrameworkOutbox<PublicDbContext>(config =>
                 {
