@@ -3,15 +3,17 @@ using FloodOnlineReportingTool.Contracts.Topics;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var serviceBus = builder.AddAzureServiceBus("service-bus")
-    .RunAsEmulator();
+    .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
-serviceBus.AddServiceBusTopic(TopicNames.EligibilityCheckCreated);
-serviceBus.AddServiceBusTopic("flood-report-created");
+serviceBus.AddServiceBusTopic(TopicNames.EligibilityCheckCreated)
+    .AddServiceBusSubscription($"{TopicNames.EligibilityCheckCreated}-testing");
+serviceBus.AddServiceBusTopic(TopicNames.FloodReportCreated)
+    .AddServiceBusSubscription($"{TopicNames.FloodReportCreated}-testing");
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "18-3.6")
     .WithVolume("postgres-data", "/var/lib/postgresql")
-    //.WithLifetime(ContainerLifetime.Persistent)
+    .WithLifetime(ContainerLifetime.Persistent)
     .WithPgAdmin(options => options.WithImageTag("latest"));
 
 var databasePublic = postgres.AddDatabase("FloodReportingPublic");
