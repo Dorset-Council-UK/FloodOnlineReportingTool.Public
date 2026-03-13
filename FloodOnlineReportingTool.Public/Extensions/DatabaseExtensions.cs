@@ -2,123 +2,73 @@
 using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.AspNetCore.Builder;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class DatabaseExtensions
 {
-    internal static IServiceCollection AddFloodReportingDatabase(this IServiceCollection services, string? connectionString)
+    extension(IHostApplicationBuilder builder)
     {
-        if (string.IsNullOrWhiteSpace(connectionString))
+        internal IHostApplicationBuilder AddFloodReportingDatabase()
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the flood reporting database is is missing.");
-        }
-
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the flood reporting database needs a schema set in the Search Path parameter.");
-        }
-
-        // Add the database context
-        services.AddDbContextFactory<PublicDbContext>(
-            options =>
+            var connectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                options.UseNpgsql(builder.ToString(), o =>
+                throw new ConfigurationMissingException("Missing configuration setting: The public connection string 'FloodReportingPublic' is missing.");
+            }
+
+            builder.Services.AddDbContextFactory<PublicDbContext>(options =>
+            {
+                options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    //o.EnableRetryOnFailure(5);
-                    o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortPublic);
                 });
-#if DEBUG
-                options.EnableSensitiveDataLogging(true);
-#endif
             });
+            builder.EnrichNpgsqlDbContext<PublicDbContext>();
 
-        services.AddFloodReportingDatabaseRepositories();
-
-        return services;
-    }
-
-    private static IServiceCollection AddFloodReportingDatabaseRepositories(this IServiceCollection services)
-    {
-        services
-            .AddScoped<ICommonRepository, CommonRepository>()
-            .AddScoped<IContactRecordRepository, ContactRecordRepository>()
-            .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
-            .AddScoped<IFloodReportRepository, FloodReportRepository>()
-            .AddScoped<IInvestigationRepository, InvestigationRepository>()
-            .AddScoped<ISearchRepository, SearchRepository>();
-
-        return services;
-    }
-
-    internal static IServiceCollection AddBoundariesDatabase(this IServiceCollection services, string? connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(connectionString))
+            return builder;
+        }
+        
+        internal IHostApplicationBuilder AddBoundariesDatabase()
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the boundaries database is is missing.");
+            builder.AddNpgsqlDbContext<BoundariesDbContext>("Boundaries",
+                configureDbContextOptions: options =>
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
+            return builder;
         }
 
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
+        internal IHostApplicationBuilder AddFloodReportingUsersDatabase()
         {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the boundaries database needs a schema set in the Search Path parameter.");
-        }
-
-        // Add the database context (Because I am using OnConfiguring the DbContextPool cannot be used)
-        services.AddDbContext<BoundariesDbContext>(
-            options =>
+            var connectionString = builder.Configuration.GetConnectionString("FloodReportingUsers");
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                options.UseNpgsql(builder.ToString());
-            });
+                throw new ConfigurationMissingException("Missing configuration setting: The users connection string 'FloodReportingUsers' is missing.");
+            }
 
-        return services;
-    }
-
-    internal static IServiceCollection AddFloodReportingUsersDatabase(this IServiceCollection services, string? connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the identity database is is missing.");
-        }
-
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
-#if DEBUG
-        builder.IncludeErrorDetail = true;
-#endif
-
-        // Double check that a schema has been set
-        if (string.IsNullOrWhiteSpace(builder.SearchPath))
-        {
-            throw new ConfigurationMissingException("Missing configuration setting: The connection string for the identity database needs a schema set in the Search Path parameter.");
-        }
-
-        // Add the database context
-        services.AddDbContextPool<UserDbContext>(
-            options =>
+            builder.Services.AddDbContextFactory<UserDbContext>(options =>
             {
-                options.UseNpgsql(builder.ToString(), o =>
+                options.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    o.MigrationsHistoryTable("__EFMigrationsHistory", builder.SearchPath);
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortUsers);
                 });
-#if DEBUG
-                options.EnableSensitiveDataLogging(true);
-#endif
             });
+            builder.EnrichNpgsqlDbContext<UserDbContext>();
 
-        return services;
+            return builder;
+        }
+
+        internal IHostApplicationBuilder AddFloodReportingDatabaseRepositories()
+        {
+            builder.Services
+                .AddScoped<ICommonRepository, CommonRepository>()
+                .AddScoped<IContactRecordRepository, ContactRecordRepository>()
+                .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
+                .AddScoped<IFloodReportRepository, FloodReportRepository>()
+                .AddScoped<IInvestigationRepository, InvestigationRepository>()
+                .AddScoped<ISearchRepository, SearchRepository>();
+
+            return builder;
+        }
     }
 }

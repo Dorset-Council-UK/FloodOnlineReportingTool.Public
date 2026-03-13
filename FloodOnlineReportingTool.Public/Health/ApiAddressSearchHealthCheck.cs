@@ -4,18 +4,18 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace FloodOnlineReportingTool.Public.Health;
 
-public class ApiNearestAddressesHealthCheck(ISearchRepository searchRepository, IHttpContextAccessor httpContextAccessor) : IHealthCheck
+public class ApiAddressSearchHealthCheck(ISearchRepository searchRepository, IHttpContextAccessor httpContextAccessor) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken ct = default)
     {
         try
         {
-            await searchRepository.IsNearestAddressAvailable(GetBaseUri(), SearchAreaOptions.dorset, ct);
+            await searchRepository.IsAddressSearchAvailable(GetBaseUri(), SearchAreaOptions.dorset, ct);
             return HealthCheckResult.Healthy();
         }
         catch (Exception ex)
         {
-            return HealthCheckResult.Unhealthy("Nearest addresses health check failed", ex);
+            return HealthCheckResult.Unhealthy("Address search health check failed", ex);
         }
     }
 

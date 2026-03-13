@@ -314,29 +314,29 @@ internal static class InitialData
             new RecordStatus(RecordStatusIds.Error, RecordStatusCategory.FloodReportStatus, "Error", 5, "This record has an error and needs to be reviewed"),
 
             // Area
-            new RecordStatus(RecordStatusIds.PreparePhase, RecordStatusCategory.Phase, "Prepare Phase", 1, "A forecast of/imminent risk of buildings/land being flooded"),
-            new RecordStatus(RecordStatusIds.ResponsePhase, RecordStatusCategory.Phase, "Response Phase", 2, "Buildings/land are currently flooded"),
-            new RecordStatus(RecordStatusIds.RecoveryPhase, RecordStatusCategory.Phase, "Recovery Phase", 3, "A recent flood event where buildings/land are no longer flooded but remedial work to properties is on-going"),
-            new RecordStatus(RecordStatusIds.AnalysePhase, RecordStatusCategory.Phase, "Analyse Phase", 4, "A past flood event where homes/businesses/land are no longer affected"),
+            new RecordStatus(EventStatusIds.PreparePhase, RecordStatusCategory.Phase, "Prepare Phase", 1, "A forecast of/imminent risk of buildings/land being flooded"),
+            new RecordStatus(EventStatusIds.ResponsePhase, RecordStatusCategory.Phase, "Response Phase", 2, "Buildings/land are currently flooded"),
+            new RecordStatus(EventStatusIds.RecoveryPhase, RecordStatusCategory.Phase, "Recovery Phase", 3, "A recent flood event where buildings/land are no longer flooded but remedial work to properties is on-going"),
+            new RecordStatus(EventStatusIds.AnalysePhase, RecordStatusCategory.Phase, "Analyse Phase", 4, "A past flood event where homes/businesses/land are no longer affected"),
 
             // Area Flood Status
-            new RecordStatus(RecordStatusIds.FloodExpectedNoFlood, RecordStatusCategory.AreaFloodStatus, "Flood Expected: No Flood", 1),
-            new RecordStatus(RecordStatusIds.FloodExpectedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Flood Expected: Help Given", 2),
-            new RecordStatus(RecordStatusIds.PropertiesAffected, RecordStatusCategory.AreaFloodStatus, "Properties Affected", 3),
-            new RecordStatus(RecordStatusIds.PropertiesAffectedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Properties Affected: Help Given", 4),
-            new RecordStatus(RecordStatusIds.BuildingsFlooded, RecordStatusCategory.AreaFloodStatus, "Buildings Flooded", 5),
-            new RecordStatus(RecordStatusIds.BuildingsFloodedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Buildings Flooded: Help Given", 6),
-            new RecordStatus(RecordStatusIds.NoFloodingOccurred, RecordStatusCategory.AreaFloodStatus, "No Flooding Occurred", 7),
+            new RecordStatus(EventStatusIds.FloodExpectedNoFlood, RecordStatusCategory.AreaFloodStatus, "Flood Expected: No Flood", 1),
+            new RecordStatus(EventStatusIds.FloodExpectedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Flood Expected: Help Given", 2),
+            new RecordStatus(EventStatusIds.PropertiesAffected, RecordStatusCategory.AreaFloodStatus, "Properties Affected", 3),
+            new RecordStatus(EventStatusIds.PropertiesAffectedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Properties Affected: Help Given", 4),
+            new RecordStatus(EventStatusIds.BuildingsFlooded, RecordStatusCategory.AreaFloodStatus, "Buildings Flooded", 5),
+            new RecordStatus(EventStatusIds.BuildingsFloodedHelpGiven, RecordStatusCategory.AreaFloodStatus, "Buildings Flooded: Help Given", 6),
+            new RecordStatus(EventStatusIds.NoFloodingOccurred, RecordStatusCategory.AreaFloodStatus, "No Flooding Occurred", 7),
 
             // Validation
             new RecordStatus(RecordStatusIds.Unconfirmed, RecordStatusCategory.Validation, "Unconfirmed", 1),
             new RecordStatus(RecordStatusIds.Validated, RecordStatusCategory.Validation, "Validated", 2),
 
             // Section19 Status
-            new RecordStatus(RecordStatusIds.NoSection19, RecordStatusCategory.Section19, "No Section 19 report", 1),
-            new RecordStatus(RecordStatusIds.Section19Required, RecordStatusCategory.Section19, "Section 19 report required", 2),
-            new RecordStatus(RecordStatusIds.Section19InProgress, RecordStatusCategory.Section19, "Section 19 report in progress", 3),
-            new RecordStatus(RecordStatusIds.Section19Included, RecordStatusCategory.Section19, "Included in Section 19 report", 4),
+            new RecordStatus(Section19StatusIds.NoSection19, RecordStatusCategory.Section19, "No Section 19 report", 1),
+            new RecordStatus(Section19StatusIds.Section19Required, RecordStatusCategory.Section19, "Section 19 report required", 2),
+            new RecordStatus(Section19StatusIds.Section19InProgress, RecordStatusCategory.Section19, "Section 19 report in progress", 3),
+            new RecordStatus(Section19StatusIds.Section19Included, RecordStatusCategory.Section19, "Included in Section 19 report", 4),
 
             // Data Protection
             new RecordStatus(RecordStatusIds.NotAcknowledged, RecordStatusCategory.DataProtection, "Not yet acknowledged", 1),

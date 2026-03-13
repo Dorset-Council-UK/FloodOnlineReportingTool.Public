@@ -7,18 +7,9 @@ public class BoundariesDbContext(DbContextOptions<BoundariesDbContext> options) 
 {
     public DbSet<UkCounty> Counties { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        // Make this context read-only
-        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.HasPostgresExtension("postgis");
-        modelBuilder.HasDefaultSchema(SchemaNames.Boundaries);
 
         // Entity configuration
         modelBuilder

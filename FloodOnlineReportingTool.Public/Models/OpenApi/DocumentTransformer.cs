@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Identity.Web;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace FloodOnlineReportingTool.Public.Models.OpenApi;
 
@@ -66,7 +66,9 @@ internal sealed class DocumentTransformer(ApiVersion version, MicrosoftIdentityO
         var tokenUrl = new Uri(baseEndpoint, "oauth2/v2.0/token");
 
         document.Components ??= new();
-        document.Components.SecuritySchemes.Add(Constants.Bearer, new()
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>(StringComparer.Ordinal);
+
+        document.Components.SecuritySchemes.Add(Constants.Bearer, new OpenApiSecurityScheme
         {
             Name = "Authorization",
             Scheme = Constants.Bearer,
@@ -90,19 +92,10 @@ internal sealed class DocumentTransformer(ApiVersion version, MicrosoftIdentityO
     /// </summary>
     private static void AddSecurityRequirements(OpenApiDocument document, Dictionary<string, string> scopes)
     {
-        document.SecurityRequirements.Add(new()
+        document.Security ??= [];
+        document.Security.Add(new OpenApiSecurityRequirement
         {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new()
-                    {
-                        Id = Constants.Bearer,
-                        Type = ReferenceType.SecurityScheme,
-                    },
-                },
-                scopes.Select(scope => scope.Key).ToArray()
-            },
+            [new OpenApiSecuritySchemeReference(Constants.Bearer, document)] = [.. scopes.Select(scope => scope.Key)],
         });
     }
 }
