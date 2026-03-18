@@ -22,6 +22,8 @@ public partial class Confirmation(
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
+    
+    private string _redirectTargetUrl = $"{SubscriptionPages.Home.Url}?Me=true&Owns=true";
 
     // Public Properties
     public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;

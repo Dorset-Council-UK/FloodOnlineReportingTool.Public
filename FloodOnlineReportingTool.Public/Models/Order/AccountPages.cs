@@ -5,7 +5,8 @@ internal static class AccountPages
     private static ReadOnlySpan<char> BaseUrl => "account";
 
     public static readonly PageInfo SignIn = new(BaseUrl, "/signin", "Sign in");
-    public static readonly PageInfo SignOut = new(BaseUrl, "/signedout", "Signed out");
+    public static readonly PageInfo SignOut = new(BaseUrl, "/signout", "Sign out");
+    public static readonly PageInfo SignedOut = new(BaseUrl, "/signedout", "Signed out");
     public static readonly PageInfo MyAccount = new(BaseUrl, "/myaccount", "My Account");
     //public static readonly PageInfo SignIn = new(BaseUrl, "/signin", "Sign in");
     //public static readonly PageInfo SignOut = new(BaseUrl, "/signout", "Sign out");

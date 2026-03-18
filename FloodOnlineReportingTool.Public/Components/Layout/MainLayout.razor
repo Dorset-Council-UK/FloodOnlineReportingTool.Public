@@ -6,7 +6,7 @@
     <NavLinks>
         <AuthorizeView>
             <Authorized>
-                <GdsHeaderNavLink Href="signout" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
+                <GdsHeaderNavLink Href="@AccountPages.SignOut.Url" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
             </Authorized>
             <NotAuthorized>
                 <GdsHeaderNavLink Href="@_signInUrl" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
@@ -69,7 +69,7 @@
         get
         {
             var redirectUri = Navigation.SignInRedirectUri;
-            return string.IsNullOrWhiteSpace(redirectUri) ? "signin" : $"signin?redirectUri={redirectUri}";
+            return string.IsNullOrWhiteSpace(redirectUri) ? AccountPages.SignIn.Url : $"{AccountPages.SignIn.Url}?redirectUri={redirectUri}";
         }
     }
 }

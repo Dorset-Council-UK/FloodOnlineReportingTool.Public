@@ -9,6 +9,11 @@
 
 <GdsSpinner Show="_isLoading" />
 
+@{
+    var signInUrl = $"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(_redirectTargetUrl)}";
+    var me = "";
+}
+
 @if (_loadingError)
 {
     <h1 class="govuk-heading-xl">@Title</h1>
@@ -88,10 +93,7 @@
 
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
-                                        @{
-                                            var redirectTargetUrl = $"{SubscriptionPages.Home.Url}?Me=true&Owns=true";
-                                            var signInUrl = $"signin?redirectUri={Uri.EscapeDataString(redirectTargetUrl)}";
-                                        }
+                                        
                                         <a href="@signInUrl" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
                                         <div id="report-and-check-2-contacts-login-hint" class="govuk-task-list__hint">
                                             You will be allowed to login and manage your notifications and reports on this website.
@@ -175,7 +177,7 @@
                 </ul>
                 <p>Using an account is the best way to manage your record and allows you to edit the information you have provided.</p>
                 <p>
-                    <button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@AccountPages.SignIn.Url">Register / Sign in</button>          
+                    <GdsStartButton Href="@signInUrl" Text="Register / Sign in" />
                 </p>
                 <p>
                     If you don't wish to use an account you can 

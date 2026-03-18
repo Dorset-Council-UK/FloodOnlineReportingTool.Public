@@ -91,18 +91,13 @@ internal static class AuthenticationExtensions
 
     internal static WebApplication MapAuthenticationEndpoints(this WebApplication app)
     {
-        app.MapGet("signin", AccountEndpoints.SignIn)
-            .WithTags("Account")
-            .WithDisplayName("Sign in")
-            .WithSummary("Signs the user into the application")
-            .AllowAnonymous();
-        app.MapGet("account/signin", AccountEndpoints.AccountSignIn)
+        app.MapGet("account/signin", AccountEndpoints.SignIn)
             .WithTags("Account")
             .WithDisplayName("Microsoft Identity sign in")
             .WithSummary("Signs the user into the application")
             .AllowAnonymous();
 
-        app.MapGet("signout", AccountEndpoints.SignOut)
+        app.MapGet("account/signout", AccountEndpoints.SignOut)
             .WithTags("Account")
             .WithDisplayName("Sign out")
             .WithSummary("Signs the user out of the application.")
