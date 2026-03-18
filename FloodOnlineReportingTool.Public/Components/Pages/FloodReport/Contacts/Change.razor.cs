@@ -187,6 +187,12 @@ public partial class Change(
     {
         _messageStore.Clear();
 
+        if (_contactModel is null)
+        {
+            logger.LogWarning("Contact model is null, cannot submit form");
+            return;
+        }
+
         // Manual FluentValidation - only runs on submit to avoid premature validation errors
         var validator = new ContactModelValidator();
         var validationResult = await validator.ValidateAsync(_contactModel, _cts.Token);
