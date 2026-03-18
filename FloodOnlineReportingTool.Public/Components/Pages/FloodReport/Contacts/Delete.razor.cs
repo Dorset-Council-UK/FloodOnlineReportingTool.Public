@@ -29,7 +29,7 @@ public partial class Delete(
 
     // Parameters
     [Parameter]
-    public Guid ContactId { get; set; }
+    public Guid? ContactId { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -39,6 +39,7 @@ public partial class Delete(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private Guid _floodReportId = Guid.Empty;
+    private Guid _contactId = Guid.Empty;
     private string _floodReportReference = string.Empty;
     private Guid _userId;
     private bool _isLoading = true;
@@ -64,6 +65,14 @@ public partial class Delete(
     {
         if (firstRender)
         {
+            if (ContactId is null)
+            {
+                logger.LogWarning("ContactId parameter is null, cannot load contact data");
+                navigationManager.NavigateTo(ContactPages.Summary.Url);
+                return;
+            }
+            _contactId = ContactId ?? Guid.Empty;
+
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
             var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
@@ -144,7 +153,7 @@ public partial class Delete(
         _deletePermited = false;
         _floodReportReference = string.Empty;
 
-        var contactRecord = await contactRepository.GetContactById(ContactId, _cts.Token);
+        var contactRecord = await contactRepository.GetContactById(_contactId, _cts.Token);
         if (contactRecord == null)
         {
             return null;
