@@ -97,7 +97,7 @@ public partial class Create(
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
-                navigationManager.NavigateTo(SubscriptionPages.Home.Url);
+                navigationManager.NavigateTo($"{SubscriptionPages.Subscribe.Url}?Owns=true");
                 return;
             }
 

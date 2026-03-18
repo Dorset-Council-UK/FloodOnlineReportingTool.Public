@@ -97,7 +97,7 @@ public partial class Summary(
         if (_reportOwnerContact is null)
         {
             // This is not allowed, setup an owner
-            navigationManager.NavigateTo(SubscriptionPages.Home.Url);
+            navigationManager.NavigateTo($"{SubscriptionPages.Home.Url}?Owns=true");
             return;
         }
 
