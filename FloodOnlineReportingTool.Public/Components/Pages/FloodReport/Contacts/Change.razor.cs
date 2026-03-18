@@ -101,6 +101,13 @@ public partial class Change(
         {
             // Retrieve the flood report ID from session storage
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            if (reportOwnerSubscribeRecord is null)
+            {
+                // This is not allowed, setup an owner
+                navigationManager.NavigateTo(SubscriptionPages.Home.Url);
+                return;
+            }
 
             // Load the subscription record for the contact
             _subscribeModel = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);

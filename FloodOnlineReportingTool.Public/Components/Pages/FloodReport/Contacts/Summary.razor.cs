@@ -94,6 +94,13 @@ public partial class Summary(
         var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
+        if (_reportOwnerContact is null)
+        {
+            // This is not allowed, setup an owner
+            navigationManager.NavigateTo(SubscriptionPages.Home.Url);
+            return;
+        }
+
         var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
 
         // Filter out the report owner from the additional contacts list

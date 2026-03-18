@@ -66,6 +66,14 @@ public partial class Delete(
         {
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
+            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            if (reportOwnerSubscribeRecord is null)
+            {
+                // This is not allowed, setup an owner
+                navigationManager.NavigateTo(SubscriptionPages.Home.Url);
+                return;
+            }
+
             // Setup model and edit context
             if (_contactModel == null)
             {
