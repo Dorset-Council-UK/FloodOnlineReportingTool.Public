@@ -92,7 +92,7 @@ public partial class Test(
         get
         {
             var redirectUri = navigationManager.SignInRedirectUri;
-            return string.IsNullOrWhiteSpace(redirectUri) ? "signin" : $"signin?redirectUri={redirectUri}";
+            return string.IsNullOrWhiteSpace(redirectUri) ? AccountPages.SignIn.Url : $"{AccountPages.SignIn.Url}?redirectUri={redirectUri}";
         }
     }
 

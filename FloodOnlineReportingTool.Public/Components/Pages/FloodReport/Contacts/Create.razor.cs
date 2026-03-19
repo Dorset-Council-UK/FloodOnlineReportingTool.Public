@@ -93,6 +93,13 @@ public partial class Create(
         if (firstRender)
         {           
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            if (reportOwnerSubscribeRecord is null)
+            {
+                // This is not allowed, setup an owner
+                navigationManager.NavigateTo($"{SubscriptionPages.Home.Url}?Owns=true");
+                return;
+            }
 
             // This is a create page, so we need to get the unused contact types only
             var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);

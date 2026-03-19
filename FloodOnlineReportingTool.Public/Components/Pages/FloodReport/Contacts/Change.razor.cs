@@ -34,7 +34,7 @@ public partial class Change(
     // Parameters
 
     [Parameter]
-    public Guid ContactId { get; set; }
+    public Guid? ContactId { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -49,6 +49,7 @@ public partial class Change(
     private ContactModel? _contactModel;
     private SubscribeRecord? _subscribeModel;
     private Guid _floodReportId = Guid.Empty;
+    private Guid _contactId = Guid.Empty;
     private string? _userID;
     private bool _isLoading = true;
     private bool _isDataLoading = true;
@@ -99,11 +100,27 @@ public partial class Change(
 
         try
         {
+            if (ContactId is null)
+            {
+                logger.LogWarning("ContactId parameter is null, cannot load contact data");
+                navigationManager.NavigateTo(ContactPages.Summary.Url);
+                return;
+            }
+
+            _contactId = ContactId ?? Guid.Empty;
+
             // Retrieve the flood report ID from session storage
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            if (reportOwnerSubscribeRecord is null)
+            {
+                // This is not allowed, setup an owner
+                navigationManager.NavigateTo($"{SubscriptionPages.Home.Url}?Owns=true");
+                return;
+            }
 
             // Load the subscription record for the contact
-            _subscribeModel = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);
+            _subscribeModel = await contactRepository.GetSubscriptionRecordById(_contactId, _cts.Token);
             if (_subscribeModel is not null)
             {
                 // Map subscription data to contact model for editing
@@ -122,7 +139,7 @@ public partial class Change(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error loading contact data for ContactId {ContactId}", ContactId);
+            logger.LogError(ex, "Error loading contact data");
         }
         finally
         {
@@ -170,6 +187,12 @@ public partial class Change(
     {
         _messageStore.Clear();
 
+        if (_contactModel is null)
+        {
+            logger.LogWarning("Contact model is null, cannot submit form");
+            return;
+        }
+
         // Manual FluentValidation - only runs on submit to avoid premature validation errors
         var validator = new ContactModelValidator();
         var validationResult = await validator.ValidateAsync(_contactModel, _cts.Token);
@@ -193,7 +216,7 @@ public partial class Change(
 
     private async Task UpdateContactAsync()
     {
-        logger.LogDebug("Updating contact information for ContactId {ContactId}", ContactId);
+        logger.LogDebug("Updating contact information");
 
         if (_contactModel is null)
         {
@@ -204,10 +227,10 @@ public partial class Change(
         try
         {
             // Retrieve the current subscription record
-            var selectedRecord = await contactRepository.GetSubscriptionRecordById(ContactId, _cts.Token);
+            var selectedRecord = await contactRepository.GetSubscriptionRecordById(_contactId, _cts.Token);
             if (selectedRecord is null)
             {
-                logger.LogWarning("Subscription record not found for ContactId {ContactId}", ContactId);
+                logger.LogWarning("Subscription record not found");
                 return;
             }
 
@@ -219,11 +242,11 @@ public partial class Change(
 
             var updatedSubscription = await contactRepository.UpdateSubscriptionRecord(selectedRecord, _cts.Token);
 
-            logger.LogInformation("Contact information updated successfully for ContactId {ContactId}", ContactId);
+            logger.LogInformation("Contact information updated successfully");
 
             if (updatedSubscription.ResultModel is not SubscribeRecord sub)
             {
-                logger.LogError("Failed to update subscription record for ContactId {ContactId}", ContactId);
+                logger.LogError("Failed to update subscription record");
                 return;
             }
 
@@ -238,7 +261,7 @@ public partial class Change(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error updating contact information for ContactId {ContactId}", ContactId);
+            logger.LogError(ex, "Error updating contact information");
             _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem updating the contact information. Please try again but if this issue persists then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
@@ -263,7 +286,7 @@ public partial class Change(
                 return;
             }
 
-            logger.LogInformation("Sending email verification notification to {EmailAddress}", returnedSubscription.EmailAddress);
+            logger.LogInformation("Sending email verification notification");
 
             // TODO: Implement proper verification link generation
             // The verification link should include the verification code and subscription ID

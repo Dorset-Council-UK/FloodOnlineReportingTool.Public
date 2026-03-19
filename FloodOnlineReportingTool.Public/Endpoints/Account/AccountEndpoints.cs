@@ -75,21 +75,11 @@ internal static class AccountEndpoints
         return TypedResults.Challenge(properties, [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
     }
 
-    internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> AccountSignIn(
-        IOptions<GISOptions> options,
-        string? returnUrl,
-        string? loginHint,
-        string? domainHint
-    ) {
-        // pass returnUrl to redirectUri
-        return SignIn(options, returnUrl, loginHint, domainHint);
-    }
-
     internal static Results<SignOutHttpResult, UnauthorizedHttpResult> SignOut(IOptions<GISOptions> options)
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = $"/{options.Value.PathBase}/Account/signedout",
+            RedirectUri = $"/{options.Value.PathBase}/account/signedout",
         };
 
         return TypedResults.SignOut(properties, [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
