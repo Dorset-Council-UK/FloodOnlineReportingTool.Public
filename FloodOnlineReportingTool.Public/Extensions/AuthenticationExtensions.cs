@@ -93,7 +93,7 @@ internal static class AuthenticationExtensions
     {
         app.MapGet("account/signin", AccountEndpoints.SignIn)
             .WithTags("Account")
-            .WithDisplayName("Microsoft Identity sign in")
+            .WithDisplayName("Sign in")
             .WithSummary("Signs the user into the application")
             .AllowAnonymous();
 
