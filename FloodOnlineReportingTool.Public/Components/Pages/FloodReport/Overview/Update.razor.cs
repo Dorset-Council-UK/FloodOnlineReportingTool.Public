@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Security.Claims;
 
-namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
+namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 
 [Authorize]
 public partial class Update(
