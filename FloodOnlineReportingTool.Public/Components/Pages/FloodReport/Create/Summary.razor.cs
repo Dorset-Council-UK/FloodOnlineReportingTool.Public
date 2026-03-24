@@ -19,29 +19,19 @@ public partial class Summary(
     IFloodReportRepository floodReportRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
-    public string Title { get; set; } = FloodReportCreatePages.Summary.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
+    private readonly IReadOnlyCollection<GdsBreadcrumb> _breadcrumbs = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
         FloodReportCreatePages.FloodSource.ToGdsBreadcrumb(),
     ];
 
-    private Models.FloodReport.Create.Summary Model { get; set; } = default!;
-
-    private EditContext _editContext = default!;
-    private ValidationMessageStore _messageStore = default!;
+    private EligibilityCheckDto? _eligibilityCheckDto;
+    private ExtraData? _createExtraData;
+    private readonly ICollection<string> _summaryErrors = [];
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-
-    protected override void OnInitialized()
-    {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _messageStore = new(_editContext);
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -52,6 +42,7 @@ public partial class Summary(
         }
         catch (Exception)
         {
+            // Ignore any exceptions that occur during disposal
         }
 
         GC.SuppressFinalize(this);
@@ -61,6 +52,16 @@ public partial class Summary(
     {
         if (firstRender)
         {
+            _eligibilityCheckDto = await GetEligibilityCheckDto();
+            _createExtraData = await GetCreateExtraData();
+
+            _isLoading = false;
+            StateHasChanged();
+
+
+
+
+
             // Set any previously entered data
             var createExtraData = await GetCreateExtraData();
             Model.PropertyTypeName = await GetPropertyTypeName(createExtraData);
@@ -97,36 +98,84 @@ public partial class Summary(
                 }
             }
 
-            _isLoading = false;
-            StateHasChanged();
 
-            
+ 
         }
     }
 
-    private async Task OnSubmit()
+    private void OnValidationStatusChanged(bool isValid)
     {
-        if (!_editContext.Validate())
+        if (isValid)
         {
+            _summaryErrors.Clear();
             return;
         }
 
-        var saveResult = await SaveEligibilityCheck();
-        if (saveResult.Failed)
+        logger.LogWarning("Flood report summary is not valid.");
+        const string generalMessage = "Your flood report information is not complete. Please check the information below and complete any missing information.";
+        if (!_summaryErrors.Contains(generalMessage, StringComparer.OrdinalIgnoreCase))
         {
-            _messageStore.Add(_editContext.Field(nameof(Model.AddressPreview)), saveResult.ErrorMessage);
-            return;
+            _summaryErrors.Add(generalMessage);
         }
-
-        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            { "Reference", saveResult.Reference },
-        };
-        var confirmationUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.Confirmation.Url, parameters.AsReadOnly());
-        navigationManager.NavigateTo(confirmationUrl);
     }
 
-    private async Task<EligibilityCheckDto> GetEligibilityCheck()
+    private async Task OnAcceptAndSend()
+    {
+        _summaryErrors.Clear();
+
+        if (_eligibilityCheckDto is null)
+        {
+            logger.LogError("Flood report information was not found");
+            _summaryErrors.Add("Not able to find the flood report information");
+            return;
+        }
+
+        await SaveFloodReport(_eligibilityCheckDto);
+    }
+
+    /// <summary>
+    /// Save the flood report, and eligibility check
+    /// </summary>
+    private async Task SaveFloodReport(EligibilityCheckDto dto)
+    {
+        const string saveErrorMessage = "Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug.";
+
+        try
+        {
+            // Create a new flood report
+            var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, _cts.Token);
+
+            if (floodReport.EligibilityCheck is null)
+            {
+                logger.LogError("Failed to create eligibility check for flood report reference {Reference}", floodReport.Reference);
+                _summaryErrors.Add(saveErrorMessage);
+                return;
+            }
+
+            // Clear the stored data
+            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
+            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
+
+            // Navigate to the confirmation page with the reference number
+            logger.LogInformation("Flood report created successfully");
+            var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                { "Reference", floodReport.Reference },
+            };
+            var confirmationUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.Confirmation.Url, parameters.AsReadOnly());
+            navigationManager.NavigateTo(confirmationUrl);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "There was a problem creating the flood report or saving the eligibility check");
+            _summaryErrors.Add(saveErrorMessage);
+        }
+    }
+
+
+
+
+    private async Task<EligibilityCheckDto> GetEligibilityCheckDto()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
         if (data.Success)
@@ -225,55 +274,6 @@ public partial class Summary(
             .Select(o => o.TypeName ?? "");
 
         return [.. query];
-    }
-
-    private async Task<SaveResult> SaveEligibilityCheck()
-    {
-        try
-        {
-            // Create or update the flood report
-            var floodReport = await CreateFloodReport();
-
-            if (floodReport is null)
-            {
-                logger.LogError("Failed to create or update the flood report");
-                return SaveResult.Failure("Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug.");
-            }
-
-            // Clear the session data
-            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
-            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
-
-            return SaveResult.Success(floodReport.Reference);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "There was a problem creating the flood report or saving the eligibility check");
-            return SaveResult.Failure("Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug.");
-        }
-    }
-
-    /// <summary>
-    /// Add the flood report, and eligibility check
-    /// </summary>
-    private async Task<Database.Models.Flood.FloodReport?> CreateFloodReport()
-    {
-        var eligibilityCheck = await GetEligibilityCheck();
-        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(eligibilityCheck, _cts.Token);
-
-        if (floodReport is null)
-        {
-            logger.LogError("Failed to create a new flood report.");
-            return null;
-        }
-
-        if (floodReport.EligibilityCheck is null)
-        {
-            logger.LogError("Failed to create eligibility check for flood report reference {Reference}", floodReport.Reference);
-            return null;
-        }
-
-        return floodReport;
     }
 
     private string VulnerablePeopleMessage()
