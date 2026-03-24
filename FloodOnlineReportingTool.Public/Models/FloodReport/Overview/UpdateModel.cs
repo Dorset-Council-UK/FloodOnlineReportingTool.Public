@@ -1,4 +1,4 @@
-﻿namespace FloodOnlineReportingTool.Public.Models.FloodReport.Update;
+﻿namespace FloodOnlineReportingTool.Public.Models.FloodReport.Overview;
 
 public class UpdateModel
 {

@@ -1,5 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Update;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Overview;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;

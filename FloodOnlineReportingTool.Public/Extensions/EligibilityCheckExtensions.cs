@@ -1,9 +1,7 @@
-﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿using FloodOnlineReportingTool.Public.Models.FloodReport.Overview;
 using System.Globalization;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace FloodOnlineReportingTool.Public.Models.FloodReport.Update;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
+namespace FloodOnlineReportingTool.Database.Models.Eligibility;
 
 internal static class EligibilityCheckExtensions
 {
