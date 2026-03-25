@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Overview;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
@@ -125,7 +126,7 @@ public partial class Update(
             var userId = authState.User.Oid;
             if (userId is not null)
             {
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
+                EligibilityCheck? eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
                 if (eligibilityCheck is not null)
                 {
                     return eligibilityCheck.ToUpdateModel();
