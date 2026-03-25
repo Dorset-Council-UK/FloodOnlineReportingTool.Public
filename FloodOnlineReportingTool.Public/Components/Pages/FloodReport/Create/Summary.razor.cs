@@ -1,21 +1,16 @@
-﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
-using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
 public partial class Summary(
     ILogger<Summary> logger,
-    ICommonRepository commonRepository,
     IFloodReportRepository floodReportRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
@@ -28,7 +23,7 @@ public partial class Summary(
     ];
 
     private EligibilityCheckDto? _eligibilityCheckDto;
-    private ExtraData? _createExtraData;
+    //private ExtraData? _createExtraData;
     private readonly ICollection<string> _summaryErrors = [];
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
@@ -53,7 +48,7 @@ public partial class Summary(
         if (firstRender)
         {
             _eligibilityCheckDto = await GetEligibilityCheckDto();
-            _createExtraData = await GetCreateExtraData();
+            //_createExtraData = await GetCreateExtraData();
 
             _isLoading = false;
             StateHasChanged();
@@ -62,41 +57,41 @@ public partial class Summary(
 
 
 
-            // Set any previously entered data
-            var createExtraData = await GetCreateExtraData();
-            Model.PropertyTypeName = await GetPropertyTypeName(createExtraData);
+            //// Set any previously entered data
+            //var createExtraData = await GetCreateExtraData();
+            //Model.PropertyTypeName = await GetPropertyTypeName(createExtraData);
 
-            var eligibilityCheck = await GetEligibilityCheck();
-            Model.IsAddress = eligibilityCheck.IsAddress;
-            Model.AddressPreview = eligibilityCheck.LocationDesc;
-            Model.TemporaryAddressPreview = eligibilityCheck.TemporaryLocationDesc;
-            Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
-            Model.FloodSources = await GetFloodSources(eligibilityCheck);
-            bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);
-            Model.FloodSecondarySources = runoff ? await GetFloodSecondarySources(eligibilityCheck) : null;
-            Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
-            Model.StartDate = eligibilityCheck.ImpactStart;
-            Model.IsOnGoing = eligibilityCheck.OnGoing;
-            Model.FloodDurationKnownId = eligibilityCheck.DurationKnownId;
-            Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId;
-            Model.NumberOfVulnerablePeople = eligibilityCheck.VulnerableCount;
+            //var eligibilityCheck = await GetEligibilityCheck();
+            //Model.IsAddress = eligibilityCheck.IsAddress;
+            //Model.AddressPreview = eligibilityCheck.LocationDesc;
+            //Model.TemporaryAddressPreview = eligibilityCheck.TemporaryLocationDesc;
+            //Model.FloodedAreas = await GetFloodedAreas(eligibilityCheck);
+            //Model.FloodSources = await GetFloodSources(eligibilityCheck);
+            //bool runoff = eligibilityCheck.Sources.Any(s => s == PrimaryCauseIds.RainwaterFlowingOverTheGround);
+            //Model.FloodSecondarySources = runoff ? await GetFloodSecondarySources(eligibilityCheck) : null;
+            //Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
+            //Model.StartDate = eligibilityCheck.ImpactStart;
+            //Model.IsOnGoing = eligibilityCheck.OnGoing;
+            //Model.FloodDurationKnownId = eligibilityCheck.DurationKnownId;
+            //Model.VulnerablePeopleId = eligibilityCheck.VulnerablePeopleId;
+            //Model.NumberOfVulnerablePeople = eligibilityCheck.VulnerableCount;
 
-            // Build the flood lasted for message
-            Model.FloodingLasted = null;
-            var durationId = eligibilityCheck.DurationKnownId;
-            if (!eligibilityCheck.OnGoing && durationId != null)
-            {
-                if (durationId.Value == FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
-                {
-                    var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
-                    Model.FloodingLasted = duration.GdsReadable();
-                }
-                else
-                {
-                    var floodDuration = await commonRepository.GetFloodProblemByCategory(FloodProblemCategory.Duration, durationId.Value, _cts.Token);
-                    Model.FloodingLasted = floodDuration?.TypeDescription;
-                }
-            }
+            //// Build the flood lasted for message
+            //Model.FloodingLasted = null;
+            //var durationId = eligibilityCheck.DurationKnownId;
+            //if (!eligibilityCheck.OnGoing && durationId != null)
+            //{
+            //    if (durationId.Value == FloodDurationIds.DurationKnown && eligibilityCheck.ImpactDuration != null)
+            //    {
+            //        var duration = TimeSpan.FromHours(eligibilityCheck.ImpactDuration.Value);
+            //        Model.FloodingLasted = duration.GdsReadable();
+            //    }
+            //    else
+            //    {
+            //        var floodDuration = await commonRepository.GetFloodProblemByCategory(FloodProblemCategory.Duration, durationId.Value, _cts.Token);
+            //        Model.FloodingLasted = floodDuration?.TypeDescription;
+            //    }
+            //}
 
 
  
@@ -172,9 +167,6 @@ public partial class Summary(
         }
     }
 
-
-
-
     private async Task<EligibilityCheckDto> GetEligibilityCheckDto()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
@@ -190,118 +182,18 @@ public partial class Summary(
         return new EligibilityCheckDto();
     }
 
-    private async Task<ExtraData> GetCreateExtraData()
-    {
-        var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
+    //private async Task<ExtraData> GetCreateExtraData()
+    //{
+    //    var data = await protectedSessionStorage.GetAsync<ExtraData>(SessionConstants.EligibilityCheck_ExtraData);
+    //    if (data.Success)
+    //    {
+    //        if (data.Value != null)
+    //        {
+    //            return data.Value;
+    //        }
+    //    }
 
-        logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
-        return new();
-    }
-
-    private async Task<string?> GetPropertyTypeName(ExtraData extraData)
-    {
-        if (extraData.PropertyType == null)
-        {
-            return null;
-        }
-
-        var floodImpact = await commonRepository.GetFloodImpact(extraData.PropertyType.Value, _cts.Token);
-        if (floodImpact == null)
-        {
-            return null;
-        }
-
-        return floodImpact.TypeName;
-    }
-
-    private async Task<IReadOnlyCollection<string>> GetFloodedAreas(EligibilityCheckDto eligibilityCheck)
-    {
-        var labels = new List<string>();
-
-        var residentialIds = new HashSet<Guid>(eligibilityCheck.Residentials);
-        if (residentialIds.Count > 0)
-        {
-            var residentials = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.Residential, _cts.Token);
-            labels.AddRange(residentials
-                .Where(o => residentialIds.Contains(o.Id))
-                .Select(o => o.TypeName ?? ""));
-        }
-
-        var commercialIds = new HashSet<Guid>(eligibilityCheck.Commercials);
-        if (commercialIds.Count > 0)
-        {
-            var commercials = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.Commercial, _cts.Token);
-            labels.AddRange(commercials
-                .Where(o => commercialIds.Contains(o.Id))
-                .Select(o => o.TypeName ?? ""));
-        }
-
-        return labels;
-    }
-
-    private async Task<IReadOnlyCollection<string>> GetFloodSources(EligibilityCheckDto eligibilityCheck)
-    {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.PrimaryCause, _cts.Token);
-        if (floodProblems.Count == 0)
-        {
-            return [];
-        }
-
-        var query = floodProblems
-            .Where(o => eligibilityCheck.Sources.Contains(o.Id))
-            .Select(o => o.TypeName ?? "");
-
-        return [.. query];
-    }
-
-    private async Task<IReadOnlyCollection<string>> GetFloodSecondarySources(EligibilityCheckDto eligibilityCheck)
-    {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
-        if (floodProblems.Count == 0)
-        {
-            return [];
-        }
-
-        var query = floodProblems
-            .Where(o => eligibilityCheck.SecondarySources.Contains(o.Id))
-            .Select(o => o.TypeName ?? "");
-
-        return [.. query];
-    }
-
-    private string VulnerablePeopleMessage()
-    {
-        if (Model.VulnerablePeopleId == null)
-        {
-            return "Unknown";
-        }
-
-        var id = Model.VulnerablePeopleId.Value;
-        if (id == Database.Models.Status.RecordStatusIds.No)
-        {
-            return "No";
-        }
-
-        if (id == Database.Models.Status.RecordStatusIds.NotSure)
-        {
-            return "Not sure";
-        }
-
-        // Yes
-        var number = Model.NumberOfVulnerablePeople;
-        if (number == null)
-        {
-            return "Unknown";
-        }
-
-        var numberText = number == 1 ? "person" : "people";
-        return $"Yes - {number} vulnerable {numberText}";
-    }
+    //    logger.LogWarning("Eligibility Check > Extra Data was not found in the protected storage.");
+    //    return new();
+    //}
 }

@@ -4,7 +4,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Id</dt>
-            @SummaryValueOrMissing(_idLabel, nameof(_eligibilityCheck.Id))
+            @SummaryValueOrMissing(_idLabel, nameof(Entity.Id))
         </div>
     }
 
@@ -12,7 +12,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Created</dt>
-            @SummaryValueOrMissing(_createdDateLabel, nameof(_eligibilityCheck.CreatedUtc))
+            @SummaryValueOrMissing(_createdDateLabel, nameof(Entity.CreatedUtc))
         </div>
     }
 
@@ -20,7 +20,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Updated</dt>
-            @SummaryValueOrMissing(_updatedDateLabel, nameof(_eligibilityCheck.UpdatedUtc))
+            @SummaryValueOrMissing(_updatedDateLabel, nameof(Entity.UpdatedUtc))
         </div>
     }
 
@@ -28,7 +28,7 @@
     {
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Terms agreed</dt>
-            @SummaryValueOrMissing(_termsAgreedLabel, nameof(_eligibilityCheck.TermsAgreed))
+            @SummaryValueOrMissing(_termsAgreedLabel, nameof(Entity.TermsAgreed))
         </div>
     }
 </dl>
@@ -46,17 +46,13 @@
         </div>
     }
 
-    @if (ShowLocationDescription)
+    @if (ShowLocationDescription && _locationDescriptionPageInfo is not null)
     {
-        var (pageInfo, visuallyHiddenText) = _eligibilityCheck?.IsAddress == true
-            ? (FloodReportCreatePages.Address, " address")
-            : (FloodReportCreatePages.Location, " location");
-
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Address or location</dt>
-            @SummaryValueOrMissing(_locationDescriptionLabel, pageInfo)
+            @SummaryValueOrMissing(_locationDescriptionLabel, _locationDescriptionPageInfo)
             <dd class="govuk-summary-list__actions">
-                <a draggable="false" data-prevent-double-click="true" href="@(pageInfo.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden">@visuallyHiddenText</span></a>
+                <a draggable="false" data-prevent-double-click="true" href="@(_locationDescriptionPageInfo.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden">@_locationDescriptionVisuallyHiddenText</span></a>
             </dd>
         </div>
     }
