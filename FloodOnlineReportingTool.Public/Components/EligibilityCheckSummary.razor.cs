@@ -264,58 +264,6 @@ public partial class EligibilityCheckSummary(
         await ValidationStatusChanged.InvokeAsync(validationResult.IsValid);
     }
 
-    private string FloodProblemLabel(Guid? id)
-    {
-        if (EligibilityCheckFloodProblems is null || EligibilityCheckFloodProblems.Count == 0 || id is null)
-        {
-            return Unknown;
-        }
-
-        return EligibilityCheckFloodProblems
-            .Where(o => o.Id == id)
-            .Select(o => o.TypeName ?? Unknown)
-            .FirstOrDefault(Unknown);
-    }
-
-    private string[] FloodProblemLabels(IList<Guid> ids)
-    {
-        if (EligibilityCheckFloodProblems is null || EligibilityCheckFloodProblems.Count == 0 || ids.Count == 0)
-        {
-            return [Unknown];
-        }
-
-        return [.. EligibilityCheckFloodProblems
-            .Where(o => ids.Contains(o.Id))
-            .Select(o => o.TypeName ?? Unknown),
-        ];
-    }
-
-    private string FloodImpactLabel(Guid? id)
-    {
-        if (EligibilityCheckFloodImpacts is null || EligibilityCheckFloodImpacts.Count == 0 || id is null)
-        {
-            return Unknown;
-        }
-
-        return EligibilityCheckFloodImpacts
-            .Where(o => o.Id == id)
-            .Select(o => o.TypeName ?? Unknown)
-            .FirstOrDefault(Unknown);
-    }
-
-    private string[] FloodImpactLabels(IList<Guid> ids)
-    {
-        if (EligibilityCheckFloodImpacts is null || EligibilityCheckFloodImpacts.Count == 0 || ids.Count == 0)
-        {
-            return [Unknown];
-        }
-
-        return [.. EligibilityCheckFloodImpacts
-            .Where(o => ids.Contains(o.Id))
-            .Select(o => o.TypeName ?? Unknown),
-        ];
-    }
-
     private void GetId()
     {
         if (!ShowId || Entity is null)

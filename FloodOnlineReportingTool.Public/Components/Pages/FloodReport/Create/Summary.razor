@@ -5,11 +5,14 @@
 <GdsBreadcrumbs Items="@_breadcrumbs" />
 
 <h1 class="govuk-heading-xl">@FloodReportCreatePages.Summary.Title</h1>
-<GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-@if (!_isLoading)
+@if (_isLoading)
 {
-    if (_summaryErrors.Count > 0)
+    <GdsSpinner Show ShowMessage />
+}
+else
+{
+    @if (_summaryErrors.Count > 0)
     {
         <div class="govuk-error-summary" data-module="govuk-error-summary">
             <div role="alert">
@@ -26,7 +29,7 @@
         </div>
     }
 
-    <EligibilityCheckSummary Dto="@_eligibilityCheckDto" ValidationStatusChanged="OnValidationStatusChanged" />
+    <EligibilityCheckSummary Dto="@_eligibilityCheckDto" ValidationStatusChanged="OnValidationStatusChanged" ShowId />
 
     @if (_summaryErrors.Count == 0)
     {
