@@ -24,7 +24,7 @@ public partial class Summary(
 
     private EligibilityCheckDto? _eligibilityCheckDto;
     //private ExtraData? _createExtraData;
-    private readonly ICollection<string> _summaryErrors = [];
+    private string? _summaryError;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
 
@@ -102,26 +102,24 @@ public partial class Summary(
     {
         if (isValid)
         {
-            _summaryErrors.Clear();
-            return;
+            logger.LogInformation("Flood report summary is valid.");
+        }
+        else
+        {
+            logger.LogWarning("Flood report summary is not valid.");
         }
 
-        logger.LogWarning("Flood report summary is not valid.");
-        const string generalMessage = "Your flood report information is not complete. Please check the information below and complete any missing information.";
-        if (!_summaryErrors.Contains(generalMessage, StringComparer.OrdinalIgnoreCase))
-        {
-            _summaryErrors.Add(generalMessage);
-        }
+        _summaryError = isValid ? null : "Your flood report information is not complete. Please check the information below and complete any missing information.";
     }
 
     private async Task OnAcceptAndSend()
     {
-        _summaryErrors.Clear();
+        _summaryError = null;
 
         if (_eligibilityCheckDto is null)
         {
             logger.LogError("Flood report information was not found");
-            _summaryErrors.Add("Not able to find the flood report information");
+            _summaryError = "Not able to find the flood report information";
             return;
         }
 
@@ -143,7 +141,7 @@ public partial class Summary(
             if (floodReport.EligibilityCheck is null)
             {
                 logger.LogError("Failed to create eligibility check for flood report reference {Reference}", floodReport.Reference);
-                _summaryErrors.Add(saveErrorMessage);
+                _summaryError = saveErrorMessage;
                 return;
             }
 
@@ -163,7 +161,7 @@ public partial class Summary(
         catch (Exception ex)
         {
             logger.LogError(ex, "There was a problem creating the flood report or saving the eligibility check");
-            _summaryErrors.Add(saveErrorMessage);
+            _summaryError = saveErrorMessage;
         }
     }
 
