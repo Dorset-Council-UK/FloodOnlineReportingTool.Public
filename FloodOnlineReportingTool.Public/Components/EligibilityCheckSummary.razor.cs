@@ -125,7 +125,7 @@ public partial class EligibilityCheckSummary(
     private string[] _secondarySourceLabels = [];
 
     private readonly CancellationTokenSource _cts = new();
-    private const string Unknown = "Unknown";
+    private bool? _lastValidationStatus;
 
     protected override async Task OnInitializedAsync()
     {
@@ -259,9 +259,14 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
+        var isValid = validationResult.IsValid;
         _validationFailures = validationResult.Errors;
 
-        await ValidationStatusChanged.InvokeAsync(validationResult.IsValid);
+        if (ValidationStatusChanged.HasDelegate && _lastValidationStatus != isValid)
+        {
+            _lastValidationStatus = isValid;
+            await ValidationStatusChanged.InvokeAsync(isValid);
+        }
     }
 
     private void GetId()
@@ -288,15 +293,9 @@ public partial class EligibilityCheckSummary(
 
     private void GetUpdatedDate()
     {
-        if (!ShowUpdatedDate || Entity is null)
+        if (!ShowUpdatedDate || Entity?.UpdatedUtc is null)
         {
             _updatedDateLabel = null;
-            return;
-        }
-
-        if (Entity.UpdatedUtc is null)
-        {
-            _updatedDateLabel = Unknown;
             return;
         }
 
@@ -326,7 +325,7 @@ public partial class EligibilityCheckSummary(
         {
             true => Yes,
             false => No,
-            null => Unknown,
+            null => null,
         };
     }
 
@@ -340,10 +339,8 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
-        string? description = Entity?.LocationDesc ?? Dto?.LocationDesc;
+        _locationDescriptionLabel = Entity?.LocationDesc ?? Dto?.LocationDesc;
         bool? isAddress = Entity?.IsAddress ?? Dto?.IsAddress;
-
-        _locationDescriptionLabel = description ?? Unknown;
         _locationDescriptionPageInfo = isAddress == true ? FloodReportCreatePages.Address : FloodReportCreatePages.Location;
         _locationDescriptionVisuallyHiddenText = isAddress == true ? " address" : " location";
     }
@@ -356,7 +353,8 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
-        _propertyTypeLabel = Unknown;
+        // TODO: Add the property type lable logic
+        _propertyTypeLabel = null;
     }
 
     private void GetFloodedAreas()
@@ -394,15 +392,11 @@ public partial class EligibilityCheckSummary(
             }
         }
 
-        if (floodImpactIds.Count == 0)
+        if (floodImpactIds.Count == 0
+            || EligibilityCheckFloodImpacts is null
+            || EligibilityCheckFloodImpacts.Count == 0)
         {
             _floodedAreaLabels = [];
-            return;
-        }
-
-        if (EligibilityCheckFloodImpacts is null || EligibilityCheckFloodImpacts.Count == 0)
-        {
-            _floodedAreaLabels = [Unknown];
             return;
         }
 
@@ -411,7 +405,7 @@ public partial class EligibilityCheckSummary(
             .Where(o => floodImpactIds.Contains(o.Id))
             .DistinctBy(o => o.Id)
             .OrderBy(o => o.OptionOrder)
-            .Select(o => o.TypeName ?? Unknown),
+            .Select(o => o.TypeName ?? "Unknown"),
         ];
     }
 
@@ -427,7 +421,7 @@ public partial class EligibilityCheckSummary(
         {
             true => Yes,
             false => No,
-            null => Unknown,
+            null => null,
         };
     }
 
@@ -439,7 +433,7 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
-        _temporaryLocationDescriptionLabel = Entity?.TemporaryLocationDesc ?? Dto?.TemporaryLocationDesc ?? Unknown;
+        _temporaryLocationDescriptionLabel = Entity?.TemporaryLocationDesc ?? Dto?.TemporaryLocationDesc;
     }
 
     private void GetImpactStart()
@@ -453,7 +447,7 @@ public partial class EligibilityCheckSummary(
         DateTimeOffset? dateTime = Entity?.ImpactStart ?? Dto?.ImpactStart;
         if (dateTime is null)
         {
-            _impactStartLabel = Unknown;
+            _impactStartLabel = null;
             return;
         }
 
@@ -462,17 +456,16 @@ public partial class EligibilityCheckSummary(
 
     private void GetIsOnGoing()
     {
-        if (!ShowIsOnGoing)
+        if (!ShowIsOnGoing || Entity is null || Dto is null)
         {
             _isOnGoingLabel = null;
             return;
         }
 
-        _isOnGoingLabel = (Entity?.OnGoing ?? Dto?.OnGoing) switch
+        _isOnGoingLabel = (Entity.OnGoing || Dto.OnGoing) switch
         {
             true => Yes,
             false => No,
-            null => Unknown, // shouldn't be null, but just in case
         };
     }
 
@@ -502,7 +495,7 @@ public partial class EligibilityCheckSummary(
             }
         }
 
-        _floodingLastedLabel = Unknown;
+        _floodingLastedLabel = null;
     }
 
     private void GetVulnerablePeople()
@@ -534,7 +527,7 @@ public partial class EligibilityCheckSummary(
             var id when id == RecordStatusIds.NotSure => NotSure,
             var id when id == RecordStatusIds.Yes && vulnerableCount is not null =>
                 string.Format(CultureInfo.CurrentCulture, "Yes - {0} vulnerable {1}", vulnerableCount.Value, vulnerableCount.Value == 1 ? "person" : "people"),
-            _ => Unknown,
+            _ => null,
         };
     }
 
@@ -548,7 +541,7 @@ public partial class EligibilityCheckSummary(
 
         if (EligibilityCheckFloodProblems is null || EligibilityCheckFloodProblems.Count == 0)
         {
-            _sourceLabels = [Unknown];
+            _sourceLabels = [];
             return;
         }
 
@@ -556,19 +549,19 @@ public partial class EligibilityCheckSummary(
         {
             _sourceLabels = [.. EligibilityCheckFloodProblems
                 .Where(o => Entity.Sources.Select(s => s.FloodProblemId).Contains(o.Id))
-                .Select(o => o.TypeName ?? Unknown),
+                .Select(o => o.TypeName ?? "Unknown"),
             ];
         }
         else if (Dto is not null)
         {
             _sourceLabels = [.. EligibilityCheckFloodProblems
                 .Where(o => Dto.Sources.Contains(o.Id))
-                .Select(o => o.TypeName ?? Unknown),
+                .Select(o => o.TypeName ?? "Unknown"),
             ];
         }
         else
         {
-            _sourceLabels = [Unknown];
+            _sourceLabels = [];
         }
     }
 
@@ -582,7 +575,7 @@ public partial class EligibilityCheckSummary(
 
         if (EligibilityCheckFloodProblems is null || EligibilityCheckFloodProblems.Count == 0)
         {
-            _secondarySourceLabels = [Unknown];
+            _secondarySourceLabels = [];
             return;
         }
 
@@ -590,19 +583,19 @@ public partial class EligibilityCheckSummary(
         {
             _secondarySourceLabels = [.. EligibilityCheckFloodProblems
                 .Where(o => Entity.SecondarySources.Select(s => s.FloodProblemId).Contains(o.Id))
-                .Select(o => o.TypeName ?? Unknown),
+                .Select(o => o.TypeName ?? "Unknown"),
             ];
         }
         else if (Dto is not null)
         {
             _secondarySourceLabels = [.. EligibilityCheckFloodProblems
                 .Where(o => Dto.SecondarySources.Contains(o.Id))
-                .Select(o => o.TypeName ?? Unknown),
+                .Select(o => o.TypeName ?? "Unknown"),
             ];
         }
         else
         {
-            _secondarySourceLabels = [Unknown];
+            _secondarySourceLabels = [];
         }
     }
 }
