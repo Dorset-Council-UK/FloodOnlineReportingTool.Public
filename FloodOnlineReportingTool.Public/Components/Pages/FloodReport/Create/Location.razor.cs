@@ -30,10 +30,12 @@ public partial class Location(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => Model.IsAddress == true
-        ? FloodReportCreatePages.Address 
-        : FloodReportCreatePages.PropertyType;
-    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
+    private PageInfo NextPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : Model.IsAddress ? FloodReportCreatePages.Address : FloodReportCreatePages.PropertyType;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.Location Model { get; set; } = default!;
 
@@ -247,13 +249,8 @@ public partial class Location(
         };
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
-        // Go to the next page or pass back to the summary
-        var nextPageUrl = NextPage.Url;
-        if (FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
+        // Go to the next page or back to the summary
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

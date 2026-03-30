@@ -22,7 +22,9 @@ public partial class FloodStarted(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : (Model.IsFloodOngoing == true ? FloodReportCreatePages.FloodSource : FloodReportCreatePages.FloodDuration);
-    private static PageInfo PreviousPage => FloodReportCreatePages.Vulnerability;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.Vulnerability;
 
     private Models.FloodReport.Create.FloodStarted Model { get; set; } = default!;
 

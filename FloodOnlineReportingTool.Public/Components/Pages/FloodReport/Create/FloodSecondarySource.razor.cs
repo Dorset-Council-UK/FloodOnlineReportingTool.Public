@@ -26,7 +26,9 @@ public partial class FloodSecondarySource(
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
     private static PageInfo NextPage => FloodReportCreatePages.Summary;
-    private static PageInfo PreviousPage => FloodReportCreatePages.FloodSource;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.FloodSource;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();

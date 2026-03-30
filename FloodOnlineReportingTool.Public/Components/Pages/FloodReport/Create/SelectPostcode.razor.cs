@@ -19,10 +19,12 @@ public partial class SelectPostcode(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => Model.PostcodeKnown == true
-        ? FloodReportCreatePages.Address
-        : FloodReportCreatePages.Location;
-    private static PageInfo PreviousPage => FloodReportCreatePages.Home;
+    private PageInfo NextPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : Model.PostcodeKnown == true ? FloodReportCreatePages.Address : FloodReportCreatePages.Location;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.Home;
 
     private Models.FloodReport.Create.SelectPostcode Model { get; set; } = default!;
 
@@ -93,13 +95,8 @@ public partial class SelectPostcode(
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-        // Go to the next page or pass back to the summary
-        var nextPageUrl = NextPage.Url;
-        if (FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
+        // Go to the next page or back to the summary
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<ExtraData> GetCreateExtraData()

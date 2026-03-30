@@ -27,7 +27,9 @@ public partial class TemporaryAddress(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : FloodReportCreatePages.Vulnerability;
-    private static PageInfo PreviousPage => FloodReportCreatePages.TemporaryPostcode;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.TemporaryPostcode;
 
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
@@ -107,7 +109,7 @@ public partial class TemporaryAddress(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or pass back to the summary
+            // Go to the next page or back to the summary
             navigationManager.NavigateTo(NextPage.Url);
         }
     }

@@ -27,7 +27,9 @@ public partial class FloodDuration(
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
         : FloodReportCreatePages.FloodSource;
-    private static PageInfo PreviousPage => FloodReportCreatePages.FloodStarted;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.FloodStarted;
 
     private Models.FloodReport.Create.FloodDuration Model { get; set; } = default!;
 
