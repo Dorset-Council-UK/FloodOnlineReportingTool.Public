@@ -31,7 +31,7 @@ else if (_eligibilityCheckDto is not null)
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Postal address</dt>
-            @SummaryValue(_eligibilityCheckDto.IsAddress ? Yes : No, FloodReportCreatePages.Home)
+            @ValueOrMissing(_eligibilityCheckDto.IsAddress ? Yes : No, FloodReportCreatePages.Home)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Home.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location type</span></a>
             </dd>
@@ -41,14 +41,14 @@ else if (_eligibilityCheckDto is not null)
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Address or location</dt>
             @if (_eligibilityCheckDto.IsAddress)
             {
-                @SummaryValue(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Address)
+                @ValueOrMissing(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Address)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Address.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
                 </dd>
             }
             else
             {
-                @SummaryValue(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Location)
+                @ValueOrMissing(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Location)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Location.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
                 </dd>
@@ -57,7 +57,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Property type</dt>
-            @SummaryValue(_propertyTypeLabel, FloodReportCreatePages.PropertyType)
+            @ValueOrMissing(_propertyTypeLabel, FloodReportCreatePages.PropertyType)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.PropertyType.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> property type</span></a>
             </dd>
@@ -65,7 +65,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Areas flooded</dt>
-            @SummaryValues(_floodedAreaLabels, FloodReportCreatePages.FloodAreas)
+            @ValuesOrMissing(_floodedAreaLabels, FloodReportCreatePages.FloodAreas)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> which areas of the property were flooded</span></a>
             </dd>
@@ -73,7 +73,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Evacuation</dt>
-            @SummaryValue(_isUninhabitableLabel, FloodReportCreatePages.FloodAreas)
+            @ValueOrMissing(_isUninhabitableLabel, FloodReportCreatePages.FloodAreas)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> whether you evacuated the property</span></a>
             </dd>
@@ -83,7 +83,7 @@ else if (_eligibilityCheckDto is not null)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Temporary address</dt>
-                @SummaryValue(_eligibilityCheckDto.TemporaryLocationDesc, FloodReportCreatePages.TemporaryAddress)
+                @ValueOrMissing(_eligibilityCheckDto.TemporaryLocationDesc, FloodReportCreatePages.TemporaryAddress)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.TemporaryAddress.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> temporary address</span></a>
                 </dd>
@@ -95,7 +95,7 @@ else if (_eligibilityCheckDto is not null)
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started on</dt>
-            @SummaryValue(_eligibilityCheckDto.ImpactStart.GdsReadable(), FloodReportCreatePages.FloodStarted)
+            @ValueOrMissing(_eligibilityCheckDto.ImpactStart.GdsReadable(), FloodReportCreatePages.FloodStarted)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> when the flooding started</span></a>
             </dd>
@@ -103,7 +103,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Still flooding</dt>
-            @SummaryValue(_eligibilityCheckDto.OnGoing ? Yes : No, FloodReportCreatePages.FloodStarted)
+            @ValueOrMissing(_eligibilityCheckDto.OnGoing ? Yes : No, FloodReportCreatePages.FloodStarted)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you are still flooded</span></a>
             </dd>
@@ -113,7 +113,7 @@ else if (_eligibilityCheckDto is not null)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flooding lasted</dt>
-                @SummaryValue(_floodingLastedLabel, FloodReportCreatePages.FloodDuration)
+                @ValueOrMissing(_floodingLastedLabel, FloodReportCreatePages.FloodDuration)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodDuration.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how long the flooding lasted</span></a>
                 </dd>
@@ -122,7 +122,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vulnerable people affected</dt>
-            @SummaryValue(_vulnerablePeopleLabel, FloodReportCreatePages.Vulnerability)
+            @ValueOrMissing(_vulnerablePeopleLabel, FloodReportCreatePages.Vulnerability)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Vulnerability.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the number of vulnerable people reported</span></a>
             </dd>
@@ -130,7 +130,7 @@ else if (_eligibilityCheckDto is not null)
 
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flood source</dt>
-            @SummaryValues(_sourceLabels, FloodReportCreatePages.FloodSource)
+            @ValuesOrMissing(_sourceLabels, FloodReportCreatePages.FloodSource)
             <dd class="govuk-summary-list__actions">
                 <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>
             </dd>
@@ -140,7 +140,7 @@ else if (_eligibilityCheckDto is not null)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Runoff source</dt>
-                @SummaryValues(_secondarySourceLabels, FloodReportCreatePages.FloodSecondarySource)
+                @ValuesOrMissing(_secondarySourceLabels, FloodReportCreatePages.FloodSecondarySource)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSecondarySource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of runoff</span></a>
                 </dd>
@@ -159,36 +159,28 @@ else if (_eligibilityCheckDto is not null)
 }
 
 @code {
-    private RenderFragment SummaryValue(string? label, PageInfo pageInfo)
+    private RenderFragment ValueOrMissing(string? label, PageInfo pageInfo)
     {
-        if (label is null)
-        {
-            return @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>;
-        }
-
-        var hasFailures = _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
+        var hasFailures = label is null
+            || _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
         return hasFailures
-            ? @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>
-            : @<dd class="govuk-summary-list__value">@label</dd>;
+            ? @<SummaryListValue AdditionalCssClasses="govuk-error-message">missing information</SummaryListValue>
+            : @<SummaryListValue>@label</SummaryListValue>;
     }
 
-    private RenderFragment SummaryValues(string[] labels, PageInfo pageInfo)
+    private RenderFragment ValuesOrMissing(string[] labels, PageInfo pageInfo)
     {
-        if (labels.Length == 0)
-        {
-            return @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>;
-        }
-
-        var hasFailures = _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
+        var hasFailures = labels.Length == 0
+            || _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
         return hasFailures
-            ? @<dd class="govuk-summary-list__value govuk-error-message">missing information</dd>
-            : @<dd class="govuk-summary-list__value">
-            <ul class="govuk-list">
-                @foreach (var label in labels)
-                {
-                    <li>@label</li>
-                }
-            </ul>
-        </dd>;
+            ? @<SummaryListValue AdditionalCssClasses="govuk-error-message">missing information</SummaryListValue>
+            : @<SummaryListValue>
+                <ul class="govuk-list">
+                    @foreach (var label in labels)
+                    {
+                        <li>@label</li>
+                    }
+                </ul>
+            </SummaryListValue>;
     }
 }
