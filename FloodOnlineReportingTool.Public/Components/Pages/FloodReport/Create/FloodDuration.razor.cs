@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Repositories;
@@ -8,6 +9,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
@@ -16,7 +18,8 @@ public partial class FloodDuration(
     ILogger<FloodDuration> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager
+    NavigationManager navigationManager,
+    IDbContextFactory<PublicDbContext> contextFactory
 ) : IAsyncDisposable
 {
     // Page order properties
@@ -96,12 +99,9 @@ public partial class FloodDuration(
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
-        if (data.Success)
+        if (data.Success && data.Value is not null)
         {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
+            return data.Value;
         }
 
         logger.LogDebug("Eligibility Check was not found in the protected storage.");
@@ -119,13 +119,31 @@ public partial class FloodDuration(
     private async Task OnValidSubmit()
     {
         var eligibilityCheck = await GetEligibilityCheck();
-        var updated = eligibilityCheck with
+
+        EligibilityCheckDto updated = eligibilityCheck with
         {
             DurationKnownId = Model.DurationKnownId,
-            ImpactDuration = Model.DurationKnownId == FloodDurationIds.DurationKnown
-                ? (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0)
-                : null,
+            ImpactDuration = null,
         };
+
+        if (Model.DurationKnownId == FloodDurationIds.DurationKnown)
+        {
+            // calculate the impact duration based on the days and hours the user tells us
+            updated = updated with
+            {
+                ImpactDuration = (Model.DurationDaysNumber ?? 0) * 24 + (Model.DurationHoursNumber ?? 0),
+            };
+        }
+        else
+        {
+            // use the central impact duration calaculation, this will take more properties into account and ensure consistency
+            await using var context = await contextFactory.CreateDbContextAsync(_cts.Token);
+            int durationHours = await updated.CalculateImpactDurationHours(context, _cts.Token);
+            updated = updated with
+            {
+                ImpactDuration = durationHours,
+            };
+        }
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
