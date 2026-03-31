@@ -72,6 +72,11 @@
                 }
 
                 <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+
+                @if (_floodReport.EligibilityCheck is not null)
+                {
+                    <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
+                }
             }
         </NotAuthorized>
         <Authorized>
