@@ -1,7 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
-using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
-using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FluentValidation;
 
@@ -45,12 +44,14 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
         // Temporary Uprn
         RuleFor(dto => dto.TemporaryUprn)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.TemporaryAddress);
+            .WithState(dto => FloodReportCreatePages.TemporaryAddress)
+            .When(dto => dto.Uninhabitable == true);
 
         // Temporary location description
         RuleFor(dto => dto.TemporaryLocationDesc)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.TemporaryAddress);
+            .WithState(dto => FloodReportCreatePages.TemporaryAddress)
+            .When(dto => dto.Uninhabitable == true);
 
         // Impact start / Flooding started
         RuleFor(dto => dto.ImpactStart)
@@ -60,15 +61,16 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
         // Duration known
         RuleFor(dto => dto.DurationKnownId)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.FloodDuration);
+            .WithState(dto => FloodReportCreatePages.FloodDuration)
+            .When(dto => !dto.OnGoing);
 
         // Impact duration / Flooding lasted
         RuleFor(dto => dto.ImpactDuration)
             .NotEmpty()
             .WithState(dto => FloodReportCreatePages.FloodDuration)
-            .When(dto => dto.OnGoing && dto.DurationKnownId == FloodDurationIds.DurationKnown);
+            .When(dto => !dto.OnGoing);
 
-        // On going / Is the flodding still happening
+        // On going / Is the flooding still happening
         // OnGoing is a non nullable bool, so we can't validate it
 
         // Is uninhabitable
@@ -86,7 +88,7 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
         RuleFor(dto => dto.VulnerableCount)
             .NotEmpty()
             .WithState(dto => FloodReportCreatePages.Vulnerability)
-            .When(dto => dto.VulnerablePeopleId == RecordStatusIds.Yes);
+            .When(dto => dto.VulnerablePeopleId == Database.Models.Status.RecordStatusIds.Yes);
 
         // Residentials / FloodImpact's
         RuleFor(dto => dto.Residentials)
@@ -100,6 +102,13 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
             .WithState(dto => FloodReportCreatePages.FloodAreas)
             .When(IsCommercialOrOther);
 
+        // At least one of residentials or commercials should be provided
+        RuleFor(dto => dto)
+            .Must(dto => dto.Residentials.Count > 0 || dto.Commercials.Count > 0)
+            .WithState(dto => FloodReportCreatePages.FloodAreas)
+            .OverridePropertyName(nameof(EligibilityCheckDto.Residentials))
+            .WithMessage("At least one of residential or commercial properties must be provided.");
+
         // Sources / FloodProblem's
         RuleFor(dto => dto.Sources)
             .NotEmpty()
@@ -108,7 +117,8 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
         // Secondary sources / FloodProblem's
         RuleFor(dto => dto.SecondarySources)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.FloodSecondarySource);
+            .WithState(dto => FloodReportCreatePages.FloodSecondarySource)
+            .When(dto => dto.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround));
     }
 
     private bool IsCommercialOrOther(EligibilityCheckDto dto)

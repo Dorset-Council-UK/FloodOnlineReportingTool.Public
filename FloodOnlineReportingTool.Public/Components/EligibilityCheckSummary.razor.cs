@@ -13,7 +13,7 @@ public partial class EligibilityCheckSummary(
 ) : IAsyncDisposable
 {
     [Parameter, EditorRequired]
-    public EligibilityCheck Entity { get; set; }
+    public EligibilityCheck Entity { get; set; } = default!;
 
     [PersistentState(AllowUpdates = true)]
     public IReadOnlyCollection<FloodProblem>? EligibilityCheckFloodProblems { get; set; }
@@ -123,7 +123,7 @@ public partial class EligibilityCheckSummary(
         }
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         // Eligibility check details
         GetId();
@@ -438,8 +438,9 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
+        var sourceIds = Entity.Sources.Select(s => s.FloodProblemId).ToHashSet();
         _sourceLabels = [.. EligibilityCheckFloodProblems
-            .Where(o => Entity.Sources.Select(s => s.FloodProblemId).Contains(o.Id))
+            .Where(o => sourceIds.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }
@@ -454,8 +455,9 @@ public partial class EligibilityCheckSummary(
             return;
         }
 
+        var secondarySourceIds = Entity.SecondarySources.Select(s => s.FloodProblemId).ToHashSet();
         _secondarySourceLabels = [.. EligibilityCheckFloodProblems
-            .Where(o => Entity.SecondarySources.Select(s => s.FloodProblemId).Contains(o.Id))
+            .Where(o => secondarySourceIds.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }
