@@ -1,43 +1,40 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
+using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FluentValidation;
 
 namespace FloodOnlineReportingTool.Public.Validators;
 
+#pragma warning disable MA0051 // Method is too long
 public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDto>
 {
     public EligibilityCheckDtoValidator()
     {
-        /*
-         * example
-         * RuleFor(dto => dto.WaterSpeedId)
-         *   .NotEmpty()
-         *   .WithMessage("Select how fast the water was moving.")
-         *   .WithState(dto => FloodReportCreatePages.Speed);
-         */
-
         // Uprn
-        //.Uprn
+        RuleFor(dto => dto.Uprn)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.Address)
+            .When(dto => dto.IsAddress);
 
         // Usrn
-        //.Usrn
+        // Not validated at the moment, USRN to be added later
 
         // Easting
-        //Easting but it is double
+        // Easting is a non nullable double, but we can validate it's not zero
+        RuleFor(dto => dto.Easting)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.Location);
 
         // Northing
-        //Northing but it is double
-
-        //.TemporaryUprn ??
-        //.Uninhabitable ??
-        //.Residentials ??
-        //.Commercials ??
+        // Northing is a non nullable double, but we can validate it's not zero
+        RuleFor(dto => dto.Northing)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.Location);
 
         // Is address / Is postal address
-        // IsAddress is a boolean and can't be null, nothing to validate
-        RuleFor(dto => dto.IsAddress)
-            .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.Home);
+        // IsAddress is a non nullable bool, so we can't validate it
 
         // Location description
         RuleFor(dto => dto.LocationDesc)
@@ -45,35 +42,88 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
             .WithState(dto => FloodReportCreatePages.Location)
             .When(dto => !dto.IsAddress);
 
-        // Property type
-
-
-        // Flooded areas
-
-        // Is uninhabitable
+        // Temporary Uprn
+        RuleFor(dto => dto.TemporaryUprn)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.TemporaryAddress);
 
         // Temporary location description
-        //.TemporaryLocationDesc
+        RuleFor(dto => dto.TemporaryLocationDesc)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.TemporaryAddress);
 
-        // Impact start
-        //.ImpactStart
+        // Impact start / Flooding started
+        RuleFor(dto => dto.ImpactStart)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodStarted);
 
-        // Is on going
-        //.DurationKnownId
-        //.OnGoing
-        // OnGoing is a boolean and can't be null, nothing to validate
+        // Duration known
+        RuleFor(dto => dto.DurationKnownId)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodDuration);
 
-        // Flooding lasted
-        //.ImpactDuration ??
+        // Impact duration / Flooding lasted
+        RuleFor(dto => dto.ImpactDuration)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodDuration)
+            .When(dto => dto.OnGoing && dto.DurationKnownId == FloodDurationIds.DurationKnown);
+
+        // On going / Is the flodding still happening
+        // OnGoing is a non nullable bool, so we can't validate it
+
+        // Is uninhabitable
+        RuleFor(dto => dto.Uninhabitable)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodAreas);
 
         // Vulnerable people
-        //.VulnerablePeopleId its a Guid though
-        //.VulnerableCount
+        // VulnerablePeopleId is a non nullable Guid, can we validate it?
+        RuleFor(dto => dto.VulnerablePeopleId)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.Vulnerability);
 
-        // Sources
-        //.Sources
+        // Number of vulnerable people
+        RuleFor(dto => dto.VulnerableCount)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.Vulnerability)
+            .When(dto => dto.VulnerablePeopleId == RecordStatusIds.Yes);
 
-        // Secondary sources
-        //.SecondarySources
+        // Residentials / FloodImpact's
+        RuleFor(dto => dto.Residentials)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodAreas)
+            .When(IsResidentialOrOther);
+
+        // Commercials / FloodImpact's
+        RuleFor(dto => dto.Commercials)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodAreas)
+            .When(IsCommercialOrOther);
+
+        // Sources / FloodProblem's
+        RuleFor(dto => dto.Sources)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodSource);
+
+        // Secondary sources / FloodProblem's
+        RuleFor(dto => dto.SecondarySources)
+            .NotEmpty()
+            .WithState(dto => FloodReportCreatePages.FloodSecondarySource);
+    }
+
+    private bool IsCommercialOrOther(EligibilityCheckDto dto)
+    {
+        var isOnlyCommercial = dto.Residentials.Count == 0 && dto.Commercials.Count > 0;
+        var isOtherOrNotSpecified = dto.Residentials.Count > 0 && dto.Commercials.Count > 0;
+
+        return isOnlyCommercial || isOtherOrNotSpecified;
+    }
+
+    private bool IsResidentialOrOther(EligibilityCheckDto dto)
+    {
+        var isOnlyResidential = dto.Residentials.Count > 0 && dto.Commercials.Count == 0;
+        var isOtherOrNotSpecified = dto.Residentials.Count > 0 && dto.Commercials.Count > 0;
+
+        return isOnlyResidential || isOtherOrNotSpecified;
     }
 }
