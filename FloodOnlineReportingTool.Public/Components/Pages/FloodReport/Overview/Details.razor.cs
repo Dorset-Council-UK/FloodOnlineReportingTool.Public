@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.Order;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
@@ -18,6 +19,8 @@ public partial class Details(
 
     [Parameter]
     public string? FloodReportReference { get; set; }
+
+    private PageInfo PreviousPage => FloodReportPages.Overview;
 
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;

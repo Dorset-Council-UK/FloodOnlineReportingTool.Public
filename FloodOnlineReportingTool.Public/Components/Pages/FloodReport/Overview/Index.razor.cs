@@ -107,7 +107,7 @@ public partial class Index(
 
     private void PerformAction(Guid FloodReportId)
     {
-        navigationManager.NavigateTo($"{InvestigationPages.FirstPage.Url}/{FloodReportId}");
+        navigationManager.NavigateTo($"{InvestigationPages.Home.Url}/{FloodReportId}");
         StateHasChanged();
         return;
     }

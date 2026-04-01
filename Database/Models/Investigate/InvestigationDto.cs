@@ -2,6 +2,8 @@
 
 public record InvestigationDto
 {
+    public Guid FloodReportId { get; init; }
+
     // Internal fields
     public Guid? WhenWaterEnteredKnownId { get; init; }
     public DateTimeOffset? FloodInternalUtc { get; init; }
