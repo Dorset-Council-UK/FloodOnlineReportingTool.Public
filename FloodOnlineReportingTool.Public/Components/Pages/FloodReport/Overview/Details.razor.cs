@@ -51,38 +51,42 @@ public partial class Details(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        if (firstRender)
+        if (FloodReportId is not null)
         {
-            _floodReport = await GetUsersFloodReport();
-
-            if (_floodReport is not null)
-            {
-                var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
-
-                //_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
-                //_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
-
-                // These don't have any logic yet in the repository
-                _floodInvestigation = result.FloodInvestigation;
-                _isEmergencyResponse = result.IsEmergencyResponse;
-                _section19Url = result.Section19Url;
-                _section19 = result.Section19;
-                _propertyProtection = result.PropertyProtection;
-                _grantApplication = result.GrantApplication;
-
-                // Check if the users access has expired
-                if (_floodReport.ReportOwnerAccessUntil != null)
-                {
-                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
-                    _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
-                }
-            }
-
-            _isLoading = false;
-            StateHasChanged();
+            _floodReport = await floodReportRepository.GetById((Guid)FloodReportId, _cts.Token);
         }
+        else if (string.IsNullOrEmpty(FloodReportReference) == false)
+        {
+            _floodReport = await floodReportRepository.GetByReference((string)FloodReportReference, _cts.Token);
+        }
+
+        if (_floodReport is not null)
+        {
+            var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
+
+            //_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
+            //_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
+
+            // These don't have any logic yet in the repository
+            _floodInvestigation = result.FloodInvestigation;
+            _isEmergencyResponse = result.IsEmergencyResponse;
+            _section19Url = result.Section19Url;
+            _section19 = result.Section19;
+            _propertyProtection = result.PropertyProtection;
+            _grantApplication = result.GrantApplication;
+
+            // Check if the users access has expired
+            if (_floodReport.ReportOwnerAccessUntil != null)
+            {
+                _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
+                _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
+            }
+        }
+
+        _isLoading = false;
+        StateHasChanged();
     }
 
     private async Task<Database.Models.Flood.FloodReport?> GetUsersFloodReport()

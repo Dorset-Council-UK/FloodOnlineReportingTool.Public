@@ -127,10 +127,13 @@
 
                             @if (_floodReport.EligibilityCheckId != null)
                             {
-                                <h2 class="govuk-heading-l">Update your records</h2>
-                                <p>You can provide updates to records you have already submitted.</p>
+                                <h2 class="govuk-heading-l">Manage your reports</h2>
+                                <p>You can view or provide updates to reports you have already submitted.</p>
                                 <GdsWarning Text="Coming soon..." />
-                                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@($"{FloodReportPages.Update.Url}/{_floodReport.EligibilityCheckId}")">@FloodReportPages.Update.Title</a>
+                                <div class="govuk-button-group">
+                                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@($"{FloodReportPages.Overview.Url}/{_floodReport.Id}")">@FloodReportPages.Overview.Title</a>
+                                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@($"{FloodReportPages.Update.Url}/{_floodReport.EligibilityCheckId}")">@FloodReportPages.Update.Title</a>
+                                </div>
                             }
                         }
                     </div>

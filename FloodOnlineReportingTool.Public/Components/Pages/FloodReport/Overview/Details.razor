@@ -72,11 +72,6 @@
                 }
 
                 <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
-
-                @if (_floodReport.EligibilityCheck is not null)
-                {
-                    <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
-                }
             }
         </NotAuthorized>
         <Authorized>
@@ -90,12 +85,12 @@
                 else
                 {
                     <div class="govuk-grid-column-full">
-                        <p class="govuk-body-l">
+                        @* <p class="govuk-body-l">
                             <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown status")</strong>
                             Flood reference <strong>@_floodReport.Reference</strong>
                         </p>
 
-                        <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+                        <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p> *@
 
                         @if (_accessHasExpired)
                         {
@@ -103,9 +98,9 @@
                         }
                         else
                         {
-                            <p>Your access to this flood report will expire in @_accessTimeLeft.GdsReadable()</p>
+                            @* <p>Your access to this flood report will expire in @_accessTimeLeft.GdsReadable()</p> *@
 
-                            @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                            @* @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
                             {
                                 <h2 class="govuk-heading-l">Tell us more</h2>
                                 <p>There is currently an ongoing investigation.</p>
@@ -124,7 +119,7 @@
                                         <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
                                     </svg>
                                 </a>
-                            }
+                            } *@
 
                             @if (_floodReport.InvestigationId != null)
                             {
@@ -132,17 +127,17 @@
                                 <p>An investigation has been completed for this flood report.</p>
                             }
 
-                            @if (_floodReport.EligibilityCheckId != null)
+                            @* @if (_floodReport.EligibilityCheckId != null)
                             {
                                 <h2 class="govuk-heading-l">Update your records</h2>
                                 <p>You can provide updates to records you have already submitted.</p>
                                 <GdsWarning Text="Coming soon..." />
                                 <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@($"{FloodReportPages.Update.Url}/{_floodReport.EligibilityCheckId}")">@FloodReportPages.Update.Title</a>
-                            }
+                            } *@
                         }
                     </div>
 
-                    @if (!_accessHasExpired)
+                    @* @if (!_accessHasExpired)
                     {
                         <div class="govuk-grid-column-full">
                             <h2 class="govuk-heading-l">Keep informed</h2>
@@ -170,11 +165,11 @@
 
                             <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
                         </div>
-                    }
+                    } *@
                 }
             </div>
 
-            <section id="eligibility-results">
+            @* <section id="eligibility-results">
                 <h2 class="govuk-heading-l">Eligibility results</h2>
 
                 @if (_isEmergencyResponse)
@@ -240,6 +235,16 @@
                             }
                         </p>
                         break;
+                }
+            </section> *@
+
+            <section id="eligibility-report">
+                <h2 class="govuk-heading-l">View report</h2>
+                <p class="govuk-body-l">Details of your flood report can be seen below.</p>
+                <p>Your access to this flood report will expire in @_accessTimeLeft.GdsReadable()</p>
+                @if (_floodReport.EligibilityCheck is not null)
+                {
+                    <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
                 }
             </section>
 
