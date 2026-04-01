@@ -69,7 +69,7 @@ public partial class PeakDepth(
             if (userId is not null)
             {
                 var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                isInternal = eligibilityCheck?.IsInternal() == true;
+                isInternal = eligibilityCheck?.IsInternal == true;
             }
         }
 

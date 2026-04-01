@@ -11,7 +11,7 @@ Signed in is currently when a flood reference is present.
 This design is changing and is being updated to a more standard authentication process.
 
 ## Internal flooding
-The logic to determine if a flood is internal is handled by ```EligibilityCheck.IsInternal()```.
+The logic to determine if a flood is internal is handled by ```EligibilityCheck.IsInternal``` extension property.
 
 ## Flow diagram
 

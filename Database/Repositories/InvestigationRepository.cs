@@ -42,7 +42,7 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         }
 
         var investigation = CreateBaseInvestigation(investigationDto)
-            .ApplyInternalFields(investigationDto, floodReport.EligibilityCheck?.IsInternal() ?? false)
+            .ApplyInternalFields(investigationDto, floodReport.EligibilityCheck?.IsInternal ?? false)
             .ApplyPeakDepth(investigationDto)
             .ApplyFloodlineWarnings(investigationDto);
 

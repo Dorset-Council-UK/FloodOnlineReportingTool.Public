@@ -23,10 +23,12 @@ public partial class PropertyType(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private static PageInfo NextPage => FloodReportCreatePages.FloodAreas;
-    private PageInfo PreviousPage => Model.IsAddress 
-        ? FloodReportCreatePages.Address 
-        : FloodReportCreatePages.Location;
+    private PageInfo NextPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.FloodAreas;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : Model.IsAddress ? FloodReportCreatePages.Address : FloodReportCreatePages.Location;
 
     private Models.FloodReport.Create.PropertyType Model { get; set; } = default!;
 
@@ -101,12 +103,7 @@ public partial class PropertyType(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
-        var nextPageUrl = NextPage.Url;
-        if (FromSummary)
-        {
-            nextPageUrl += "?fromsummary=true";
-        }
-        navigationManager.NavigateTo(nextPageUrl);
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private static string Classification(ReadOnlySpan<char> primaryClassification, ReadOnlySpan<char> secondaryClassification)

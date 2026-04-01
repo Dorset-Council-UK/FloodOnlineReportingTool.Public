@@ -1,0 +1,192 @@
+﻿@if (ShowId || ShowCreatedDate || ShowUpdatedDate || ShowTermsAgreed)
+{
+    <h2 class="govuk-heading-l">Details</h2>
+    <dl class="govuk-summary-list">
+        @if (ShowId)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Id</dt>
+                <SummaryListValue>
+                    @_idLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowCreatedDate)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Created</dt>
+                <SummaryListValue>
+                    @_createdDateLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowUpdatedDate && _updatedDateLabel is not null)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Updated</dt>
+                <SummaryListValue>
+                    @_updatedDateLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowTermsAgreed)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Terms agreed</dt>
+                <SummaryListValue>
+                    @_termsAgreedLabel
+                </SummaryListValue>
+            </div>
+        }
+    </dl>
+}
+
+@if (ShowIsAddress || ShowLocationDescription || ShowPropertyType || ShowFloodedAreas || ShowIsUninhabitable || ShowTemporaryLocationDescription)
+{
+    <h2 class="govuk-heading-l">Property details</h2>
+    <dl class="govuk-summary-list">
+        @if (ShowIsAddress)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Postal address</dt>
+                <SummaryListValue>
+                    @_isAddressLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowLocationDescription)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Address or location</dt>
+                <SummaryListValue>
+                    @_locationDescriptionLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowPropertyType)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Property type</dt>
+                <SummaryListValue>
+                    @_propertyTypeLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowFloodedAreas)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Areas flooded</dt>
+                <SummaryListValue>
+                    <ul class="govuk-list">
+                        @foreach (var label in _floodedAreaLabels)
+                        {
+                            <li>@label</li>
+                        }
+                    </ul>
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowIsUninhabitable)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Evacuation</dt>
+                <SummaryListValue>
+                    @_isUninhabitableLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowTemporaryLocationDescription)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Temporary address</dt>
+                <SummaryListValue>
+                    @_temporaryLocationDescriptionLabel
+                </SummaryListValue>
+            </div>
+        }
+    </dl>
+}
+
+@if (ShowImpactStart || ShowIsOnGoing || ShowFloodingLasted || ShowVulnerablePeople || ShowSources || ShowSecondarySources)
+{
+    <h2 class="govuk-heading-l">Flood details</h2>
+    <dl class="govuk-summary-list">
+        @if (ShowImpactStart)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started on</dt>
+                <SummaryListValue>
+                    @_impactStartLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowIsOnGoing)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Still flooding</dt>
+                <SummaryListValue>
+                    @_isOnGoingLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowFloodingLasted && _floodingLastedLabel is not null)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flooding lasted</dt>
+                <SummaryListValue>
+                    @_floodingLastedLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowVulnerablePeople)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vulnerable people affected</dt>
+                <SummaryListValue>
+                    @_vulnerablePeopleLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowSources)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flood source</dt>
+                <SummaryListValue>
+                    <ul class="govuk-list">
+                        @foreach (var label in _sourceLabels)
+                        {
+                            <li>@label</li>
+                        }
+                    </ul>
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowSecondarySources)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Runoff source</dt>
+                <SummaryListValue>
+                    <ul class="govuk-list">
+                        @foreach (var label in _secondarySourceLabels)
+                        {
+                            <li>@label</li>
+                        }
+                    </ul>
+                </SummaryListValue>
+            </div>
+        }
+    </dl>
+}

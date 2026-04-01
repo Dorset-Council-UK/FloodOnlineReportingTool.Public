@@ -24,8 +24,12 @@ public partial class Address(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private static PageInfo NextPage => FloodReportCreatePages.PropertyType;
-    private static PageInfo PreviousPage => FloodReportCreatePages.Postcode;
+    private PageInfo NextPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.PropertyType;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.Postcode;
     private Models.FloodReport.Create.Address Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
@@ -110,13 +114,8 @@ public partial class Address(
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
-            // Go to the next page or pass back to the summary
-            var nextPageUrl = NextPage.Url;
-            if (FromSummary)
-            {
-                nextPageUrl += "?fromsummary=true";
-            }
-            navigationManager.NavigateTo(nextPageUrl);
+            // Go to the next page or back to the summary
+            navigationManager.NavigateTo(NextPage.Url);
         }
     }
 

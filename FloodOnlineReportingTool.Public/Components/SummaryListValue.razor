@@ -1,0 +1,24 @@
+﻿<dd class="@_class" @attributes="@AdditionalAttributes">@ChildContent</dd>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    [Parameter]
+    public string CssClass { get; set; } = "govuk-summary-list__value";
+    
+    [Parameter]
+    public string? AdditionalCssClasses { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _class = "";
+    
+    protected override void OnParametersSet()
+    {
+        _class = string.IsNullOrWhiteSpace(AdditionalCssClasses)
+            ? CssClass
+            : $"{CssClass} {AdditionalCssClasses}";
+    }
+}

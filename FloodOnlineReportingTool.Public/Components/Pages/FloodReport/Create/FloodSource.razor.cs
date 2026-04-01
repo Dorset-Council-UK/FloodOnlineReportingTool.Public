@@ -22,6 +22,8 @@ public partial class FloodSource(
 
     private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
 
+    [SupplyParameterFromQuery]
+    private bool FromSummary { get; set; }
     private PageInfo? PreviousPage;
 
     private EditContext _editContext = default!;
@@ -58,9 +60,9 @@ public partial class FloodSource(
 
             Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
 
-            PreviousPage = eligibilityCheck.OnGoing == true
-                ? FloodReportCreatePages.FloodStarted
-                : FloodReportCreatePages.FloodDuration;
+            PreviousPage = FromSummary
+                ? FloodReportCreatePages.Summary
+                : eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
 
             _isLoading = false;
             StateHasChanged(); 
@@ -90,21 +92,29 @@ public partial class FloodSource(
         var updated = eligibilityCheck with
         {
             Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
-            SecondarySources = secondarySources
+            SecondarySources = secondarySources,
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        // Go to the next page, summary or secondary source when rainwater flowing over the ground is selected
+        PageInfo? nextPage = null;
+        if (FromSummary)
         {
-            // We need to know more if they have selected this option
-            navigationManager.NavigateTo(FloodReportCreatePages.FloodSecondarySource.Url);
+            // The summary page takes priority
+            nextPage = FloodReportCreatePages.Summary;
+        }
+        else if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            nextPage = FloodReportCreatePages.FloodSecondarySource;
         }
         else
         {
-            // Go to the next page, which is always the summary
-            navigationManager.NavigateTo(FloodReportCreatePages.Summary.Url);
+            // The next page is summary anyway
+            nextPage = FloodReportCreatePages.Summary;
         }
+
+        navigationManager.NavigateTo(nextPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

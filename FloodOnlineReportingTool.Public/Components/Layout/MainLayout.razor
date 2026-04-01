@@ -29,7 +29,18 @@
     <SectionOutlet SectionName="Layout.GdsBreadcrumbs" />
 
     <main class="govuk-main-wrapper govuk-body" id="main-content" role="main">
-        @Body
+        @if (Env.IsProduction())
+        {
+            <GdsErrorBoundary>
+                @Body
+            </GdsErrorBoundary>
+        }
+        else
+        {
+            <GdsErrorBoundary ShowErrorMessage ShowHelpLink ShowRetryButton>
+                @Body
+            </GdsErrorBoundary>
+        }
     </main>
 </div>
 

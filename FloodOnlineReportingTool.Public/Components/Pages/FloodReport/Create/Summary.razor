@@ -1,233 +1,186 @@
-﻿@using FloodOnlineReportingTool.Contracts.Shared;
-@page "/floodreport/create/summary"
+﻿@page "/floodreport/create/summary"
+@using FloodOnlineReportingTool.Contracts.Shared
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@FloodReportCreatePages.Summary.Title</PageTitle>
 
-<GdsBreadcrumbs Items="Breadcrumbs" />
+<GdsBreadcrumbs Items="@_breadcrumbs" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
-<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Summary">
-    <FluentValidationValidator />
-    <GdsErrorSummary />
+<h1 class="govuk-heading-xl">@FloodReportCreatePages.Summary.Title</h1>
 
-    <GdsSpinner Show="_isLoading" ShowMessage="true" />
-
-    @if (!_isLoading)
+@if (_isLoading)
+{
+    <GdsSpinner Show ShowMessage />
+}
+else if (_eligibilityCheckDto is not null)
+{
+    @if (_validationFailures.Count > 0)
     {
-        <h2 class="govuk-heading-l">Property details</h2>
+        <div class="govuk-error-summary" data-module="govuk-error-summary">
+            <div role="alert">
+                <h2 class="govuk-error-summary__title">There is a problem</h2>
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li>Your flood report information is not complete. Please check the information below and complete any missing information.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
 
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Postal Address
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @(Model.IsAddress ? "Yes" : "No")
-                </dd>
+    <h2 class="govuk-heading-l">Property details</h2>
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Postal address</dt>
+            @ValueOrMissing(_eligibilityCheckDto.IsAddress ? Yes : No, FloodReportCreatePages.Home)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Home.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location type</span></a>
+            </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Address or location</dt>
+            @if (_eligibilityCheckDto.IsAddress)
+            {
+                @ValueOrMissing(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Address)
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Home.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location type</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Address.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
                 </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Address or location
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @(Model.AddressPreview ?? "Unknown")
-                </dd>
+            }
+            else
+            {
+                @ValueOrMissing(_eligibilityCheckDto.LocationDesc, FloodReportCreatePages.Location)
                 <dd class="govuk-summary-list__actions">
-                    @if (Model.IsAddress)
-                    {
-                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Address.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> address</span></a>
-                    }
-                    else
-                    {
-                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Location.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
-                    }
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Location.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> location</span></a>
                 </dd>
-            </div>
+            }
+        </div>
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Property type</dt>
+            @ValueOrMissing(_propertyTypeLabel, FloodReportCreatePages.PropertyType)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.PropertyType.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> property type</span></a>
+            </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Areas flooded</dt>
+            @ValuesOrMissing(_floodedAreaLabels, FloodReportCreatePages.FloodAreas)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> which areas of the property were flooded</span></a>
+            </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Evacuation</dt>
+            @ValueOrMissing(_isUninhabitableLabel, FloodReportCreatePages.FloodAreas)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> whether you evacuated the property</span></a>
+            </dd>
+        </div>
+
+        @if (_eligibilityCheckDto.Uninhabitable == true)
+        {
             <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Property type
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @(Model.PropertyTypeName ?? "Unknown")
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.PropertyType.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> property type</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Areas flooded
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @if (Model.FloodedAreas.Count == 0)
-                    {
-                        <span>Unknown</span>
-                    }
-                    else
-                    {
-                        <ul class="govuk-list">
-                            @foreach (var label in Model.FloodedAreas)
-                            {
-                                <li>@label</li>
-                            }
-                        </ul>
-                    }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> which areas of the property were flooded</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Evacuation
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @if(Model.IsUninhabitable == null)
-                    {
-                        <span>Unknown</span>
-                    }
-                    else
-                    {
-                        @(Model.IsUninhabitable.Value ? "You had to evacuate the property as a result of the flooding" : "The property was not evacuated")
-                    }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodAreas.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> whether you evactuated the property</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Temporary address
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @(Model.TemporaryAddressPreview ?? "Not given")
-                </dd>
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Temporary address</dt>
+                @ValueOrMissing(_eligibilityCheckDto.TemporaryLocationDesc, FloodReportCreatePages.TemporaryAddress)
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.TemporaryAddress.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> temporary address</span></a>
                 </dd>
             </div>
-        </dl>
+        }
+    </dl>
 
-        <h2 class="govuk-heading-l">Flood details</h2>
+    <h2 class="govuk-heading-l">Flood details</h2>
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started on</dt>
+            @ValueOrMissing(_eligibilityCheckDto.ImpactStart.GdsReadable(), FloodReportCreatePages.FloodStarted)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> when the flooding started</span></a>
+            </dd>
+        </div>
 
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    The flooding started on
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @(Model.StartDate?.GdsReadable() ?? "Unknown")
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> when the flooding started</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Still flooding
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @if (Model.IsOnGoing == null)
-                    {
-                        <span>Unknown</span>
-                    }
-                    else
-                    {
-                        @(Model.IsOnGoing.Value ? "Yes" : "No")
-                    }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you are still flooded</span></a>
-                </dd>
-            </div>
-            @if (Model.IsOnGoing == false)
-            {
-                <div class="govuk-summary-list__row govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    <dt class="govuk-summary-list__key">
-                        Flooding lasted
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        @(Model.FloodingLasted ?? "Unknown")
-                    </dd>
-                    <dd class="govuk-summary-list__actions">
-                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodDuration.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how long the flooding lasted</span></a>
-                    </dd>
-                </div>
-            }
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Vulnerable people affected
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @VulnerablePeopleMessage()
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Vulnerability.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the number of vulnerable people reported</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Flood source
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @if (Model.FloodSources.Count == 0)
-                    {
-                        <span>Unknown</span>
-                    }
-                    else
-                    {
-                        <ul class="govuk-list">
-                            @foreach (var label in Model.FloodSources)
-                            {
-                                <li>@label</li>
-                            }
-                        </ul>
-                    }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>
-                </dd>
-            </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">
-                    Runoff source
-                </dt>
-                <dd class="govuk-summary-list__value">
-                    @if (Model.FloodSecondarySources == null)
-                    {
-                        <span>Not Applicable</span>
-                    } 
-                    else if (Model.FloodSecondarySources.Count == 0)
-                    {
-                        <span>Unknown</span>
-                    }
-                    else
-                    {
-                        <ul class="govuk-list">
-                            @foreach (var label in Model.FloodSecondarySources)
-                            {
-                                <li>@label</li>
-                            }
-                        </ul>
-                    }
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    @if (Model.FloodSecondarySources != null)
-                    {
-                        <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSecondarySource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of runoff</span></a>
-                    }
-                </dd>
-            </div>
-        </dl>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Still flooding</dt>
+            @ValueOrMissing(_eligibilityCheckDto.OnGoing ? Yes : No, FloodReportCreatePages.FloodStarted)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodStarted.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> if you are still flooded</span></a>
+            </dd>
+        </div>
 
+        @if (!_eligibilityCheckDto.OnGoing)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flooding lasted</dt>
+                @ValueOrMissing(_floodingLastedLabel, FloodReportCreatePages.FloodDuration)
+                <dd class="govuk-summary-list__actions">
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodDuration.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> how long the flooding lasted</span></a>
+                </dd>
+            </div>
+        }
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vulnerable people affected</dt>
+            @ValueOrMissing(_vulnerablePeopleLabel, FloodReportCreatePages.Vulnerability)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Vulnerability.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the number of vulnerable people reported</span></a>
+            </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flood source</dt>
+            @ValuesOrMissing(_sourceLabels, FloodReportCreatePages.FloodSource)
+            <dd class="govuk-summary-list__actions">
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>
+            </dd>
+        </div>
+
+        @if (_eligibilityCheckDto.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Runoff source</dt>
+                @ValuesOrMissing(_secondarySourceLabels, FloodReportCreatePages.FloodSecondarySource)
+                <dd class="govuk-summary-list__actions">
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.FloodSecondarySource.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of runoff</span></a>
+                </dd>
+            </div>
+        }
+    </dl>
+
+    @if (_validationFailures.Count == 0)
+    {
         <h2 class="govuk-heading-l">Now send your flood report</h2>
         <p>By submitting this form, you confirm that the information you’re providing is accurate to the best of your knowledge.</p>
         <p>Your input will help flood authorities build a clearer picture of where and when flooding has occurred. This contributes to a better understanding of flood patterns and supports future planning and response efforts.</p>
         <p>Flooding reports will be stored as part of a historical record. Since no personal data is collected at this stage, entries will only be removed if they are found to be factually incorrect.</p>
-
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Accept and send</button></p>
+        <p><button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" @onclick="OnAcceptAndSend">Accept and send</button></p>
     }
-</EditForm>
+}
+
+@code {
+    private RenderFragment ValueOrMissing(string? label, PageInfo pageInfo)
+    {
+        var hasFailures = label is null
+            || _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
+        return hasFailures
+            ? @<SummaryListValue AdditionalCssClasses="govuk-error-message">missing information</SummaryListValue>
+            : @<SummaryListValue>@label</SummaryListValue>;
+    }
+
+    private RenderFragment ValuesOrMissing(string[] labels, PageInfo pageInfo)
+    {
+        var hasFailures = labels.Length == 0
+            || _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
+        return hasFailures
+            ? @<SummaryListValue AdditionalCssClasses="govuk-error-message">missing information</SummaryListValue>
+            : @<SummaryListValue>
+                <ul class="govuk-list">
+                    @foreach (var label in labels)
+                    {
+                        <li>@label</li>
+                    }
+                </ul>
+            </SummaryListValue>;
+    }
+}

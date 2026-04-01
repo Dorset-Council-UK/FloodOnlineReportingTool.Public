@@ -1,5 +1,6 @@
-﻿using FloodOnlineReportingTool.Database.Repositories;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Update;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Overview;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Security.Claims;
 
-namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
+namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 
 [Authorize]
 public partial class Update(
@@ -125,7 +126,7 @@ public partial class Update(
             var userId = authState.User.Oid;
             if (userId is not null)
             {
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
+                EligibilityCheck? eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
                 if (eligibilityCheck is not null)
                 {
                     return eligibilityCheck.ToUpdateModel();

@@ -23,9 +23,9 @@ public partial class FloodAreas(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private static PageInfo NextPageVulnerability => FloodReportCreatePages.Vulnerability;
-    private static PageInfo NextPageTemporaryPostcode => FloodReportCreatePages.TemporaryPostcode;
-    private static PageInfo PreviousPage => FloodReportCreatePages.PropertyType;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.PropertyType;
 
     private Models.FloodReport.Create.FloodAreas Model { get; set; } = default!;
 
@@ -148,7 +148,9 @@ public partial class FloodAreas(
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
         // Go to the next page or back to the summary
-        var nextPage = FromSummary ? FloodReportCreatePages.Summary : runTemporaryAddress ? NextPageTemporaryPostcode : NextPageVulnerability;
+        var nextPage = FromSummary
+            ? FloodReportCreatePages.Summary
+            : runTemporaryAddress ? FloodReportCreatePages.TemporaryPostcode : FloodReportCreatePages.Vulnerability;
         navigationManager.NavigateTo(nextPage.Url);
     }
 

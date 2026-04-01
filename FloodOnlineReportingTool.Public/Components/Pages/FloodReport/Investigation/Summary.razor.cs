@@ -67,7 +67,7 @@ public partial class Summary(
             if (userId is not null)
             {
                 var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                return eligibilityCheck?.IsInternal() == true;
+                return eligibilityCheck?.IsInternal == true;
             }
         }
 

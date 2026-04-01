@@ -2,14 +2,12 @@
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
-using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -33,6 +31,13 @@ public class FloodReportRepository(
             .Where(cr => cr.ContactUserId == userId)
             .SelectMany(cr => cr.FloodReports)
             .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Residentials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Commercials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Sources)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.SecondarySources)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
@@ -109,6 +114,13 @@ public class FloodReportRepository(
             .AsNoTracking()
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Residentials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Commercials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Sources)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.SecondarySources)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
@@ -126,6 +138,13 @@ public class FloodReportRepository(
             .AsNoTracking()
             .AsSplitQuery()
             .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Residentials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Commercials)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.Sources)
+            .Include(o => o.EligibilityCheck)
+                .ThenInclude(ec => ec.SecondarySources)
             .Include(o => o.Investigation)
             .Include(o => o.ContactRecords)
             .Include(o => o.Status)
@@ -204,8 +223,7 @@ public class FloodReportRepository(
 
         var eligibilityCheckId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
-
-        var impactDuration = await GetImpactDurationHours(dto.OnGoing, dto.DurationKnownId, dto.ImpactDuration, ct);
+        var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
 
         var floodReport = new FloodReport
         {
@@ -213,31 +231,7 @@ public class FloodReportRepository(
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
             ReportOwnerAccessUntil = now.AddMonths(_gisOptions.AccessTokenIssueDurationMonths),
-            EligibilityCheck = new()
-            {
-                Id = eligibilityCheckId,
-                CreatedUtc = now,
-                TermsAgreed = now,
-
-                IsAddress = dto.IsAddress,
-                Uprn = dto.Uprn,
-                Usrn = dto.Usrn,
-                Easting = dto.Easting,
-                Northing = dto.Northing,
-                LocationDesc = dto.LocationDesc,
-                TemporaryUprn = dto.TemporaryUprn,
-                TemporaryLocationDesc = dto.TemporaryLocationDesc,
-                ImpactStart = dto.ImpactStart,
-                ImpactDuration = impactDuration,
-                OnGoing = dto.OnGoing,
-                Uninhabitable = dto.Uninhabitable == true,
-                VulnerablePeopleId = dto.VulnerablePeopleId,
-                VulnerableCount = dto.VulnerableCount,
-                Residentials = [.. dto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(eligibilityCheckId, floodImpactId))],
-                Commercials = [.. dto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(eligibilityCheckId, floodImpactId))],
-                Sources = [.. dto.Sources.Select(floodProblemId => new EligibilityCheckSource(eligibilityCheckId, floodProblemId))],
-                SecondarySources = [.. dto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(eligibilityCheckId, floodProblemId))]
-            },
+            EligibilityCheck = dto.ToCreatedEntity(eligibilityCheckId, createdUtc: now, termsAgreed: now, impactDuration),
         };
 
         // Add the flood report to the database
@@ -291,8 +285,8 @@ public class FloodReportRepository(
 
         return new EligibilityResult
         {
-            HasContactInformation = floodReport.ContactRecords.Any(),
-            FloodInvestigation = floodReport.EligibilityCheck.IsInternal() ? EligibilityOptions.Conditional : EligibilityOptions.None,
+            HasContactInformation = floodReport.ContactRecords.Count > 0,
+            FloodInvestigation = floodReport.EligibilityCheck.IsInternal ? EligibilityOptions.Conditional : EligibilityOptions.None,
             ResponsibleOrganisations = responsibleOrganisations,
             FloodReportId = floodReport.Id,
 
@@ -308,55 +302,5 @@ public class FloodReportRepository(
     public bool HasInvestigationStarted(Guid status)
     {
         return status == RecordStatusIds.ActionNeeded;
-    }
-
-    /// <summary>
-    ///     <para>Calculates the impact duration hours.</para>
-    ///     <para>If the flood is still happening this will be zero.</para>
-    ///     <para>If the flood duration is known, it will return the hours provided by the user.</para>
-    ///     <para>Otherwise, it will try to get the duration hours from the flood problem in the database.</para>
-    /// </summary>
-    /// <remarks>This logic is currently in 2 places the FloodReportRepository and the EligibilityCheckRespository.</remarks>
-    private async Task<int> GetImpactDurationHours(bool isOngoing, Guid? durationKnownId, int? impactDurationHours, CancellationToken ct)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        // The flood is still happening, so there is no duration
-        if (isOngoing)
-        {
-            logger.LogInformation("Flood is ongoing, so impact duration is not known yet.");
-            return 0;
-        }
-
-        if (durationKnownId == null)
-        {
-            logger.LogError("Impact duration is not known, and no duration known Id was provided.");
-            return 0;
-        }
-
-        // The user has indicated that the flood duration is known
-        if (durationKnownId == FloodDurationIds.DurationKnown)
-        {
-            logger.LogInformation("Impact duration is known, using provided impact duration hours.");
-            return impactDurationHours ?? 0;
-        }
-
-        // Get the duration from the flood problem
-        var floodProblem = await context.FloodProblems.FindAsync([durationKnownId], ct);
-
-        if (floodProblem == null)
-        {
-            logger.LogError("Flood problem with Id {Id} not found.", durationKnownId);
-            return 0;
-        }
-
-        if (!string.IsNullOrWhiteSpace(floodProblem.TypeName) && int.TryParse(floodProblem.TypeName, CultureInfo.InvariantCulture, out var durationHours))
-        {
-            logger.LogInformation("Impact duration is {Duration} hours.", durationHours);
-            return durationHours;
-        }
-
-        logger.LogError("Could not parse impact duration from flood problem type name");
-        return 0;
     }
 }

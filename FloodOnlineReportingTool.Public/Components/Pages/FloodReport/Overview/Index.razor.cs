@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 
-namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport;
-public partial class Overview(
+namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
+
+public partial class Index(
     IFloodReportRepository floodReportRepository,
     SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
