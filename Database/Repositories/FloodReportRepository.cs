@@ -65,8 +65,9 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == contactUserId)
             .SelectMany(cr => cr.FloodReports)
-            .OrderByDescending(cr => cr.CreatedUtc)
+            .Include(o => o.EligibilityCheck)
             .Include(o => o.Status)
+            .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
     }
 
