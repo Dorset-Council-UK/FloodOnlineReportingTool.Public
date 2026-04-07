@@ -13,7 +13,9 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
             .ValueGeneratedNever();
 
         builder
-            .HasIndex(o => o.ContactUserId);
+            .HasIndex(o => o.ContactUserId)
+            .HasFilter("\"ContactUserId\" IS NOT NULL")
+            .IsUnique();
 
         // Many-to-many: ContactRecord <-> FloodReport
         builder
