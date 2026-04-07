@@ -29,7 +29,7 @@
         </NotAuthorized>
         <Authorized>
             <div class="govuk-grid-row">
-                @if (_floodReport.Count == 0)
+                @if (_floodReports.Count == 0)
                 {
                     <div class="govuk-grid-column-full">
                         <GdsWarning Text="We cannot find your flood reports." />
@@ -39,10 +39,10 @@
                 {
                     <div class="govuk-grid-column-full">
                         <p class="govuk-body-l">
-                            This page will help you to find and manage your flood reports if you have reported more than once. Please use the `View report` option to find out more about the status of a specific report. 
+                            This page will help you to find and manage your flood reports if you have reported more than once. Please use the "View report" option to find out more about the status of a specific report. 
                         </p>
 
-                        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReport" Caption="Your flood reports" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
+                        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="Your flood reports" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
                             <HeaderContent>
                                 <GdsTableTh>Reference</GdsTableTh>
                                 <GdsTableTh>Status</GdsTableTh>
@@ -68,7 +68,7 @@
                                     }
                                 </GdsTableTd>
                                 <GdsTableTd Value="@item.CreatedUtc.GdsReadable()" />
-                                <GdsTableTd Value="item.EligibilityCheck?.LocationDesc" />
+                                <GdsTableTd Value="@item.EligibilityCheck?.LocationDesc" />
                                 <GdsTableTd Value="@item.EligibilityCheck?.ImpactStart.GdsReadable()" />
                                 <GdsTableTd>
                                     <div class="govuk-button-group">
@@ -93,7 +93,7 @@
 
                         <!-- Contact details are per user so this should be the same in all contexts -->
                         <!-- If using a magic link there will only be one report so skip this page entirely! -->
-                        @if (_floodReport.First().ContactRecords.Count > 0)
+                        @if (_floodReports.First().ContactRecords.Count > 0)
                         {
                             <p>Change your contact details if you would like to:</p>
                             <ul class="govuk-list govuk-list--bullet">

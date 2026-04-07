@@ -71,16 +71,16 @@ public partial class Index(
                 _isLoading = false;
                 return;
             }
-            _floodReport.Add((Database.Models.Flood.FloodReport)localReport);
+            _floodReports.Add((Database.Models.Flood.FloodReport)localReport);
         }
         else
         {
-            _floodReport = [.. await floodReportRepository.AllReportedByContact(userId, _cts.Token)];
+            _floodReports = [.. await floodReportRepository.AllReportedByContact(userId, _cts.Token)];
         }
 
-        if (_floodReport.Count > 0)
+        if (_floodReports.Count > 0)
         {
-            //var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
+            //var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReports.Reference, _cts.Token);
 
             ////_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
             ////_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];

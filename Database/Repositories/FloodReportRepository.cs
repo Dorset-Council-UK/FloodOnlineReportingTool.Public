@@ -65,7 +65,10 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == contactUserId)
             .SelectMany(cr => cr.FloodReports)
+            .DistinctBy(fr => fr.Id)
+            .IgnoreAutoIncludes()     // Might need to remove this if we actually want sources and areas flooded. 
             .Include(o => o.EligibilityCheck)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
             .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
