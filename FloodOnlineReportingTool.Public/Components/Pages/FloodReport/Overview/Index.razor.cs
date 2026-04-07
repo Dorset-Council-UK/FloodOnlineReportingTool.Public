@@ -5,7 +5,6 @@ using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using NetTopologySuite.Index.HPRtree;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
@@ -25,7 +24,7 @@ public partial class Index(
 
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IList<Database.Models.Flood.FloodReport> _floodReport = [];
+    private IList<Database.Models.Flood.FloodReport> _floodReports = [];
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
 
@@ -69,6 +68,7 @@ public partial class Index(
             var localReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
             if (localReport is null)
             {
+                _isLoading = false;
                 return;
             }
             _floodReport.Add((Database.Models.Flood.FloodReport)localReport);
