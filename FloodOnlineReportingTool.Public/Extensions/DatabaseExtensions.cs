@@ -38,26 +38,6 @@ internal static class DatabaseExtensions
             return builder;
         }
 
-        internal IHostApplicationBuilder AddFloodReportingUsersDatabase()
-        {
-            var connectionString = builder.Configuration.GetConnectionString("FloodReportingUsers");
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new ConfigurationMissingException("Missing configuration setting: The users connection string 'FloodReportingUsers' is missing.");
-            }
-
-            builder.Services.AddDbContextFactory<UserDbContext>(options =>
-            {
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortUsers);
-                });
-            });
-            builder.EnrichNpgsqlDbContext<UserDbContext>();
-
-            return builder;
-        }
-
         internal IHostApplicationBuilder AddFloodReportingDatabaseRepositories()
         {
             builder.Services

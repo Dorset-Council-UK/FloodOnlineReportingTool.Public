@@ -15,9 +15,4 @@ builder.AddNpgsqlDbContext<PublicDbContext>("FloodReportingPublic",
         options.UseNpgsql(npgsql =>
             npgsql.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortPublic)));
 
-builder.AddNpgsqlDbContext<UserDbContext>("FloodReportingUsers",
-    configureDbContextOptions: options =>
-        options.UseNpgsql(npgsql =>
-            npgsql.MigrationsHistoryTable("__EFMigrationsHistory", SchemaNames.FortUsers)));
-
 await builder.Build().RunAsync();

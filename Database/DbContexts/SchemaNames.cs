@@ -3,5 +3,4 @@
 public static class SchemaNames
 {
     public const string FortPublic = "fortpublic";
-    public const string FortUsers = "fortusers";
 }
