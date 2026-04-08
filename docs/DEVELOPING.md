@@ -3,6 +3,8 @@
 
 Thank you for your interest in contributing to the Flood Online Reporting Tool - Public! This guide will help you set up your development environment and understand the basic components of the project.
 
+Please ensure you have read our [Code of Conduct](./CODE_OF_CONDUCT.md) and [AI Policy](./AI_POLICY.md) before you start contributing.
+
 ## Dependencies
 
 To run Flood Online Reporting Tool - Public with minimal modification, you will need the following:
