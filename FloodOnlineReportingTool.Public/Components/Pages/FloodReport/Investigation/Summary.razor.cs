@@ -122,7 +122,7 @@ public partial class Summary(
         logger.LogDebug("Saving investigation information..");
         try
         {
-            await investigationRepository.CreateForUser(userId, dto, _cts.Token);
+            await investigationRepository.CreateForFloodReport(userId, dto, _cts.Token);
 
             // Clear the stored data
             await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);

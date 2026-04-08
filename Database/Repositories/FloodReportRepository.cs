@@ -65,8 +65,11 @@ public class FloodReportRepository(
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == contactUserId)
             .SelectMany(cr => cr.FloodReports)
-            .OrderByDescending(cr => cr.CreatedUtc)
+            .IgnoreAutoIncludes()     // Might need to remove this if we actually want sources and areas flooded. 
+            .Include(o => o.EligibilityCheck)
+            .Include(o => o.ContactRecords)
             .Include(o => o.Status)
+            .OrderByDescending(cr => cr.CreatedUtc)
             .ToListAsync(ct);
     }
 
@@ -151,19 +154,19 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(o => o.Reference == reference, ct);
     }
 
-    public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(string userId, CancellationToken ct)
+    public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct)
     {
-        logger.LogInformation("Getting flood report details by user.");
+        logger.LogInformation("Getting flood report details by id.");
 
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var result = await context.ContactRecords
+        var result = await context.FloodReports
             .AsNoTracking()
-            .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
+            .Where(cr => cr.Id == FloodReportId)
+            .Include(cr => cr.Investigation)
             .Select(o => new
             {
                 o.StatusId,

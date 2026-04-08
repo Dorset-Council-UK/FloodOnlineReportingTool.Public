@@ -11,6 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 
 public partial class Index(
     IFloodReportRepository floodReportRepository,
+    NavigationManager navigationManager,
     SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
@@ -23,7 +24,7 @@ public partial class Index(
 
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private Database.Models.Flood.FloodReport? _floodReport;
+    private IList<Database.Models.Flood.FloodReport> _floodReports = [];
     private bool _accessHasExpired = true;
     private TimeSpan _accessTimeLeft;
 
@@ -53,53 +54,78 @@ public partial class Index(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        if (firstRender)
+        string? userId = null;
+        if (AuthenticationState is not null)
         {
-            string? userId = null;
-            if (AuthenticationState is not null)
+            var authState = await AuthenticationState;
+            userId = authState.User.Oid;
+        }
+        if (userId is null)
+        {
+            var floodReportId = await scopedSessionStorage.GetFloodReportId();
+            var localReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+            if (localReport is null)
             {
-                var authState = await AuthenticationState;
-                userId = authState.User.Oid;
+                _isLoading = false;
+                return;
             }
-            if (userId is null)
-            {
-                var floodReportId = await scopedSessionStorage.GetFloodReportId();
-                _floodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
-            }
-            else
-            {
-                // TODO: Work out what to do when the user has reported multiple floods
-                var floodReports = await floodReportRepository.AllReportedByContact(userId, _cts.Token);
-                _floodReport = floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
-            }
+            _floodReports.Add((Database.Models.Flood.FloodReport)localReport);
+        }
+        else
+        {
+            _floodReports = [.. await floodReportRepository.AllReportedByContact(userId, _cts.Token)];
+        }
 
-            if (_floodReport is not null)
-            {
-                var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
+        if (_floodReports.Count > 0)
+        {
+            //var result = await floodReportRepository.CalculateEligibilityWithReference(_floodReports.Reference, _cts.Token);
 
-                //_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
-                //_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
+            ////_leadLocalFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId == FloodAuthorityIds.LeadLocalFloodAuthority)];
+            ////_otherFloodAuthorities = [.. result.ResponsibleOrganisations.Where(o => o.FloodAuthorityId != FloodAuthorityIds.LeadLocalFloodAuthority)];
 
-                // These don't have any logic yet in the repository
-                _floodInvestigation = result.FloodInvestigation;
-                _isEmergencyResponse = result.IsEmergencyResponse;
-                _section19Url = result.Section19Url;
-                _section19 = result.Section19;
-                _propertyProtection = result.PropertyProtection;
-                _grantApplication = result.GrantApplication;
+            //// These don't have any logic yet in the repository
+            //_floodInvestigation = result.FloodInvestigation;
+            //_isEmergencyResponse = result.IsEmergencyResponse;
+            //_section19Url = result.Section19Url;
+            //_section19 = result.Section19;
+            //_propertyProtection = result.PropertyProtection;
+            //_grantApplication = result.GrantApplication;
 
-                // Check if the users access has expired
-                if (_floodReport.ReportOwnerAccessUntil != null)
-                {
-                    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
-                    _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
-                }
-            }
+            //// Check if the users access has expired
+            //if (_floodReport.ReportOwnerAccessUntil != null)
+            //{
+            //    _accessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
+            //    _accessHasExpired = _accessTimeLeft <= TimeSpan.Zero;
+            //}
+        }
 
-            _isLoading = false;
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private void PerformAction(Guid FloodReportId)
+    {
+        navigationManager.NavigateTo($"{InvestigationPages.Home.Url}/{FloodReportId}");
+        StateHasChanged();
+        return;
+    }
+
+    private void ViewReport(Guid FloodReportId)
+    {
+        navigationManager.NavigateTo($"{FloodReportPages.Overview.Url}/{FloodReportId}");
+        StateHasChanged();
+        return;
+    }
+
+    private void UpdateReport(Guid? EligibilityCheckId)
+    {
+        if (EligibilityCheckId.HasValue)
+        {
+            navigationManager.NavigateTo($"{FloodReportPages.Update.Url}/{EligibilityCheckId.Value}");
             StateHasChanged();
         }
+        return;
     }
 }

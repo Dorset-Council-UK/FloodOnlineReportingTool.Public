@@ -1,15 +1,19 @@
-﻿using FloodOnlineReportingTool.Database.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
 [Authorize]
 public partial class Index(
+    ProtectedSessionStorage protectedSessionStorage,
     IFloodReportRepository floodReportRepository
 ) : IPageOrder, IAsyncDisposable
 {
@@ -19,6 +23,9 @@ public partial class Index(
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Overview.ToGdsBreadcrumb(),
     ];
+
+    [Parameter]
+    public Guid FloodReportId { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -45,13 +52,21 @@ public partial class Index(
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthenticationState is not null)
+        (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.InvestigationBasicInformation(FloodReportId, _cts.Token);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            var authState = await AuthenticationState;
-            var userID = authState.User.Oid;
-            if (userID is not null)
+            if (_hasInvestigationStarted == false)
             {
-                (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.ReportedByUserBasicInformation(userID, _cts.Token);
+                //We start it here
+                InvestigationDto investigation = new InvestigationDto() with
+                {
+                    FloodReportId = FloodReportId
+                };
+                await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigation);
             }
         }
     }

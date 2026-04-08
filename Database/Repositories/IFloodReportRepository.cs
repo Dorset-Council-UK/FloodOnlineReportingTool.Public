@@ -41,7 +41,7 @@ public interface IFloodReportRepository
     /// <summary>
     /// Get basic flood report information for the given user
     /// </summary>
-    Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> ReportedByUserBasicInformation(string userId, CancellationToken ct);
+    Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct); 
 
     /// <summary>
     ///     <para>Create a new flood report.</para>

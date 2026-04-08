@@ -20,12 +20,11 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
-    public async Task<Investigation> CreateForUser(string userId, InvestigationDto investigationDto, CancellationToken ct)
+    public async Task<Investigation> CreateForFloodReport(string userId, InvestigationDto investigationDto, CancellationToken ct)
     {
-        var floodReport = await context.ContactRecords
+        var floodReport = await context.FloodReports
             .AsNoTracking()
-            .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
+            .Where(cr => cr.Id == investigationDto.FloodReportId)
             .FirstOrDefaultAsync(ct);
 
         if (floodReport == null)

@@ -12,7 +12,7 @@ public interface IInvestigationRepository
     /// <summary>
     /// Create the investigation for the given user, going via the flood report
     /// </summary>
-    Task<Investigation> CreateForUser(string userId, InvestigationDto dto, CancellationToken ct);
+    Task<Investigation> CreateForFloodReport(string userId, InvestigationDto dto, CancellationToken ct);
 
     /// <summary>
     /// Get basic investigation information for the given user. (no related records)
