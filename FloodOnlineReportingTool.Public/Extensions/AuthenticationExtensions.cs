@@ -1,10 +1,13 @@
-﻿using FloodOnlineReportingTool.Database.Services;
+﻿using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Services;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Endpoints.Account;
 using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 
@@ -22,6 +25,12 @@ internal static class AuthenticationExtensions
         var reportStatusApiSection = builder.Configuration
             .GetRequiredSection(DownstreamAPIOptions.SectionName)
             .GetRequiredSection(DownstreamAPIOptions.ReportStatusApi);
+
+        // Setup Identity with PublicDbContext
+        builder.Services
+            .AddIdentityCore<FortUser>()
+            .AddEntityFrameworkStores<PublicDbContext>()
+            .AddApiEndpoints();
 
         // Setup Authentication
         builder.Services
