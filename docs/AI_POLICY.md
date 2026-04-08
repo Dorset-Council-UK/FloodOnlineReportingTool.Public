@@ -1,11 +1,11 @@
-# AI use policy
-Last updated: 08/04/2026
+# AI Use Policy
+Last updated: 2026-04-08
 
 ## Introduction
 
 This document outlines the policy for the use of Artificial Intelligence (AI) within our organization. The purpose of this policy is to ensure that AI technologies are used responsibly, ethically, and in compliance with applicable laws and regulations.
 
-This application is released under an open-source license however we still need to protect the integrity of the project and ensure that any use of AI generated content is used responsibly and that sources are properly cited.
+This application is released under an open-source license, however, we still need to protect the integrity of the project and ensure that any use of AI-generated content is used responsibly and that sources are properly cited.
 
 ## Guidelines for AI Use
 1. Contributors are responsible for all code they submit. You must ensure that you:
@@ -16,8 +16,8 @@ This application is released under an open-source license however we still need 
 
 ## Policy development
 
-The use of AI constantly evolving and this policy may be updated regularly as our understanding grows. As such we encourage you to check this document regularly. 
+The use of AI is constantly evolving and this policy may be updated regularly as our understanding grows. As such we encourage you to check this document regularly. 
 
-It is essential that we are able to maintain this code base and quickly resolve any issues that arise. This is why we need to ensure that there is always a human in the loop. 
+It is essential that we are able to maintain this codebase and quickly resolve any issues that arise. This is why we need to ensure that there is always a human in the loop. 
 
 This policy should be read in conjunction with the project's [CONTRIBUTING.md](./CONTRIBUTING.md), [DEVELOPING.md](./DEVELOPING.md), and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
