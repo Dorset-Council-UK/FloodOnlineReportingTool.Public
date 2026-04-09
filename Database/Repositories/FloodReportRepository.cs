@@ -190,7 +190,7 @@ public class FloodReportRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<FloodReport> Create(CancellationToken ct)
+    public async Task<FloodReport> Create(Uri uri, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report.");
 
@@ -209,7 +209,7 @@ public class FloodReportRepository(
         context.FloodReports.Add(floodReport);
 
         // Publish a created message to the message system?
-        var message = floodReport.ToMessageCreated();
+        var message = floodReport.ToMessageCreated(uri);
         await publishEndpoint.Publish(message, ct);
 
         // Add both the flood report and the message to the database
@@ -218,7 +218,7 @@ public class FloodReportRepository(
         return floodReport;
     }
 
-    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, CancellationToken ct)
+    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri uri, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
 
@@ -243,7 +243,7 @@ public class FloodReportRepository(
         // Publish multiple messages to the message system
         var responsibleOrganisations = await commonRepository
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
-        var floodReportCreatedMessage = floodReport.ToMessageCreated();
+        var floodReportCreatedMessage = floodReport.ToMessageCreated(uri);
 
         var fullFloodSource = await commonRepository
             .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);

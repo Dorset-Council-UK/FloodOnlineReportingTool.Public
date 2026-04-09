@@ -8,6 +8,7 @@ using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using MassTransit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Public.Services;
@@ -107,7 +108,7 @@ public sealed class TestService(
             ],
         };
 
-        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, ct);
+        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, new Uri("https://localhost/test/flood-report"), ct);
 
         if (floodReport is null)
         {

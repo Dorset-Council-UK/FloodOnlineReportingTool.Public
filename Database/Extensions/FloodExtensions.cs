@@ -35,11 +35,12 @@ internal static class FloodExtensions
 
     extension(FloodReport floodReport)
     {
-        internal FloodReportCreated ToMessageCreated()
+        internal FloodReportCreated ToMessageCreated(Uri uri)
         {
             return new FloodReportCreated(
                 floodReport.Id,
                 floodReport.Reference,
+                new Uri(uri, floodReport.Reference),
                 floodReport.CreatedUtc,
                 floodReport.EligibilityCheck is not null,
                 floodReport.Investigation is not null,
