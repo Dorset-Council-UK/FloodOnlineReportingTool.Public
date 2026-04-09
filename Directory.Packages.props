@@ -13,7 +13,7 @@
     <PackageVersion Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="coverlet.collector" Version="8.0.0" />
-    <PackageVersion Include="Dorset-Council-UK.FloodOnlineReportingTool.Contracts" Version="3.2.0" />
+    <PackageVersion Include="Dorset-Council-UK.FloodOnlineReportingTool.Contracts" Version="4.0.0" />
     <PackageVersion Include="Dorset-Council-UK.GdsBlazorComponents" Version="3.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
