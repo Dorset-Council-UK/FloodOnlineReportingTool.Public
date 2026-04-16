@@ -41,11 +41,9 @@ public sealed class TestService(
                 f.Company.CompanyName()
             ));
 
-        var eligibilityCheckCreatedFaker = new Faker<EligibilityCheckCreated>("en_GB")
+        var eligibilityCheckCreatedFaker = new Faker<EligibilityCheckRecord>("en_GB")
             .CustomInstantiator(f => new(
                 f.Random.Uuid(),
-                f.Random.Hexadecimal(8, "").ToUpperInvariant(),
-                f.Date.RecentOffset(),
                 f.Random.Long(1, 9999999999),
                 f.Random.Long(1, 9999999999),
                 f.Random.Double(0, 700000),

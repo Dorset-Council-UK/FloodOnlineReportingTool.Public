@@ -133,7 +133,8 @@ public partial class Summary(
         try
         {
             // Create a new flood report
-            var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, new Uri(navigationManager.Uri), _cts.Token);
+            var viewUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
+            var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, viewUri, _cts.Token);
 
             if (floodReport.EligibilityCheck is null)
             {

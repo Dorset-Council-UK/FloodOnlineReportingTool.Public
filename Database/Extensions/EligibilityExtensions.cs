@@ -11,12 +11,10 @@ public static class EligibilityExtensions
 {
     extension(EligibilityCheck eligibilityCheck)
     {
-        internal EligibilityCheckCreated ToMessageCreated(string reference, IList<Organisation> organisations, IList<FloodProblem> floodProblems)
+        internal EligibilityCheckRecord ToMessageCreated(string reference, IList<Organisation> organisations, IList<FloodProblem> floodProblems)
         {
             return new(
                 eligibilityCheck.Id,
-                reference,
-                eligibilityCheck.CreatedUtc,
                 eligibilityCheck.Uprn,
                 eligibilityCheck.Usrn,
                 eligibilityCheck.Easting,
