@@ -6,13 +6,11 @@ using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
 using MassTransit;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
 
-public class PublicDbContext(DbContextOptions<PublicDbContext> options) :
-    IdentityDbContext<FortUser>(options)
+public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbContext(options)
 {
     public DbSet<ContactRecord> ContactRecords { get; set; }
     public DbSet<SubscribeRecord> ContactSubscribeRecords { get; set; }
