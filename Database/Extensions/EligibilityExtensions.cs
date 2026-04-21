@@ -11,7 +11,7 @@ public static class EligibilityExtensions
 {
     extension(EligibilityCheck eligibilityCheck)
     {
-        internal EligibilityCheckRecord ToMessageCreated(string reference, IList<Organisation> organisations, IList<FloodProblem> floodProblems)
+        internal EligibilityCheckRecord ToMessageCreated(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
         {
             return new(
                 eligibilityCheck.Id,

@@ -8,7 +8,6 @@ using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using MassTransit;
-using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Public.Services;
@@ -24,7 +23,7 @@ public sealed class TestService(
     internal async Task TestMessage(CancellationToken ct)
     {
 #if DEBUG
-        // Make a test message for the EligibilityCheckCreated event
+        // Make a test message for an EligibilityCheckRecord contract
         Randomizer.Seed = new Random(232589734);
 
         var eligibilityCheckOrganisationFaker = new Faker<EligibilityCheckOrganisation>("en_GB")
@@ -41,7 +40,7 @@ public sealed class TestService(
                 f.Company.CompanyName()
             ));
 
-        var eligibilityCheckCreatedFaker = new Faker<EligibilityCheckRecord>("en_GB")
+        var eligibilityCheckRecordFaker = new Faker<EligibilityCheckRecord>("en_GB")
             .CustomInstantiator(f => new(
                 f.Random.Uuid(),
                 f.Random.Long(1, 9999999999),
@@ -58,7 +57,7 @@ public sealed class TestService(
                 eligibilityCheckSourceFaker.GenerateBetween<EligibilityCheckFloodSource>(1, 3)
             ));
 
-        var message = eligibilityCheckCreatedFaker.Generate();
+        var message = eligibilityCheckRecordFaker.Generate();
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         await publishEndpoint.Publish(message, ct);

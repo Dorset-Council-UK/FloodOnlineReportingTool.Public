@@ -9,7 +9,6 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.AccessControl;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -221,7 +220,7 @@ public class FloodReportRepository(
     //    return floodReport;
     //}
 
-    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri baseUri, CancellationToken ct)
+    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
 
@@ -248,24 +247,24 @@ public class FloodReportRepository(
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
         var fullFloodSource = await commonRepository
            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
-        var eligibilityCheckCreatedMessage = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
+        var eligibilityCheckRecord = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
 
         // Save the flood report, eligibility check, and messages to the database
         await context.SaveChangesAsync(ct);
 
-        Uri uri = new Uri($"{baseUri}/{floodReport.Reference}");
-        var floodReportCreatedMessage = floodReport.ToMessageCreated(uri, eligibilityCheckCreatedMessage);
-        _ = SendBusMessages(floodReportCreatedMessage); // Fire and forget
+        Uri viewUri = new Uri($"{viewUriBase}/{floodReport.Reference}");
+        var floodReportCreatedMessage = floodReport.ToMessageCreated(viewUri, eligibilityCheckRecord);
+        await SendBusMessages(floodReportCreatedMessage, ct);
 
         return floodReport;
     }
 
-    private async Task SendBusMessages(FloodReportSourceCreated floodReportCreatedMessage)
+    private async Task SendBusMessages(FloodReportSourceCreated floodReportCreatedMessage, CancellationToken ct)
     {
         // Separate method as we need to use the generic context for MassTransit to pickup the request
         // and write to the outbox table.
-        await publishEndpoint.Publish(floodReportCreatedMessage);
-        await dbContext.SaveChangesAsync();
+        await publishEndpoint.Publish(floodReportCreatedMessage, ct);
+        await dbContext.SaveChangesAsync(ct);
     }
 
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
