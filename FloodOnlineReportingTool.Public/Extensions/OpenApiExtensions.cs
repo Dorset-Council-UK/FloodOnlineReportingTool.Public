@@ -102,6 +102,7 @@ internal static class OpenApiExtensions
                     flows.WithAuthorizationCode(options =>
                     {
                         options.Pkce = Pkce.Sha256;
+                        options.CredentialsLocation = CredentialsLocation.Body;
                         if (identityOptions != null)
                         {
                             options.ClientId = identityOptions.ClientId;
