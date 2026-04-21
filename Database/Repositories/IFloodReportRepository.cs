@@ -44,16 +44,10 @@ public interface IFloodReportRepository
     Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct); 
 
     /// <summary>
-    ///     <para>Create a new flood report.</para>
-    ///     <para>Publish a message to the message system.</para>
-    /// </summary>
-    Task<FloodReport> Create(CancellationToken ct);
-
-    /// <summary>
     ///     <para>Create a new flood report, with eligitlity check.</para>
     ///     <para>Publish a message to the message system.</para>
     /// </summary>
-    Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, CancellationToken ct);
+    Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri uri, CancellationToken ct);
 
     /// <summary>
     ///     <para>Gets the result model with information about the eligibility status of the current record</para>

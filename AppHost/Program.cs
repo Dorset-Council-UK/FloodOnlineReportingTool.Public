@@ -5,10 +5,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 var serviceBus = builder.AddAzureServiceBus("service-bus")
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
-serviceBus.AddServiceBusTopic(TopicNames.EligibilityCheckCreated)
-    .AddServiceBusSubscription($"{TopicNames.EligibilityCheckCreated}-testing");
-serviceBus.AddServiceBusTopic(TopicNames.FloodReportCreated)
-    .AddServiceBusSubscription($"{TopicNames.FloodReportCreated}-testing");
+serviceBus.AddServiceBusTopic(TopicNames.FloodSourceCreated)
+    .AddServiceBusSubscription("floodreport-public");
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "18-3.6")

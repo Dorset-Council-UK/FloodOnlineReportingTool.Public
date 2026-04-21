@@ -4,6 +4,8 @@ namespace FloodOnlineReportingTool.Database.Models.Flood;
 
 internal static class FloodExtensions
 {
+    private const int defaultBufferSize = 25;
+
     extension(FloodImpact? floodImpact)
     {
         internal bool IsInternal
@@ -35,13 +37,17 @@ internal static class FloodExtensions
 
     extension(FloodReport floodReport)
     {
-        internal FloodReportCreated ToMessageCreated()
+        internal FloodReportSourceCreated ToMessageCreated(Uri baseViewUri, EligibilityCheckRecord eligibilityCheckRecord)
         {
-            return new FloodReportCreated(
+            var floodReportViewUri = new Uri($"{baseViewUri.AbsoluteUri.TrimEnd('/')}/{Uri.EscapeDataString(floodReport.Reference)}");
+
+            return new FloodReportSourceCreated(
                 floodReport.Id,
+                defaultBufferSize,
                 floodReport.Reference,
+                floodReportViewUri,
                 floodReport.CreatedUtc,
-                floodReport.EligibilityCheck is not null,
+                eligibilityCheckRecord,
                 floodReport.Investigation is not null,
                 floodReport.ContactRecords.Count > 0,
                 [.. floodReport.ContactRecords

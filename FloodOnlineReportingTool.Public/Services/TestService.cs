@@ -23,7 +23,7 @@ public sealed class TestService(
     internal async Task TestMessage(CancellationToken ct)
     {
 #if DEBUG
-        // Make a test message for the EligibilityCheckCreated event
+        // Make a test message for an EligibilityCheckRecord contract
         Randomizer.Seed = new Random(232589734);
 
         var eligibilityCheckOrganisationFaker = new Faker<EligibilityCheckOrganisation>("en_GB")
@@ -40,11 +40,9 @@ public sealed class TestService(
                 f.Company.CompanyName()
             ));
 
-        var eligibilityCheckCreatedFaker = new Faker<EligibilityCheckCreated>("en_GB")
+        var eligibilityCheckRecordFaker = new Faker<EligibilityCheckRecord>("en_GB")
             .CustomInstantiator(f => new(
                 f.Random.Uuid(),
-                f.Random.Hexadecimal(8, "").ToUpperInvariant(),
-                f.Date.RecentOffset(),
                 f.Random.Long(1, 9999999999),
                 f.Random.Long(1, 9999999999),
                 f.Random.Double(0, 700000),
@@ -59,7 +57,7 @@ public sealed class TestService(
                 eligibilityCheckSourceFaker.GenerateBetween<EligibilityCheckFloodSource>(1, 3)
             ));
 
-        var message = eligibilityCheckCreatedFaker.Generate();
+        var message = eligibilityCheckRecordFaker.Generate();
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         await publishEndpoint.Publish(message, ct);
@@ -107,7 +105,7 @@ public sealed class TestService(
             ],
         };
 
-        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, ct);
+        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, new Uri("https://localhost/test/flood-report"), ct);
 
         if (floodReport is null)
         {

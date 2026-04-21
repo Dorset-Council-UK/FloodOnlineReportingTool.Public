@@ -53,9 +53,10 @@ internal static class MessageSystemExtensions
                         config.Host(new Uri(connectionString));
                     }
 
-                    // Override MassTransit's default '~' convention to use simple and clean topic names
-                    config.Message<EligibilityCheckCreated>(m => m.SetEntityName(TopicNames.EligibilityCheckCreated));
-                    config.Message<FloodReportCreated>(m => m.SetEntityName(TopicNames.FloodReportCreated));
+                    config.Message<FloodReportSourceCreated>(m =>
+                    {
+                        m.SetEntityName(TopicNames.FloodSourceCreated);  // Use the exact topic name from Azure
+                    });
                 });
             });
 
