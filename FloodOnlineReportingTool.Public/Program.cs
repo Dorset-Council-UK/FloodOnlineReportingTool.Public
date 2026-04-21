@@ -1,10 +1,8 @@
 using FloodOnlineReportingTool.Database.Compliance;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +26,6 @@ builder.Services.AddScoped<SessionStateService>();
 // Configure messaging system
 builder.AddMessageSystem();
 builder.AddGovNotify();
-builder.Services.AddTransient<IEmailSender<FortUser>, FortEmailSender>();
 
 // Configure API versioning and OpenAPI
 builder.Services.AddFloodReportingVersioning();
@@ -51,8 +48,7 @@ builder.Services
 builder
     .AddFloodReportingDatabase()
     .AddFloodReportingDatabaseRepositories()
-    .AddBoundariesDatabase()
-    .AddFloodReportingUsersDatabase();
+    .AddBoundariesDatabase();
 
 // Add project related health checks
 builder.AddFloodReportingHealthChecks();
@@ -91,8 +87,5 @@ app.MapStaticAssets();
 app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 app.MapAuthenticationEndpoints();
-
-// Map all identity endpoints
-app.MapGroup("/api/auth").MapIdentityApi<FortUser>();
 
 await app.RunAsync();

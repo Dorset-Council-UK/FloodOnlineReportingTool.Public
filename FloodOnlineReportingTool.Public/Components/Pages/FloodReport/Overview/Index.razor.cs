@@ -22,6 +22,10 @@ public partial class Index(
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
+    [Parameter]
+    public Guid? FloodReportId { get; set; }
+    private Guid _floodReportId = Guid.Empty;
+
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IList<Database.Models.Flood.FloodReport> _floodReports = [];
@@ -64,8 +68,8 @@ public partial class Index(
         }
         if (userId is null)
         {
-            var floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var localReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
+            var localReport = await floodReportRepository.GetById(_floodReportId, _cts.Token);
             if (localReport is null)
             {
                 _isLoading = false;
@@ -114,7 +118,7 @@ public partial class Index(
 
     private void ViewReport(Guid FloodReportId)
     {
-        navigationManager.NavigateTo($"{FloodReportPages.Overview.Url}/{FloodReportId}");
+        navigationManager.NavigateTo($"{FloodReportPages.Details.Url}/{FloodReportId}");
         StateHasChanged();
         return;
     }

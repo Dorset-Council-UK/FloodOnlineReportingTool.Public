@@ -15,13 +15,10 @@ var postgres = builder.AddPostgres("postgres")
     .WithPgAdmin(options => options.WithImageTag("latest"));
 
 var databasePublic = postgres.AddDatabase("FloodReportingPublic");
-var databaseUsers = postgres.AddDatabase("FloodReportingUsers");
 
 var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(databasePublic)
-    .WithReference(databaseUsers)
-    .WaitFor(databasePublic)
-    .WaitFor(databaseUsers);
+    .WaitFor(databasePublic);
 
 var connectionStringBoundaries = builder.AddConnectionString("Boundaries");
 
@@ -30,7 +27,6 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(databasePublic)
-    .WithReference(databaseUsers)
     .WithReference(connectionStringBoundaries)
     .WithReference(serviceBus)
     .WaitFor(connectionStringBoundaries)
