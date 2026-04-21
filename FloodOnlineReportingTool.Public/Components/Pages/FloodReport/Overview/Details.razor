@@ -1,5 +1,5 @@
-﻿@page "/floodreport/overview/{FloodReportId:guid?}"
-@page "/floodreport/overview/{FloodReportReference?}"
+﻿@page "/floodreport/overview/details/{FloodReportId:guid?}"
+@page "/floodreport/overview/details/{FloodReportReference?}"
 
 @using FloodOnlineReportingTool.Contracts.Shared
 @using FloodOnlineReportingTool.Database.Models.Eligibility
@@ -246,7 +246,7 @@
                                             </ul>
                                         }
 
-                                        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
+                                        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url/@FloodReportId">@ContactPages.Summary.Title</a>
                                     }
                                 </div>
                             </section>
