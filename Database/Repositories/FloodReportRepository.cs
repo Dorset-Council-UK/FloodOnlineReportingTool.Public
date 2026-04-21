@@ -192,34 +192,6 @@ public class FloodReportRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    //public async Task<FloodReport> Create(Uri uri, CancellationToken ct)
-    //{
-    //    logger.LogInformation("Creating a new flood report.");
-
-    //    await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-    //    var now = DateTimeOffset.UtcNow;
-
-    //    var floodReport = new FloodReport
-    //    {
-    //        Reference = CreateReference(),
-    //        CreatedUtc = now,
-    //        StatusId = RecordStatusIds.New,
-    //        ReportOwnerAccessUntil = now.AddMonths(_gisOptions.AccessTokenIssueDurationMonths),
-    //    };
-
-    //    context.FloodReports.Add(floodReport);
-
-    ////    // Publish a created message to the message system?
-    //    var message = floodReport.ToMessageCreated(uri);
-    //    await publishEndpoint.Publish(message, ct);
-
-    //    // Add both the flood report and the message to the database
-    //    await context.SaveChangesAsync(ct);
-
-    //    return floodReport;
-    //}
-
     public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");

@@ -4,7 +4,7 @@ namespace FloodOnlineReportingTool.Database.Models.Flood;
 
 internal static class FloodExtensions
 {
-    private const int FloodReportSourceCreatedType = 25;
+    private const int defaultBufferSize = 25;
 
     extension(FloodImpact? floodImpact)
     {
@@ -43,7 +43,7 @@ internal static class FloodExtensions
 
             return new FloodReportSourceCreated(
                 floodReport.Id,
-                FloodReportSourceCreatedType,
+                defaultBufferSize,
                 floodReport.Reference,
                 floodReportViewUri,
                 floodReport.CreatedUtc,
