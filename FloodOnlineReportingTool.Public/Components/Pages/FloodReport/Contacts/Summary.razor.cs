@@ -22,14 +22,17 @@ public partial class Summary(
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
-    private Guid _floodReportId = Guid.Empty;
     private Guid _verificationId = Guid.Empty;
+    private Guid _floodReportId = Guid.Empty;
     private bool _isLoading = true;
     private ContactModel? _reportOwnerContact;
     private IReadOnlyCollection<ContactModel> _contactModels = [];
     private int _numberOfUnusedRecordTypes;
 
     private EditContext _editContext = default!;
+
+    [Parameter]
+    public Guid? FloodReportId { get; set; }
 
     private SubscribeModel Model { get; set; } = default!;
 
@@ -70,7 +73,7 @@ public partial class Summary(
         if (firstRender)
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
+            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
 
             await LoadContactData();
 

@@ -4,26 +4,55 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FloodOnlineReportingTool.Database.Migrations.User
+namespace FloodOnlineReportingTool.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial_User : Migration
+    public partial class RemoveEFIdentity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "fortusers");
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims",
+                schema: "fortpublic");
 
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers",
+                schema: "fortpublic");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -32,24 +61,24 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
                     TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,14 +87,14 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<string>(type: "text", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    ClaimValue = table.Column<string>(type: "text", nullable: true),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +102,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -81,14 +110,14 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    ClaimValue = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,7 +125,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -104,7 +133,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
@@ -118,7 +147,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -126,7 +155,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "text", nullable: false),
@@ -138,14 +167,14 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -153,7 +182,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
-                schema: "fortusers",
+                schema: "fortpublic",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "text", nullable: false),
@@ -167,7 +196,7 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalSchema: "fortusers",
+                        principalSchema: "fortpublic",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -175,79 +204,47 @@ namespace FloodOnlineReportingTool.Database.Migrations.User
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetRoles",
                 column: "NormalizedName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetUserClaims",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserLogins_UserId",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetUserRoles",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
-                schema: "fortusers",
+                schema: "fortpublic",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "AspNetRoleClaims",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles",
-                schema: "fortusers");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers",
-                schema: "fortusers");
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using Microsoft.AspNetCore.Identity;
 
 namespace FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 
@@ -13,17 +12,13 @@ public record SubscribeRecord
 
     public bool IsRecordOwner { get; set; } = false;
     public ContactRecordType ContactType { get; set; } = ContactRecordType.Unknown;
-    [PersonalData]
     public string ContactName { get; set; } = "";
-    [PersonalData]
     public string EmailAddress { get; set; } = "";
     public bool IsEmailVerified { get; set; } = false;
-    [PersonalData]
     public string? PhoneNumber { get; set; }
     public bool IsSubscribed { get; set; } = false;
     public DateTimeOffset CreatedUtc { get; init; }
     public DateTimeOffset RedactionDate { get; init; }
-    [PersonalData]
     public int? VerificationCode { get; set; }
     public DateTimeOffset? VerificationExpiryUtc { get; set; }
 

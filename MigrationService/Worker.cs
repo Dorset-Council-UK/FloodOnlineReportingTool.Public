@@ -20,10 +20,8 @@ public class Worker(
         {
             await using var scope = serviceProvider.CreateAsyncScope();
             var publicDbContext = scope.ServiceProvider.GetRequiredService<PublicDbContext>();
-            var userDbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
 
             await RunMigrationAsync(publicDbContext, cancellationToken);
-            await RunMigrationAsync(userDbContext, cancellationToken);
         }
         catch (Exception ex)
         {
