@@ -219,7 +219,7 @@ public class FloodReportRepository(
             .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
         var fullFloodSource = await commonRepository
            .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
-        var eligibilityCheckRecord = floodReport.EligibilityCheck.ToMessageCreated(floodReport.Reference, responsibleOrganisations, fullFloodSource);
+        var eligibilityCheckRecord = floodReport.EligibilityCheck.ToMessageCreated(responsibleOrganisations, fullFloodSource);
 
         // Save the flood report, eligibility check, and messages to the database
         await context.SaveChangesAsync(ct);
