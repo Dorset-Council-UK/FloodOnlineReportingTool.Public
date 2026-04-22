@@ -9,6 +9,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -103,7 +104,7 @@ public class FloodReportRepository(
 
     private string CreateReference()
     {
-        var reference = Guid.CreateVersion7().ToString("N")[..8].ToUpperInvariant();
+        var reference = GenerateReferenceId();
         logger.LogInformation("Creating a new flood report reference number {Reference}.", reference);
         return reference;
     }
@@ -286,5 +287,22 @@ public class FloodReportRepository(
     public bool HasInvestigationStarted(Guid status)
     {
         return status == RecordStatusIds.ActionNeeded;
+    }
+
+    const string CrockfordAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    static string GenerateReferenceId()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(5); // 40 bits
+        ulong value = ((ulong)bytes[0] << 32) | ((ulong)bytes[1] << 24) |
+                      ((ulong)bytes[2] << 16) | ((ulong)bytes[3] << 8) | bytes[4];
+
+        Span<char> chars = stackalloc char[8];
+        for (int i = 7; i >= 0; i--)
+        {
+            chars[i] = CrockfordAlphabet[(int)(value & 0x1F)];
+            value >>= 5;
+        }
+        return new string(chars);
     }
 }
