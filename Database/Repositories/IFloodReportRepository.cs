@@ -39,6 +39,11 @@ public interface IFloodReportRepository
     Task<FloodReport?> GetByReference(string reference, CancellationToken ct);
 
     /// <summary>
+    /// Check if a flood report exists with the given reference number.
+    /// </summary>
+    Task<bool> ReportWithReferenceExists(string reference, CancellationToken ct);
+
+    /// <summary>
     /// Get basic flood report information for the given user
     /// </summary>
     Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct); 

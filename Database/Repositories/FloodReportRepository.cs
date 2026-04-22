@@ -9,6 +9,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -101,11 +102,27 @@ public class FloodReportRepository(
         return CreateOrUpdateResult<FloodReport>.Success(floodReport);
     }
 
-    private string CreateReference()
+    private async Task<string> CreateReference(CancellationToken ct)
     {
-        var reference = Guid.CreateVersion7().ToString("N")[..8].ToUpperInvariant();
-        logger.LogInformation("Creating a new flood report reference number {Reference}.", reference);
-        return reference;
+        var reference = GenerateReferenceId();
+        //check existence of reference
+        var reportWithReferenceExists = await ReportWithReferenceExists(reference, ct);
+        var iteration = 0;
+        var maxIterations = 100;
+        while (reportWithReferenceExists && iteration < maxIterations)
+        {
+            reference = GenerateReferenceId();
+            reportWithReferenceExists = await ReportWithReferenceExists(reference, ct);
+            iteration++;
+        }
+        if(!reportWithReferenceExists)
+        {
+            logger.LogInformation("Creating a new flood report reference number {Reference}.", reference);
+            return reference;
+        }
+
+        logger.LogError("Could not generate a unique reference after {maxIterations} tries", maxIterations);
+        throw new Exception("Could not generate a unique reference");
     }
 
     public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
@@ -156,6 +173,15 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(o => o.Reference == reference, ct);
     }
 
+    public async Task<bool> ReportWithReferenceExists(string reference, CancellationToken ct)
+    {
+        logger.LogInformation("Checking existence of flood report with reference number {Reference}.", reference);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        return await context.FloodReports
+            .AsNoTracking()
+            .AnyAsync(o => o.Reference == reference, ct);
+    }
+
     public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report details by id.");
@@ -204,7 +230,7 @@ public class FloodReportRepository(
 
         var floodReport = new FloodReport
         {
-            Reference = CreateReference(),
+            Reference = await CreateReference(ct),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
             ReportOwnerAccessUntil = now.AddMonths(_gisOptions.AccessTokenIssueDurationMonths),
@@ -286,5 +312,22 @@ public class FloodReportRepository(
     public bool HasInvestigationStarted(Guid status)
     {
         return status == RecordStatusIds.ActionNeeded;
+    }
+
+    private const string CrockfordAlphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    private static string GenerateReferenceId()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(5); // 40 bits
+        ulong value = ((ulong)bytes[0] << 32) | ((ulong)bytes[1] << 24) |
+                      ((ulong)bytes[2] << 16) | ((ulong)bytes[3] << 8) | bytes[4];
+
+        Span<char> chars = stackalloc char[8];
+        for (int i = 7; i >= 0; i--)
+        {
+            chars[i] = CrockfordAlphabet[(int)(value & 0x1F)];
+            value >>= 5;
+        }
+        return new string(chars);
     }
 }
