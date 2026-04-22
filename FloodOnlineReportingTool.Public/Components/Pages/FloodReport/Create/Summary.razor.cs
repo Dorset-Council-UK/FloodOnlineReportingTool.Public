@@ -54,6 +54,9 @@ public partial class Summary(
     private string[] _sourceLabels = [];
     private string[] _secondarySourceLabels = [];
     private readonly CancellationTokenSource _cts = new();
+    // Signals that OnInitializedAsync has fully completed, guarding against Blazor navigation
+    // triggering OnAfterRenderAsync before OnInitializedAsync finishes (a known Blazor lifecycle issue).
+    private readonly TaskCompletionSource _initializedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _isLoading = true;
     private List<ValidationFailure> _validationFailures = [];
 
@@ -81,12 +84,19 @@ public partial class Summary(
         {
             (Yes, No, NotSure) = await GetYesNoNotSure();
         }
+
+        _initializedTcs.TrySetResult();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // Wait for OnInitializedAsync to complete before accessing its results.
+            // During Blazor navigation, OnAfterRenderAsync can fire before OnInitializedAsync
+            // finishes its async work, unlike a full page reload.
+            await _initializedTcs.Task;
+
             _eligibilityCheckDto = await GetEligibilityCheckDto();
             _extraData = await GetCreateExtraData();
 
