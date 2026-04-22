@@ -54,6 +54,7 @@ public partial class Summary(
     private string[] _sourceLabels = [];
     private string[] _secondarySourceLabels = [];
     private readonly CancellationTokenSource _cts = new();
+    private Task _initializationTask = Task.CompletedTask;
     private bool _isLoading = true;
     private List<ValidationFailure> _validationFailures = [];
 
@@ -72,9 +73,21 @@ public partial class Summary(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        // Load persisted lookup data and avoid additional pre-render database calls.
+        // Store the task so OnAfterRenderAsync can await it, preventing a race
+        // condition during Blazor navigation where the render fires before
+        // the async initialization completes.
+        _initializationTask = LoadLookupDataAsync();
+
+        return _initializationTask;
+    }
+
+    /// <summary>
+    /// Load persisted lookup data and avoid additional pre-render database calls.
+    /// </summary>
+    private async Task LoadLookupDataAsync()
+    {
         EligibilityCheckFloodProblems ??= await GetEligibilityCheckFloodProblems();
         EligibilityCheckFloodImpacts ??= await GetEligibilityCheckFloodImpacts();
         if (Yes is null || No is null || NotSure is null)
@@ -87,6 +100,10 @@ public partial class Summary(
     {
         if (firstRender)
         {
+            // Ensure lookup data from OnInitializedAsync is fully loaded before proceeding.
+            // During Blazor navigation the render can fire before the async init completes.
+            await _initializationTask;
+
             _eligibilityCheckDto = await GetEligibilityCheckDto();
             _extraData = await GetCreateExtraData();
 
