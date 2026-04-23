@@ -37,7 +37,7 @@ flowchart TB
     Notifications -- No thanks --> Confirmation((( End )))
 
 ```
-## After creating a flood report
+## After creating a flood report source
 - The user can optionally choose to subscribe to notifications or more.
 - See the following for more details:
     - [Subscribing for notifications flow](subscribing_for_notifications.md)
