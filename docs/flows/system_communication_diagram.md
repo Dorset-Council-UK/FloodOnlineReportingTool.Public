@@ -1,33 +1,50 @@
 ```mermaid
 sequenceDiagram
+    participant L as 
     participant Public
     participant ASB as Azure Service Bus
     participant RS as Report Status
-    participant RSA as Report Status API
-    participant ASB2 as Azure Service Bus
     participant RM as Risk Manager
+    participant R as 
+    
 
-    Public->>ASB: FloodReportCreated (1)
-
-    ASB->>RS: FloodReportCreated (1)
-
-    alt Duplicate report detected
-        RS->>RS: Attach FloodReportSource to existing FloodReport
-    else New report
-        RS->>RS: Generate FloodReport with FloodReportSource attached
+    rect rgb(0, 0, 0)
+        Note over L,R: Report Submission
+        Public->>ASB: FloodReportSourceCreated (1)
+        ASB->>RS: Report status reads message (2)
+        Note over RS: Report source linked to flood report
     end
 
-    RS->>ASB2: FloodReportCreated (2)
+    rect rgb(0, 0, 0)
+        Note over L,R: Report Update
+        RS->>ASB: FloodSourceUpdated (1)
+        ASB->>Public: Public reads message (2)
+        Note over Public: Record updated
+    end
 
-    ASB2->>RM: FloodReportCreated (2)
-    RM->>RM: Record new report available
+    rect rgb(0, 0, 0)
+        Note over L,R: Investigation Trigger
+        RM->>ASB: InvestigationTriggered (1)
+        ASB->>RS: Report status reads message (2)
+        RS->>ASB: SetInvestigation (3) **Missing in contracts
+        ASB->>Public: Public reads message (4)
+        Note over Public: Record status updated
+    end
 
-    Note over RM: User searches for reports
+    rect rgb(0, 0, 0)
+        Note over L,R: Status Update
+        Public->>ASB: InvestigationCreated or FloodSourceUpdated (1)
+        ASB->>RS: Report status reads message (2)
+        Note over RS: Report status updated
+    end
 
-    RM->>RSA: Search request
-    RSA->>RS: Query reports
-    RS-->>RSA: Report results
-    RSA-->>RM: Return results
 
-    RM-->>Public: User send to original application to view record with View URI
+    rect rgb(0, 0, 0)
+        Note over L,R: View Record
+        RM-->>Public: Users sent to original application to view record with View URI
+        Note over Public: User views record
+    end
 ```
+
+- We may need to update this so that there is an API allowing users to view the record in the calling application (such as Risk Management module) instead of being sent to the original application but this would introduce data sharing complexities and may be difficult if the user is not using this public module. They may be using something else instead. 
+- Other communications may exist; this flow diagram is just to give an idea of some of the most important communications that occur between the public module, report status, and risk manager.

@@ -9,15 +9,19 @@ flowchart TD
     GetData --> DisplayFloodReports["Display all flood reports"]
 ```
 
-## Single flood report page
+Note: This application creates flood report sources, but users will see a `flood report source` referred to as a `flood report` because that is how they understand their report.
+
+Flood risk managers use the `single version of the truth` model, where different reports of the same flooding are grouped together, so this introduces a terminology clash.
+
+We use `flood report source` in the codebase, but we still use `flood report` in the UI to avoid confusion for end users.
+
+## Manage flood report sources page
 ```mermaid
 flowchart TD
     User(("User")) --> Authenticated{"Authenticated?"}
     EmailLink(("Email Link")) --> Authenticated
     Authenticated -->|No| SignInFlow("Sign in flow")
-    Authenticated -->|Yes| IdOrReference{"ID or reference?"}
-    IdOrReference -->|ID| GetDataById("Get flood report by ID")
-    IdOrReference -->|Reference| GetDataByReference("Get flood report by reference")
-    GetDataById --> DisplayFloodReport["Display flood report details"]
-    GetDataByReference --> DisplayFloodReport
+    SignInFlow --> Authenticated
+    Authenticated -->|Yes| ListOfReports{"List of all reports<br>(bypass if only one)"}
+    ListOfReports --> DisplayFloodReport["Display Flood Report Source"]
 ```
