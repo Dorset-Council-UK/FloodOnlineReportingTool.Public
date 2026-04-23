@@ -1,4 +1,4 @@
-# Flow diagram for creating a flood report
+# Flow diagram for creating a flood report source
 
 ```mermaid
 flowchart TB
@@ -7,11 +7,12 @@ flowchart TB
     PostcodeOrLocation -- Postcode --> Postcode
     Postcode --> PostcodeKnown{Postcode<br>known?}
     PostcodeKnown -- Yes --> Address
-    PostcodeKnown -- No --> Location
+    PostcodeKnown -- No --> SelectLocation[Select location on map]
+    SelectLocation -- Select Property --> Address
     PostcodeOrLocation -- Location --> Location
-    Location --> Address
-    end
+    Location --> PropertyType
     Address --> PropertyType[Property type]
+    end
     PropertyType --> FloodAreas[Flood areas]
     FloodAreas --> TemporaryAddress{Evacuated to <br>a temporary <br>address?}
     TemporaryAddress -- Yes --> TempAddress[Temporary address postcode - optional]
@@ -21,14 +22,14 @@ flowchart TB
     ChooseTempAddress --> Vulnerability
     Vulnerability --> FloodStarted[Flood started]
     FloodStarted --> OngoingFlooding{Flooding<br>on going?}
-    OngoingFlooding -- Yes --> FloodSource[Flood source]
+    OngoingFlooding -- Yes --> FloodCause[Flood causes]
     OngoingFlooding -- No --> FloodDuration[Flood duration]
-    FloodDuration --> FloodSource
-    FloodSource --> SecondaryFloodSourceRainwater{Rainwater<br>flood source<br>chosen?}
-    SecondaryFloodSourceRainwater -- Yes --> SecondaryFloodSourceType[Secondary flood source]
-    SecondaryFloodSourceRainwater -- No --> Summary[Check your answers]
-    SecondaryFloodSourceType --> Summary
-    FloodSource --> Summary[Check your answers]
+    FloodDuration --> FloodCause
+    FloodCause --> SecondaryFloodCauseRainwater{Rainwater<br>flood cause<br>chosen?}
+    SecondaryFloodCauseRainwater -- Yes --> SecondaryFloodCauseType[Secondary flood cause]
+    SecondaryFloodCauseRainwater -- No --> Summary[Check your answers]
+    SecondaryFloodCauseType --> Summary
+    FloodCause --> Summary[Check your answers]
     Summary --> Save[(Save to database)]
     Save --> Notifications{Choose Contacts}
     Notifications -- Subscribe --> SubscribeFlow[/Subscribe for notifications/]

@@ -3,12 +3,10 @@
 Only show an investigation page when:
 - Signed in
 - No investigation exists
-- Flood report `Status` is `Action Needed`
+- Flood report source `Status` is `Action Needed`
 
 ## Signed in
-Signed in is currently when a flood reference is present.
-
-This design is changing and is being updated to a more standard authentication process.
+To sign in the user will need an account with Microsoft External ID or another suitable OpenID Connect provider. 
 
 ## Internal flooding
 The logic to determine if a flood is internal is handled by ```EligibilityCheck.IsInternal``` extension property.
