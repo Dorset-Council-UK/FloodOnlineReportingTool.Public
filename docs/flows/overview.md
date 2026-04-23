@@ -9,11 +9,11 @@ flowchart TD
     GetData --> DisplayFloodReports["Display all flood reports"]
 ```
 
-Note: This application creates flood report sources but the users will see a `source` referred to a `flood report` because this is their flood report. 
+Note: This application creates flood report sources, but users will see a `flood report source` referred to as a `flood report` because that is how they understand their report.
 
-The flood risk managers will be using the `single version of the truth` model where different reports of the same flooding are grouped so this introduces a terminology clash. 
+Flood risk managers use the `single version of the truth` model, where different reports of the same flooding are grouped together, so this introduces a terminology clash.
 
-We have used `flood report source` in the codebase but the will still use `flood report` in the UI to avoid confusion for end users.
+We use `flood report source` in the codebase, but we still use `flood report` in the UI to avoid confusion for end users.
 
 ## Manage flood report sources page
 ```mermaid
