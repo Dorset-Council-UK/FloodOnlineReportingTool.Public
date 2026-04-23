@@ -52,3 +52,4 @@ flowchart LR
 
     %% Invisible spine to force column order
     ANON ~~~ CONTACT ~~~ MAGIC ~~~ FULL
+```
