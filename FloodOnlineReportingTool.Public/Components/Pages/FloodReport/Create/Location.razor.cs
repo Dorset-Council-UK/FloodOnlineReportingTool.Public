@@ -43,6 +43,8 @@ public partial class Location(
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    //isSearching is seperate from _isLoading to allow for different UI
+    private bool _isSearching = false;
     private IJSObjectReference? _module;
     private ElementReference? _map;
     private DotNetObjectReference<Location>? _dotNetReference;
@@ -204,53 +206,78 @@ public partial class Location(
 
     private async Task OnValidSubmit()
     {
-        var createExtraData = await GetCreateExtraData();
-        var eligibilityCheck = await GetEligibilityCheck();
-        ExtraData? updatedExtraData = null;
-        bool propertyTypeReset = false;
+        _isSearching = true;
+        try
+        {
+            var createExtraData = await GetCreateExtraData();
+            var eligibilityCheck = await GetEligibilityCheck();
+
+            var updatedExtraData = await BuildUpdatedExtraData(createExtraData, eligibilityCheck);
+            if (updatedExtraData is not null)
+            {
+                await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
+            }
+
+            var updatedEligibilityCheck = eligibilityCheck with
+            {
+                Easting = Model.Easting!.Value,
+                Northing = Model.Northing!.Value,
+                LocationDesc = Model.LocationDesc,
+            };
+            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
+
+            navigationManager.NavigateTo(NextPage.Url);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while submitting the location.");
+
+            var errorField = FieldIdentifier.Create(() => Model.Easting);
+            _messageStore.Add(errorField, "There was a problem submitting your location. Please try again but if this issue happens again then please report a bug.");
+            _editContext.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _isSearching = false;
+        }
+    }
+
+    /// <summary>
+    /// Build updated extra data based on whether the user selected an address or changed location.
+    /// Returns null if no update is needed.
+    /// </summary>
+    private async Task<ExtraData?> BuildUpdatedExtraData(ExtraData createExtraData, EligibilityCheckDto eligibilityCheck)
+    {
         if (Model.IsAddress)
         {
             Model.Postcode = await GetPostcodeFromLocation();
+            if (string.IsNullOrEmpty(Model.Postcode))
+            {
+                throw new InvalidOperationException("Unable to find a postcode for the selected location.");
+            }
 
-            updatedExtraData = createExtraData with
+            return createExtraData with
             {
                 Postcode = Model.Postcode,
-                //PrimaryClassification = apiAddress.PrimaryClassification,
-                //SecondaryClassification = apiAddress.SecondaryClassification,
             };
-            propertyTypeReset = true;
-
         }
-        else if ((Model.Easting != eligibilityCheck.Easting || Model.Northing != eligibilityCheck.Northing))
+
+        // Location changed — reset property type selections so the user must re-choose
+        bool locationChanged = Model.Easting != eligibilityCheck.Easting
+                            || Model.Northing != eligibilityCheck.Northing;
+
+        if (locationChanged)
         {
-            //They changed the location so we reset the property type option
-            updatedExtraData = createExtraData with
+            return createExtraData with
             {
                 Postcode = null,
                 PrimaryClassification = null,
                 SecondaryClassification = null,
                 PropertyType = null,
             };
-            propertyTypeReset = true;
-        }
-        if (updatedExtraData != null)
-        {
-            await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
         }
 
-        // Remember the entered postcode
-        var updatedEligibilityCheck = eligibilityCheck with
-        {
-            //Uprn = apiAddress.UPRN,
-            Easting = Model.Easting!.Value,
-            Northing = Model.Northing!.Value,
-            LocationDesc = Model.LocationDesc,
-
-        };
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
-
-        // Go to the next page or back to the summary
-        navigationManager.NavigateTo(NextPage.Url);
+        return null;
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()

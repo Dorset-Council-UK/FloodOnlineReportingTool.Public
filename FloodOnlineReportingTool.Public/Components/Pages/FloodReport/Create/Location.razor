@@ -35,7 +35,12 @@
         }
 
         <div>
-            <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+
+            
+            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" disabled="@_isSearching">Continue</button>
+            <br/>
+            <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Please wait whilst we search for the nearest property." />
+            
         </div>
     }
 
