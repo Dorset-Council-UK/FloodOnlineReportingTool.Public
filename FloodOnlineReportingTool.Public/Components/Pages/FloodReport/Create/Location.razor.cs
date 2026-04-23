@@ -43,7 +43,7 @@ public partial class Location(
     private ValidationMessageStore _messageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    //isSearching is seperate from _isLoading to allow for different UI
+    // isSearching is separate from _isLoading to allow for different UI
     private bool _isSearching = false;
     private IJSObjectReference? _module;
     private ElementReference? _map;
@@ -259,6 +259,9 @@ public partial class Location(
             return createExtraData with
             {
                 Postcode = Model.Postcode,
+                PrimaryClassification = null,
+                SecondaryClassification = null,
+                PropertyType = null,
             };
         }
 
