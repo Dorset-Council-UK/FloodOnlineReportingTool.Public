@@ -46,9 +46,9 @@ Contact details may be provided directly by the public or on behalf of someone e
 
 ### Report Owner
 
-The **Report Owner** is the main contact linked to a flood report source through `ReportOwnerId`.
+The **Report Owner** is the main contact identified from a flood report's contact records, where the related `SubscribeRecord` is marked with `IsRecordOwner` within `FloodReport.ContactRecords`.
 
-This contact represents the person with primary ownership of the submitted record. Depending on how the record was created, this may allow future access, updates, or requests for more information.
+This identified contact represents the person with primary ownership of the submitted record. Depending on how the record was created, this may allow future access, updates, or requests for more information.
 
 ### Other Contacts
 
