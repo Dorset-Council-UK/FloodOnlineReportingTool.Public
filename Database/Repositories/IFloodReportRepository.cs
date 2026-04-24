@@ -28,6 +28,12 @@ public interface IFloodReportRepository
     Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
+    /// Get all flood reports, with simple overview information.
+    /// </summary>
+    /// <remarks>Includes Status and EligibilityCheck. Not Investigation or ContactRecords. No related entities.</remarks>
+    Task<IReadOnlyCollection<FloodReport>> GetAllOverview(CancellationToken ct);
+
+    /// <summary>
     /// Flood report by ID.
     /// </summary>
     /// <returns></returns>

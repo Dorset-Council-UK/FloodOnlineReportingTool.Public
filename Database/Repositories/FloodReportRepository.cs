@@ -125,6 +125,21 @@ public class FloodReportRepository(
         throw new Exception("Could not generate a unique reference");
     }
 
+    public async Task<IReadOnlyCollection<FloodReport>> GetAllOverview(CancellationToken ct)
+    {
+        logger.LogInformation("Getting all flood reports, with simple overview information.");
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        return await context.FloodReports
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Include(o => o.Status)
+            .Include(o => o.EligibilityCheck)
+            .OrderByDescending(o => o.CreatedUtc)
+            .ToListAsync(ct);
+    }
+
     public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
     {
         logger.LogInformation("Getting flood report by id {Reference}.", reference);
