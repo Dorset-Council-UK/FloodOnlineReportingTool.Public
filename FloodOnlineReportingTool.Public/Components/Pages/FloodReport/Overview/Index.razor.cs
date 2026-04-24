@@ -28,7 +28,9 @@ public partial class Index(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private IReadOnlyCollection<Database.Models.Flood.FloodReport> _floodReports = [];
-    private readonly string _signInUrl = $"{AccountPages.SignIn.Url}?redirectUri={navigationManager.SignInRedirectUri}";
+    private readonly string _signInUrl = string.IsNullOrWhiteSpace(navigationManager.SignInRedirectUri)
+        ? AccountPages.SignIn.Url
+        : $"{AccountPages.SignIn.Url}?redirectUri={navigationManager.SignInRedirectUri}";
 
     public async ValueTask DisposeAsync()
     {
