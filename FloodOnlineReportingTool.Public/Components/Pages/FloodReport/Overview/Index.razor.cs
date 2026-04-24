@@ -81,24 +81,6 @@ public partial class Index(
         }
     }
 
-    private void PerformAction(Guid floodReportId)
-    {
-        navigationManager.NavigateTo($"{InvestigationPages.Home.Url}/{floodReportId}");
-    }
-
-    private void ViewReport(Guid floodReportId)
-    {
-        navigationManager.NavigateTo($"{FloodReportPages.Details.Url}/{floodReportId}");
-    }
-
-    private void UpdateReport(Guid? eligibilityCheckId)
-    {
-        if (eligibilityCheckId.HasValue)
-        {
-            navigationManager.NavigateTo($"{FloodReportPages.Update.Url}/{eligibilityCheckId.Value}");
-        }
-    }
-
     /// <summary>
     /// Gets all flood reports
     /// </summary>
