@@ -61,8 +61,8 @@ These represent other people connected to the flood event but who are not the pr
 Contact records may be categorised using the following contact types:
 
 - Tenant
-- Home Owner
-- Non Resident
+- Home owner
+- Non resident
 
 These help describe the person's relationship to the affected property or flood event.
 
