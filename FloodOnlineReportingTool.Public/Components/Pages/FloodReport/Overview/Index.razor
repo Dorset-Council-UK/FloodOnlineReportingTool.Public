@@ -54,18 +54,26 @@
                 <GdsTableTd Value="@item.EligibilityCheck?.LocationDesc" />
                 <GdsTableTd Value="@item.EligibilityCheck?.ImpactStart.GdsReadable()" />
                 <GdsTableTd>
-                    <div class="govuk-button-group">
+                    <ul class="govuk-list">
+                        <li>
+                            <a class="govuk-link" href="@($"{FloodReportPages.Details.Url}/{item.Id}")">View<span class="govuk-visually-hidden"> flood report</span></a>
+                        </li>
+                        @if (item.EligibilityCheckId.HasValue)
+                        {
+                            <li>
+                                <a class="govuk-link" href="@($"{FloodReportPages.Update.Url}/{item.EligibilityCheckId.Value}")">Update<span class="govuk-visually-hidden"> flood report</span></a>
+                            </li>
+                        }
+                        <li>
+                            <a class="govuk-link" href="@($"{ContactPages.Summary.Url}/{item.Id}")">Contacts<span class="govuk-visually-hidden"> information</span></a>
+                        </li>
                         @if (item.StatusId == RecordStatusIds.ActionNeeded)
                         {
-                            <GdsButton IsSubmit="false" Text="Tell us more" OnClick="@(() => PerformAction(item.Id))" />
-                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Details.Title" AdditionalCssClasses="govuk-button--secondary" OnClick="@(() => ViewReport(item.Id))" />
-                        } else
-                        {
-                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Details.Title" OnClick="@(() => ViewReport(item.Id))" />
-                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Update.Title" OnClick="@(() => UpdateReport(item.EligibilityCheckId))" />
+                            <li>
+                                <a class="govuk-link" href="@($"{InvestigationPages.Home.Url}/{item.Id}")">Tell us more</a>
+                            </li>
                         }
-                                        
-                    </div>
+                    </ul>
                 </GdsTableTd>
             </RowTemplate>
         </GdsTable>
