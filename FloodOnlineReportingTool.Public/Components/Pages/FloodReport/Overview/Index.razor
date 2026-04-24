@@ -1,124 +1,138 @@
-﻿@page "/floodreport/overview/{FloodReportId:guid?}"
-@page "/floodreport/overview"
+﻿@page "/floodreport/overview"
 @using FloodOnlineReportingTool.Contracts.Shared
-@using FloodOnlineReportingTool.Database.Models.Eligibility
 @using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@FloodReportPages.Overview.Title</PageTitle>
 
-<GdsBreadcrumbs Items="@Breadcrumbs" />
+<GdsBreadcrumbs Items="@([GeneralPages.Home.ToGdsBreadcrumb()])" />
 
-<AuthorizeView Policy="@PolicyNames.Admin">
-    <Authorized>
-        <h1 class="govuk-heading-xl">The users flood report</h1>
-    </Authorized>
-    <NotAuthorized>
+@{
+    RenderFragment tableColumnFragment =
+    @<div class="govuk-grid-column-full">
+        <ul class="govuk-list">
+            <li>@_manageText</li>
+            <li>Use "@FloodReportPages.Details.Title" to see more details about a specific flood report</li>
+        </ul>
 
-    </NotAuthorized>
-</AuthorizeView>
+        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="Your flood reports" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
+            <HeaderContent>
+                <GdsTableTh>Reference</GdsTableTh>
+                <GdsTableTh>Status</GdsTableTh>
+                <GdsTableTh>Date reported</GdsTableTh>
+                <GdsTableTh>Address</GdsTableTh>
+                <GdsTableTh>Flooding date</GdsTableTh>
+                <GdsTableTh>Options</GdsTableTh>
+            </HeaderContent>
+            <RowTemplate Context="item">
+                <GdsTableTd Value="@item.Reference" />
+                <GdsTableTd>
+                    @{
+                        var statusText = item.Status?.Text ?? "Unknown";
 
-<GdsSpinner Show="_isLoading" />
+                        if (item.StatusId == RecordStatusIds.ActionNeeded)
+                        {
+                            <GdsTag Colour="GdsTagColour.Yellow" Text="@statusText" />
+                        }
+                        else if (item.StatusId == RecordStatusIds.MarkedForDeletion)
+                        {
+                            <GdsTag Colour="GdsTagColour.Red" Text="@statusText" />
+                        }
+                        else
+                        {
+                            <GdsTag Colour="GdsTagColour.Green" Text="@statusText" />
+                        }
+                    }
+                </GdsTableTd>
+                <GdsTableTd Value="@item.CreatedUtc.GdsReadable()" />
+                <GdsTableTd Value="@item.EligibilityCheck?.LocationDesc" />
+                <GdsTableTd Value="@item.EligibilityCheck?.ImpactStart.GdsReadable()" />
+                <GdsTableTd>
+                    <div class="govuk-button-group">
+                        @if (item.StatusId == RecordStatusIds.ActionNeeded)
+                        {
+                            <GdsButton IsSubmit="false" Text="Tell us more" OnClick="@(() => PerformAction(item.Id))" />
+                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Details.Title" AdditionalCssClasses="govuk-button--secondary" OnClick="@(() => ViewReport(item.Id))" />
+                        } else
+                        {
+                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Details.Title" OnClick="@(() => ViewReport(item.Id))" />
+                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Update.Title" OnClick="@(() => UpdateReport(item.EligibilityCheckId))" />
+                        }
+                                        
+                    </div>
+                </GdsTableTd>
+            </RowTemplate>
+        </GdsTable>
+    </div>;
 
-@if (!_isLoading)
+    RenderFragment keepInformedColumnFragment =
+    @<div class="govuk-grid-column-full">
+        <h2 class="govuk-heading-l">Keep informed</h2>
+
+        <!-- Contact details are per user so this should be the same in all contexts -->
+        <!-- If using a magic link there will only be one report so skip this page entirely! -->
+        @if (_floodReports.First().ContactRecords.Count > 0)
+        {
+            <p>Change your contact details if you would like to:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>receive updates</li>
+                <li>check the progress of your application</li>
+                <li>reset your login details</li>
+                <li>update your contact information</li>
+                <li>provide temporary contact information</li>
+            </ul>
+        }
+        else
+        {
+            <p>Give us your contact details if you would like to:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>receive updates</li>
+                <li>check the progress of your application</li>
+                <li>reset your login details</li>
+            </ul>
+        }
+
+        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
+    </div>;
+}
+
+@if (_isLoading)
 {
-    <AuthorizeView>
-        <NotAuthorized>
-            <div class="govuk-grid-column-full">
-                <GdsWarning Text="We cannot find your flood reports." />
-            </div>
-        </NotAuthorized>
-        <Authorized>
-            <div class="govuk-grid-row">
+    <GdsSpinner Show />
+}
+else
+{
+    <h1 class="govuk-heading-xl">@_h1TitleText</h1>
+    <div class="govuk-grid-row">
+        <AuthorizeView>
+            <NotAuthorized>
                 @if (_floodReports.Count == 0)
                 {
                     <div class="govuk-grid-column-full">
-                        <GdsWarning Text="We cannot find your flood reports." />
+                        <GdsWarning Text="You need to sign in to view and manage your flood reports." />
+                        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@_signInUrl">@AccountPages.SignIn.Title</a>
                     </div>
                 }
                 else
                 {
+                    @tableColumnFragment
+                    @keepInformedColumnFragment
+                }
+            </NotAuthorized>
+
+            <Authorized>
+                @if (_floodReports.Count == 0)
+                {
                     <div class="govuk-grid-column-full">
-                        <p class="govuk-body-l">
-                            This page will help you to find and manage your flood reports if you have reported more than once. Please use the "View report" option to find out more about the status of a specific report. 
-                        </p>
-
-                        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="Your flood reports" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
-                            <HeaderContent>
-                                <GdsTableTh>Reference</GdsTableTh>
-                                <GdsTableTh>Status</GdsTableTh>
-                                <GdsTableTh>Date reported</GdsTableTh>
-                                <GdsTableTh>Address</GdsTableTh>
-                                <GdsTableTh>Flooding date</GdsTableTh>
-                                <GdsTableTh>Options</GdsTableTh>
-                            </HeaderContent>
-                            <RowTemplate Context="item">
-                                <GdsTableTd Value="@item.Reference" />
-                                <GdsTableTd>
-                                    @if (item.StatusId == RecordStatusIds.ActionNeeded)
-                                    {
-                                        <GdsTag Colour="GdsTagColour.Yellow" Text="@item.Status?.Text" />
-                                    }
-                                    else if (item.StatusId == RecordStatusIds.MarkedForDeletion)
-                                    {
-                                        <GdsTag Colour="GdsTagColour.Red" Text="@item.Status?.Text" />
-                                    }
-                                    else
-                                    {
-                                        <GdsTag Colour="GdsTagColour.Green" Text="@(item.Status?.Text?? "Unknown status")" />
-                                    }
-                                </GdsTableTd>
-                                <GdsTableTd Value="@item.CreatedUtc.GdsReadable()" />
-                                <GdsTableTd Value="@item.EligibilityCheck?.LocationDesc" />
-                                <GdsTableTd Value="@item.EligibilityCheck?.ImpactStart.GdsReadable()" />
-                                <GdsTableTd>
-                                    <div class="govuk-button-group">
-                                        @if (item.StatusId == RecordStatusIds.ActionNeeded)
-                                        {
-                                            <GdsButton IsSubmit="false" Text="Tell us more" OnClick="@(() => PerformAction(item.Id))" />
-                                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Overview.Title" AdditionalCssClasses="govuk-button--secondary" OnClick="@(() => ViewReport(item.Id))" />
-                                        } else
-                                        {
-                                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Overview.Title" OnClick="@(() => ViewReport(item.Id))" />
-                                            <GdsButton IsSubmit="false" Text="@FloodReportPages.Update.Title" OnClick="@(() => UpdateReport(item.EligibilityCheckId))" />
-                                        }
-                                        
-                                    </div>
-                                </GdsTableTd>
-                            </RowTemplate>
-                        </GdsTable>
-                    </div>
-
-                    <div class="govuk-grid-column-full">
-                        <h2 class="govuk-heading-l">Keep informed</h2>
-
-                        <!-- Contact details are per user so this should be the same in all contexts -->
-                        <!-- If using a magic link there will only be one report so skip this page entirely! -->
-                        @if (_floodReports.First().ContactRecords.Count > 0)
-                        {
-                            <p>Change your contact details if you would like to:</p>
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>receive updates</li>
-                                <li>check the progress of your application</li>
-                                <li>reset your login details</li>
-                                <li>update your contact information</li>
-                                <li>provide temporary contact information</li>
-                            </ul>
-                        }
-                        else
-                        {
-                            <p>Give us your contact details if you would like to:</p>
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li>receive updates</li>
-                                <li>check the progress of your application</li>
-                                <li>reset your login details</li>
-                            </ul>
-                        }
-
-                        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url/@FloodReportId">@ContactPages.Summary.Title</a>
+                        <GdsWarning Text="@_noneFoundText" />
                     </div>
                 }
-            </div>
-        </Authorized>
-    </AuthorizeView>
+                else
+                {
+                    @tableColumnFragment
+                    @keepInformedColumnFragment
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
 }
