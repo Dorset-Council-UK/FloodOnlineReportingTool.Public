@@ -2,26 +2,26 @@
 
 ## Overview
 
-Please use [Glossary of Terms](Glossary.md) for definitions of the main terms used in this application. 
+Please use [Glossary of Terms](Glossary.md) for definitions of the main terms used in this application.
 
 ## Relationships
 ```mermaid
-	flowchart LR 
-		FRS["FloodReportSource"] 
-		EC["EligibilityCheck<br>1..1"] 
-		INV["Investigation<br>0..1"]
-		RO["Report Owner<br>linked by ReportOwnerId<br>0..1"]
-		OC["Other Contacts<br>0..2"]
+  flowchart LR
+    FRS["FloodReportSource"]
+    EC["EligibilityCheck<br>1..1"]
+    INV["Investigation<br>0..1"]
+    RO["Report Owner<br>linked by ReportOwnerId<br>0..1"]
+    OC["Other Contacts<br>0..2"]
 
-		TYPES["ContactRecordType enum<br>- Tenant<br>- HomeOwner<br>- NonResident"]
+    TYPES["ContactRecordType enum<br>- Tenant<br>- HomeOwner<br>- NonResident"]
 
-		FRS --> EC
-		FRS --> INV
-		FRS --> RO
-		FRS --> OC
+    FRS --> EC
+    FRS --> INV
+    FRS --> RO
+    FRS --> OC
 
-		RO --> TYPES
-		OC --> TYPES
+    RO --> TYPES
+    OC --> TYPES
 ```
 
 ## Relationship Summary
