@@ -31,4 +31,4 @@ The use of AI is constantly evolving and this policy will be updated regularly a
 
 Maintaining a human in the loop is essential to keeping this codebase stable and ensuring issues can be resolved quickly.
 
-This policy should be read alongside the project's [CONTRIBUTING.md](./CONTRIBUTING.md), [DEVELOPING.md](./DEVELOPING.md), and [CODE_OF_
+This policy should be read alongside the project's [CONTRIBUTING.md](./CONTRIBUTING.md), [DEVELOPING.md](./DEVELOPING.md), and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) documents.
