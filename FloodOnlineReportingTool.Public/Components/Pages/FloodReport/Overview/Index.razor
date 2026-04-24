@@ -15,7 +15,7 @@
             <li>Use "@FloodReportPages.Details.Title" to see more details about a specific flood report</li>
         </ul>
 
-        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="Your flood reports" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
+        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="@_tableCaption" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
             <HeaderContent>
                 <GdsTableTh>Reference</GdsTableTh>
                 <GdsTableTh>Status</GdsTableTh>

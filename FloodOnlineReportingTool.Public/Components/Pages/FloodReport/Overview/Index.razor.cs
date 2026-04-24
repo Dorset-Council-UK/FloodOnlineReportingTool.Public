@@ -23,6 +23,7 @@ public partial class Index(
     private string _h1TitleText = FloodReportPages.Overview.Title;
     private string _manageText = "Manage your flood reports";
     private string _noneFoundText = "We cannot find your flood reports.";
+    private string _tableCaption = "Your flood reports";
 
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
@@ -111,6 +112,7 @@ public partial class Index(
         _h1TitleText = "View all flood reports";
         _manageText = "Manage all flood reports";
         _noneFoundText = "We cannot find any flood reports.";
+        _tableCaption = "All flood reports";
 
         return await floodReportRepository.GetAllOverview(_cts.Token);
     }
