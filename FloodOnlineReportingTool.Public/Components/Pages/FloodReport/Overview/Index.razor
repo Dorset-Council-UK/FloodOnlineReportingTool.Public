@@ -70,36 +70,6 @@
             </RowTemplate>
         </GdsTable>
     </div>;
-
-    RenderFragment keepInformedColumnFragment =
-    @<div class="govuk-grid-column-full">
-        <h2 class="govuk-heading-l">Keep informed</h2>
-
-        <!-- Contact details are per user so this should be the same in all contexts -->
-        <!-- If using a magic link there will only be one report so skip this page entirely! -->
-        @if (_floodReports.First().ContactRecords.Count > 0)
-        {
-            <p>Change your contact details if you would like to:</p>
-            <ul class="govuk-list govuk-list--bullet">
-                <li>receive updates</li>
-                <li>check the progress of your application</li>
-                <li>reset your login details</li>
-                <li>update your contact information</li>
-                <li>provide temporary contact information</li>
-            </ul>
-        }
-        else
-        {
-            <p>Give us your contact details if you would like to:</p>
-            <ul class="govuk-list govuk-list--bullet">
-                <li>receive updates</li>
-                <li>check the progress of your application</li>
-                <li>reset your login details</li>
-            </ul>
-        }
-
-        <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
-    </div>;
 }
 
 @if (_isLoading)
@@ -122,7 +92,6 @@ else
                 else
                 {
                     @tableColumnFragment
-                    @keepInformedColumnFragment
                 }
             </NotAuthorized>
 
@@ -136,7 +105,6 @@ else
                 else
                 {
                     @tableColumnFragment
-                    @keepInformedColumnFragment
                 }
             </Authorized>
         </AuthorizeView>
