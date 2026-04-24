@@ -12,7 +12,13 @@
     @<div class="govuk-grid-column-full">
         <ul class="govuk-list">
             <li>@_manageText</li>
-            <li>Use "@FloodReportPages.Details.Title" to see more details about a specific flood report</li>
+            <li>Use the actions next to each flood report to:
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>view the flood report</li>
+                    <li>change the flood report</li>
+                    <li>view contact information</li>
+        </ul>
+            </li>
         </ul>
 
         <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="@_tableCaption" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
@@ -22,7 +28,7 @@
                 <GdsTableTh>Date reported</GdsTableTh>
                 <GdsTableTh>Address</GdsTableTh>
                 <GdsTableTh>Flooding date</GdsTableTh>
-                <GdsTableTh>Options</GdsTableTh>
+                <GdsTableTh>Actions</GdsTableTh>
             </HeaderContent>
             <RowTemplate Context="item">
                 <GdsTableTd Value="@item.Reference" />
