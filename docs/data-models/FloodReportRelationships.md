@@ -10,7 +10,7 @@ Please use [Glossary of Terms](Glossary.md) for definitions of the main terms us
     FRS["FloodReportSource"]
     EC["EligibilityCheck<br>1..1"]
     INV["Investigation<br>0..1"]
-    RO["Report Owner<br>linked by ReportOwnerId<br>0..1"]
+    RO["Report Owner<br>SubscribeRecord.IsRecordOwner<br>0..1"] 
     OC["Other Contacts<br>0..2"]
 
     TYPES["ContactRecordType enum<br>- Tenant<br>- HomeOwner<br>- NonResident"]

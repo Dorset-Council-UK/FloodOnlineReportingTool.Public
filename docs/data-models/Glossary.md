@@ -46,9 +46,9 @@ Contact details may be provided directly by the public or on behalf of someone e
 
 ### Report Owner
 
-The **Report Owner** is the main contact identified from a flood report's contact records, where the related `SubscribeRecord` is marked with `IsRecordOwner` within `FloodReport.ContactRecords`.
+The **Report Owner** is the main contact linked to a flood report source through `SubscribeRecord.IsRecordOwner`.
 
-This identified contact represents the person with primary ownership of the submitted record. Depending on how the record was created, this may allow future access, updates, or requests for more information.
+This contact represents the person with primary ownership of the submitted record. Depending on how the record was created, this may allow future access, updates, or requests for more information.
 
 ### Other Contacts
 
@@ -61,10 +61,14 @@ These represent other people connected to the flood event but who are not the pr
 Contact records may be categorised using the following contact types:
 
 - Tenant
-- Home owner
-- Non resident
+- Home Owner
+- Non Resident
 
 These help describe the person's relationship to the affected property or flood event.
+
+### Subscribe Records
+
+We are using subscription records linked to a contact entity to manage the contact details associated with a flood report source. This allows us to create a little separation from the individual (contact) and the updates they want to receive (subscription).
 
 ## Other Related Terms
 
