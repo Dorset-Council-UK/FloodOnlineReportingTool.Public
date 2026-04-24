@@ -49,7 +49,7 @@ public partial class Index(
         {
             /*
              * scenarios to handle:
-             * Not authenicated
+             * Not authenticated
              * Not authenticated with flood report ID in protected session storage
              * Authenticated as an admin
              * Authenticated as a user
