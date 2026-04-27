@@ -58,12 +58,16 @@
                         <li>
                             <a class="govuk-link" href="@($"{FloodReportPages.Details.Url}/{item.Id}")">View<span class="govuk-visually-hidden"> flood report</span></a>
                         </li>
-                        @if (item.EligibilityCheckId.HasValue)
-                        {
-                            <li>
-                                <a class="govuk-link" href="@($"{FloodReportPages.Update.Url}/{item.EligibilityCheckId.Value}")">Update<span class="govuk-visually-hidden"> flood report</span></a>
-                            </li>
-                        }
+                        <AuthorizeView>
+                            <Authorized>
+                                @if (item.EligibilityCheckId.HasValue)
+                                {
+                                    <li>
+                                        <a class="govuk-link" href="@($"{FloodReportPages.Update.Url}/{item.EligibilityCheckId.Value}")">Update<span class="govuk-visually-hidden"> flood report</span></a>
+                                    </li>
+                                }
+                            </Authorized>
+                        </AuthorizeView>
                         <li>
                             <a class="govuk-link" href="@($"{ContactPages.Summary.Url}/{item.Id}")">Contacts<span class="govuk-visually-hidden"> information</span></a>
                         </li>
