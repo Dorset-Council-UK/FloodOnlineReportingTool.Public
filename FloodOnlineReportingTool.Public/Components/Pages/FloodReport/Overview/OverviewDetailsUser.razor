@@ -1,0 +1,212 @@
+﻿@using FloodOnlineReportingTool.Contracts.Shared
+@using FloodOnlineReportingTool.Database.Models.Eligibility
+@using FloodOnlineReportingTool.Public.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+@if (!_initialised)
+{
+    <GdsSpinner Show ShowMessage />
+    return;
+}
+
+<div class="govuk-grid-row">
+    <AuthorizeView Policy="@PolicyNames.Reader">
+        <NotAuthorized>
+            <div class="govuk-grid-column-full">
+                <GdsWarning Text="You need to sign in to view and manage your flood reports." />
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@_signInUrl">@AccountPages.SignIn.Title</a>
+            </div>
+        </NotAuthorized>
+
+        <Authorized>
+            @if (_floodReport is null)
+            {
+                <div class="govuk-grid-column-full">
+                    <GdsWarning Text="We cannot find your flood report." />
+                </div>
+            }
+            else
+            {
+                <div class="govuk-grid-column-full">
+                    <GdsTabs Title="Contents">
+                        <GdsTabPanel Id="overview" Heading="Overview">
+                            <p class="govuk-body-l">
+                                <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown")</strong>
+                                Flood reference <strong>@_floodReport.Reference</strong>
+                            </p>
+
+                            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+                            @if (_accessHasExpired)
+                            {
+                                <GdsWarning Text="Access to your flood report has expired" />
+                            }
+                            else
+                            {
+                                <p>Access to your flood report will expire in @_accessTimeLeft.GdsReadable()</p>
+                            }
+
+                            @if (_eligibilityResult is not null)
+                            {
+                                var result = _eligibilityResult.Value;
+
+                                <section id="eligibility-results">
+                                    <h3 class="govuk-heading-m">Eligibility results</h3>
+
+                                    @if (result.IsEmergencyResponse)
+                                    {
+                                        <p>This service does not trigger an emergency response please ring 999 and ask for the relevant service.</p>
+                                    }
+
+                                    @switch (result.FloodInvestigation)
+                                    {
+                                        case EligibilityOptions.Eligible:
+                                            <p>Your record is eligible for a property level flood investigation. Please complete a full flood report so the relevant organisations can complete your investigation.</p>
+                                            break;
+
+                                        case EligibilityOptions.Conditional:
+                                            <p>Because your property was flooded internally you may be eligible for additional support from you lead local flood authority. Eligibility is not automatic but if you are signed up for updates on your record the relevant organisation can let you know if they believe you are eligible.</p>
+                                            <p>If you want to discuss this further with the relevant organisations, use the reference number above to allow them to see the details of your flood event and this may help you to get a decision.</p>
+                                            break;
+
+                                        case EligibilityOptions.None:
+                                            <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                                            break;
+                                    }
+
+                                    @switch (result.GrantApplication)
+                                    {
+                                        case EligibilityOptions.Eligible:
+                                            <p>You have successfully applied for a grant in relation to your flood event.</p>
+                                            <p>For further details, refer to whichever system you used to apply for the grant.</p>
+                                            break;
+
+                                        case EligibilityOptions.Conditional:
+                                            <p>You may be eligible to apply for a grant. Use the link provided to submit an application.</p>
+                                            break;
+                                    }
+
+                                    @switch (result.PropertyProtection)
+                                    {
+                                        case EligibilityOptions.Eligible:
+                                            <p>You have successfully applied for help installing property level protection for your property.</p>
+                                            break;
+
+                                        case EligibilityOptions.Conditional:
+                                            <p>You may be eligible to apply for help installing property level protection for your property. Use the link provided to submit an application.</p>
+                                            break;
+                                    }
+
+                                    @switch (result.Section19)
+                                    {
+                                        case EligibilityOptions.Eligible:
+                                            <p>The lead local flood authority responsible for your property has begun a section 19 flood investigation. To help with this process you can complete a full flood report to provide further information about this flood event. The details you provide will assist them in their investigations.</p>
+                                            break;
+
+                                        case EligibilityOptions.Completed:
+                                            <p>
+                                                The lead local flood authority responsible for your property has completed a section 19 flood investigation for this flood event.
+                                                @if (string.IsNullOrEmpty(result.Section19Url))
+                                                {
+                                                    <span>The report is published and can be found by contacting the lead local flood authority.</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>The report is published and can be found at <a href="@result.Section19Url" target="_blank" class="govuk-link">@result.Section19Url</a>.</span>
+                                                }
+                                            </p>
+                                            break;
+                                    }
+                                </section>
+                            }
+
+                            @if (!_accessHasExpired)
+                            {
+                                <section id="investigation-actions">
+                                    <h3 class="govuk-heading-m">Tell us more</h3>
+                                    @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                                    {
+                                        <p>There is currently an ongoing investigation.</p>
+                                        <p>We need some more information from you to help us complete the investigation.</p>
+                                    }
+                                    else if (_floodReport.StatusId == RecordStatusIds.ActionCompleted)
+                                    {
+                                        <p>An investigation has been completed for your flood report.</p>
+                                    }
+                                    else
+                                    {
+                                        <p>There is no active investigation for your flood report.</p>
+                                    }
+                                </section>
+
+                                <section id="subscription-actions">
+                                    <h3 class="govuk-heading-m">Keep informed</h3>
+
+                                    @if (_floodReport.ContactRecords.Count > 0)
+                                    {
+                                        <p>Change your contact details if you would like to:</p>
+                                        <ul class="govuk-list govuk-list--bullet">
+                                            <li>receive updates</li>
+                                            <li>check the progress of your application</li>
+                                            <li>reset your login details</li>
+                                            <li>update your contact information</li>
+                                            <li>provide temporary contact information</li>
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p>Give us your contact details if you would like to:</p>
+                                        <ul class="govuk-list govuk-list--bullet">
+                                            <li>receive updates</li>
+                                            <li>check the progress of your application</li>
+                                            <li>reset your login details</li>
+                                        </ul>
+                                    }
+
+                                    <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@ContactPages.Summary.Url/@FloodReportId">@ContactPages.Summary.Title</a>
+                                </section>
+                            }
+                        </GdsTabPanel>
+
+                        <GdsTabPanel Id="eligibility-form" Heading="Eligibility results">
+                            <p class="govuk-body-l">Details of your flood report can be seen below.</p>
+                            @if (_floodReport.EligibilityCheck is not null)
+                            {
+                                <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
+                            }
+                        </GdsTabPanel>
+
+                        <GdsTabPanel Id="investigation-form" Heading="Tell us more">
+                            @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                            {
+                                <p>There is currently an ongoing investigation.</p>
+                                if (!_accessHasExpired)
+                                {
+                                    <p>We need some more information from you to help us complete the investigation.</p>
+                                    <p>This will include details about:</p>
+                                    <ul>
+                                        <li>Information about how and when water entered your property</li>
+                                        <li>Flood depths</li>
+                                        <li>Warnings you received</li>
+                                        <li>Any help you were provided with</li>
+                                        <li>More information about the flood water itself</li>
+                                    </ul>
+                                    <GdsStartButton Text="Start now" Href="@InvestigationPages.FirstPage.Url" />
+                                }
+                            }
+                            else if (_floodReport.StatusId == RecordStatusIds.ActionCompleted)
+                            {
+                                <p>An investigation has been completed for your flood report.</p>
+                                // TODO: investigation summary
+                                <p>TODO: investigation summary component goes here.</p>
+                            }
+                            else
+                            {
+                                <p>There is no active investigation for your flood report.</p>
+                            }
+                        </GdsTabPanel>
+                    </GdsTabs>
+                </div>
+            }
+        </Authorized>
+    </AuthorizeView>
+</div>
