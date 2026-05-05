@@ -38,11 +38,11 @@
                             <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
                             @if (_usersAccessHasExpired)
                             {
-                                <GdsWarning Text="The users access to the flood report has expired" />
+                                <GdsWarning Text="The user's access to the flood report has expired" />
                             }
                             else
                             {
-                                <p>The users access to the flood report will expire in @_usersAccessTimeLeft.GdsReadable()</p>
+                                <p>The user's access to the flood report will expire in @_usersAccessTimeLeft.GdsReadable()</p>
                             }
 
                             @if (_eligibilityResult is not null)
@@ -64,7 +64,7 @@
                                             break;
 
                                         case EligibilityOptions.Conditional:
-                                            <p>The property was flooded internally so the user may be eligible for additional support from you lead local flood authority.</p>
+                                            <p>The property was flooded internally so the user may be eligible for additional support from your lead local flood authority.</p>
                                             break;
 
                                         case EligibilityOptions.None:
@@ -124,7 +124,7 @@
                                     <p>There is currently an ongoing investigation.</p>
                                     @if (_usersAccessHasExpired)
                                     {
-                                        <p>The users access to the flood report has expired, so they are cannot provide any more information to help with the investigation.</p>
+                                        <p>The user's access to the flood report has expired, so they cannot provide any more information to help with the investigation.</p>
                                     }
                                     else
                                     {
@@ -133,11 +133,11 @@
                                 }
                                 else if (_floodReport.StatusId == RecordStatusIds.ActionCompleted)
                                 {
-                                    <p>An investigation has been completed for the users flood report.</p>
+                                    <p>An investigation has been completed for the user's flood report.</p>
                                 }
                                 else
                                 {
-                                    <p>There is no active investigation for the users flood report.</p>
+                                    <p>There is no active investigation for the user's flood report.</p>
                                 }
                             </section>
 
@@ -156,7 +156,7 @@
                         </GdsTabPanel>
 
                         <GdsTabPanel Id="eligibility-form" Heading="Eligibility results">
-                            <p class="govuk-body-l">Details of the users flood report can be seen below.</p>
+                            <p class="govuk-body-l">Details of the user's flood report can be seen below.</p>
                             @if (_floodReport.EligibilityCheck is not null)
                             {
                                 <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
@@ -169,7 +169,7 @@
                                 <p>There is currently an ongoing investigation.</p>
                                 if (_usersAccessHasExpired)
                                 {
-                                    <p>The users access to the flood report has expired, so they are cannot provide any more information to help with the investigation.</p>
+                                    <p>The user's access to the flood report has expired, so they are cannot provide any more information to help with the investigation.</p>
                                 }
                                 else
                                 {
