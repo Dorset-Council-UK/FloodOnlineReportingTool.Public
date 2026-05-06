@@ -270,20 +270,25 @@ public partial class Test(
     }
     private async Task<Database.Models.Flood.FloodReport?> GetYourLastFloodReport()
     {
-        string? objectId = null;
-        if (AuthenticationState is not null)
+        if (AuthenticationState is null)
         {
-            var authState = await AuthenticationState;
-            objectId = authState.User.Oid;
+            return null;
         }
 
-        if (objectId is null)
+        var authState = await AuthenticationState;
+        if (!authState.User.IsAuthenticated)
+        {
+            return null;
+        }
+
+        string? userId = authState.User.Oid;
+        if (userId is null)
         {
             return null;
         }
 
         // TODO: Work out what to do when the user has reported multiple floods
-        var floodReports = await floodReportRepository.AllReportedByContact(objectId, _cts.Token);
-        return floodReports.OrderByDescending(o => o.CreatedUtc).FirstOrDefault();
+        var floodReports = await floodReportRepository.ReportedByUser(userId, _cts.Token);
+        return floodReports.FirstOrDefault();
     }
 }

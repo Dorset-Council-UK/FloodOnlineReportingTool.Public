@@ -1,7 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Options;
-using FloodOnlineReportingTool.Database.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Options;
@@ -14,7 +12,7 @@ public partial class App(IOptions<GISOptions> _options)
     private HttpContext? HttpContext { get; set; }
 
     // The Render Mode is InteractiveServer most of the time. Except on pages which are set as Static server-side rendering (static SSR)
-    private IComponentRenderMode? PageRenderMode => HttpContext?.AcceptsInteractiveRouting() == true ? RenderMode.InteractiveServer : null;
+    private IComponentRenderMode? PageRenderMode => HttpContext?.AcceptsInteractiveRouting() == true ? new InteractiveServerRenderMode(prerender: false) : null;
 
     private readonly GISOptions _gisOptions = _options.Value;
     private string _pathBase = "/";

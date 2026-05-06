@@ -24,56 +24,58 @@ public class FloodReportRepository(
 {
     private readonly GISOptions _gisOptions = options.Value;
 
-    public async Task<FloodReport?> ReportedByUser(string userId, CancellationToken ct)
+    public async Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
+        // EligibilityCheck and Investigation auto include
         return await context.ContactRecords
             .AsNoTracking()
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == userId)
             .SelectMany(cr => cr.FloodReports)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.Residentials)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.Commercials)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.Sources)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.SecondarySources)
-            .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
-            .Include(o => o.Status)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<FloodReport?> ReportedByContact(string contactUserId, Guid floodReportId, CancellationToken ct)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        return await context.ContactRecords
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Where(cr => cr.ContactUserId == contactUserId)
-            .SelectMany(cr => cr.FloodReports)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(string contactUserId, CancellationToken ct)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        return await context.ContactRecords
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Where(cr => cr.ContactUserId == contactUserId)
-            .SelectMany(cr => cr.FloodReports)
-            .IgnoreAutoIncludes()     // Might need to remove this if we actually want sources and areas flooded. 
-            .Include(o => o.EligibilityCheck)
-            .Include(o => o.ContactRecords)
-            .Include(o => o.Status)
-            .OrderByDescending(cr => cr.CreatedUtc)
+            .Include(fr => fr.ContactRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .Include(fr => fr.Investigation)
+            .Include(fr => fr.Status)
+            .OrderByDescending(fr => fr.CreatedUtc)
             .ToListAsync(ct);
+    }
+
+    public async Task<FloodReport?> ReportedByUser(string userId, Guid floodReportId, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // EligibilityCheck and Investigation auto include
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Where(fr => fr.Id == floodReportId)
+            .Include(fr => fr.ContactRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .Include(fr => fr.Investigation)
+            .Include(fr => fr.Status)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<FloodReport?> ReportedByUser(string userId, string reference, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // EligibilityCheck and Investigation auto include
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Where(fr => fr.Reference == reference)
+            .Include(fr => fr.ContactRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .Include(fr => fr.Investigation)
+            .Include(fr => fr.Status)
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
