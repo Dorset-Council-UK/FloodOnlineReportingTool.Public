@@ -1,4 +1,5 @@
 # AI Use Policy
+Version 1.0
 Last updated: 2026-04-24
 
 ## Introduction
