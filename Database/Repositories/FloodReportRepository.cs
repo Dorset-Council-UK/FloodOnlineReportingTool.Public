@@ -265,7 +265,8 @@ public class FloodReportRepository(
         // Save the flood report, eligibility check, and messages to the database
         await context.SaveChangesAsync(ct);
 
-        var floodReportCreatedMessage = floodReport.ToMessageCreated(viewUriBase, eligibilityCheckRecord);
+        var reportDetailsViewUriBase = new Uri($"{viewUriBase.AbsoluteUri.TrimEnd('/')}/details/");
+        var floodReportCreatedMessage = floodReport.ToMessageCreated(reportDetailsViewUriBase, eligibilityCheckRecord);
         await SendBusMessages(floodReportCreatedMessage, ct);
 
         return floodReport;
