@@ -118,7 +118,7 @@ public partial class Index(
             return [];
         }
 
-        return await floodReportRepository.AllReportedByContact(userId, _cts.Token);
+        return await floodReportRepository.ReportedByUser(userId, _cts.Token);
     }
 
     /// <summary>

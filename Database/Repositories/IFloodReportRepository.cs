@@ -7,19 +7,19 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public interface IFloodReportRepository
 {
     /// <summary>
+    /// Get all flood reports, for the given user
+    /// </summary>
+    Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct);
+
+    /// <summary>
     /// Get a flood report, for the given user
     /// </summary>
-    Task<FloodReport?> ReportedByUser(string userId, CancellationToken ct);
+    Task<FloodReport?> ReportedByUser(string userId, Guid floodReportId, CancellationToken ct);
 
     /// <summary>
-    /// Get the contact record, for the given user, going via the flood report
+    /// Get a flood report, for the given user
     /// </summary>
-    Task<FloodReport?> ReportedByContact(string contactUserId, Guid floodReportId, CancellationToken ct);
-
-    /// <summary>
-    /// Get all contact records for the given user, going via the flood report
-    /// </summary>
-    Task<IReadOnlyCollection<FloodReport>> AllReportedByContact(string contactUserId, CancellationToken ct);
+    Task<FloodReport?> ReportedByUser(string userId, string reference, CancellationToken ct);
 
     /// <summary>
     /// This enables contact subscriptions for the flood report
