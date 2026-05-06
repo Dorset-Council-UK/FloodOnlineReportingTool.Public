@@ -28,7 +28,7 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 3. **Install front-end dependencies**:
 
    - [Install Bun](https://bun.com/docs/installation) and run `bun install` from within the `FloodOnlineReportingTool.Public` project to download the dependencies
-   - Previously we recommended using the NPM Task Runner extension in Visual Studio. This can still be used for other tasks, but `install` commands should be run using `bun install` in a separate terminal, since the `install` command in the extension defaults to `npm install`
+   - Previously we recommended using the NPM Task Runner extension in Visual Studio. This can still be used for other tasks, but `install` commands should be run using `bun install` in a separate terminal
 
 4. **AI standards module**:
     
@@ -74,7 +74,9 @@ Create a default user with the following credentials:
 The username and password is then used in the connection string FloodReportingPublic.
 
 ### Connection Strings
-The project requires a `ConnectionStrings` section in your user secrets. And a connection string named `FloodReportingPublic`. Ensure the connection string contains `;Search Path=fortpublic,public` for proper functionality. See `Example secrets file` below for a more an example.
+The project requires a `ConnectionStrings` section in your user secrets. And a connection string named `FloodReportingPublic`. Ensure the connection string contains `;Search Path=fortpublic` for proper functionality.
+
+For an example see `Example secrets file` below.
 
 ## User Secrets and Configuration
 
@@ -88,15 +90,14 @@ You must set up user secrets for development. Run the following command in the t
   ```
 Then add your configuration:
 
+- **ConnectionStrings**: Required for database access and optional message system.
 - **GIS**: Used to configure the Dorset Council Address API (customizable).
-- **RabbitMQ**: Used for the optional messaging system.
-- **ConnectionStrings**: Required for database access.
 
 Example secrets file:
 ```json
 {
   "ConnectionStrings": {
-    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;SearchPath=fortpublic,public",
+    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic",
     "service-bus": "Endpoint=YourEndpoint;SharedAccessKeyName=YourKeyName;SharedAccessKey=YourAccessKey"
   },
   "GIS": {
@@ -112,7 +113,8 @@ Example secrets file:
 
 ## Authentication
 
-Authentication is required after creating a flood report. The project uses standard .NET authentication for handling user sessions. Some parts of the application, such as form creation, are accessible without authentication.
+The project uses Microsoft Identity with OpenID Connect for Authentication.
+Authentication is not required to create a flood report. However, certain areas of the application (such as staff/admin views) do require users to be signed in.
 
 ## Other Customizations
 
