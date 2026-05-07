@@ -7,7 +7,6 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Public.Services;
@@ -16,7 +15,6 @@ namespace FloodOnlineReportingTool.Public.Services;
 #pragma warning disable CA1822 // Mark members as static
 
 public sealed class TestService(
-    IPublishEndpoint publishEndpoint,
     IDbContextFactory<PublicDbContext> contextFactory,
     IFloodReportRepository floodReportRepository
 ) {
@@ -59,9 +57,9 @@ public sealed class TestService(
 
         var message = eligibilityCheckRecordFaker.Generate();
 
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        await publishEndpoint.Publish(message, ct);
-        await context.SaveChangesAsync(ct);
+        // TODO: add a test section to the test page, to test different messages and contracts
+        // These new test buttons will use the new outbox message pattern
+        await Task.CompletedTask;
 #else
         await Task.CompletedTask;
 #endif

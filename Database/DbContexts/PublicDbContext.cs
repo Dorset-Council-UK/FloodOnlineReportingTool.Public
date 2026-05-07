@@ -5,7 +5,6 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
@@ -39,9 +38,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
         modelBuilder.HasDefaultSchema(SchemaNames.FortPublic);
 
         // Add the inbox and outbox pattern messaging tables
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
+        // TODO: add outbox pattern back in
 
         // Entity configurations
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PublicDbContext).Assembly);

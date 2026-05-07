@@ -5,7 +5,6 @@ using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +15,6 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     ICommonRepository commonRepository,
-    IPublishEndpoint publishEndpoint,
     IOptions<GISOptions> options,
     PublicDbContext dbContext,
     IDbContextFactory<PublicDbContext> contextFactory
@@ -269,17 +267,10 @@ public class FloodReportRepository(
 
         var reportDetailsViewUriBase = new Uri($"{viewUriBase.AbsoluteUri.TrimEnd('/')}/details/");
         var floodReportCreatedMessage = floodReport.ToMessageCreated(reportDetailsViewUriBase, eligibilityCheckRecord);
-        await SendBusMessages(floodReportCreatedMessage, ct);
+
+        // TODO: add save message to outbox pattern back in
 
         return floodReport;
-    }
-
-    private async Task SendBusMessages(FloodReportSourceCreated floodReportCreatedMessage, CancellationToken ct)
-    {
-        // Separate method as we need to use the generic context for MassTransit to pickup the request
-        // and write to the outbox table.
-        await publishEndpoint.Publish(floodReportCreatedMessage, ct);
-        await dbContext.SaveChangesAsync(ct);
     }
 
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)

@@ -1,12 +1,11 @@
 ﻿using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logger, PublicDbContext context, IPublishEndpoint publishEndpoint, ICommonRepository commonRepository) : IEligibilityCheckRepository
+public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logger, PublicDbContext context, ICommonRepository commonRepository) : IEligibilityCheckRepository
 {
     public async Task<EligibilityCheck?> ReportedByUser(string userId, CancellationToken ct)
     {
@@ -71,7 +70,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(updatedMessage, ct);
+        // TODO: add save message to outbox pattern back in
 
         // Update the database with the eligibility check, message, flood impacts, and flood problems
         await context.SaveChangesAsync(ct);
@@ -99,7 +98,7 @@ public class EligibilityCheckRepository(ILogger<EligibilityCheckRepository> logg
         var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
         var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
 
-        await publishEndpoint.Publish(updatedMessage, ct);
+        // TODO: add save message to outbox pattern back in
 
         // Update the database with the eligibility check, message, flood impacts, and flood problems
         await context.SaveChangesAsync(ct);

@@ -2,13 +2,11 @@
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
-
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class InvestigationRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IInvestigationRepository
+public class InvestigationRepository(PublicDbContext context) : IInvestigationRepository
 {
     public async Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct)
     {
@@ -55,8 +53,8 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         context.FloodReports.Update(updatedFloodReport);
 
         // Publish a message to the message system
-        var message = investigation.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint.Publish(message, ct);
+        // TODO: add save message to outbox pattern back in
+        //var message = investigation.ToMessageCreated(floodReport.Reference);
 
         // Save the investigation in the database
         await context.SaveChangesAsync(ct);
