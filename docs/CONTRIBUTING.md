@@ -2,8 +2,6 @@
 
 Thank you for your interest in contributing to Flood Online Reporting Tool - Public! Please review the project's [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) before proceeding.
 
-If you wish to become a core developer, please contact the project team via email at [fort@dorsetcouncil.gov.uk](mailto:fort@dorsetcouncil.gov.uk)
-
 ## Submitting Contributions
 
 We welcome contributions in the form of code, documentation, and suggestions. Please make sure to follow the guidelines outlined below.
@@ -11,6 +9,12 @@ We welcome contributions in the form of code, documentation, and suggestions. Pl
 ## Development Information
 
 To get started with development, refer to the [DEVELOPING](DEVELOPING.md) file included in this repository. You can find it in the root of the project.
+
+## Core Developers
+
+Only core developers can merge pull requests into the main branch. The project is currently owned by **Dorset Council**.
+
+If you are interested in becoming a core developer, contact the project team at [fort@dorsetcouncil.gov.uk](mailto:fort@dorsetcouncil.gov.uk). You will need to agree to additional terms and conditions before being granted merge rights on behalf of the project owners.
 
 ## Contributor License Agreement
 
@@ -54,5 +58,3 @@ Examples:
 
 ### Be possible to merge automatically
 Occasionally other changes to main might mean that your pull request cannot be merged automatically. In this case you may need to rebase your branch on a more recent main, resolve any conflicts, and git push --force to update your branch so that it can be merged automatically.
-
-
