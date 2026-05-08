@@ -5,7 +5,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var serviceBus = builder.AddAzureServiceBus("service-bus")
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
-serviceBus.AddServiceBusTopic(TopicNames.FloodSourceCreated)
+serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceCreated)
     .AddServiceBusSubscription("floodreport-public");
 
 var postgres = builder.AddPostgres("postgres")

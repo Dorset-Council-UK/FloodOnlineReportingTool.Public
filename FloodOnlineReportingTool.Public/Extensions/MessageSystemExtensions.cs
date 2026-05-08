@@ -55,7 +55,7 @@ internal static class MessageSystemExtensions
 
                     config.Message<FloodReportSourceCreated>(m =>
                     {
-                        m.SetEntityName(TopicNames.FloodSourceCreated);  // Use the exact topic name from Azure
+                        m.SetEntityName(TopicNames.FloodReportSourceCreated);  // Use the exact topic name from Azure
                     });
                 });
             });
