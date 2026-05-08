@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Contracts;
+using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
@@ -11,7 +12,7 @@ public static class EligibilityExtensions
 {
     extension(EligibilityCheck eligibilityCheck)
     {
-        internal EligibilityCheckRecord ToMessageCreated(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
+        internal EligibilityCheckRecord ToEligibilityCheckRecord(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
         {
             return new(
                 eligibilityCheck.Id,
@@ -32,10 +33,11 @@ public static class EligibilityExtensions
                         o.FloodAuthorityId,
                         o.FloodAuthority.AuthorityName
                     )),
-                ], [..
+                ],
+                [..
                     floodProblems.Select(p => new EligibilityCheckFloodSource(
                         p.Id,
-                        p.TypeName
+                        p.TypeName ?? ""
                     )),
                 ]
             );

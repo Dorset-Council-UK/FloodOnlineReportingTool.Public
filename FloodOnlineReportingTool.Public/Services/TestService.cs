@@ -1,6 +1,6 @@
 ﻿using Bogus;
-using FloodOnlineReportingTool.Contracts;
 using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
