@@ -1,14 +1,17 @@
 ﻿using FloodOnlineReportingTool.Contracts;
 using FloodOnlineReportingTool.Contracts.Shared;
+using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -16,11 +19,11 @@ public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     ICommonRepository commonRepository,
     IOptions<GISOptions> options,
-    PublicDbContext dbContext,
     IDbContextFactory<PublicDbContext> contextFactory
 ) : IFloodReportRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
+    private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
 
     public async Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct)
     {
@@ -239,36 +242,52 @@ public class FloodReportRepository(
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var eligibilityCheckId = Guid.CreateVersion7();
+        // Create eligibility check
         var now = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        EligibilityCheck eligibilityCheck = dto.ToCreatedEntity(Guid.CreateVersion7(), createdUtc: now, termsAgreed: now, impactDuration);
 
+        // Create flood report
         var floodReport = new FloodReport
         {
             Reference = await CreateReference(ct),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
             ReportOwnerAccessUntil = now.AddMonths(_gisOptions.AccessTokenIssueDurationMonths),
-            EligibilityCheck = dto.ToCreatedEntity(eligibilityCheckId, createdUtc: now, termsAgreed: now, impactDuration),
+            EligibilityCheck = eligibilityCheck,
         };
 
-        // Add the flood report to the database
+        // Create a message
+        EligibilityCheckRecord eligibilityCheckRecord = eligibilityCheck.ToEligibilityCheckRecord(
+            await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
+            await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
+        );
+        FloodReportSourceCreated message = new(
+            floodReport.Id,
+            Buffer: 25,
+            floodReport.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            floodReport.CreatedUtc,
+            eligibilityCheckRecord,
+            floodReport.Investigation is not null,
+            floodReport.ContactRecords.Count > 0,
+            [.. floodReport.ContactRecords
+                .SelectMany(c => c.SubscribeRecords)
+                .Select(s => s.ContactType)
+                .Distinct(),
+            ]
+        );
+        OutboxMessage outboxMessage = new()
+        {
+            MessageType = nameof(FloodReportSourceCreated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+            Status = MessageStatus.Pending,
+        };
+
+        // Save all changes
         context.FloodReports.Add(floodReport);
-
-        // Publish multiple messages to the message system
-        var responsibleOrganisations = await commonRepository
-            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
-        var fullFloodSource = await commonRepository
-           .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
-        var eligibilityCheckRecord = floodReport.EligibilityCheck.ToMessageCreated(responsibleOrganisations, fullFloodSource);
-
-        // Save the flood report, eligibility check, and messages to the database
+        context.OutboxMessages.Add(outboxMessage);
         await context.SaveChangesAsync(ct);
-
-        var reportDetailsViewUriBase = new Uri($"{viewUriBase.AbsoluteUri.TrimEnd('/')}/details/");
-        var floodReportCreatedMessage = floodReport.ToMessageCreated(reportDetailsViewUriBase, eligibilityCheckRecord);
-
-        // TODO: add save message to outbox pattern back in
 
         return floodReport;
     }
