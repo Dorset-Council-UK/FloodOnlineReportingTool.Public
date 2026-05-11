@@ -131,11 +131,13 @@ public partial class Verify(
             return;
         }
         var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, true, _cts.Token);
-        if (updatedSubscription.ResultModel is not SubscribeRecord returnedSubscription)
+        if (!updatedSubscription.IsSuccess)
         {
             StateHasChanged();
             return;
         }
+
+        SubscribeRecord returnedSubscription = updatedSubscription.Value;
         if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
         {
             StateHasChanged();

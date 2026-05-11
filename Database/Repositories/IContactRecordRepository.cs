@@ -27,59 +27,63 @@ public interface IContactRecordRepository
     /// Create a contact record for the user, going via the flood report
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
-    Task<CreateOrUpdateResult<ContactRecord>> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
+    /// <returns>A result pattern with the created contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Adds the provided flood report to an existing contact record
     /// </summary>
-    /// <returns></returns>
-    Task<GetResult<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+    /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+
     /// <summary>
     /// Update the contact record, going via the flood report
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
-    Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
+    /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
 
     /// <summary>
     /// Delete the contact record by ID
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    /// <returns>A result pattern indicating success, or a list of errors.</returns>
     Task<DeleteResult<ContactRecord>> DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
     /// Creates a contact subscription record
     /// </summary>
-    /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct);
+    /// <returns>
+    ///     <para>A result pattern with the created subscribe record, or a list of errors.</para>
+    ///     <para>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</para>
+    /// </returns>
+    Task<Result<SubscribeRecord>> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct);
 
     /// <summary>
     /// Returns a current subscription record by its ID
     /// </summary>
-    /// <returns></returns>
     Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct);
 
     /// <summary>
     /// Verifies a contact subscription record
     /// </summary>
-    /// <returns></returns>
     Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct);
 
     /// <summary>
     /// This updates the verification code and expiry on a subscription record
     /// </summary>
-    /// <returns></returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct);
+    Task<Result<SubscribeRecord>> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct);
 
     /// <summary>
     /// Updates a subscription record
     /// </summary>
-    /// <returns></returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct);
+    /// <returns>A result pattern with the updated subscribe record, or a list of errors.</returns>
+    Task<Result<SubscribeRecord>> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct);
 
     /// <summary>
     /// Deletes a subscription record by its ID
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A result pattern indicating success, or a list of errors.</returns>
     Task<DeleteResult<SubscribeRecord>> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct);
 
     /// <summary>

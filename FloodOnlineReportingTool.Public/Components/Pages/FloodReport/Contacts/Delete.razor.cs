@@ -119,11 +119,11 @@ public partial class Delete(
             // TODO - enable this once notification is available
             //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, contactRecordType);
 
-            var deleteResult = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
-            if (!deleteResult.IsSuccess)
+            var deleteContactRecord = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
+            if (!deleteContactRecord.IsSuccess)
             {
                 var field = _editContext.Field(nameof(_contactModel.ContactType));
-                foreach (var error in deleteResult.Errors)
+                foreach (var error in deleteContactRecord.Errors)
                 {
                     _messageStore.Add(field, error);
                 }

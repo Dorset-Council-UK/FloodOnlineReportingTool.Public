@@ -10,7 +10,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
@@ -165,12 +164,12 @@ public partial class Create(
             Guid contactRecordId;
             if (contactRecord.Count == 0)
             {
-                var newRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-                if (!newRecord.IsSuccess)
+                var createContactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+                if (!createContactRecord.IsSuccess)
                 {
                     return;
                 }
-                contactRecordId = newRecord.ResultModel!.Id;
+                contactRecordId = createContactRecord.Value.Id;
             }
             else
             {
@@ -185,26 +184,24 @@ public partial class Create(
             }
             var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, false, _cts.Token);
 
-           if (generatedSubscribeRecord == null || !generatedSubscribeRecord.IsSuccess)
-            {
-                logger.LogError("There was a problem creating contact information");
-                return;
-            }
-            if (generatedSubscribeRecord.ResultModel == null)
+            if (!generatedSubscribeRecord.IsSuccess)
             {
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
 
-            if (!generatedSubscribeRecord.ResultModel.IsEmailVerified && !generatedSubscribeRecord.ResultModel.IsRecordOwner)
+            SubscribeRecord subscribeRecord = generatedSubscribeRecord.Value;
+            if (!subscribeRecord.IsEmailVerified && !subscribeRecord.IsRecordOwner)
             {
-                var updatedVerification = await contactRepository.UpdateVerificationCode(generatedSubscribeRecord.ResultModel, false, _cts.Token);
-                if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
+                var updatedVerification = await contactRepository.UpdateVerificationCode(subscribeRecord, false, _cts.Token);
+                if (!updatedVerification.IsSuccess)
                 {
                     logger.LogError("Error sending email verification notification");
                     navigationManager.NavigateTo(ContactPages.Summary.Url);
                     return;
                 }
+
+                SubscribeRecord returnedSubscription = updatedVerification.Value;
                 if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
                 {
                     logger.LogError("Error sending email verification notification");

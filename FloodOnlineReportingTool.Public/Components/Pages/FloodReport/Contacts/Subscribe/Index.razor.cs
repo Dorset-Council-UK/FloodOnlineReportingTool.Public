@@ -123,8 +123,8 @@ public partial class Index(
                     // Connect to the existing record and skip the subscription setup steps
                     _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
-                    var linkResult = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
-                    if (linkResult.IsSuccess)
+                    var updateContactRecord = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
+                    if (updateContactRecord.IsSuccess)
                     {
                         var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
                         if (recordOwner == null)
@@ -209,13 +209,13 @@ public partial class Index(
         Guid contactRecordId;
         if (contactRecord.Count == 0)
         {
-            var newRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-            if (!newRecord.IsSuccess)
+            var createContactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
+            if (!createContactRecord.IsSuccess)
             {
                 CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
                 return;
             }
-            contactRecordId = newRecord.ResultModel!.Id;
+            contactRecordId = createContactRecord.Value.Id;
         }
         else
         {
@@ -230,13 +230,15 @@ public partial class Index(
             currentUserEmail = authState.User.Email;
         }
 
-        CreateOrUpdateResult<SubscribeRecord> subscriptionResult = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, true, _cts.Token);
+        var createSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, true, _cts.Token);
 
-        if (subscriptionResult.ResultModel is not SubscribeRecord returnedSubscription)
+        if (!createSubscribeRecord.IsSuccess)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
             return;
         }
+
+        SubscribeRecord returnedSubscription = createSubscribeRecord.Value;
         if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
         {
             CustomLogError(nameof(Model.ErrorMessage), "Subscription record verification expiry is not valid.", "Sorry, something went wrong", true);

@@ -244,16 +244,17 @@ public partial class Change(
 
             logger.LogInformation("Contact information updated successfully");
 
-            if (updatedSubscription.ResultModel is not SubscribeRecord sub)
+            if (!updatedSubscription.IsSuccess)
             {
                 logger.LogError("Failed to update subscription record");
                 return;
             }
 
             // Handle email verification if the email is not yet verified
-            if (!sub.IsEmailVerified)
+            SubscribeRecord subscribeRecord = updatedSubscription.Value;
+            if (!subscribeRecord.IsEmailVerified)
             {
-                await SendEmailVerificationAsync(sub);
+                await SendEmailVerificationAsync(subscribeRecord);
             }
 
             // Navigate back to contacts summary page
@@ -274,12 +275,13 @@ public partial class Change(
             // Update the verification code and expiry (userPresent: false means automatic send)
             var updatedVerification = await contactRepository.UpdateVerificationCode(subscription, userPresent: false, _cts.Token);
 
-            if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
+            if (!updatedVerification.IsSuccess)
             {
                 logger.LogWarning("Failed to update verification code for subscription {SubscriptionId}", subscription.Id);
                 return;
             }
 
+            SubscribeRecord returnedSubscription = updatedVerification.Value;
             if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
             {
                 logger.LogWarning("Verification expiry is null for subscription {SubscriptionId}", subscription.Id);
