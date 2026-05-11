@@ -66,14 +66,14 @@ public interface IFloodReportRepository
     ///     <para>Publishes a message to the message system.</para>
     /// </summary>
     /// <returns>A result pattern with the updated flood report, or a list of errors.</returns>
-    Task<Result<FloodReport?>> Update(Guid id, EligibilityCheckDto dto, CancellationToken ct);
+    Task<Result<FloodReport?>> Update(Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct);
 
     /// <summary>
     ///     <para>Updates a users flood report with new eligibility check information.</para>
     ///     <para>Publishes a message to the message system.</para>
     /// </summary>
     /// <returns>A result pattern with the users updated flood report, or a list of errors.</returns>
-    Task<Result<FloodReport?>> Update(string userId, Guid id, EligibilityCheckDto dto, CancellationToken ct);
+    Task<Result<FloodReport?>> Update(string userId, Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct);
 
     /// <summary>
     ///     <para>Gets the result model with information about the eligibility status of the current record</para>

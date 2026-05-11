@@ -105,7 +105,9 @@ public partial class Update(
         }
 
         logger.LogDebug("Updating flood report");
-        var updateFloodReport = await floodReportRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
+        var viewBaseUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
+        var status = Guid.Empty; // TODO: Decide what status is used when updating a flood report from the overview page
+        var updateFloodReport = await floodReportRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), status, viewBaseUri, _cts.Token);
         if (!updateFloodReport.IsSuccess)
         {
             var errorField = _editContext.Field(nameof(_updateModel.UprnText));
