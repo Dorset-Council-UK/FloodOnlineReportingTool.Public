@@ -1,6 +1,5 @@
 ﻿using FloodOnlineReportingTool.Contracts;
 using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
@@ -79,7 +78,7 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    public async Task<Result<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -91,7 +90,7 @@ public class FloodReportRepository(
 
         if (floodReport == null)
         {
-            return CreateOrUpdateResult<FloodReport>.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+            return Result<FloodReport>.Failure([$"Flood report with id {floodReportId} not found."]);
         }
         foreach(var contactRecord in floodReport.ContactRecords)
         {
@@ -102,7 +101,7 @@ public class FloodReportRepository(
         }
 
         await context.SaveChangesAsync(ct);
-        return CreateOrUpdateResult<FloodReport>.Success(floodReport);
+        return Result<FloodReport>.Success(floodReport);
     }
 
     private async Task<string> CreateReference(CancellationToken ct)
@@ -236,7 +235,7 @@ public class FloodReportRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReport>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
 
@@ -258,17 +257,16 @@ public class FloodReportRepository(
         };
 
         // Create a message
-        EligibilityCheckRecord eligibilityCheckRecord = eligibilityCheck.ToEligibilityCheckRecord(
-            await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
-            await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
-        );
         FloodReportSourceCreated message = new(
             floodReport.Id,
             Buffer: 25,
             floodReport.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
             floodReport.CreatedUtc,
-            eligibilityCheckRecord,
+            eligibilityCheck.ToEligibilityCheckRecord(
+                await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
+                await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
+            ),
             floodReport.Investigation is not null,
             floodReport.ContactRecords.Count > 0,
             [.. floodReport.ContactRecords
@@ -284,12 +282,93 @@ public class FloodReportRepository(
             Status = MessageStatus.Pending,
         };
 
-        // Save all changes
-        context.FloodReports.Add(floodReport);
-        context.OutboxMessages.Add(outboxMessage);
-        await context.SaveChangesAsync(ct);
+        try
+        {
+            // Save all changes
+            context.FloodReports.Add(floodReport);
+            context.OutboxMessages.Add(outboxMessage);
+            await context.SaveChangesAsync(ct);
 
-        return floodReport;
+            return Result<FloodReport>.Success(floodReport);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating flood report with eligibility check.");
+            return Result<FloodReport>.Failure(["Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug."]);
+        }
+    }
+
+    public Task<Result<FloodReport?>> Update(Guid id, EligibilityCheckDto dto, CancellationToken ct)
+    {
+        throw new NotImplementedException("Updating flood reports is not implemented yet.");
+
+        //logger.LogInformation("Update eligibility check {Id}", id);
+
+        //var eligibilityCheck = await context.EligibilityChecks
+        //    .AsNoTracking()
+        //    .FirstOrDefaultAsync(o => o.Id == id, ct);
+
+        //if (eligibilityCheck == null)
+        //{
+        //    return null;
+        //}
+
+        //// Update eligiblity check
+        //var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        //var updatedCheck = dto.ToUpdatedEntity(eligibilityCheck, updatedUtc: DateTimeOffset.UtcNow, impactDuration);
+        //context.EligibilityChecks.Update(updatedCheck);
+
+        //// Create a message
+
+        //OutboxMessage outboxMessage = new()
+        //{
+        //    MessageType = nameof(FloodReportSourceCreated),
+        //    Message = JsonSerializer.Serialize(message, _jsonOptions),
+        //    Status = MessageStatus.Pending,
+        //};
+
+
+        //// Publish a updated message to the message system
+        //var responsibleOrganisations = await commonRepository.GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct);
+        //var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
+        //var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
+
+        //// TODO: add save message to outbox pattern back in
+
+        //// Update the database with the eligibility check, message, flood impacts, and flood problems
+        //await context.SaveChangesAsync(ct);
+
+        //return updatedCheck;
+    }
+
+    public Task<Result<FloodReport?>> Update(string userId, Guid id, EligibilityCheckDto dto, CancellationToken ct)
+    {
+        throw new NotImplementedException("Updating flood reports is not implemented yet.");
+
+        //var eligibilityCheck = await context.ContactRecords
+        //    .AsNoTracking()
+        //    .Where(cr => cr.ContactUserId == userId)
+        //    .SelectMany(cr => cr.FloodReports)
+        //    .Select(fr => fr.EligibilityCheck)
+        //    .FirstOrDefaultAsync(o => o != null && o.Id == id, ct)
+        //    ?? throw new InvalidOperationException("No eligiblity check found");
+
+        //// Update the fields we choose
+        //var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        //var updatedCheck = dto.ToUpdatedEntity(eligibilityCheck, updatedUtc: DateTimeOffset.UtcNow, impactDuration);
+        //context.EligibilityChecks.Update(updatedCheck);
+
+        //// Publish a updated message to the message system
+        //var responsibleOrganisations = await commonRepository.GetResponsibleOrganisations(updatedCheck.Easting, updatedCheck.Northing, ct);
+        //var fullFloodSource = await commonRepository.GetFullEligibilityFloodProblemSourceList(updatedCheck, ct);
+        //var updatedMessage = updatedCheck.ToMessageUpdated(responsibleOrganisations, fullFloodSource);
+
+        //// TODO: add save message to outbox pattern back in
+
+        //// Update the database with the eligibility check, message, flood impacts, and flood problems
+        //await context.SaveChangesAsync(ct);
+
+        //return updatedCheck;
     }
 
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)

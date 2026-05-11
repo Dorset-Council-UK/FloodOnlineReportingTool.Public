@@ -15,7 +15,8 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 public partial class Update(
     ILogger<Update> logger,
     NavigationManager navigationManager,
-    IEligibilityCheckRepository eligibilityCheckRepository
+    IEligibilityCheckRepository eligibilityCheckRepository,
+    IFloodReportRepository floodReportRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -104,18 +105,22 @@ public partial class Update(
         }
 
         logger.LogDebug("Updating flood report");
-        try
+        var updateFloodReport = await floodReportRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
+        if (!updateFloodReport.IsSuccess)
         {
-            await eligibilityCheckRepository.UpdateForUser(userId, EligibilityCheckId, _updateModel.ToDto(), _cts.Token);
-            logger.LogInformation("Eligibility check updated successfully for user");
-            navigationManager.NavigateTo(FloodReportPages.Overview.Url);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "There was a problem updating the eligibility check");
-            _messageStore.Add(_editContext.Field(nameof(_updateModel.UprnText)), $"There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
+            var errorField = _editContext.Field(nameof(_updateModel.UprnText));
+            _messageStore.Add(errorField, $"There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
+            foreach (var error in updateFloodReport.Errors)
+            {
+                logger.LogError("Error updating flood report: {Error}", error);
+                _messageStore.Add(errorField, error);
+            }
             _editContext.NotifyValidationStateChanged();
+            return;
         }
+
+        logger.LogInformation("Eligibility check updated successfully for user");
+        navigationManager.NavigateTo(FloodReportPages.Overview.Url);
     }
 
     private async Task<UpdateModel?> GetUpdateModel()

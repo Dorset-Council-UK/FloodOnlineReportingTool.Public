@@ -103,14 +103,14 @@ public sealed class TestService(
             ],
         };
 
-        var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, new Uri("https://localhost/test/flood-report"), ct);
+        var createFloodReport = await floodReportRepository.Create(dto, new Uri("https://localhost/test/flood-report"), ct);
 
-        if (floodReport is null)
+        if (!createFloodReport.IsSuccess)
         {
             return null;
         }
 
-        return floodReport.Reference;
+        return createFloodReport.Value.Reference;
 #else
         await Task.CompletedTask;
         return null;
