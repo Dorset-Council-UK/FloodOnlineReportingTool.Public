@@ -14,6 +14,7 @@
   </Project>
   <Project Path="FloodOnlineReportingTool.Public/FloodOnlineReportingTool.Public.csproj" />
   <Project Path="MigrationService/MigrationService.csproj" />
+  <Project Path="Outbox/Outbox.csproj" />
   <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
   <Project Path="Tests/Tests.csproj" />
 </Solution>

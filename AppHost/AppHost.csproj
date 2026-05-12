@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FloodOnlineReportingTool.Public\FloodOnlineReportingTool.Public.csproj" />
     <ProjectReference Include="..\MigrationService\MigrationService.csproj" />
+    <ProjectReference Include="..\Outbox\Outbox.csproj" />
   </ItemGroup>
 
 </Project>

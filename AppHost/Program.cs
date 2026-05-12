@@ -51,4 +51,10 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
         }
     });
 
+builder.AddProject<Projects.Outbox>("outbox")
+    .WithReference(databasePublic)
+    .WithReference(serviceBus)
+    .WaitFor(serviceBus)
+    .WaitForCompletion(migrations);
+
 await builder.Build().RunAsync();
