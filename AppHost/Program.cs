@@ -1,8 +1,9 @@
 using FloodOnlineReportingTool.Contracts.Topics;
+using ServiceDefaults;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var serviceBus = builder.AddAzureServiceBus("service-bus")
+var serviceBus = builder.AddAzureServiceBus(ConnectionStringNames.ServiceBus)
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
 serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceCreated)
@@ -14,13 +15,13 @@ var postgres = builder.AddPostgres("postgres")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithPgAdmin(options => options.WithImageTag("latest"));
 
-var databasePublic = postgres.AddDatabase("FloodReportingPublic");
+var databasePublic = postgres.AddDatabase(ConnectionStringNames.Public);
 
 var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(databasePublic)
     .WaitFor(databasePublic);
 
-var connectionStringBoundaries = builder.AddConnectionString("Boundaries");
+var connectionStringBoundaries = builder.AddConnectionString(ConnectionStringNames.Boundaries);
 
 builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithDeveloperCertificateTrust(true)

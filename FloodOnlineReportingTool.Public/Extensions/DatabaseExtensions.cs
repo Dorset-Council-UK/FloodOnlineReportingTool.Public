@@ -2,6 +2,7 @@
 using FloodOnlineReportingTool.Database.Exceptions;
 using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
+using ServiceDefaults;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -11,10 +12,10 @@ internal static class DatabaseExtensions
     {
         internal IHostApplicationBuilder AddFloodReportingDatabase()
         {
-            var connectionString = builder.Configuration.GetConnectionString("FloodReportingPublic");
+            var connectionString = builder.Configuration.GetConnectionString(ConnectionStringNames.Public);
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ConfigurationMissingException("Missing configuration setting: The public connection string 'FloodReportingPublic' is missing.");
+                throw new ConfigurationMissingException($"Missing configuration setting: The public connection string '${ConnectionStringNames.Public}' is missing.");
             }
 
             builder.Services.AddDbContextFactory<PublicDbContext>(options =>
@@ -31,7 +32,7 @@ internal static class DatabaseExtensions
         
         internal IHostApplicationBuilder AddBoundariesDatabase()
         {
-            builder.AddNpgsqlDbContext<BoundariesDbContext>("Boundaries",
+            builder.AddNpgsqlDbContext<BoundariesDbContext>(ConnectionStringNames.Boundaries,
                 configureDbContextOptions: options =>
                     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
