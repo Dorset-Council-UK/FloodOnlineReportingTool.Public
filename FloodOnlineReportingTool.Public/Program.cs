@@ -23,8 +23,6 @@ var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Cons
 builder.AddAuthentication();
 builder.Services.AddScoped<SessionStateService>();
 
-// Configure messaging system
-builder.AddMessageSystem();
 builder.AddGovNotify();
 
 // Configure API versioning and OpenAPI
