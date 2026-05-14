@@ -15,7 +15,7 @@ internal static class DatabaseExtensions
             var connectionString = builder.Configuration.GetConnectionString(ConnectionStringNames.Public);
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ConfigurationMissingException($"Missing configuration setting: The public connection string '${ConnectionStringNames.Public}' is missing.");
+                throw new ConfigurationMissingException($"Missing configuration setting: The public connection string '{ConnectionStringNames.Public}' is missing.");
             }
 
             builder.Services.AddDbContextFactory<PublicDbContext>(options =>
