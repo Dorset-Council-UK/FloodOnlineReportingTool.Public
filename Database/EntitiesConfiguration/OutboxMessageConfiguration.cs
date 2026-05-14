@@ -12,10 +12,9 @@ internal class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessa
             .Property(o => o.Id)
             .ValueGeneratedNever();
 
-        // Supports the outbox worker polling query:
-        // WHERE Status = Pending ORDER BY Created TAKE 10
+        // Supports the outbox worker query
         builder
-            .HasIndex(o => new { o.Status, o.Created });
+            .HasIndex(o => new { o.Status, o.Priority, o.Created });
 
         builder
             .ToTable(o => o.HasComment("The outbox message table is used to store messages that need to be sent to other systems. It is part of a messaging outbox pattern."));

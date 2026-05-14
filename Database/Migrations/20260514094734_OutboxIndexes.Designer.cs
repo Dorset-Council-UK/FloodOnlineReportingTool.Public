@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514094734_OutboxIndexes")]
+    partial class OutboxIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1627,9 +1630,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<DateTimeOffset?>("Delivered")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ErrorReason")
-                        .HasColumnType("text");
-
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1638,15 +1638,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Status", "Priority", "Created");
+                    b.HasIndex("Status", "Created");
 
                     b.ToTable("OutboxMessages", "fortpublic", t =>
                         {
