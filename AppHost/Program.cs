@@ -6,8 +6,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 var serviceBus = builder.AddAzureServiceBus(ConnectionStringNames.ServiceBus)
     .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
 
-serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceCreated)
-    .AddServiceBusSubscription("floodreport-public");
+serviceBus.AddServiceBusTopic($"test-{TopicNames.FloodReportSourceCreated}")
+    .AddServiceBusSubscription("test-floodreport-public");
+serviceBus.AddServiceBusTopic($"test-{TopicNames.FloodReportSourceUpdated}")
+    .AddServiceBusSubscription("test-floodreport-public");
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "18-3.6")
@@ -29,9 +31,7 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithHttpHealthCheck("/health")
     .WithReference(databasePublic)
     .WithReference(connectionStringBoundaries)
-    .WithReference(serviceBus)
     .WaitFor(connectionStringBoundaries)
-    .WaitFor(serviceBus)
     .WaitForCompletion(migrations)
     .WithUrls(context =>
     {
