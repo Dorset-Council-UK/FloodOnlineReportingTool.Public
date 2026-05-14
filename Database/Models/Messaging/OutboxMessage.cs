@@ -6,6 +6,8 @@ public record OutboxMessage
     public DateTimeOffset Created { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? Delivered { get; set; }
     public MessageStatus Status { get; set; } = MessageStatus.Unknown;
+    public string? ErrorReason { get; set; }
+    public MessagePriority Priority { get; init; } = MessagePriority.Medium;
     public required string MessageType { get; init; }
     public required string Message { get; init; }
 }
