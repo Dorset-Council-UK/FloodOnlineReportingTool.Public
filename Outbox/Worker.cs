@@ -1,12 +1,11 @@
-using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using FloodOnlineReportingTool.Contracts;
 using FloodOnlineReportingTool.Contracts.Topics;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Messaging;
 using Microsoft.EntityFrameworkCore;
-using ServiceDefaults;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Mime;
 
 namespace Outbox;
@@ -14,7 +13,7 @@ namespace Outbox;
 public sealed class Worker(
     ILogger<Worker> logger,
     IServiceProvider serviceProvider,
-    IConfiguration configuration
+    ServiceBusClient serviceBusClient
 ) : BackgroundService
 {
     public const string ActivitySourceName = "OutboxWorker";
@@ -23,17 +22,6 @@ public sealed class Worker(
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        string? connectionString = configuration.GetConnectionString(ConnectionStringNames.ServiceBus);
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            logger.LogWarning("Service bus connection string '{ConnectionStringName}' is not set. Outbox will not run.", ConnectionStringNames.ServiceBus);
-            return;
-        }
-
-        // SDK already has built in retry
-        // Managed identity - https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-managed-service-identity#connect-to-service-bus-by-using-a-managed-identity-in-azure-sdks
-        await using ServiceBusClient client = new(connectionString, new DefaultAzureCredential());
-
         while (!cancellationToken.IsCancellationRequested)
         {
             using var activity = s_activitySource.StartActivity("Processing outbox messages", ActivityKind.Producer);
@@ -43,12 +31,13 @@ public sealed class Worker(
                 // get the pending outbox messages
                 await using var scope = serviceProvider.CreateAsyncScope();
                 var publicDbContext = scope.ServiceProvider.GetRequiredService<PublicDbContext>();
-                List<IGrouping<string, OutboxMessage>> groupedPendingMessages = await publicDbContext.OutboxMessages
+                List<OutboxMessage> pendingMessages = await publicDbContext.OutboxMessages
                     .Where(m => m.Status == MessageStatus.Pending)
-                    .OrderBy(m => m.Created) // FIFO processing
+                    .OrderBy(m => m.Priority)
+                    .ThenBy(m => m.Created) // FIFO processing
                     .Take(BatchSize)
-                    .GroupBy(m => m.MessageType)
                     .ToListAsync(cancellationToken);
+                // TODO: add priority to OutboxMessage for stronger grouping?
 
                 if (groupedPendingMessages.Count > 0)
                 {
@@ -58,7 +47,7 @@ public sealed class Worker(
                         logger.LogDebug("Processing {MessageCount} outbox message(s) of type {MessageType}", group.Count(), group.Key);
 
                         string topicName = GetTopicName(group.Key);
-                        await using ServiceBusSender sender = client.CreateSender(topicName);
+                        await using ServiceBusSender sender = serviceBusClient.CreateSender(topicName);
                         using ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync(cancellationToken);
 
                         foreach (var outboxMessage in group)
@@ -68,6 +57,10 @@ public sealed class Worker(
                                 ContentType = MediaTypeNames.Application.Json,
                                 MessageId = outboxMessage.Id.ToString(),
                                 Subject = outboxMessage.MessageType,
+                                ApplicationProperties =
+                                {
+                                    { "Priority", outboxMessage.Priority },
+                                },
                             };
 
                             if (messageBatch.TryAddMessage(message))
@@ -79,6 +72,7 @@ public sealed class Worker(
                             {
                                 // TODO: Build an admin view to see failed messages
                                 outboxMessage.Status = MessageStatus.Failed;
+                                outboxMessage.ErrorReason = string.Create(CultureInfo.InvariantCulture, $"Message size {message.Body.ToMemory().Length} bytes exceeds the maximum batch size of {messageBatch.MaxSizeInBytes} bytes.");
                                 logger.LogError("Outbox message {MessageId} is too large to fit in the batch and will be marked as failed", outboxMessage.Id);
                             }
                         }
