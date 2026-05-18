@@ -99,6 +99,52 @@
 </dl>
 
 <div>
+    <h2 class="govuk-heading-l">Outbox messages</h2>
+
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Messages</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Messages</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Status</dt>
+                            <dd class="govuk-summary-list__value">
+                                <GdsTag Text="@($"{_outboxMessageCount} messages")" Colour="GdsTagColour.Blue" />
+                                <GdsTag Text="@($"{_outboxMessageCountPending} pending")" Colour="GdsTagColour.Yellow" />
+                                <GdsTag Text="@($"{_outboxMessageCountProcessed} processed")" Colour="GdsTagColour.Green" />
+                                <GdsTag Text="@($"{_outboxMessageCountFailed} failed")" Colour="GdsTagColour.Red" />
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">??</dt>
+                            <dd class="govuk-summary-list__value">??</dd>
+                        </div>
+
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+<div>
     <h2 class="govuk-heading-l">General pages</h2>
     <ul class="govuk-list">
         <li><a class="govuk-link" href="@GeneralPages.Home.Url">@GeneralPages.Home.Title</a></li>

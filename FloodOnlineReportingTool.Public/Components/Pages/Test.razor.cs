@@ -3,12 +3,16 @@ using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Database.Services;
+using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -18,12 +22,14 @@ namespace FloodOnlineReportingTool.Public.Components.Pages;
 
 public partial class Test(
     ILogger<Test> logger,
+    IAuthorizationService authorizationService,
     ProtectedSessionStorage protectedSessionStorage,
     TestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
     IConfiguration Configuration,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
+    IOutboxMessageService outboxMessageService,
     NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
@@ -87,6 +93,12 @@ public partial class Test(
     private bool? _investigationHasStarted;
     private string? _floodReportStatusText;
 
+    // Outbox messages
+    private int _outboxMessageCount;
+    private int _outboxMessageCountPending;
+    private int _outboxMessageCountProcessed;
+    private int _outboxMessageCountFailed;
+
     private string SignInUrl
     {
         get
@@ -108,6 +120,27 @@ public partial class Test(
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            if (authState.User.IsAuthenticated)
+            {
+                var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
+                var hasAdminPolicy = adminPolicyCheck.Succeeded;
+
+                if (hasAdminPolicy)
+                {
+                    _outboxMessageCount = await outboxMessageService.Count(_cts.Token);
+                    _outboxMessageCountPending = await outboxMessageService.Count(MessageStatus.Pending, _cts.Token);
+                    _outboxMessageCountProcessed = await outboxMessageService.Count(MessageStatus.Processed, _cts.Token);
+                    _outboxMessageCountFailed = await outboxMessageService.Count(MessageStatus.Failed, _cts.Token);
+                }
+            }
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
