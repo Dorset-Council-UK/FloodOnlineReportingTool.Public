@@ -12,7 +12,9 @@ internal class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessa
             .Property(o => o.Id)
             .ValueGeneratedNever();
 
-        // Supports the outbox worker query
+        builder
+            .HasIndex(o => new { o.Priority, o.Created });
+
         builder
             .HasIndex(o => new { o.Status, o.Priority, o.Created });
 
