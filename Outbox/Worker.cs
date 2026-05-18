@@ -88,7 +88,7 @@ public sealed class Worker(
                     }
                 }
 
-                await publicDbContext.SaveChangesAsync(cancellationToken);
+                //await publicDbContext.SaveChangesAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
