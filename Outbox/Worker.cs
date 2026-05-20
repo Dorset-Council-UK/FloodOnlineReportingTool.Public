@@ -15,12 +15,17 @@ public sealed class Worker(
     ILogger<Worker> logger,
     IConfiguration configuration,
     IServiceProvider serviceProvider,
+    IHostEnvironment hostEnvironment,
     ServiceBusClient serviceBusClient
 ) : BackgroundService
 {
     public const string ActivitySourceName = "OutboxWorker";
-    private static readonly ActivitySource s_activitySource = new(ActivitySourceName);
+    private static readonly ActivitySource _activitySource = new(ActivitySourceName);
     private const int BatchSize = 10;
+
+    private const string _source = "FloodOnlineReportingTool.Public";
+    private readonly string _environment = hostEnvironment.EnvironmentName;
+    private static readonly string _machineName = Environment.MachineName;
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -30,7 +35,7 @@ public sealed class Worker(
 
         while (await timer.WaitForNextTickAsync(cancellationToken))
         {
-            using var activity = s_activitySource.StartActivity("Processing outbox messages", ActivityKind.Producer);
+            using var activity = _activitySource.StartActivity("Processing outbox messages", ActivityKind.Producer);
             logger.LogDebug("Checking for pending outbox messages");
 
             try
@@ -67,11 +72,14 @@ public sealed class Worker(
                             Subject = outboxMessage.MessageType,
                             ApplicationProperties =
                             {
-                                { "Priority", outboxMessage.Priority },
+                                { "Priority", (int)outboxMessage.Priority },
+                                { "Source", _source },
+                                { "Environment", _environment },
+                                { "MachineName", _machineName },
                             },
                         };
 
-                        //await sender.SendMessageAsync(message, cancellationToken);
+                        await sender.SendMessageAsync(message, cancellationToken);
 
                         outboxMessage.Status = MessageStatus.Processed;
                         outboxMessage.Delivered = DateTimeOffset.UtcNow;
@@ -88,7 +96,7 @@ public sealed class Worker(
                     }
                 }
 
-                //await publicDbContext.SaveChangesAsync(cancellationToken);
+                await publicDbContext.SaveChangesAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -114,12 +122,10 @@ public sealed class Worker(
     /// <exception cref="NotSupportedException">Thrown if the specified message type is not supported.</exception>
     private string GetTopicName(string messageType)
     {
-        // TODO: This is the wrong type, just for testing right now
         var topicName = messageType switch
         {
-            //nameof(FloodReportSourceCreated) => TopicNames.FloodReportSourceCreated,
-            //nameof(FloodReportSourceUpdated) => TopicNames.FloodReportSourceUpdated,
-            nameof(FloodReportSourceDeleted) => TopicNames.FloodReportSourceDeleted,
+            nameof(FloodReportSourceCreated) => TopicNames.FloodReportSourceCreated,
+            nameof(FloodReportSourceUpdated) => TopicNames.FloodReportSourceUpdated,
             _ => throw new NotSupportedException($"Message type {messageType} is not supported."),
         };
 
