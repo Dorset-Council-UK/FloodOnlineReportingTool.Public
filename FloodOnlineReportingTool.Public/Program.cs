@@ -55,7 +55,7 @@ builder.AddFloodReportingHealthChecks();
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
 
-builder.Services.AddScoped<TestService>();
+builder.Services.AddScoped<ITestService, TestService>();
 
 var app = builder.Build();
 

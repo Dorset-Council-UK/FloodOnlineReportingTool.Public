@@ -1,4 +1,4 @@
-﻿using Bogus;
+﻿using FloodOnlineReportingTool.Contracts;
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
@@ -6,120 +6,101 @@ using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace FloodOnlineReportingTool.Public.Services;
 
-#pragma warning disable MA0051 // Method is too long
-#pragma warning disable CA1822 // Mark members as static
-
-public sealed class TestService(
+internal sealed class TestService(
     IDbContextFactory<PublicDbContext> contextFactory,
-    IFloodReportRepository floodReportRepository
-) {
-    internal async Task TestMessage(CancellationToken ct)
+    IFloodReportRepository floodReportRepository,
+    IHostEnvironment environment
+) : ITestService
+{
+    private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
+
+    private static readonly EligibilityCheckDto TestEligibilityCheckDto = new()
     {
-#if DEBUG
-        // Make a test message for an EligibilityCheckRecord contract
-        Randomizer.Seed = new Random(232589734);
+        Uprn = 10023242411,
+        Usrn = 20023242411,
+        Easting = 368991.12,
+        Northing = 90881.94,
+        IsAddress = true,
+        LocationDesc = "TEST location description",
+        TemporaryUprn = null,
+        TemporaryLocationDesc = null,
+        ImpactStart = DateTimeOffset.UtcNow.AddDays(-1),
+        DurationKnownId = FloodDurationIds.Duration24,
+        ImpactDuration = 24,
+        OnGoing = false,
+        Uninhabitable = false,
+        VulnerablePeopleId = Database.Models.Status.RecordStatusIds.Yes,
+        VulnerableCount = 1,
+        Residentials = [
+            FloodImpactIds.InsideLivingArea,
+            FloodImpactIds.Basement,
+        ],
+        Commercials = [
+            FloodImpactIds.InsideBuilding,
+            FloodImpactIds.CarPark,
+        ],
+        Sources = [
+            PrimaryCauseIds.River,
+            PrimaryCauseIds.WaterRisingOutOfTheGround,
+        ],
+        SecondarySources = [
+            SecondaryCauseIds.RunoffFromRoad,
+            SecondaryCauseIds.RunoffFromTrackOrPath,
+        ],
+    };
 
-        var eligibilityCheckOrganisationFaker = new Faker<EligibilityCheckOrganisation>("en_GB")
-            .CustomInstantiator(f => new(
-                f.Random.Uuid(),
-                f.Company.CompanyName(),
-                f.Random.Uuid(),
-                f.Commerce.ProductName()
-            ));
+    private static readonly EligibilityCheckRecord TestEligibilityCheckRecord = new(
+        Id: Guid.CreateVersion7(),
+        Uprn: 10023242411,
+        Usrn: 20023242411,
+        Easting: 368991.12,
+        Northing: 90881.94,
+        ImpactStartUTC: DateTimeOffset.UtcNow.AddDays(-1),
+        ImpactDurationHours: 24,
+        IsOnGoing: false,
+        IsUninhabitable: false,
+        VulnerableCount: 1,
+        LocationDescription: "TEST location description",
+        Organisations: [
+            new EligibilityCheckOrganisation(OrganisationIds.Dorset, "TEST Dorset Council", FloodAuthorityIds.LeadLocalFloodAuthority, "TEST LLFA"),
+            new EligibilityCheckOrganisation(OrganisationIds.Wessex, "TEST Environment Agency (Wessex)", FloodAuthorityIds.EnvironmentAgency, "TEST EA"),
+        ],
+        FloodSources: [
+            new EligibilityCheckFloodSource(PrimaryCauseIds.River, "TEST River"),
+            new EligibilityCheckFloodSource(PrimaryCauseIds.WaterRisingOutOfTheGround, "TEST Water rising out of the ground"),
+            new EligibilityCheckFloodSource(SecondaryCauseIds.RunoffFromRoad, "TEST Runoff from road"),
+            new EligibilityCheckFloodSource(SecondaryCauseIds.RunoffFromTrackOrPath, "TEST Runoff from track/path"),
+        ]
+    );
 
-        var eligibilityCheckSourceFaker = new Faker<EligibilityCheckFloodSource>("en_GB")
-            .CustomInstantiator(f => new(
-                f.Random.Uuid(),
-                f.Company.CompanyName()
-            ));
-
-        var eligibilityCheckRecordFaker = new Faker<EligibilityCheckRecord>("en_GB")
-            .CustomInstantiator(f => new(
-                f.Random.Uuid(),
-                f.Random.Long(1, 9999999999),
-                f.Random.Long(1, 9999999999),
-                f.Random.Double(0, 700000),
-                f.Random.Double(0, 1300000),
-                f.Date.PastOffset(),
-                f.Random.Int(1, 72),
-                f.Random.Bool(),
-                f.Random.Bool(),
-                f.Random.Int(0, 5),
-                f.Company.CompanyName(),
-                eligibilityCheckOrganisationFaker.GenerateBetween<EligibilityCheckOrganisation>(1, 3),
-                eligibilityCheckSourceFaker.GenerateBetween<EligibilityCheckFloodSource>(1, 3)
-            ));
-
-        var message = eligibilityCheckRecordFaker.Generate();
-
-        // TODO: add a test section to the test page, to test different messages and contracts
-        // These new test buttons will use the new outbox message pattern
-        await Task.CompletedTask;
-#else
-        await Task.CompletedTask;
-#endif
-    }
-
-    internal async Task<string?> TestFloodReport(CancellationToken ct)
+    public async Task<FloodReport?> TestFloodReport_Create(CancellationToken cancellationToken)
     {
-#if DEBUG
-        EligibilityCheckDto dto = new()
-        {
-            Uprn = 10023242411,
-            Usrn = 20023242411,
-            Easting = 368991.12,
-            Northing = 90881.94,
-            IsAddress = true,
-            LocationDesc = "TEST location description",
-            TemporaryUprn = null,
-            TemporaryLocationDesc = null,
-            ImpactStart = DateTimeOffset.UtcNow.AddDays(-1),
-            DurationKnownId = FloodDurationIds.Duration24,
-            ImpactDuration = 24,
-            OnGoing = false,
-            Uninhabitable = false,
-            VulnerablePeopleId = Database.Models.Status.RecordStatusIds.Yes,
-            VulnerableCount = 1,
-            Residentials = [
-                FloodImpactIds.InsideLivingArea,
-                FloodImpactIds.Basement,
-            ],
-            Commercials = [
-                FloodImpactIds.InsideBuilding,
-                FloodImpactIds.CarPark,
-            ],
-            Sources = [
-                PrimaryCauseIds.River,
-                PrimaryCauseIds.WaterRisingOutOfTheGround,
-            ],
-            SecondarySources = [
-                SecondaryCauseIds.RunoffFromRoad,
-                SecondaryCauseIds.RunoffFromTrackOrPath,
-            ],
-        };
-
-        var createFloodReport = await floodReportRepository.Create(dto, new Uri("https://localhost/test/flood-report"), ct);
-
-        if (!createFloodReport.IsSuccess)
+        if (!environment.IsDevelopment())
         {
             return null;
         }
 
-        return createFloodReport.Value.Reference;
-#else
-        await Task.CompletedTask;
-        return null;
-#endif
+        var viewUriBase = new Uri("https://localhost:7039/report-flooding/test");
+        var createResult = await floodReportRepository.Create(TestEligibilityCheckDto, viewUriBase, cancellationToken);
+        return createResult.IsSuccess ? createResult.Value : null;
     }
 
-    internal async Task<Investigation?> TestInvestigation(CancellationToken ct)
+#pragma warning disable MA0051 // Method is too long
+    public async Task<Investigation?> TestInvestigation(CancellationToken ct)
+#pragma warning restore MA0051 // Method is too long
     {
-#if DEBUG
+        if (!environment.IsDevelopment())
+        {
+            return null;
+        }
+
         var now = DateTimeOffset.UtcNow;
         var investigationId = Guid.CreateVersion7();
 
@@ -219,21 +200,26 @@ public sealed class TestService(
             HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
             PropertyInsuredId = Database.Models.Status.RecordStatusIds.Yes,
         };
-#else
-        await Task.CompletedTask;
-        return null;
-#endif
     }
 
-    internal async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
+    public async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
     {
+        if (!environment.IsDevelopment())
+        {
+            return null;
+        }
+
         var investigation = await TestInvestigation(ct);
         return investigation?.ToDto();
     }
 
-    internal async Task TestFloodReportActionNeededStatus(Guid floodReportId, CancellationToken ct)
+    public async Task TestFloodReportActionNeededStatus(Guid floodReportId, CancellationToken ct)
     {
-#if DEBUG
+        if (!environment.IsDevelopment())
+        {
+            return;
+        }
+
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var floodReport = await context.FloodReports.FindAsync([floodReportId], ct);
         if (floodReport is null)
@@ -246,8 +232,77 @@ public sealed class TestService(
             floodReport.StatusId = RecordStatusIds.ActionNeeded;
             await context.SaveChangesAsync(ct);
         }
-#else
-        await Task.CompletedTask;
-#endif
+    }
+
+    public async Task<OutboxMessage?> TestOutboxMessage_FloodReportSourceCreated(MessageStatus messageStatus, CancellationToken cancellationToken)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        FloodReportSourceCreated message = new(
+            Id: Guid.CreateVersion7(),
+            Buffer: 25,
+            Reference: "TEST1234",
+            ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
+            CreatedUtc: now,
+            EligibilityCheckRecord: TestEligibilityCheckRecord,
+            HasInvestigation: false,
+            HasContacts: false,
+            ContactRecordTypes: []
+        );
+
+        OutboxMessage outboxMessage = new()
+        {
+            Created = now,
+            Status = messageStatus,
+            Priority = MessagePriority.Low,
+            MessageType = nameof(FloodReportSourceCreated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+        };
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        context.OutboxMessages.Add(outboxMessage);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return outboxMessage;
+    }
+
+    public async Task<OutboxMessage?> TestOutboxMessage_FloodReportSourceUpdated(MessageStatus messageStatus, CancellationToken cancellationToken)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        FloodReportSourceUpdated message = new(
+            Id: Guid.CreateVersion7(),
+            Reference: "TEST1234",
+            ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
+            UpdatedUtc: now,
+            RecordStatusUpdate: Guid.Empty, // TODO: When FloodReportRepository.Update is used, create a real record status update and use its ID here
+            EligibilityCheckRecord: TestEligibilityCheckRecord,
+            ActionStatusUpdates: []
+        );
+
+        OutboxMessage outboxMessage = new()
+        {
+            Created = now,
+            Status = messageStatus,
+            Priority = MessagePriority.Low,
+            MessageType = nameof(FloodReportSourceUpdated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+        };
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        context.OutboxMessages.Add(outboxMessage);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return outboxMessage;
     }
 }
