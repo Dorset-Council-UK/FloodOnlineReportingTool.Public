@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "Outbox": {
+    "start": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {

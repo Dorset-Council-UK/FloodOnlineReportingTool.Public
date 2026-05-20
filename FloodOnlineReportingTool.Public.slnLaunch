@@ -10,7 +10,7 @@
       {
         "Path": "Outbox\\Outbox.csproj",
         "Action": "Start",
-        "DebugTarget": "Outbox"
+        "DebugTarget": "start"
       }
     ]
   }
