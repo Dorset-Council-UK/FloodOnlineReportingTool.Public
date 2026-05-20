@@ -10,12 +10,13 @@ using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
-using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
@@ -24,19 +25,15 @@ public partial class Test(
     ILogger<Test> logger,
     IAuthorizationService authorizationService,
     ProtectedSessionStorage protectedSessionStorage,
-    TestService testService,
+    ITestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
-    IConfiguration Configuration,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
     IOutboxMessageService outboxMessageService,
+    IOptions<GovNotifyOptions> govNotifyOptions,
     NavigationManager navigationManager
-) : IPageOrder, IAsyncDisposable
+) : IAsyncDisposable
 {
-    // Page order properties
-    public string Title { get; set; } = GeneralPages.Test.Title;
-    public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [];
-
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
@@ -99,6 +96,10 @@ public partial class Test(
     private int _outboxMessageCountProcessed;
     private int _outboxMessageCountFailed;
 
+    // Notifications
+    private string? _notificationTestEmailAddress;
+    private bool _notificationHasTestNotification;
+
     private string SignInUrl
     {
         get
@@ -124,23 +125,32 @@ public partial class Test(
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthenticationState is not null)
+        var hasAdminPolicy = await HasPolicy(PolicyNames.Admin);
+        if (hasAdminPolicy)
         {
-            var authState = await AuthenticationState;
-            if (authState.User.IsAuthenticated)
-            {
-                var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
-                var hasAdminPolicy = adminPolicyCheck.Succeeded;
+            var options = govNotifyOptions.Value;
+            _notificationTestEmailAddress = options.TestEmail;
+            _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
 
-                if (hasAdminPolicy)
-                {
-                    _outboxMessageCount = await outboxMessageService.Count(_cts.Token);
-                    _outboxMessageCountPending = await outboxMessageService.Count(MessageStatus.Pending, _cts.Token);
-                    _outboxMessageCountProcessed = await outboxMessageService.Count(MessageStatus.Processed, _cts.Token);
-                    _outboxMessageCountFailed = await outboxMessageService.Count(MessageStatus.Failed, _cts.Token);
-                }
-            }
+            await OutboxMessage_GetCounts();
         }
+    }
+
+    private async Task<bool> HasPolicy(string policyName)
+    {
+        if (AuthenticationState is null)
+        {
+            return false;
+        }
+
+        var authState = await AuthenticationState;
+        if (!authState.User.IsAuthenticated)
+        {
+            return false;
+        }
+
+        var policyCheck = await authorizationService.AuthorizeAsync(authState.User, policyName);
+        return policyCheck.Succeeded;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -181,27 +191,19 @@ public partial class Test(
         return data.Success && data.Value != null;
     }
 
-    private async Task<bool> TestNotifcation()
+    private async Task Notifcation_SendTest()
     {
-        var testEmail = Configuration["GovNotify:TestEmail"];
-        if (testEmail == null)
+        if (!string.IsNullOrWhiteSpace(_notificationTestEmailAddress))
         {
-            return false;
+            _ = await govNotifyEmailSender.SendTestNotification(_notificationTestEmailAddress, "This is a test of the FORT notification system - public reporting project.", _cts.Token);
         }
-        var result = await govNotifyEmailSender.SendTestNotification(testEmail, "This is a test of the FORT notification system - public reporting project.", _cts.Token);
-        return string.IsNullOrEmpty(result)!;
     }
 
-    private async Task TestMessage()
+    public async Task FloodReport_Create()
     {
-        await testService.TestMessage(_cts.Token);
-    }
-    public async Task TestFloodReport()
-    {
-        var reference = await testService.TestFloodReport(_cts.Token)
-            ?? throw new InvalidOperationException("TestFloodReport did not work, investigate.");
-
-        navigationManager.NavigateTo($"{FloodReportCreatePages.Confirmation.Url}?reference={reference}");
+        var floodReport = await testService.TestFloodReport_Create(_cts.Token)
+            ?? throw new InvalidOperationException("Creating a test flood report did not work, investigate.");
+        navigationManager.NavigateTo($"{FloodReportCreatePages.Confirmation.Url}?reference={floodReport.Reference}");
     }
 
     private async Task TestRedaction()
@@ -323,5 +325,27 @@ public partial class Test(
         // TODO: Work out what to do when the user has reported multiple floods
         var floodReports = await floodReportRepository.ReportedByUser(userId, _cts.Token);
         return floodReports.FirstOrDefault();
+    }
+
+    private async Task OutboxMessage_GetCounts()
+    {
+        _outboxMessageCount = await outboxMessageService.Count(_cts.Token);
+        _outboxMessageCountPending = await outboxMessageService.Count(MessageStatus.Pending, _cts.Token);
+        _outboxMessageCountProcessed = await outboxMessageService.Count(MessageStatus.Processed, _cts.Token);
+        _outboxMessageCountFailed = await outboxMessageService.Count(MessageStatus.Failed, _cts.Token);
+    }
+
+    private async Task OutboxMessage_FloodReportSourceCreated_Add(MessageStatus messageStatus)
+    {
+        _ = await testService.TestOutboxMessage_FloodReportSourceCreated(messageStatus, _cts.Token)
+            ?? throw new Exception("Failed to create a test outbox message.");
+        await OutboxMessage_GetCounts();
+    }
+
+    private async Task OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus messageStatus)
+    {
+        _ = await testService.TestOutboxMessage_FloodReportSourceUpdated(messageStatus, _cts.Token)
+            ?? throw new Exception("Failed to create a test outbox message.");
+        await OutboxMessage_GetCounts();
     }
 }

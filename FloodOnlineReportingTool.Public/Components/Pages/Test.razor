@@ -1,27 +1,18 @@
 ﻿@page "/test"
+@using FloodOnlineReportingTool.Database.Models.Messaging
 @using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@GeneralPages.Test.Title</PageTitle>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<h1 class="govuk-heading-xl">@GeneralPages.Test.Title</h1>
 
 <div class="govuk-summary-card">
     <div class="govuk-summary-card__title-wrapper">
         <h2 class="govuk-summary-card__title">General information</h2>
         <ul class="govuk-summary-card__actions">
             <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestMessage" title="Create a test contract message and publish it">
-                    Send test message
-                </a>
-            </li>
-            <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestNotifcation" title="Create a test notification and email it to configured email">
-                    Send test notification
-                </a>
-            </li>
-            <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestFloodReport" title="Create a test flood report">
+                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="" @onclick="FloodReport_Create" @onclick:preventDefault title="Create a test flood report">
                     Create test flood report
                 </a>
             </li>
@@ -57,55 +48,66 @@
     </div>
 </div>
 
-<h2 class="govuk-heading-l">Session details</h2>
-<dl class="govuk-summary-list">
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Has create data</dt>
-        <dd class="govuk-summary-list__value">@_hasCreateData</dd>
-        <dd class="govuk-summary-list__actions">
-            @if (_hasCreateData)
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateData" title="Delete the create data in the session">
-                    Delete<span class="govuk-visually-hidden"> the create data in the session</span>
-                </a>
-            }
-            else
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateData" title="Create blank create data in the session">
-                    Create<span class="govuk-visually-hidden"> blank create data in the session</span>
-                </a>
-            }
-        </dd>
+<div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">Session details</h2>
     </div>
-
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Has create extra data</dt>
-        <dd class="govuk-summary-list__value">@_hasCreateExtraData</dd>
-        <dd class="govuk-summary-list__actions">
-            @if (_hasCreateExtraData)
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateExtraData" title="Delete the create extra data in the session">
-                    Delete<span class="govuk-visually-hidden"> the create extra data in the session</span>
-                </a>
-            }
-            else
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateExtraData" title="Create blank create extra data in the session">
-                    Create<span class="govuk-visually-hidden"> blank create extra data in the session</span>
-                </a>
-            }
-        </dd>
+    <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Has create data</dt>
+                <dd class="govuk-summary-list__value">@_hasCreateData</dd>
+                <AuthorizeView Policy="@PolicyNames.Admin">
+                    <Authorized>
+                        <dd class="govuk-summary-list__actions">
+                            @if (_hasCreateData)
+                            {
+                                <a class="govuk-link" draggable="false" href="" @onclick="DeleteCreateData" @onclick:preventDefault>
+                                    Delete<span class="govuk-visually-hidden"> the create data in the session</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="govuk-link" draggable="false" href="" @onclick="BlankCreateData" @onclick:preventDefault>
+                                    Create<span class="govuk-visually-hidden"> blank create data in the session</span>
+                                </a>
+                            }
+                        </dd>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Has create extra data</dt>
+                <dd class="govuk-summary-list__value">@_hasCreateExtraData</dd>
+                <AuthorizeView Policy="@PolicyNames.Admin">
+                    <Authorized>
+                        <dd class="govuk-summary-list__actions">
+                            @if (_hasCreateExtraData)
+                            {
+                                <a class="govuk-link" draggable="false" href="" @onclick="DeleteCreateExtraData" @onclick:preventDefault>
+                                    Delete<span class="govuk-visually-hidden"> the create extra data in the session</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="govuk-link" draggable="false" href="" @onclick="BlankCreateExtraData" @onclick:preventDefault>
+                                    Create<span class="govuk-visually-hidden"> blank create extra data in the session</span>
+                                </a>
+                            }
+                        </dd>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </dl>
     </div>
-</dl>
+</div>
 
 <div>
-    <h2 class="govuk-heading-l">Outbox messages</h2>
-
     <AuthorizeView Policy="@PolicyNames.Admin">
         <NotAuthorized>
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
-                    <h2 class="govuk-summary-card__title">Messages</h2>
+                    <h2 class="govuk-summary-card__title">Outbox messages</h2>
                 </div>
                 <div class="govuk-summary-card__content">
                     <dl class="govuk-summary-list">
@@ -119,7 +121,7 @@
         <Authorized>
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
-                    <h2 class="govuk-summary-card__title">Messages</h2>
+                    <h2 class="govuk-summary-card__title">Outbox messages</h2>
                 </div>
                 <div class="govuk-summary-card__content">
                     <dl class="govuk-summary-list">
@@ -131,15 +133,141 @@
                                 <GdsTag Text="@($"{_outboxMessageCountProcessed} processed")" Colour="GdsTagColour.Green" />
                                 <GdsTag Text="@($"{_outboxMessageCountFailed} failed")" Colour="GdsTagColour.Red" />
                             </dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="OutboxMessage_GetCounts" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> outbox message counts</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
                         </div>
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">??</dt>
-                            <dd class="govuk-summary-list__value">??</dd>
+                            <dt class="govuk-summary-list__key">FloodReportSourceCreated</dt>
+                            <dd class="govuk-summary-list__value">Pending</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceCreated_Add(MessageStatus.Pending)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source created message with the status of pending</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
                         </div>
-
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceCreated</dt>
+                            <dd class="govuk-summary-list__value">Failed</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceCreated_Add(MessageStatus.Failed)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source created message with the status of failed</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceUpdated</dt>
+                            <dd class="govuk-summary-list__value">Pending</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus.Pending)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source updated message with the status of pending</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceUpdated</dt>
+                            <dd class="govuk-summary-list__value">Failed</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus.Failed)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source updated message with the status of failed</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
                     </dl>
                 </div>
             </div>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+<div>
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Notifications</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Notifications</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Test notification</dt>
+                            <dd class="govuk-summary-list__value">
+                                @if (string.IsNullOrWhiteSpace(_notificationTestEmailAddress))
+                                {
+                                    <div>
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Red" /> GovNotify:TestEmail
+                                    </div>
+                                }
+                                else if (!_notificationHasTestNotification)
+                                {
+                                    <div>
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Red" /> GovNotify:Templates:TestNotification
+                                    </div>
+                                }
+                                else
+                                {
+                                    <GdsTag Text="Available" Colour="GdsTagColour.Green" />
+                                }
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                @if (!string.IsNullOrWhiteSpace(_notificationTestEmailAddress) && _notificationHasTestNotification)
+                                {
+                                    <ul class="govuk-summary-list__actions-list">
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="Notifcation_SendTest" @onclick:preventDefault>Send<span class="govuk-visually-hidden"> test notification</span></a>
+                                        </li>
+                                    </ul>
+                                }
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+            @* @if (string.IsNullOrWhiteSpace(_testEmailAddress))
+            {
+                <div class="govuk-summary-card">
+                    <div class="govuk-summary-card__title-wrapper">
+                        <h2 class="govuk-summary-card__title">Notifications</h2>
+                    </div>
+                    <div class="govuk-summary-card__content">
+                        <dl class="govuk-summary-list">
+                            <div class="govuk-summary-list__row">
+                                <GdsWarning Text="To send a test notification, set configuration value 'GovNotify:TestEmail'" />
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+            }
+            else
+            {
+                
+            } *@
         </Authorized>
     </AuthorizeView>
 </div>
