@@ -6,4 +6,5 @@ public class GovNotifyOptions
 
     public required string ApiKey { get; init; }
     public required GovNotifyTemplates Templates { get; init; }
+    public string? TestEmail { get; init; }
 }
