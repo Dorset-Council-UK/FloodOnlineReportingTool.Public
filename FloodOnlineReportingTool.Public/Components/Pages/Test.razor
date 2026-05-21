@@ -1,12 +1,14 @@
 ﻿@page "/test"
 @using FloodOnlineReportingTool.Database.Models.Messaging
 @using FloodOnlineReportingTool.Public.Authentication
+@using FloodOnlineReportingTool.Public.Models
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@GeneralPages.Test.Title</PageTitle>
 
 <h1 class="govuk-heading-xl">@GeneralPages.Test.Title</h1>
 
+@* General information *@
 <div class="govuk-summary-card">
     <div class="govuk-summary-card__title-wrapper">
         <h2 class="govuk-summary-card__title">General information</h2>
@@ -48,60 +50,73 @@
     </div>
 </div>
 
-<div class="govuk-summary-card">
-    <div class="govuk-summary-card__title-wrapper">
-        <h2 class="govuk-summary-card__title">Session details</h2>
-    </div>
-    <div class="govuk-summary-card__content">
-        <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Has create data</dt>
-                <dd class="govuk-summary-list__value">@_hasCreateData</dd>
-                <AuthorizeView Policy="@PolicyNames.Admin">
-                    <Authorized>
-                        <dd class="govuk-summary-list__actions">
-                            @if (_hasCreateData)
-                            {
-                                <a class="govuk-link" draggable="false" href="" @onclick="DeleteCreateData" @onclick:preventDefault>
-                                    Delete<span class="govuk-visually-hidden"> the create data in the session</span>
-                                </a>
-                            }
-                            else
-                            {
-                                <a class="govuk-link" draggable="false" href="" @onclick="BlankCreateData" @onclick:preventDefault>
-                                    Create<span class="govuk-visually-hidden"> blank create data in the session</span>
-                                </a>
-                            }
-                        </dd>
-                    </Authorized>
-                </AuthorizeView>
+@* Protected storage *@
+<div>
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Protected storage</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
             </div>
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Has create extra data</dt>
-                <dd class="govuk-summary-list__value">@_hasCreateExtraData</dd>
-                <AuthorizeView Policy="@PolicyNames.Admin">
-                    <Authorized>
-                        <dd class="govuk-summary-list__actions">
-                            @if (_hasCreateExtraData)
-                            {
-                                <a class="govuk-link" draggable="false" href="" @onclick="DeleteCreateExtraData" @onclick:preventDefault>
-                                    Delete<span class="govuk-visually-hidden"> the create extra data in the session</span>
-                                </a>
-                            }
-                            else
-                            {
-                                <a class="govuk-link" draggable="false" href="" @onclick="BlankCreateExtraData" @onclick:preventDefault>
-                                    Create<span class="govuk-visually-hidden"> blank create extra data in the session</span>
-                                </a>
-                            }
-                        </dd>
-                    </Authorized>
-                </AuthorizeView>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Protected storage</h2>
+                    <ul class="govuk-summary-card__actions">
+                        <li class="govuk-summary-card__action">
+                            <a class="govuk-link" draggable="false" href="" @onclick="ProtectedStorage_Refresh" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> protected storage information</span></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        @foreach (var info in _protectedStorageInfos)
+                        {
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">@info.Value.Label</dt>
+                                <dd class="govuk-summary-list__value">
+                                    @if (info.Value.Exists)
+                                    {
+                                        <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
+                                    }
+                                    else
+                                    {
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                    }
+                                </dd>
+                                <dd class="govuk-summary-list__actions">
+                                    <ul class="govuk-summary-list__actions-list">
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            @if (info.Value.Exists)
+                                            {
+                                                <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Delete(info.Key)" @onclick:preventDefault>Delete<span class="govuk-visually-hidden"> protected storage information</span></a>
+                                            }
+                                            else
+                                            {
+                                                <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create(info.Key)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> protected storage information</span></a>
+                                            }
+                                        </li>
+                                    </ul>
+                                </dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
             </div>
-        </dl>
-    </div>
+        </Authorized>
+    </AuthorizeView>
 </div>
 
+@* Outbox messages *@
 <div>
     <AuthorizeView Policy="@PolicyNames.Admin">
         <NotAuthorized>
@@ -192,6 +207,7 @@
     </AuthorizeView>
 </div>
 
+@* Notifications *@
 <div>
     <AuthorizeView Policy="@PolicyNames.Admin">
         <NotAuthorized>
@@ -249,25 +265,6 @@
                     </dl>
                 </div>
             </div>
-            @* @if (string.IsNullOrWhiteSpace(_testEmailAddress))
-            {
-                <div class="govuk-summary-card">
-                    <div class="govuk-summary-card__title-wrapper">
-                        <h2 class="govuk-summary-card__title">Notifications</h2>
-                    </div>
-                    <div class="govuk-summary-card__content">
-                        <dl class="govuk-summary-list">
-                            <div class="govuk-summary-list__row">
-                                <GdsWarning Text="To send a test notification, set configuration value 'GovNotify:TestEmail'" />
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-            }
-            else
-            {
-                
-            } *@
         </Authorized>
     </AuthorizeView>
 </div>
@@ -295,6 +292,7 @@
     <GdsInsetText Text="1. ^ User may pass through one or both pages"></GdsInsetText>
 </div>
 
+@* Investigation *@
 <div>
     <h2 class="govuk-heading-l">Investigation pages</h2>
 
@@ -304,7 +302,7 @@
             <ul class="govuk-summary-card__actions">
                 <AuthorizeView>
                     <Authorized>
-                        @if (_investigationHasStarted == true && _investigationInProtectedStorage)
+                        @if (_investigationHasStarted == true && _protectedStorageInfos[SessionConstants.Investigation].Exists)
                         {
                             <li class="govuk-summary-card__action">
                                 <a href="@InvestigationPages.Summary.Url" class="govuk-link govuk-link--no-visited-state" draggable="false">View<span class="govuk-visually-hidden"> the investigation</span></a>
@@ -328,7 +326,7 @@
                             @if (_investigationHasStarted == false)
                             {
                                 <dd class="govuk-summary-list__actions">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationActionNeededStatus" @onclick:preventDefault>Set 'Action needed'<span class="govuk-visually-hidden"> flood report status</span></a>
+                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="Investigation_ActionNeededStatus" @onclick:preventDefault>Set 'Action needed'<span class="govuk-visually-hidden"> flood report status</span></a>
                                 </dd>
                             }
                         </div>
@@ -345,23 +343,35 @@
                 </AuthorizeView>
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">In protected storage</dt>
-                    <dd class="govuk-summary-list__value">@_investigationInProtectedStorage</dd>
-                    <dd class="govuk-summary-list__actions">
-                        @if (_investigationInProtectedStorage)
+                    <dd class="govuk-summary-list__value">
+                        @if (@_protectedStorageInfos[SessionConstants.Investigation].Exists)
                         {
-                            <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationRemove" @onclick:preventDefault>Remove<span class="govuk-visually-hidden"> the investigation</span></a>
+                            <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
                         }
                         else
                         {
-                            <ul class="govuk-summary-list__actions-list">
-                                <li class="govuk-summary-list__actions-list-item">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddEmpty" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> empty investigation</span></a>
-                                </li>
-                                <li class="govuk-summary-list__actions-list-item">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddTest" @onclick:preventDefault>Add test data<span class="govuk-visually-hidden"> investigation</span></a>
-                                </li>
-                            </ul>
+                            <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
                         }
+                        
+                    </dd>
+                    <dd class="govuk-summary-list__actions">
+                        <ul class="govuk-summary-list__actions-list">
+                            @if (_protectedStorageInfos[SessionConstants.Investigation].Exists)
+                            {
+                                <li class="govuk-summary-list__actions-list-item">
+                                    <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Delete(SessionConstants.Investigation)" @onclick:preventDefault>Delete<span class="govuk-visually-hidden"> the investigation from protected storage</span></a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="govuk-summary-list__actions-list-item">
+                                    <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create(SessionConstants.Investigation)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> investigation information to protected storage</span></a>
+                                </li>
+                                <li class="govuk-summary-list__actions-list-item">
+                                    <a class="govuk-link" draggable="false" href="" @onclick="Investigation_CreateTest" @onclick:preventDefault>Add test data<span class="govuk-visually-hidden"> investigation information to protected storage</span></a>
+                                </li>
+                            }
+                        </ul>
                     </dd>
                 </div>
             </dl>

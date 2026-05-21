@@ -82,11 +82,22 @@ public partial class Test(
     ];
 
     private readonly CancellationTokenSource _cts = new();
-    private bool _hasCreateData;
-    private bool _hasCreateExtraData;
+
+    // Protected storage
+    private record ProtectedStorageInfo(string Label)
+    {
+        internal bool Exists { get; set; }
+    };
+    private Dictionary<string, ProtectedStorageInfo> _protectedStorageInfos = new(StringComparer.Ordinal)
+    {
+        { SessionConstants.FloodReportId, new ProtectedStorageInfo("Flood report ID") },
+        { SessionConstants.EligibilityCheck, new ProtectedStorageInfo("Eligibility check") },
+        { SessionConstants.EligibilityCheck_ExtraData, new ProtectedStorageInfo("Eligibility check extra data") },
+        { SessionConstants.Investigation, new ProtectedStorageInfo("Investigation") },
+        { SessionConstants.VerificationId, new ProtectedStorageInfo("Verification ID") },
+    };
 
     // Investigation
-    private bool _investigationInProtectedStorage;
     private bool? _investigationHasStarted;
     private string? _floodReportStatusText;
 
@@ -128,11 +139,18 @@ public partial class Test(
         var hasAdminPolicy = await HasPolicy(PolicyNames.Admin);
         if (hasAdminPolicy)
         {
+            // Protected storage
+            await ProtectedStorage_Refresh();
+
+            // Investigation
+
+            // Outbox messages
+            await OutboxMessage_GetCounts();
+
+            // Notifications
             var options = govNotifyOptions.Value;
             _notificationTestEmailAddress = options.TestEmail;
             _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
-
-            await OutboxMessage_GetCounts();
         }
     }
 
@@ -157,12 +175,7 @@ public partial class Test(
     {
         if (firstRender)
         {
-            await TestRedaction();
-
-            _hasCreateData = await HasCreateData();
-            _hasCreateExtraData = await HasCreateExtraData();
-
-            // investigation
+            // Investigation
             var yourLastFloodReport = await GetYourLastFloodReport();
             if (yourLastFloodReport is null)
             {
@@ -174,21 +187,12 @@ public partial class Test(
                 _investigationHasStarted = floodReportRepository.HasInvestigationStarted(yourLastFloodReport.StatusId);
                 _floodReportStatusText = yourLastFloodReport.Status?.Text;
             }
-            _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+
+            // Notifications
+            await TestRedaction();
 
             StateHasChanged();
         }
-    }
-
-    private async Task<bool> HasCreateData()
-    {
-        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto?>(SessionConstants.EligibilityCheck);
-        return data.Success && data.Value != null;
-    }
-    private async Task<bool> HasCreateExtraData()
-    {
-        var data = await protectedSessionStorage.GetAsync<ExtraData?>(SessionConstants.EligibilityCheck_ExtraData);
-        return data.Success && data.Value != null;
     }
 
     private async Task Notifcation_SendTest()
@@ -243,45 +247,79 @@ public partial class Test(
         }
     }
 
-    private async Task BlankCreateData()
+    // Protected storage
+    private async Task ProtectedStorage_Refresh()
     {
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, new EligibilityCheckDto());
-        _hasCreateData = await HasCreateData();
+        foreach (var info in _protectedStorageInfos)
+        {
+            if (info.Key is SessionConstants.FloodReportId)
+            {
+                var result = await protectedSessionStorage.GetAsync<Guid?>(info.Key);
+                info.Value.Exists = result.Success && result.Value is not null && result.Value != Guid.Empty;
+            }
+            else if (info.Key is SessionConstants.EligibilityCheck)
+            {
+                var result = await protectedSessionStorage.GetAsync<EligibilityCheckDto?>(info.Key);
+                info.Value.Exists = result.Success && result.Value is not null;
+            }
+            else if (info.Key is SessionConstants.EligibilityCheck_ExtraData)
+            {
+                var result = await protectedSessionStorage.GetAsync<ExtraData?>(info.Key);
+                info.Value.Exists = result.Success && result.Value is not null;
+            }
+            else if (info.Key is SessionConstants.Investigation)
+            {
+                var result = await protectedSessionStorage.GetAsync<InvestigationDto?>(info.Key);
+                info.Value.Exists = result.Success && result.Value is not null;
+            }
+            else if (info.Key is SessionConstants.VerificationId)
+            {
+                var result = await protectedSessionStorage.GetAsync<Guid?>(info.Key);
+                info.Value.Exists = result.Success && result.Value is not null && result.Value != Guid.Empty;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Cannot refresh protected storage information for key {info.Key}");
+            }
+        }
     }
-    private async Task BlankCreateExtraData()
+    private async Task ProtectedStorage_Delete(string key)
     {
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, new ExtraData());
-        _hasCreateExtraData = await HasCreateExtraData();
+        await protectedSessionStorage.DeleteAsync(key);
+        await ProtectedStorage_Refresh();
     }
+    private async Task ProtectedStorage_Create(string key)
+    {
+        if (key is SessionConstants.FloodReportId)
+        {
+            await protectedSessionStorage.SetAsync(key, Guid.NewGuid());
+        }
+        else if (key is SessionConstants.EligibilityCheck)
+        {
+            await protectedSessionStorage.SetAsync(key, new EligibilityCheckDto());
+        }
+        else if (key is SessionConstants.EligibilityCheck_ExtraData)
+        {
+            await protectedSessionStorage.SetAsync(key, new ExtraData());
+        }
+        else if (key is SessionConstants.Investigation)
+        {
+            await protectedSessionStorage.SetAsync(key, new InvestigationDto());
+        }
+        else if (key is SessionConstants.VerificationId)
+        {
+            await protectedSessionStorage.SetAsync(key, Guid.NewGuid());
+        }
+        else
+        {
+            throw new InvalidOperationException($"Cannot create protected storage information for key {key}");
+        }
 
-    private async Task DeleteCreateData()
-    {
-        await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
-        _hasCreateData = await HasCreateData();
-    }
-    private async Task DeleteCreateExtraData()
-    {
-        await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
-        _hasCreateExtraData = await HasCreateExtraData();
+        await ProtectedStorage_Refresh();
     }
 
     // Investigation actions
-    private async Task<bool> InvestigationExistsInProtectedStorage()
-    {
-        var data = await protectedSessionStorage.GetAsync<InvestigationDto?>(SessionConstants.Investigation);
-        return data.Success && data.Value is not null;
-    }
-    private async Task InvestigationRemove()
-    {
-        await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
-        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
-    }
-    private async Task InvestigationAddEmpty()
-    {
-        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, new InvestigationDto());
-        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
-    }
-    private async Task InvestigationAddTest()
+    private async Task Investigation_CreateTest()
     {
         var investigationDto = await testService.TestInvestigationDto(_cts.Token);
         if (investigationDto is null)
@@ -291,9 +329,9 @@ public partial class Test(
         }
 
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigationDto);
-        _investigationInProtectedStorage = await InvestigationExistsInProtectedStorage();
+        await ProtectedStorage_Refresh();
     }
-    private async Task InvestigationActionNeededStatus()
+    private async Task Investigation_ActionNeededStatus()
     {
         var floodReport = await GetYourLastFloodReport();
         if (floodReport is null)
@@ -327,6 +365,7 @@ public partial class Test(
         return floodReports.FirstOrDefault();
     }
 
+    // Outbox messages
     private async Task OutboxMessage_GetCounts()
     {
         _outboxMessageCount = await outboxMessageService.Count(_cts.Token);
@@ -334,14 +373,12 @@ public partial class Test(
         _outboxMessageCountProcessed = await outboxMessageService.Count(MessageStatus.Processed, _cts.Token);
         _outboxMessageCountFailed = await outboxMessageService.Count(MessageStatus.Failed, _cts.Token);
     }
-
     private async Task OutboxMessage_FloodReportSourceCreated_Add(MessageStatus messageStatus)
     {
         _ = await testService.TestOutboxMessage_FloodReportSourceCreated(messageStatus, _cts.Token)
             ?? throw new Exception("Failed to create a test outbox message.");
         await OutboxMessage_GetCounts();
     }
-
     private async Task OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus messageStatus)
     {
         _ = await testService.TestOutboxMessage_FloodReportSourceUpdated(messageStatus, _cts.Token)
