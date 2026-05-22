@@ -6,6 +6,17 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public interface IFloodReportRepository
 {
+
+    /// <summary>
+    /// Count the number of flood reports
+    /// </summary>
+    Task<int> Count(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Count the number of flood reports the user has
+    /// </summary>
+    Task<int> Count(string userId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Get all flood reports, for the given user
     /// </summary>

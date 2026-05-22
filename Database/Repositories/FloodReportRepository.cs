@@ -24,6 +24,23 @@ public class FloodReportRepository(
     private readonly GISOptions _gisOptions = options.Value;
     private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
 
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.FloodReports
+            .AsNoTracking()
+            .CountAsync(cancellationToken);
+    }
+
+    public async Task<int> Count(string userId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.FloodReports
+            .AsNoTracking()
+            .Where(fr => fr.ContactRecords.Any(cr => cr.ContactUserId == userId))
+            .CountAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
