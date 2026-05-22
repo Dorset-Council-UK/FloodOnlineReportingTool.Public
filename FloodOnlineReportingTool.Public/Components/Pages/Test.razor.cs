@@ -88,7 +88,7 @@ public partial class Test(
     {
         internal bool Exists { get; set; }
     };
-    private Dictionary<string, ProtectedStorageInfo> _protectedStorageInfos = new(StringComparer.Ordinal)
+    private readonly Dictionary<string, ProtectedStorageInfo> _protectedStorageInfos = new(StringComparer.Ordinal)
     {
         { SessionConstants.FloodReportId, new ProtectedStorageInfo("Flood report ID") },
         { SessionConstants.EligibilityCheck, new ProtectedStorageInfo("Eligibility check") },
@@ -97,9 +97,14 @@ public partial class Test(
         { SessionConstants.VerificationId, new ProtectedStorageInfo("Verification ID") },
     };
 
+    // Flood reports
+    private int _floodReportsCount;
+    private int _floodReportsCountUser;
+    private Database.Models.Flood.FloodReport? _floodReportsYourLast;
+    private string? FloodReportsYourLast_StatusText => _floodReportsYourLast?.Status?.Text;
+
     // Investigation
     private bool? _investigationHasStarted;
-    private string? _floodReportStatusText;
 
     // Outbox messages
     private int _outboxMessageCount;
@@ -136,57 +141,61 @@ public partial class Test(
 
     protected override async Task OnInitializedAsync()
     {
-        var hasAdminPolicy = await HasPolicy(PolicyNames.Admin);
-        if (hasAdminPolicy)
+        // Admin policy check
+        if (AuthenticationState is not null)
         {
-            // Protected storage
-            await ProtectedStorage_Refresh();
+            var authState = await AuthenticationState;
+            if (authState.User.IsAuthenticated)
+            {
+                var adminPolicyResult = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
+                if (adminPolicyResult.Succeeded)
+                {
+                    string? userId = authState.User.Oid;
 
-            // Investigation
+                    // Protected storage
+                    await ProtectedStorage_Refresh();
 
-            // Outbox messages
-            await OutboxMessage_GetCounts();
+                    // Flood reports
+                    await FloodReportsCounts_Refresh(userId);
+                    if (userId is not null)
+                    {
+                        _floodReportsYourLast = await testService.TestFloodReport_GetLast(userId, _cts.Token);
+                    }
 
-            // Notifications
-            var options = govNotifyOptions.Value;
-            _notificationTestEmailAddress = options.TestEmail;
-            _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
+                    // Investigation
+                    if (_floodReportsYourLast is not null)
+                    {
+                        _investigationHasStarted = floodReportRepository.HasInvestigationStarted(_floodReportsYourLast.StatusId);
+                    }
+
+                    // Outbox messages
+                    await OutboxMessage_GetCounts();
+
+                    // Notifications
+                    var options = govNotifyOptions.Value;
+                    _notificationTestEmailAddress = options.TestEmail;
+                    _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
+                }
+            }
         }
-    }
-
-    private async Task<bool> HasPolicy(string policyName)
-    {
-        if (AuthenticationState is null)
-        {
-            return false;
-        }
-
-        var authState = await AuthenticationState;
-        if (!authState.User.IsAuthenticated)
-        {
-            return false;
-        }
-
-        var policyCheck = await authorizationService.AuthorizeAsync(authState.User, policyName);
-        return policyCheck.Succeeded;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Investigation
-            var yourLastFloodReport = await GetYourLastFloodReport();
-            if (yourLastFloodReport is null)
-            {
-                _investigationHasStarted = null;
-                _floodReportStatusText = null;
-            }
-            else
-            {
-                _investigationHasStarted = floodReportRepository.HasInvestigationStarted(yourLastFloodReport.StatusId);
-                _floodReportStatusText = yourLastFloodReport.Status?.Text;
-            }
+            //// Investigation
+            //var yourLastFloodReport = await GetYourLastFloodReport();
+            //if (yourLastFloodReport is null)
+            //{
+            //    _investigationHasStarted = null;
+            //    _floodReportStatusText = null;
+            //}
+            //else
+            //{
+            //    _investigationHasStarted = floodReportRepository.HasInvestigationStarted(yourLastFloodReport.StatusId);
+            //    _floodReportStatusText = yourLastFloodReport.Status?.Text;
+            //}
 
             // Notifications
             await TestRedaction();
@@ -201,13 +210,6 @@ public partial class Test(
         {
             _ = await govNotifyEmailSender.SendTestNotification(_notificationTestEmailAddress, "This is a test of the FORT notification system - public reporting project.", _cts.Token);
         }
-    }
-
-    public async Task FloodReport_Create()
-    {
-        var floodReport = await testService.TestFloodReport_Create(_cts.Token)
-            ?? throw new InvalidOperationException("Creating a test flood report did not work, investigate.");
-        navigationManager.NavigateTo($"{FloodReportCreatePages.Confirmation.Url}?reference={floodReport.Reference}");
     }
 
     private async Task TestRedaction()
@@ -288,23 +290,31 @@ public partial class Test(
         await protectedSessionStorage.DeleteAsync(key);
         await ProtectedStorage_Refresh();
     }
+    private async Task ProtectedStorage_Delete(string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            await protectedSessionStorage.DeleteAsync(key);
+        }
+        await ProtectedStorage_Refresh();
+    }
     private async Task ProtectedStorage_Create(string key)
     {
         if (key is SessionConstants.FloodReportId)
         {
-            await protectedSessionStorage.SetAsync(key, Guid.NewGuid());
+            await protectedSessionStorage.SetAsync(key, _floodReportsYourLast?.Id ?? Guid.NewGuid());
         }
         else if (key is SessionConstants.EligibilityCheck)
         {
-            await protectedSessionStorage.SetAsync(key, new EligibilityCheckDto());
+            await protectedSessionStorage.SetAsync(key, testService.TestData_EligibilityCheckDto);
         }
         else if (key is SessionConstants.EligibilityCheck_ExtraData)
         {
-            await protectedSessionStorage.SetAsync(key, new ExtraData());
+            await protectedSessionStorage.SetAsync(key, testService.TestData_EligibilityCheck_ExtraData);
         }
         else if (key is SessionConstants.Investigation)
         {
-            await protectedSessionStorage.SetAsync(key, new InvestigationDto());
+            await protectedSessionStorage.SetAsync(key, testService.TestData_InvestigationDto);
         }
         else if (key is SessionConstants.VerificationId)
         {
@@ -317,20 +327,34 @@ public partial class Test(
 
         await ProtectedStorage_Refresh();
     }
-
-    // Investigation actions
-    private async Task Investigation_CreateTest()
+    private async Task ProtectedStorage_Create(string[] keys)
     {
-        var investigationDto = await testService.TestInvestigationDto(_cts.Token);
-        if (investigationDto is null)
+        foreach (var key in keys)
         {
-            logger.LogError("TestInvestigationDto returned null, cannot add to protected storage.");
-            return;
+            await ProtectedStorage_Create(key);
         }
-
-        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigationDto);
-        await ProtectedStorage_Refresh();
     }
+
+    // Flood reports
+    private async Task FloodReportsCounts_Refresh(string? userId)
+    {
+        _floodReportsCount = await floodReportRepository.Count(_cts.Token);
+        _floodReportsCountUser = userId is not null
+            ? await floodReportRepository.Count(userId, _cts.Token)
+            : 0;
+    }
+    private async Task FloodReports_CreateTest()
+    {
+        _floodReportsYourLast = await testService.TestFloodReport_Create(_cts.Token);
+
+        string? userId = null;
+
+        var contactRecord = await testService.TestContactRecord_Create(_floodReportsYourLast.Id, userId, _cts.Token);
+
+        await FloodReportsCounts_Refresh(userId);
+    }
+
+    // Investigation
     private async Task Investigation_ActionNeededStatus()
     {
         var floodReport = await GetYourLastFloodReport();
