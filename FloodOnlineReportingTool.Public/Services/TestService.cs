@@ -2,12 +2,14 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -15,13 +17,14 @@ namespace FloodOnlineReportingTool.Public.Services;
 
 internal sealed class TestService(
     IDbContextFactory<PublicDbContext> contextFactory,
+    IContactRecordRepository contactRecordRepository,
     IFloodReportRepository floodReportRepository,
     IHostEnvironment environment
 ) : ITestService
 {
     private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
 
-    private static readonly EligibilityCheckDto TestEligibilityCheckDto = new()
+    public EligibilityCheckDto TestData_EligibilityCheckDto => new()
     {
         Uprn = 10023242411,
         Usrn = 20023242411,
@@ -56,7 +59,7 @@ internal sealed class TestService(
         ],
     };
 
-    private static readonly EligibilityCheckRecord TestEligibilityCheckRecord = new(
+    private static readonly EligibilityCheckRecord TestData_EligibilityCheckRecord = new(
         Id: Guid.CreateVersion7(),
         Uprn: 10023242411,
         Usrn: 20023242411,
@@ -80,6 +83,130 @@ internal sealed class TestService(
         ]
     );
 
+    public ExtraData TestData_EligibilityCheck_ExtraData => new()
+    {
+        Postcode = "DT1 1XJ",
+        PrimaryClassification = "TEST Commercial",
+        SecondaryClassification = "TEST Office",
+        PropertyType = FloodImpactIds.Commercial,
+        TemporaryPostcode = null,
+    };
+
+    private static Investigation TestData_Investigation
+    {
+        get
+        {
+            var investigationId = Guid.CreateVersion7();
+            var now = DateTimeOffset.UtcNow;
+
+            return new()
+            {
+                Id = investigationId,
+                CreatedUtc = now,
+
+                // Water speed (FloodProblem's)
+                BeginId = FloodOnsetIds.Gradually,
+                WaterSpeedId = FloodSpeedIds.Slow,
+                AppearanceId = FloodAppearanceIds.Muddy,
+                MoreAppearanceDetails = "TEST The water looked like it was made of strawberry milkshake",
+
+                // Internal how / Water entry (FloodProblem's)
+                Entries = [
+                    new(investigationId, FloodEntryIds.Windows),
+                    new(investigationId, FloodEntryIds.Walls),
+                    new(investigationId, FloodEntryIds.ExternalOnly),
+                    new(investigationId, FloodEntryIds.Other),
+                ],
+                WaterEnteredOther = "TEST The shower is wet but I think thats normal",
+
+                // Internal when (RecordStatus)
+                WhenWaterEnteredKnownId = Database.Models.Status.RecordStatusIds.Yes,
+                FloodInternalUtc = now.AddDays(-2),
+
+                // Water destination (FloodProblem's)
+                Destinations = [
+                    new(investigationId, FloodDestinationIds.StreamOrWatercourse),
+                    new(investigationId, FloodDestinationIds.DitchesAndDrainageChannels),
+                ],
+
+                // Damaged vehicles (RecordStatus)
+                WereVehiclesDamagedId = Database.Models.Status.RecordStatusIds.Yes,
+                NumberOfVehiclesDamaged = 6,
+
+                // Peak depth (RecordStatus)
+                IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
+                PeakInsideCentimetres = 35,
+                PeakOutsideCentimetres = 50,
+
+                // Service impacts (FloodImpact's)
+                ServiceImpacts = [
+                    new(investigationId, FloodImpactIds.MainsSewer),
+                    new(investigationId, FloodImpactIds.Gas),
+                    new(investigationId, FloodImpactIds.Phoneline),
+                ],
+
+                // Community impacts (FloodImpact's)
+                CommunityImpacts = [
+                    new(investigationId, FloodImpactIds.SomeRoadAccessBlocked),
+                    new(investigationId, FloodImpactIds.PublicTransportDisrupted),
+                ],
+
+                // Blockages
+                HasKnownProblems = true,
+                KnownProblemDetails = "TEST The drain was blocked with legos",
+
+                // Actions taken (FloodMitigation's)
+                ActionsTaken = [
+                    new(investigationId, FloodMitigationIds.SandlessSandbag),
+                    new(investigationId, FloodMitigationIds.FloodDoor),
+                    new(investigationId, FloodMitigationIds.AirBrickCover),
+                    new(investigationId, FloodMitigationIds.MoveValuables),
+                    new(investigationId, FloodMitigationIds.OtherAction),
+                ],
+                OtherAction = "TEST I built a lego dam to stop the water, there was even fire engines!!",
+
+                // Warnings - Help received (FloodMitigation's)
+                HelpReceived = [
+                    new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
+                    new(investigationId, FloodMitigationIds.EnvironmentAgency),
+                    new(investigationId, FloodMitigationIds.LocalAuthority),
+                    new(investigationId, FloodMitigationIds.FloodlineHelp),
+                ],
+
+                // Warnings - Before the flooding (RecordStatus)
+                FloodlineId = Database.Models.Status.RecordStatusIds.Yes,
+                WarningReceivedId = Database.Models.Status.RecordStatusIds.Yes,
+
+                // Warnings - Sources (FloodMitigation's)
+                WarningSources = [
+                    new(investigationId, FloodMitigationIds.FloodlineWarning),
+                    new(investigationId, FloodMitigationIds.Radio),
+                    new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
+                    new(investigationId, FloodMitigationIds.OtherWarning),
+                ],
+                WarningSourceOther = "TEST Many people were screaming, shouting, and letting it all out in the street",
+
+                // Warnings - Floodline (RecordStatus)
+                WarningTimelyId = Database.Models.Status.RecordStatusIds.No,
+                WarningAppropriateId = Database.Models.Status.RecordStatusIds.No,
+
+                // History (RecordStatus)
+                HistoryOfFloodingId = Database.Models.Status.RecordStatusIds.Yes,
+                HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
+                PropertyInsuredId = Database.Models.Status.RecordStatusIds.Yes,
+            };
+        }
+    }
+
+    public InvestigationDto TestData_InvestigationDto => TestData_Investigation.ToDto();
+
+    private static readonly ContactRecordDto TestData_ContactRecordDtoDto = new()
+    {
+        ContactType = ContactRecordType.Tenant,
+        ContactName = "TEST name",
+        EmailAddress = "test@test.com",
+    };
+
     public async Task<FloodReport?> TestFloodReport_Create(CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
@@ -88,129 +215,45 @@ internal sealed class TestService(
         }
 
         var viewUriBase = new Uri("https://localhost:7039/report-flooding/test");
-        var createResult = await floodReportRepository.Create(TestEligibilityCheckDto, viewUriBase, cancellationToken);
+        var createResult = await floodReportRepository.Create(TestData_EligibilityCheckDto, viewUriBase, cancellationToken);
         return createResult.IsSuccess ? createResult.Value : null;
     }
 
-#pragma warning disable MA0051 // Method is too long
-    public async Task<Investigation?> TestInvestigation(CancellationToken ct)
-#pragma warning restore MA0051 // Method is too long
+    public async Task<FloodReport?> TestFloodReport_GetLast(string userId, CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
         {
             return null;
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var investigationId = Guid.CreateVersion7();
-
-        return new()
-        {
-            Id = investigationId,
-            CreatedUtc = now,
-
-            // Water speed (FloodProblem's)
-            BeginId = FloodOnsetIds.Gradually,
-            WaterSpeedId = FloodSpeedIds.Slow,
-            AppearanceId = FloodAppearanceIds.Muddy,
-            MoreAppearanceDetails = "TEST The water looked like it was made of strawberry milkshake",
-
-            // Internal how / Water entry (FloodProblem's)
-            Entries = [
-                new(investigationId, FloodEntryIds.Windows),
-                new(investigationId, FloodEntryIds.Walls),
-                new(investigationId, FloodEntryIds.ExternalOnly),
-                new(investigationId, FloodEntryIds.Other),
-            ],
-            WaterEnteredOther = "TEST The shower is wet but I think thats normal",
-
-            // Internal when (RecordStatus)
-            WhenWaterEnteredKnownId = Database.Models.Status.RecordStatusIds.Yes,
-            FloodInternalUtc = now.AddDays(-2),
-
-            // Water destination (FloodProblem's)
-            Destinations = [
-                new(investigationId, FloodDestinationIds.StreamOrWatercourse),
-                new(investigationId, FloodDestinationIds.DitchesAndDrainageChannels),
-            ],
-
-            // Damaged vehicles (RecordStatus)
-            WereVehiclesDamagedId = Database.Models.Status.RecordStatusIds.Yes,
-            NumberOfVehiclesDamaged = 6,
-
-            // Peak depth (RecordStatus)
-            IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
-            PeakInsideCentimetres = 35,
-            PeakOutsideCentimetres = 50,
-
-            // Service impacts (FloodImpact's)
-            ServiceImpacts = [
-                new(investigationId, FloodImpactIds.MainsSewer),
-                new(investigationId, FloodImpactIds.Gas),
-                new(investigationId, FloodImpactIds.Phoneline),
-            ],
-
-            // Community impacts (FloodImpact's)
-            CommunityImpacts = [
-                new(investigationId, FloodImpactIds.SomeRoadAccessBlocked),
-                new(investigationId, FloodImpactIds.PublicTransportDisrupted),
-            ],
-
-            // Blockages
-            HasKnownProblems = true,
-            KnownProblemDetails = "TEST The drain was blocked with legos",
-
-            // Actions taken (FloodMitigation's)
-            ActionsTaken = [
-                new(investigationId, FloodMitigationIds.SandlessSandbag),
-                new(investigationId, FloodMitigationIds.FloodDoor),
-                new(investigationId, FloodMitigationIds.AirBrickCover),
-                new(investigationId, FloodMitigationIds.MoveValuables),
-                new(investigationId, FloodMitigationIds.OtherAction),
-            ],
-            OtherAction = "TEST I built a lego dam to stop the water, there was even fire engines!!",
-
-            // Warnings - Help received (FloodMitigation's)
-            HelpReceived = [
-                new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
-                new(investigationId, FloodMitigationIds.EnvironmentAgency),
-                new(investigationId, FloodMitigationIds.LocalAuthority),
-                new(investigationId, FloodMitigationIds.FloodlineHelp),
-            ],
-
-            // Warnings - Before the flooding (RecordStatus)
-            FloodlineId = Database.Models.Status.RecordStatusIds.Yes,
-            WarningReceivedId = Database.Models.Status.RecordStatusIds.Yes,
-
-            // Warnings - Sources (FloodMitigation's)
-            WarningSources = [
-                new(investigationId, FloodMitigationIds.FloodlineWarning),
-                new(investigationId, FloodMitigationIds.Radio),
-                new(investigationId, FloodMitigationIds.WardenVolunteerHelp),
-                new(investigationId, FloodMitigationIds.OtherWarning),
-            ],
-            WarningSourceOther = "TEST Many people were screaming, shouting, and letting it all out in the street",
-
-            // Warnings - Floodline (RecordStatus)
-            WarningTimelyId = Database.Models.Status.RecordStatusIds.No,
-            WarningAppropriateId = Database.Models.Status.RecordStatusIds.No,
-
-            // History (RecordStatus)
-            HistoryOfFloodingId = Database.Models.Status.RecordStatusIds.Yes,
-            HistoryOfFloodingDetails = "TEST My brother broke the sink when he was 3 and flooded the bathroom",
-            PropertyInsuredId = Database.Models.Status.RecordStatusIds.Yes,
-        };
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Include(fr => fr.ContactRecords)
+            .Include(fr => fr.EligibilityCheck)
+            .Include(fr => fr.Investigation)
+            .Include(fr => fr.Status)
+            .OrderByDescending(fr => fr.CreatedUtc)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<InvestigationDto?> TestInvestigationDto(CancellationToken ct)
+    public async Task<ContactRecord?> TestContactRecord_Create(Guid floodReportId, string userId, CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
         {
             return null;
         }
 
-        var investigation = await TestInvestigation(ct);
-        return investigation?.ToDto();
+        var dto = TestData_ContactRecordDtoDto with
+        {
+            UserId = userId,
+        };
+
+        var createResult = await contactRecordRepository.CreateForReport(floodReportId, dto, cancellationToken);
+        return createResult.IsSuccess ? createResult.Value : null;
     }
 
     public async Task TestFloodReportActionNeededStatus(Guid floodReportId, CancellationToken ct)
@@ -249,7 +292,7 @@ internal sealed class TestService(
             Reference: "TEST1234",
             ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
             CreatedUtc: now,
-            EligibilityCheckRecord: TestEligibilityCheckRecord,
+            EligibilityCheckRecord: TestData_EligibilityCheckRecord,
             HasInvestigation: false,
             HasContacts: false,
             ContactRecordTypes: []
@@ -286,7 +329,7 @@ internal sealed class TestService(
             ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
             UpdatedUtc: now,
             RecordStatusUpdate: Guid.Empty, // TODO: When FloodReportRepository.Update is used, create a real record status update and use its ID here
-            EligibilityCheckRecord: TestEligibilityCheckRecord,
+            EligibilityCheckRecord: TestData_EligibilityCheckRecord,
             ActionStatusUpdates: []
         );
 
