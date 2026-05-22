@@ -91,6 +91,18 @@ public partial class FloodStarted(
 
     private async Task OnSubmit()
     {
+        // Handle two digit years by assuming they are in the 2000s
+        DateTimeOffset? currentDate = Model.StartDate.DateUtc;
+        if (currentDate.HasValue)
+        {
+            int year = currentDate.Value.Year;
+            if (year >= 0 && year <= 99)
+            {
+                DateTimeOffset newDate = currentDate.Value.AddYears(2000);
+                Model.StartDate = new GdsDate(newDate);
+            }
+        }
+        
         if (_editContext.Validate())
         {
             await OnValidSubmit();
