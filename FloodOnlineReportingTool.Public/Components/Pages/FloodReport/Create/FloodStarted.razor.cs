@@ -5,6 +5,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -98,8 +99,9 @@ public partial class FloodStarted(
             int year = currentDate.Value.Year;
             if (year <= 99)
             {
-                DateTimeOffset newDate = currentDate.Value.AddYears(2000);
-                Model.StartDate = new GdsDate(newDate);
+                int adjustedYear = CultureInfo.CurrentCulture.Calendar.ToFourDigitYear(year);
+                Model.StartDate.YearText = adjustedYear.ToString(CultureInfo.CurrentCulture);
+                // Note: Can't use Model.StartDate.Year as it is currently designed as read only
             }
         }
         
