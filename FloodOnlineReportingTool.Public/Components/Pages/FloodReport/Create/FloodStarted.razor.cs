@@ -96,7 +96,7 @@ public partial class FloodStarted(
         if (currentDate.HasValue)
         {
             int year = currentDate.Value.Year;
-            if (year >= 0 && year <= 99)
+            if (year <= 99)
             {
                 DateTimeOffset newDate = currentDate.Value.AddYears(2000);
                 Model.StartDate = new GdsDate(newDate);
