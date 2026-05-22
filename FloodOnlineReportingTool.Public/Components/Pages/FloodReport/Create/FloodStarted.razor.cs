@@ -5,6 +5,7 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
@@ -91,6 +92,19 @@ public partial class FloodStarted(
 
     private async Task OnSubmit()
     {
+        // Handle two digit years by assuming they are in the 2000s
+        DateTimeOffset? currentDate = Model.StartDate.DateUtc;
+        if (currentDate.HasValue)
+        {
+            int year = currentDate.Value.Year;
+            if (year <= 99)
+            {
+                int adjustedYear = CultureInfo.CurrentCulture.Calendar.ToFourDigitYear(year);
+                Model.StartDate.YearText = adjustedYear.ToString(CultureInfo.CurrentCulture);
+                // Note: Can't use Model.StartDate.Year as it is currently designed as read only
+            }
+        }
+        
         if (_editContext.Validate())
         {
             await OnValidSubmit();
