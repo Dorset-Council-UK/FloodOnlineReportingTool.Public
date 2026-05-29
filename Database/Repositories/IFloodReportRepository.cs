@@ -6,7 +6,6 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public interface IFloodReportRepository
 {
-
     /// <summary>
     /// Count the number of flood reports
     /// </summary>

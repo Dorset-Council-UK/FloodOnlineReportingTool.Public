@@ -17,11 +17,6 @@ internal class ContactRecordConfiguration : IEntityTypeConfiguration<ContactReco
             .HasFilter("\"ContactUserId\" IS NOT NULL")
             .IsUnique();
 
-        // Many-to-many: ContactRecord <-> FloodReport
-        builder
-            .HasMany(cr => cr.FloodReports)
-            .WithMany(fr => fr.ContactRecords);
-
         builder
             .ToTable(o => o.HasComment("Contact information for individuals reporting flood incidents and seeking assistance"));
     }

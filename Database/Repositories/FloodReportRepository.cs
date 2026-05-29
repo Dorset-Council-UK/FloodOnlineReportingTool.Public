@@ -27,16 +27,13 @@ public class FloodReportRepository(
     public async Task<int> Count(CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.FloodReports
-            .AsNoTracking()
-            .CountAsync(cancellationToken);
+        return await context.FloodReports.CountAsync(cancellationToken);
     }
 
     public async Task<int> Count(string userId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.FloodReports
-            .AsNoTracking()
             .Where(fr => fr.ContactRecords.Any(cr => cr.ContactUserId == userId))
             .CountAsync(cancellationToken);
     }
@@ -211,9 +208,7 @@ public class FloodReportRepository(
     {
         logger.LogInformation("Checking existence of flood report with reference number {Reference}.", reference);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.FloodReports
-            .AsNoTracking()
-            .AnyAsync(o => o.Reference == reference, ct);
+        return await context.FloodReports.AnyAsync(o => o.Reference == reference, ct);
     }
 
     public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct)

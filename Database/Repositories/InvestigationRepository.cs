@@ -9,6 +9,12 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextFactory) : IInvestigationRepository
 {
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.Investigations.CountAsync(cancellationToken);
+    }
+
     public async Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);

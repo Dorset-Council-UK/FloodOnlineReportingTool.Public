@@ -16,6 +16,7 @@ public partial class Delete(
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
@@ -75,7 +76,7 @@ public partial class Delete(
 
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
-            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -153,7 +154,7 @@ public partial class Delete(
         _deletePermited = false;
         _floodReportReference = string.Empty;
 
-        var contactRecord = await contactRepository.GetContactById(_contactId, _cts.Token);
+        var contactRecord = await contactRepository.Get(_contactId, _cts.Token);
         if (contactRecord == null)
         {
             return null;

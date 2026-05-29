@@ -11,7 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.
 
 public partial class Verify(
     ILogger<Verify> logger,
-    IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     IGovNotifyEmailSender govNotifyEmailSender,
     SessionStateService scopedSessionStorage,
     NavigationManager navigationManager
@@ -65,7 +65,7 @@ public partial class Verify(
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
 
-            _subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+            _subscribeRecord = await subscribeRecordRepository.Get(_verificationId, _cts.Token);
             if (_subscribeRecord == null)
             {
                 logger.LogWarning("No subscription record found for verification ID {VerificationId}", _verificationId);
@@ -109,7 +109,7 @@ public partial class Verify(
             return;
         }
 
-        bool VerifiedResult = await contactRepository.VerifySubscriptionRecord(Model.Id, enteredCode, _cts.Token);
+        bool VerifiedResult = await subscribeRecordRepository.VerifySubscriptionRecord(Model.Id, enteredCode, _cts.Token);
 
         if (!VerifiedResult)
         {
@@ -124,13 +124,13 @@ public partial class Verify(
     {
         isResent = false;
 
-        var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+        var subscribeRecord = await subscribeRecordRepository.Get(_verificationId, _cts.Token);
         if (subscribeRecord == null)
         {
             StateHasChanged();
             return;
         }
-        var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, true, _cts.Token);
+        var updatedSubscription = await subscribeRecordRepository.UpdateVerificationCode(subscribeRecord, userPresent: true, _cts.Token);
         if (!updatedSubscription.IsSuccess)
         {
             StateHasChanged();

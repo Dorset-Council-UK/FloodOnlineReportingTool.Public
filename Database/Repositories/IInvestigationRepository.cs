@@ -6,6 +6,11 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public interface IInvestigationRepository
 {
     /// <summary>
+    /// Count the number of investigations
+    /// </summary>
+    Task<int> Count(CancellationToken cancellationToken);
+
+    /// <summary>
     /// Get the investigation for the given user, going via the flood report
     /// </summary>
     Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct);

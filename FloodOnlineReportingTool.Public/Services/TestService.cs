@@ -2,13 +2,12 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
-using FloodOnlineReportingTool.Database.Models.Contact;
+using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Messaging;
-using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -17,8 +16,6 @@ namespace FloodOnlineReportingTool.Public.Services;
 
 internal sealed class TestService(
     IDbContextFactory<PublicDbContext> contextFactory,
-    IContactRecordRepository contactRecordRepository,
-    IFloodReportRepository floodReportRepository,
     IHostEnvironment environment
 ) : ITestService
 {
@@ -200,71 +197,22 @@ internal sealed class TestService(
 
     public InvestigationDto TestData_InvestigationDto => TestData_Investigation.ToDto();
 
-    private static readonly ContactRecordDto TestData_ContactRecordDtoDto = new()
+    public SubscribeRecordDto TestData_SubscribeRecordDto => new()
     {
         ContactType = ContactRecordType.Tenant,
         ContactName = "TEST name",
         EmailAddress = "test@test.com",
     };
 
-    public async Task<FloodReport?> TestFloodReport_Create(CancellationToken cancellationToken)
-    {
-        if (!environment.IsDevelopment())
-        {
-            return null;
-        }
-
-        var viewUriBase = new Uri("https://localhost:7039/report-flooding/test");
-        var createResult = await floodReportRepository.Create(TestData_EligibilityCheckDto, viewUriBase, cancellationToken);
-        return createResult.IsSuccess ? createResult.Value : null;
-    }
-
-    public async Task<FloodReport?> TestFloodReport_GetLast(string userId, CancellationToken cancellationToken)
-    {
-        if (!environment.IsDevelopment())
-        {
-            return null;
-        }
-
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.ContactRecords
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Include(fr => fr.ContactRecords)
-            .Include(fr => fr.EligibilityCheck)
-            .Include(fr => fr.Investigation)
-            .Include(fr => fr.Status)
-            .OrderByDescending(fr => fr.CreatedUtc)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<ContactRecord?> TestContactRecord_Create(Guid floodReportId, string userId, CancellationToken cancellationToken)
-    {
-        if (!environment.IsDevelopment())
-        {
-            return null;
-        }
-
-        var dto = TestData_ContactRecordDtoDto with
-        {
-            UserId = userId,
-        };
-
-        var createResult = await contactRecordRepository.CreateForReport(floodReportId, dto, cancellationToken);
-        return createResult.IsSuccess ? createResult.Value : null;
-    }
-
-    public async Task TestFloodReportActionNeededStatus(Guid floodReportId, CancellationToken ct)
+    public async Task TestFloodReport_SetInvestigationHasStarted(Guid floodReportId, CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
         {
             return;
         }
 
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var floodReport = await context.FloodReports.FindAsync([floodReportId], ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var floodReport = await context.FloodReports.FindAsync([floodReportId], cancellationToken);
         if (floodReport is null)
         {
             return;
@@ -273,7 +221,7 @@ internal sealed class TestService(
         if (floodReport.StatusId != RecordStatusIds.ActionNeeded)
         {
             floodReport.StatusId = RecordStatusIds.ActionNeeded;
-            await context.SaveChangesAsync(ct);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -347,5 +295,23 @@ internal sealed class TestService(
         await context.SaveChangesAsync(cancellationToken);
 
         return outboxMessage;
+    }
+
+    public async Task<Guid?> GetRandomFloodReportWithSubscriber(CancellationToken cancellationToken)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return null;
+        }
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var reportLibrary = await context.FloodReports
+            .Include(fr => fr.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .Where(fr => fr.ContactRecords.First().SubscribeRecords.Any())
+            .Select(fr => fr.Id)
+            .ToArrayAsync(cancellationToken);
+
+        return reportLibrary.Length > 0 ? reportLibrary[Random.Shared.Next(reportLibrary.Length)] : null;
     }
 }

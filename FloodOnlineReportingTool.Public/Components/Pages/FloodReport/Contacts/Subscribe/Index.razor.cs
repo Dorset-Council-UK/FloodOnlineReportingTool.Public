@@ -1,7 +1,5 @@
 using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
-using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -18,6 +16,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.
 public partial class Index(
     ILogger<Index> logger,
     IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     IGovNotifyEmailSender govNotifyEmailSender,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage
@@ -74,8 +73,10 @@ public partial class Index(
         // Setup model and edit context
         if (Model == null)
         {
-            Model = new();
-            Model.ContactRecord = new();
+            Model = new()
+            {
+                ContactRecord = new(),
+            };
             _editContext = new(Model);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
@@ -116,17 +117,16 @@ public partial class Index(
                 }
 
                 // Check if this user already has a contact record
-                var contactRecord = await contactRepository.ContactRecordExistsForUser(_userID, _cts.Token);
-                if (contactRecord != Guid.Empty)
+                var contactRecord = await contactRepository.Get(_userID, _cts.Token);
+                if (contactRecord != null)
                 {
-                    var contactRecordId = contactRecord.Value;
                     // Connect to the existing record and skip the subscription setup steps
                     _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
-                    var updateContactRecord = await contactRepository.LinkContactByReport(_floodReportId, contactRecordId, _cts.Token);
+                    var updateContactRecord = await contactRepository.LinkContactByReport(_floodReportId, contactRecord.Id, _cts.Token);
                     if (updateContactRecord.IsSuccess)
                     {
-                        var recordOwner = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+                        var recordOwner = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
                         if (recordOwner == null)
                         {
                             // Can't proceed if not authenticated
@@ -197,29 +197,41 @@ public partial class Index(
 
         // Generate a contact record
         _floodReportId = await scopedSessionStorage.GetFloodReportId();
-        ContactRecordDto dto = new ContactRecordDto
+        SubscribeRecordDto subscribeRecordDto = new()
         {
-            UserId = _userID,
             ContactType = Model.ContactType,
-            ContactName = Model.ContactName!,
-            EmailAddress = Model.EmailAddress!,
-            IsRecordOwner = Owns
+            ContactName = Model.ContactName,
+            EmailAddress = Model.EmailAddress,
+            IsRecordOwner = Owns,
         };
-        var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
-        Guid contactRecordId;
-        if (contactRecord.Count == 0)
+
+        Guid? contactRecordId;
+        var contactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+        if (contactRecords.Count == 0)
         {
-            var createContactRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-            if (!createContactRecord.IsSuccess)
+            var createResult = await contactRepository.Create(_userID, _floodReportId, _cts.Token);
+            if (!createResult.IsSuccess)
             {
-                CustomLogError(nameof(Model.ErrorMessage), "Couldn't create a subscription record.", "Sorry, something went wrong", true);
+                foreach (var error in createResult.Errors)
+                {
+                    logger.LogWarning("Couldn't create a subscription record: {ErrorMessage}", error);
+                    _messageStore.Add(_editContext.Field(nameof(Model.ErrorMessage)), "Sorry, something went wrong");
+                }
+                _editContext.NotifyValidationStateChanged();
                 return;
             }
-            contactRecordId = createContactRecord.Value.Id;
+            contactRecordId = createResult.Value.Id;
         }
         else
         {
-            contactRecordId = contactRecord.First().Id;
+            contactRecordId = contactRecords.FirstOrDefault()?.Id;
+            if (contactRecordId is null)
+            {
+                logger.LogWarning("Couldn't find a contact record for this flood report.");
+                _messageStore.Add(_editContext.Field(nameof(Model.ErrorMessage)), "Sorry, something went wrong");
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
         }
 
         // Get authentication state
@@ -230,18 +242,21 @@ public partial class Index(
             currentUserEmail = authState.User.Email;
         }
 
-        var createSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, true, _cts.Token);
-
+        var createSubscribeRecord = await subscribeRecordRepository.Create(contactRecordId.Value, subscribeRecordDto, currentUserEmail, userPresent: true, _cts.Token);
         if (!createSubscribeRecord.IsSuccess)
         {
-            CustomLogError(nameof(Model.ErrorMessage), "Created subscription record not returned.", "Sorry, something went wrong", true);
+            logger.LogWarning("Created subscription record not returned.");
+            _messageStore.Add(_editContext.Field(nameof(Model.ErrorMessage)), "Sorry, something went wrong");
+            _editContext.NotifyValidationStateChanged();
             return;
         }
 
         SubscribeRecord returnedSubscription = createSubscribeRecord.Value;
         if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
         {
-            CustomLogError(nameof(Model.ErrorMessage), "Subscription record verification expiry is not valid.", "Sorry, something went wrong", true);
+            logger.LogWarning("Subscription record verification expiry is not valid.");
+            _messageStore.Add(_editContext.Field(nameof(Model.ErrorMessage)), "Sorry, something went wrong");
+            _editContext.NotifyValidationStateChanged();
             return;
         }
 
@@ -277,28 +292,10 @@ public partial class Index(
             }
 
             // Send them onwards
-            var nextPageUrl = SubscriptionPages.Verify.Url;
-            if (FromSummary)
-            {
-                nextPageUrl = ContactPages.Summary.Url;
-            }
-            var NavigationOptions = new NavigationOptions
-            {
-
-            };
+            var nextPage = FromSummary ? ContactPages.Summary : SubscriptionPages.Verify;
             // TODO: pass that the email sending failed if emailSent is false
-            navigationManager.NavigateTo(nextPageUrl);
+            navigationManager.NavigateTo(nextPage.Url);
         }
-    }
-
-    private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
-    {
-        if (logMessage)
-        {
-            logger.LogWarning(errorMessage);
-        }
-        _messageStore.Add(_editContext.Field(fieldname), returnMessage);
-        _editContext.NotifyValidationStateChanged();
     }
 
     private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
