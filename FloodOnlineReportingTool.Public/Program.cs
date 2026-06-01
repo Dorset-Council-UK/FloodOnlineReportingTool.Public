@@ -45,7 +45,6 @@ builder.Services
 // Add the databases
 builder
     .AddFloodReportingDatabase()
-    .AddFloodReportingDatabaseRepositories()
     .AddFloodReportingDatabaseServices()
     .AddBoundariesDatabase();
 

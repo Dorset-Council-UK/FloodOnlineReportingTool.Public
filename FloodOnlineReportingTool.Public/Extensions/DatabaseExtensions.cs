@@ -40,7 +40,7 @@ internal static class DatabaseExtensions
             return builder;
         }
 
-        internal IHostApplicationBuilder AddFloodReportingDatabaseRepositories()
+        internal IHostApplicationBuilder AddFloodReportingDatabaseServices()
         {
             builder.Services
                 .AddScoped<ICommonRepository, CommonRepository>()
@@ -48,15 +48,9 @@ internal static class DatabaseExtensions
                 .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
                 .AddScoped<IFloodReportRepository, FloodReportRepository>()
                 .AddScoped<IInvestigationRepository, InvestigationRepository>()
-                .AddScoped<ISearchRepository, SearchRepository>();
-
-            return builder;
-        }
-
-        internal IHostApplicationBuilder AddFloodReportingDatabaseServices()
-        {
-            builder.Services
-                .AddScoped<IOutboxMessageService, OutboxMessageService>();
+                .AddScoped<IOutboxMessageService, OutboxMessageService>()
+                .AddScoped<ISearchRepository, SearchRepository>()
+                .AddScoped<ISubscribeRecordRepository, SubscribeRecordRepository>();
 
             return builder;
         }

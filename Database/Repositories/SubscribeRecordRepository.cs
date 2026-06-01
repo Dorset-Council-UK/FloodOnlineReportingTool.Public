@@ -16,12 +16,48 @@ public class SubscribeRecordRepository(
     private const int VerificationExpiryMinutesUserNotPresent = 4320; // 3 days
     private const int RedactionDelayMinutes = 31;
 
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactSubscribeRecords.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> Count(Guid contactRecordId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactSubscribeRecords.CountAsync(sr => sr.ContactRecordId == contactRecordId, cancellationToken);
+    }
+
+    public async Task<int> Count(string userId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactSubscribeRecords
+            .Include(sr => sr.ContactRecord)
+            .CountAsync(sr => sr.ContactRecord != null && sr.ContactRecord.ContactUserId == userId, cancellationToken);
+    }
+
+    public async Task<bool> Exists(Guid subscribeRecordId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactSubscribeRecords.AnyAsync(sr => sr.Id == subscribeRecordId, cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<SubscribeRecord>> GetAll(Guid contactRecordId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.ContactSubscribeRecords
             .AsNoTracking()
             .Where(sr => sr.ContactRecordId == contactRecordId)
+            .OrderByDescending(sr => sr.CreatedUtc)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<SubscribeRecord>> GetAll(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactSubscribeRecords
+            .AsNoTracking()
+            .OrderByDescending(sr => sr.CreatedUtc)
             .ToListAsync(cancellationToken);
     }
 
@@ -32,7 +68,6 @@ public class SubscribeRecordRepository(
             .AsNoTracking()
             .Where(sr => sr.Id == subscriptionId)
             .Include(sr => sr.ContactRecord)
-            //.OrderByDescending(sr => sr.CreatedUtc)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -182,78 +217,41 @@ public class SubscribeRecordRepository(
         return Result<SubscribeRecord>.Success(subscriptionRecord);
     }
 
-    public async Task<int> Count(CancellationToken cancellationToken)
+    public async Task<DeleteResult<SubscribeRecord>> Delete(Guid subscribeRecordId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.ContactSubscribeRecords.CountAsync(cancellationToken);
-    }
-
-    public async Task<int> Count(Guid contactRecordId, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.ContactSubscribeRecords.CountAsync(sr => sr.ContactRecordId == contactRecordId, cancellationToken);
-    }
-
-    public async Task<bool> Exists(Guid subscribeRecordId, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.ContactSubscribeRecords.AnyAsync(sr => sr.Id == subscribeRecordId, cancellationToken);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    public async Task<DeleteResult<SubscribeRecord>> DeleteSubscriptionById(Guid subscriptionId, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var subscriptionRecord = await context.ContactSubscribeRecords
-            .Where(sr => sr.Id == subscriptionId)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (subscriptionRecord == null)
+        
+        var subscribeRecord = await context.ContactSubscribeRecords.FindAsync([subscribeRecordId], cancellationToken);
+        if (subscribeRecord is null)
         {
             return DeleteResult<SubscribeRecord>.Failure([$"No subscription record found"]);
         }
 
-        // Remove the subscription record from the flood report
-        context.ContactSubscribeRecords.Remove(subscriptionRecord);
-
-        // Remove the subscription record and add the message to the database
+        context.ContactSubscribeRecords.Remove(subscribeRecord);
         await context.SaveChangesAsync(cancellationToken);
 
         return DeleteResult<SubscribeRecord>.Success();
     }
 
 
-    public async Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken cancellationToken)
+    public async Task<bool> Verify(Guid subscribeRecordId, int verificationCode, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var subscriptionRecord = await context.ContactSubscribeRecords
-                .IgnoreAutoIncludes()
-                .Where(sr => sr.Id == subscriptionId)
-                .OrderByDescending(sr => sr.CreatedUtc)
-                .FirstOrDefaultAsync(cancellationToken);
 
-        if (subscriptionRecord == null)
+        var subscribeRecord = await context.ContactSubscribeRecords.FindAsync([subscribeRecordId], cancellationToken);
+        if (subscribeRecord is null)
         {
             return false;
         }
 
-        if (subscriptionRecord.VerificationCode == verificationCode && subscriptionRecord.VerificationExpiryUtc > DateTimeOffset.UtcNow)
+        if (subscribeRecord.VerificationCode == verificationCode && subscribeRecord.VerificationExpiryUtc > DateTimeOffset.UtcNow)
         {
             // Mark as verified
-            subscriptionRecord.IsEmailVerified = true;
-            subscriptionRecord.VerificationCode = null;
-            subscriptionRecord.VerificationExpiryUtc = null;
+            subscribeRecord.IsEmailVerified = true;
+            subscribeRecord.VerificationCode = null;
+            subscribeRecord.VerificationExpiryUtc = null;
 
+            context.ContactSubscribeRecords.Update(subscribeRecord);
             await context.SaveChangesAsync(cancellationToken);
             return true;
         }
