@@ -175,7 +175,7 @@ public partial class Change(
         }
 
         // Convert to GDS option items for rendering in the form
-        ContactTypes = availableTypes.Select(CreateOption).ToArray();
+        ContactTypes = [.. availableTypes.Select(CreateOption)];
     }
 
     /// <remarks>

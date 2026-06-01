@@ -15,13 +15,13 @@ public partial class Summary(
     ILogger<Summary> logger,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
-    private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
     private bool _isLoading = true;
     private ContactModel? _reportOwnerContact;
@@ -71,7 +71,6 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            _verificationId = await scopedSessionStorage.GetVerificationId();
             _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
 
             await LoadContactData();
@@ -93,7 +92,7 @@ public partial class Summary(
 
     private async Task LoadContactData()
     {
-        var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+        var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
         if (_reportOwnerContact is null)
@@ -106,11 +105,11 @@ public partial class Summary(
         var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
 
         // Filter out the report owner from the additional contacts list
-        _contactModels = allContactRecords
+        _contactModels = [.. allContactRecords
             .SelectMany(cr => cr.SubscribeRecords)
             .Where(sr => !sr.IsRecordOwner)
-            .Select(sr => sr.ToContactModel())
-            .ToList();
+            .Select(sr => sr.ToContactModel()),
+         ];
         _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
     }
 
@@ -151,10 +150,10 @@ public partial class Summary(
                             subscriptionRecord.IsRecordOwner,
                             canEdit,
                             floodReport.Reference,
-                            subscriptionRecord.ContactType!.LabelText(),
-                            subscriptionRecord.ContactName!,
-                            subscriptionRecord.EmailAddress!,
-                            floodReport.EligibilityCheck!.LocationDesc ?? "",
+                            subscriptionRecord.ContactType.LabelText(),
+                            subscriptionRecord.ContactName,
+                            subscriptionRecord.EmailAddress,
+                            floodReport.EligibilityCheck?.LocationDesc ?? "",
                             floodReport.EligibilityCheck!.Easting,
                             floodReport.EligibilityCheck!.Northing,
                             floodReport.CreatedUtc
@@ -163,10 +162,10 @@ public partial class Summary(
                     {
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
                             floodReport.Reference,
-                            subscriptionRecord.ContactType!.LabelText(),
-                            subscriptionRecord.ContactName!,
-                            subscriptionRecord.EmailAddress!,
-                            floodReport.EligibilityCheck!.LocationDesc ?? "",
+                            subscriptionRecord.ContactType.LabelText(),
+                            subscriptionRecord.ContactName,
+                            subscriptionRecord.EmailAddress,
+                            floodReport.EligibilityCheck?.LocationDesc ?? "",
                             floodReport.EligibilityCheck!.Easting,
                             floodReport.EligibilityCheck!.Northing,
                             floodReport.CreatedUtc

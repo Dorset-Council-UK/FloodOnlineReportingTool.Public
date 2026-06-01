@@ -39,7 +39,6 @@ public partial class Index(
 
     // Private Fields
     private readonly CancellationTokenSource _cts = new();
-    private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
     private string? _userID;
     private bool _isLoading = true;
@@ -95,8 +94,6 @@ public partial class Index(
     {
         if (firstRender)
         {
-            _verificationId = await scopedSessionStorage.GetVerificationId();
-
             if (Me)
             {
                 if (string.IsNullOrEmpty(_userID))

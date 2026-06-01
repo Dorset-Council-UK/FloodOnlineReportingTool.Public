@@ -20,7 +20,6 @@ public partial class Verify(
     // Private Fields
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
-    private Guid _floodReportId = Guid.Empty;
     private SubscribeRecord? _subscribeRecord;
     private bool _isLoading = true;
     private bool? isResent;
@@ -109,11 +108,11 @@ public partial class Verify(
             return;
         }
 
-        bool VerifiedResult = await subscribeRecordRepository.VerifySubscriptionRecord(Model.Id, enteredCode, _cts.Token);
-
-        if (!VerifiedResult)
+        bool verified = await subscribeRecordRepository.Verify(Model.Id, enteredCode, _cts.Token);
+        if (!verified)
         {
-            CustomLogError(nameof(Model.EnteredCodeNumber), "Incorrect verification code entered.", "The code you provided was not correct. Please try again or request a new code.", false);
+            logger.LogWarning("Incorrect verification code entered.");
+            _messageStore.Add(_editContext.Field(nameof(Model.EnteredCodeNumber)), "The code you provided was not correct. Please try again or request a new code.");
             _editContext.NotifyValidationStateChanged();
             return;
         }
@@ -162,15 +161,5 @@ public partial class Verify(
 
         StateHasChanged();
         return;
-    }
-
-    private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
-    {
-        if (logMessage)
-        {
-            logger.LogWarning(errorMessage);
-        }
-        _messageStore.Add(_editContext.Field(fieldname), returnMessage);
-        _editContext.NotifyValidationStateChanged();
     }
 }

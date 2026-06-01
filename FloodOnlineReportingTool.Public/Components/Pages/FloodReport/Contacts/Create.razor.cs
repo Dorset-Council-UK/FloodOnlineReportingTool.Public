@@ -41,7 +41,6 @@ public partial class Create(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private ContactModel? _contactModel;
-    private Database.Models.Flood.FloodReport? _floodReport;
     private Guid _floodReportId;
     private string? _userId;
     private bool _isLoading = true;

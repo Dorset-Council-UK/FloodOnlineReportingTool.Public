@@ -42,7 +42,6 @@ public partial class Delete(
     private Guid _floodReportId = Guid.Empty;
     private Guid _contactId = Guid.Empty;
     private string _floodReportReference = string.Empty;
-    private Guid _userId;
     private bool _isLoading = true;
     private bool _deletePermited = true;
     private readonly CancellationTokenSource _cts = new();
