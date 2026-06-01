@@ -102,6 +102,10 @@ public partial class Test(
     private int _contactRecordsCount;
     private int _contactRecordsCountUser;
 
+    // Subscribe records
+    private int _subscribeRecordsCount;
+    private int _subscribeRecordsCountUser;
+
     // Investigation
     private int _investigationsCount;
     private Database.Models.Flood.FloodReport? _investigationFloodReport;
@@ -161,6 +165,10 @@ public partial class Test(
                     // Contact records
                     _contactRecordsCount = await contactRepository.Count(_cts.Token);
                     _contactRecordsCountUser = userId is null ? 0 : await contactRepository.Count(userId, _cts.Token);
+
+                    // Subscribe records
+                    _subscribeRecordsCount = await subscribeRecordRepository.Count(_cts.Token);
+                    _subscribeRecordsCountUser = userId is null ? 0 : await subscribeRecordRepository.Count(userId, _cts.Token);
 
                     // Investigation
                     await InvestigationsCount_Refresh();
