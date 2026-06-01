@@ -308,7 +308,7 @@ internal sealed class TestService(
         var reportLibrary = await context.FloodReports
             .Include(fr => fr.ContactRecords)
                 .ThenInclude(cr => cr.SubscribeRecords)
-            .Where(fr => fr.ContactRecords.First().SubscribeRecords.Any())
+            .Where(fr => fr.ContactRecords.Any(cr => cr.SubscribeRecords.Count != 0))
             .Select(fr => fr.Id)
             .ToArrayAsync(cancellationToken);
 

@@ -64,12 +64,6 @@ public interface ISubscribeRecordRepository
     /// Updates a subscription record
     /// </summary>
     /// <returns>A result pattern with the updated subscribe record, or a list of errors.</returns>
-    Task<Result<SubscribeRecord>> Update(SubscribeRecord subscriptionRecord, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Updates a subscription record
-    /// </summary>
-    /// <returns>A result pattern with the updated subscribe record, or a list of errors.</returns>
     Task<Result<SubscribeRecord>> Update(Guid subscribeRecordId, SubscribeRecordDto subscribeRecordDto, CancellationToken cancellationToken);
 
     /// <summary>

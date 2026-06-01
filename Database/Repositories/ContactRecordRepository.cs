@@ -89,6 +89,17 @@ public class ContactRecordRepository(
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
+        // Check if a contact record already exists for the user
+        bool contactRecordExistsForUser = userId is not null && await context.ContactRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .AnyAsync(cr => cr.ContactUserId == userId, cancellationToken);
+        if (contactRecordExistsForUser)
+        {
+            logger.LogInformation("Contact record already exists for user, cannot create another for user");
+            return Result<ContactRecord>.Failure(["Cannot create contact record for user, a record already exists"]);
+        }
+
         if (floodReportId.HasValue)
         {
             if (floodReportId.Value == Guid.Empty)
@@ -170,6 +181,7 @@ public class ContactRecordRepository(
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
+            .Include(cr => cr.SubscribeRecords)
             .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
         
         if (contactRecord == null)
@@ -188,7 +200,8 @@ public class ContactRecordRepository(
         {
             // If this is the record owner or there is only one subscribe record, we can remove the whole contact record
             context.ContactRecords.Remove(contactRecord);
-        } else
+        }
+        else
         {
             // If there are multiple subscribe records we only remove the one matching the contact type
             if (subscribeRecordToRemove != null)

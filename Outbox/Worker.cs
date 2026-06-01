@@ -45,7 +45,7 @@ public sealed class Worker(
                 var publicDbContext = scope.ServiceProvider.GetRequiredService<PublicDbContext>();
                 List<OutboxMessage> pendingMessages = await publicDbContext.OutboxMessages
                     .Where(m => m.Status == MessageStatus.Pending)
-                    .OrderBy(m => m.Priority)
+                    .OrderByDescending(m => m.Priority)
                     .ThenBy(m => m.Created) // FIFO processing
                     .Take(BatchSize)
                     .ToListAsync(cancellationToken);

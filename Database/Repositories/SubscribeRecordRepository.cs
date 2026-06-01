@@ -111,7 +111,10 @@ public class SubscribeRecordRepository(
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         // Only allow 1 instance of each type of contact to be created
-        if (context.ContactSubscribeRecords.Where(sr => sr.ContactRecordId == contactRecordId).Any(sr => sr.ContactType == subscribeRecordDto.ContactType))
+        var contactTypeAlreadyExists = await context.ContactSubscribeRecords
+            .Where(sr => sr.ContactRecordId == contactRecordId && sr.ContactType == subscribeRecordDto.ContactType)
+            .AnyAsync(cancellationToken);
+        if (contactTypeAlreadyExists)
         {
             return Result<SubscribeRecord>.Failure([$"A contact record of type {subscribeRecordDto.ContactType} already exists for the user"]);
         }
@@ -138,38 +141,6 @@ public class SubscribeRecordRepository(
         return Result<SubscribeRecord>.Success(newSubscription);
     }
 
-    public async Task<Result<SubscribeRecord>> Update(SubscribeRecord subscriptionRecord, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var subscribeRecord = await context.ContactSubscribeRecords
-            .FirstOrDefaultAsync(cr => cr.Id == subscriptionRecord.Id, cancellationToken);
-        if (subscribeRecord == null)
-        {
-            return Result<SubscribeRecord>.Failure([$"No contact record found for ID {subscriptionRecord.ContactRecordId}"]);
-        }
-
-        if (subscriptionRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType && o.ContactRecord!.Id == subscriptionRecord.ContactRecordId))
-        {
-            return Result<SubscribeRecord>.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
-        }
-
-        // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = subscribeRecord.EmailAddress.Equals(subscriptionRecord.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (subscribeRecord.IsEmailVerified || subscriptionRecord.IsEmailVerified);
-
-        subscribeRecord.IsRecordOwner = subscriptionRecord.IsRecordOwner;
-        subscribeRecord.ContactType = subscriptionRecord.ContactType;
-        subscribeRecord.IsSubscribed = subscriptionRecord.IsSubscribed;
-        subscribeRecord.IsEmailVerified = isEmailVerified;
-        subscribeRecord.EmailAddress = subscriptionRecord.EmailAddress;
-        subscribeRecord.ContactName = subscriptionRecord.ContactName;
-        subscribeRecord.PhoneNumber = subscriptionRecord.PhoneNumber;
-
-        await context.SaveChangesAsync(cancellationToken);
-        return Result<SubscribeRecord>.Success(subscriptionRecord);
-    }
-
     public async Task<Result<SubscribeRecord>> Update(Guid subscribeRecordId, SubscribeRecordDto subscribeRecordDto, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -182,14 +153,17 @@ public class SubscribeRecordRepository(
             return Result<SubscribeRecord>.Failure([$"Cannot update subscription record. No subscription record found for ID {subscribeRecordId}"]);
         }
 
-        if (subscribeRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscribeRecord.ContactType && o.ContactRecord!.Id == subscribeRecord.ContactRecordId))
+        var contactTypeAlreadyExists = await context.ContactSubscribeRecords
+            .Where(sr => sr.ContactRecordId == subscribeRecord.ContactRecordId && sr.ContactType == subscribeRecordDto.ContactType && sr.Id != subscribeRecordId)
+            .AnyAsync(cancellationToken);
+        if (contactTypeAlreadyExists)
         {
-            return Result<SubscribeRecord>.Failure([$"A contact record of type {subscribeRecord.ContactType} already exists"]);
+            return Result<SubscribeRecord>.Failure([$"A contact record of type {subscribeRecordDto.ContactType} already exists"]);
         }
 
         // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = subscribeRecord.EmailAddress.Equals(subscribeRecord.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (subscribeRecord.IsEmailVerified || subscribeRecord.IsEmailVerified);
+        bool emailChanged = !string.Equals(subscribeRecord.EmailAddress, subscribeRecordDto.EmailAddress, StringComparison.OrdinalIgnoreCase);
+        var isEmailVerified = !emailChanged && subscribeRecord.IsEmailVerified;
 
         subscribeRecord.IsRecordOwner = subscribeRecordDto.IsRecordOwner;
         subscribeRecord.ContactType = subscribeRecordDto.ContactType;
