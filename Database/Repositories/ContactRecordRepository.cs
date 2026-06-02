@@ -109,7 +109,6 @@ public class ContactRecordRepository(
             }
 
             FloodReport? floodReport = await context.FloodReports
-                .AsNoTracking()
                 .IgnoreAutoIncludes()
                 .FirstOrDefaultAsync(fr => fr.Id == floodReportId.Value, cancellationToken);
 
