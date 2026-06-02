@@ -24,12 +24,10 @@
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
     <PackageReference Include="Blazored.FluentValidation" />
-    <PackageReference Include="Bogus" />
     <PackageReference Include="Dorset-Council-UK.GdsBlazorComponents" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="GovukNotify" />
-    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" />
     <PackageReference Include="Meziantou.Analyzer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

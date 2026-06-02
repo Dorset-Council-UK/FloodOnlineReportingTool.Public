@@ -11,7 +11,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts.
 
 public partial class Verify(
     ILogger<Verify> logger,
-    IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     IGovNotifyEmailSender govNotifyEmailSender,
     SessionStateService scopedSessionStorage,
     NavigationManager navigationManager
@@ -20,7 +20,6 @@ public partial class Verify(
     // Private Fields
     private readonly CancellationTokenSource _cts = new();
     private Guid _verificationId = Guid.Empty;
-    private Guid _floodReportId = Guid.Empty;
     private SubscribeRecord? _subscribeRecord;
     private bool _isLoading = true;
     private bool? isResent;
@@ -65,7 +64,7 @@ public partial class Verify(
         {
             _verificationId = await scopedSessionStorage.GetVerificationId();
 
-            _subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+            _subscribeRecord = await subscribeRecordRepository.Get(_verificationId, _cts.Token);
             if (_subscribeRecord == null)
             {
                 logger.LogWarning("No subscription record found for verification ID {VerificationId}", _verificationId);
@@ -109,11 +108,11 @@ public partial class Verify(
             return;
         }
 
-        bool VerifiedResult = await contactRepository.VerifySubscriptionRecord(Model.Id, enteredCode, _cts.Token);
-
-        if (!VerifiedResult)
+        bool verified = await subscribeRecordRepository.Verify(Model.Id, enteredCode, _cts.Token);
+        if (!verified)
         {
-            CustomLogError(nameof(Model.EnteredCodeNumber), "Incorrect verification code entered.", "The code you provided was not correct. Please try again or request a new code.", false);
+            logger.LogWarning("Incorrect verification code entered.");
+            _messageStore.Add(_editContext.Field(nameof(Model.EnteredCodeNumber)), "The code you provided was not correct. Please try again or request a new code.");
             _editContext.NotifyValidationStateChanged();
             return;
         }
@@ -124,18 +123,20 @@ public partial class Verify(
     {
         isResent = false;
 
-        var subscribeRecord = await contactRepository.GetSubscriptionRecordById(_verificationId, _cts.Token);
+        var subscribeRecord = await subscribeRecordRepository.Get(_verificationId, _cts.Token);
         if (subscribeRecord == null)
         {
             StateHasChanged();
             return;
         }
-        var updatedSubscription = await contactRepository.UpdateVerificationCode(subscribeRecord, true, _cts.Token);
-        if (updatedSubscription.ResultModel is not SubscribeRecord returnedSubscription)
+        var updatedSubscription = await subscribeRecordRepository.UpdateVerificationCode(subscribeRecord, userPresent: true, _cts.Token);
+        if (!updatedSubscription.IsSuccess)
         {
             StateHasChanged();
             return;
         }
+
+        SubscribeRecord returnedSubscription = updatedSubscription.Value;
         if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
         {
             StateHasChanged();
@@ -160,15 +161,5 @@ public partial class Verify(
 
         StateHasChanged();
         return;
-    }
-
-    private void CustomLogError(string fieldname, string errorMessage, string returnMessage, bool logMessage)
-    {
-        if (logMessage)
-        {
-            logger.LogWarning(errorMessage);
-        }
-        _messageStore.Add(_editContext.Field(fieldname), returnMessage);
-        _editContext.NotifyValidationStateChanged();
     }
 }

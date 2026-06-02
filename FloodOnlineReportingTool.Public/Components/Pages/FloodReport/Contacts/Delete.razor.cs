@@ -16,6 +16,7 @@ public partial class Delete(
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
@@ -41,7 +42,6 @@ public partial class Delete(
     private Guid _floodReportId = Guid.Empty;
     private Guid _contactId = Guid.Empty;
     private string _floodReportReference = string.Empty;
-    private Guid _userId;
     private bool _isLoading = true;
     private bool _deletePermited = true;
     private readonly CancellationTokenSource _cts = new();
@@ -75,7 +75,7 @@ public partial class Delete(
 
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
 
-            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -119,11 +119,11 @@ public partial class Delete(
             // TODO - enable this once notification is available
             //var sentNotification = await govNotifyEmailSender.SendContactDeletedNotification(_contactModel.EmailAddress!, _contactModel!.ContactName!, _floodReportReference, contactRecordType);
 
-            var deleteResult = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
-            if (!deleteResult.IsSuccess)
+            var deleteContactRecord = await contactRepository.DeleteById(contactRecordId, contactRecordType, _cts.Token);
+            if (!deleteContactRecord.IsSuccess)
             {
                 var field = _editContext.Field(nameof(_contactModel.ContactType));
-                foreach (var error in deleteResult.Errors)
+                foreach (var error in deleteContactRecord.Errors)
                 {
                     _messageStore.Add(field, error);
                 }
@@ -153,7 +153,7 @@ public partial class Delete(
         _deletePermited = false;
         _floodReportReference = string.Empty;
 
-        var contactRecord = await contactRepository.GetContactById(_contactId, _cts.Token);
+        var contactRecord = await contactRepository.Get(_contactId, _cts.Token);
         if (contactRecord == null)
         {
             return null;

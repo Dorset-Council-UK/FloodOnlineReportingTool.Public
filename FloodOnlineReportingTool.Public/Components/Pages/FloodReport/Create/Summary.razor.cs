@@ -145,39 +145,31 @@ public partial class Summary(
     /// </summary>
     private async Task SaveFloodReport(EligibilityCheckDto dto)
     {
-        const string saveErrorMessage = "Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug.";
+        // Create a new flood report
+        var viewUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
+        var createFloodReport = await floodReportRepository.Create(dto, viewUri, _cts.Token);
 
-        try
+        if (!createFloodReport.IsSuccess)
         {
-            // Create a new flood report
-            var viewUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
-            var floodReport = await floodReportRepository.CreateWithEligiblityCheck(dto, viewUri, _cts.Token);
-
-            if (floodReport.EligibilityCheck is null)
+            foreach (var error in createFloodReport.Errors)
             {
-                logger.LogError("Failed to create eligibility check for flood report reference {Reference}", floodReport.Reference);
-                _validationFailures.Add(new ValidationFailure("save", saveErrorMessage));
-                return;
+                _validationFailures.Add(new ValidationFailure("save", error));
             }
-
-            // Clear the stored data
-            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
-            await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
-
-            // Navigate to the confirmation page with the reference number
-            logger.LogInformation("Flood report created successfully");
-            var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                { "Reference", floodReport.Reference },
-            };
-            var confirmationUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.Confirmation.Url, parameters.AsReadOnly());
-            navigationManager.NavigateTo(confirmationUrl);
+            return;
         }
-        catch (Exception ex)
+
+        // Clear the stored data
+        await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
+        await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
+
+        // Navigate to the confirmation page with the reference number
+        logger.LogInformation("Flood report created successfully");
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            logger.LogError(ex, "There was a problem creating the flood report or saving the eligibility check");
-            _validationFailures.Add(new ValidationFailure("save", saveErrorMessage));
-        }
+            { "Reference", createFloodReport.Value.Reference },
+        };
+        var confirmationUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.Confirmation.Url, parameters.AsReadOnly());
+        navigationManager.NavigateTo(confirmationUrl);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheckDto()

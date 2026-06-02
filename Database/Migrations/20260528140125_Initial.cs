@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -9,13 +8,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialPublic : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
                 name: "fortpublic");
+
+            migrationBuilder.CreateTable(
+                name: "ContactRecords",
+                schema: "fortpublic",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    RedactionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ContactUserId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContactRecords", x => x.Id);
+                },
+                comment: "Contact information for individuals reporting flood incidents and seeking assistance");
 
             migrationBuilder.CreateTable(
                 name: "FloodAuthorities",
@@ -85,45 +101,24 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 comment: "Flood problems related to the occurrence, cause, or characteristics of a flood.");
 
             migrationBuilder.CreateTable(
-                name: "InboxState",
+                name: "OutboxMessages",
                 schema: "fortpublic",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ConsumerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LockId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RowVersion = table.Column<byte[]>(type: "bytea", rowVersion: true, nullable: true),
-                    Received = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReceiveCount = table.Column<int>(type: "integer", nullable: false),
-                    ExpirationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Consumed = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Delivered = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    LastSequenceNumber = table.Column<long>(type: "bigint", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Delivered = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ErrorReason = table.Column<string>(type: "text", nullable: true),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    MessageType = table.Column<string>(type: "text", nullable: false),
+                    Message = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InboxState", x => x.Id);
-                    table.UniqueConstraint("AK_InboxState_MessageId_ConsumerId", x => new { x.MessageId, x.ConsumerId });
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OutboxState",
-                schema: "fortpublic",
-                columns: table => new
-                {
-                    OutboxId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LockId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RowVersion = table.Column<byte[]>(type: "bytea", rowVersion: true, nullable: true),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Delivered = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    LastSequenceNumber = table.Column<long>(type: "bigint", nullable: true)
+                    table.PrimaryKey("PK_OutboxMessages", x => x.Id);
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OutboxState", x => x.OutboxId);
-                });
+                comment: "The outbox message table is used to store messages that need to be sent to other systems. It is part of a messaging outbox pattern.");
 
             migrationBuilder.CreateTable(
                 name: "RecordStatuses",
@@ -141,6 +136,36 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     table.PrimaryKey("PK_RecordStatuses", x => x.Id);
                 },
                 comment: "Status used in various places including flood reports.");
+
+            migrationBuilder.CreateTable(
+                name: "ContactSubscribeRecords",
+                schema: "fortpublic",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsRecordOwner = table.Column<bool>(type: "boolean", nullable: false),
+                    ContactType = table.Column<int>(type: "integer", nullable: false),
+                    ContactName = table.Column<string>(type: "text", nullable: false),
+                    EmailAddress = table.Column<string>(type: "text", nullable: false),
+                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    IsSubscribed = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RedactionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    VerificationCode = table.Column<int>(type: "integer", nullable: true),
+                    VerificationExpiryUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ContactRecordId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContactSubscribeRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContactSubscribeRecords_ContactRecords_ContactRecordId",
+                        column: x => x.ContactRecordId,
+                        principalSchema: "fortpublic",
+                        principalTable: "ContactRecords",
+                        principalColumn: "Id");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Organisations",
@@ -192,51 +217,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         onDelete: ReferentialAction.Cascade);
                 },
                 comment: "Relationships between flood authorities and flood problems");
-
-            migrationBuilder.CreateTable(
-                name: "OutboxMessage",
-                schema: "fortpublic",
-                columns: table => new
-                {
-                    SequenceNumber = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EnqueueTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    SentTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Headers = table.Column<string>(type: "text", nullable: true),
-                    Properties = table.Column<string>(type: "text", nullable: true),
-                    InboxMessageId = table.Column<Guid>(type: "uuid", nullable: true),
-                    InboxConsumerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OutboxId = table.Column<Guid>(type: "uuid", nullable: true),
-                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContentType = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    MessageType = table.Column<string>(type: "text", nullable: false),
-                    Body = table.Column<string>(type: "text", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CorrelationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    InitiatorId = table.Column<Guid>(type: "uuid", nullable: true),
-                    RequestId = table.Column<Guid>(type: "uuid", nullable: true),
-                    SourceAddress = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    DestinationAddress = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ResponseAddress = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    FaultAddress = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ExpirationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OutboxMessage", x => x.SequenceNumber);
-                    table.ForeignKey(
-                        name: "FK_OutboxMessage_InboxState_InboxMessageId_InboxConsumerId",
-                        columns: x => new { x.InboxMessageId, x.InboxConsumerId },
-                        principalSchema: "fortpublic",
-                        principalTable: "InboxState",
-                        principalColumns: new[] { "MessageId", "ConsumerId" });
-                    table.ForeignKey(
-                        name: "FK_OutboxMessage_OutboxState_OutboxId",
-                        column: x => x.OutboxId,
-                        principalSchema: "fortpublic",
-                        principalTable: "OutboxState",
-                        principalColumn: "OutboxId");
-                });
 
             migrationBuilder.CreateTable(
                 name: "EligibilityChecks",
@@ -304,7 +284,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     WarningTimelyId = table.Column<Guid>(type: "uuid", nullable: true),
                     WarningAppropriateId = table.Column<Guid>(type: "uuid", nullable: true),
                     HistoryOfFloodingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    HistoryOfFloodingDetails = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
+                    HistoryOfFloodingDetails = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PropertyInsuredId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -347,6 +328,13 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     table.ForeignKey(
                         name: "FK_Investigations_RecordStatuses_IsPeakDepthKnownId",
                         column: x => x.IsPeakDepthKnownId,
+                        principalSchema: "fortpublic",
+                        principalTable: "RecordStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Investigations_RecordStatuses_PropertyInsuredId",
+                        column: x => x.PropertyInsuredId,
                         principalSchema: "fortpublic",
                         principalTable: "RecordStatuses",
                         principalColumn: "Id",
@@ -523,6 +511,45 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 comment: "Relationships between eligibility checks and source flood problems");
 
             migrationBuilder.CreateTable(
+                name: "FloodReports",
+                schema: "fortpublic",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Reference = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
+                    CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    MarkedForDeletionUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    StatusId = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("018feb10-38e0-7f30-a546-37ce71f243ae")),
+                    EligibilityCheckId = table.Column<Guid>(type: "uuid", nullable: true),
+                    InvestigationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReportOwnerAccessUntil = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FloodReports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FloodReports_EligibilityChecks_EligibilityCheckId",
+                        column: x => x.EligibilityCheckId,
+                        principalSchema: "fortpublic",
+                        principalTable: "EligibilityChecks",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_FloodReports_Investigations_InvestigationId",
+                        column: x => x.InvestigationId,
+                        principalSchema: "fortpublic",
+                        principalTable: "Investigations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_FloodReports_RecordStatuses_StatusId",
+                        column: x => x.StatusId,
+                        principalSchema: "fortpublic",
+                        principalTable: "RecordStatuses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                },
+                comment: "Flood report overviews");
+
+            migrationBuilder.CreateTable(
                 name: "InvestigationActionsTaken",
                 schema: "fortpublic",
                 columns: table => new
@@ -663,6 +690,34 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 comment: "Relationships between investigation and help received for the flood");
 
             migrationBuilder.CreateTable(
+                name: "InvestigationServiceImpact",
+                schema: "fortpublic",
+                columns: table => new
+                {
+                    InvestigationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FloodImpactId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvestigationServiceImpact", x => new { x.InvestigationId, x.FloodImpactId });
+                    table.ForeignKey(
+                        name: "FK_InvestigationServiceImpact_FloodImpacts_FloodImpactId",
+                        column: x => x.FloodImpactId,
+                        principalSchema: "fortpublic",
+                        principalTable: "FloodImpacts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvestigationServiceImpact_Investigations_InvestigationId",
+                        column: x => x.InvestigationId,
+                        principalSchema: "fortpublic",
+                        principalTable: "Investigations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                },
+                comment: "Relationships between investigation and service flood impacts");
+
+            migrationBuilder.CreateTable(
                 name: "InvestigationWarningSources",
                 schema: "fortpublic",
                 columns: table => new
@@ -691,95 +746,26 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 comment: "Relationships between investigation and water source flood mitigations");
 
             migrationBuilder.CreateTable(
-                name: "ContactRecords",
+                name: "ContactRecordFloodReport",
                 schema: "fortpublic",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContactType = table.Column<int>(type: "integer", nullable: false),
-                    CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ContactName = table.Column<string>(type: "text", nullable: false),
-                    EmailAddress = table.Column<string>(type: "text", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    RedactionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ContactUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    FloodReportId = table.Column<Guid>(type: "uuid", nullable: true)
+                    ContactRecordsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FloodReportsId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContactRecords", x => x.Id);
-                },
-                comment: "Contact information for individuals reporting flood incidents and seeking assistance");
-
-            migrationBuilder.CreateTable(
-                name: "FloodReports",
-                schema: "fortpublic",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Reference = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
-                    CreatedUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    MarkedForDeletionUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    StatusId = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("018feb10-38e0-7f30-a546-37ce71f243ae")),
-                    EligibilityCheckId = table.Column<Guid>(type: "uuid", nullable: true),
-                    InvestigationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ReportOwnerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ReportOwnerAccessUntil = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FloodReports", x => x.Id);
+                    table.PrimaryKey("PK_ContactRecordFloodReport", x => new { x.ContactRecordsId, x.FloodReportsId });
                     table.ForeignKey(
-                        name: "FK_FloodReports_ContactRecords_ReportOwnerId",
-                        column: x => x.ReportOwnerId,
-                        principalSchema: "fortpublic",
-                        principalTable: "ContactRecords",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_FloodReports_EligibilityChecks_EligibilityCheckId",
-                        column: x => x.EligibilityCheckId,
-                        principalSchema: "fortpublic",
-                        principalTable: "EligibilityChecks",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_FloodReports_Investigations_InvestigationId",
-                        column: x => x.InvestigationId,
-                        principalSchema: "fortpublic",
-                        principalTable: "Investigations",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_FloodReports_RecordStatuses_StatusId",
-                        column: x => x.StatusId,
-                        principalSchema: "fortpublic",
-                        principalTable: "RecordStatuses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                },
-                comment: "Flood report overviews");
-
-            migrationBuilder.CreateTable(
-                name: "FloodReportContactRecords",
-                schema: "fortpublic",
-                columns: table => new
-                {
-                    FloodReportId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContactRecordId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FloodReportContactRecords", x => new { x.FloodReportId, x.ContactRecordId });
-                    table.ForeignKey(
-                        name: "FK_FloodReportContactRecord_ContactRecords_ContactRecordId",
-                        column: x => x.ContactRecordId,
+                        name: "FK_ContactRecordFloodReport_ContactRecords_ContactRecordsId",
+                        column: x => x.ContactRecordsId,
                         principalSchema: "fortpublic",
                         principalTable: "ContactRecords",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FloodReportContactRecord_FloodReports_FloodReportId",
-                        column: x => x.FloodReportId,
+                        name: "FK_ContactRecordFloodReport_FloodReports_FloodReportsId",
+                        column: x => x.FloodReportsId,
                         principalSchema: "fortpublic",
                         principalTable: "FloodReports",
                         principalColumn: "Id",
@@ -836,14 +822,14 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     { new Guid("018fd6ea-2420-7b30-b20e-5fccfd98b345"), "Zone-C", "External", 8, null, "Access" },
                     { new Guid("018fd6eb-0e80-78a6-b74e-8a65c9293f90"), "Zone-C", "External", 9, null, "Road" },
                     { new Guid("018fd6eb-f8e0-7844-b002-405ef83ab875"), "Zone-C", "Other", 99, null, "Not Sure" },
-                    { new Guid("018fd71a-aa00-7ac0-b521-ccf27f194875"), "Service Impact", null, 1, null, "Services not affected" },
-                    { new Guid("018fd71b-9460-715b-aa13-d9eabd5b7ef1"), "Service Impact", null, 2, null, "Private Sewer" },
-                    { new Guid("018fd71c-7ec0-7a1b-94a6-c7d7ae52b977"), "Service Impact", null, 3, null, "Mains Sewer" },
-                    { new Guid("018fd71d-6920-787b-ab3f-b6f251f4834b"), "Service Impact", null, 4, null, "Water Supply" },
+                    { new Guid("018fd71a-aa00-7ac0-b521-ccf27f194875"), "Service Impact", null, 98, null, "Services not affected" },
+                    { new Guid("018fd71b-9460-715b-aa13-d9eabd5b7ef1"), "Service Impact", null, 2, null, "Private sewer" },
+                    { new Guid("018fd71c-7ec0-7a1b-94a6-c7d7ae52b977"), "Service Impact", null, 3, null, "Mains sewer" },
+                    { new Guid("018fd71d-6920-787b-ab3f-b6f251f4834b"), "Service Impact", null, 4, null, "Water supply" },
                     { new Guid("018fd71e-5380-79a2-8e37-ab4e24f063a2"), "Service Impact", null, 5, null, "Gas" },
                     { new Guid("018fd71f-3de0-7551-b3a4-7916759c83fe"), "Service Impact", null, 6, null, "Electricity" },
                     { new Guid("018fd720-2840-7273-bfcd-4ce03f7f249e"), "Service Impact", null, 7, null, "Phoneline" },
-                    { new Guid("018fd721-12a0-7341-a0fb-818543c14e0f"), "Service Impact", null, 99, null, "Not Sure" },
+                    { new Guid("018fd721-12a0-7341-a0fb-818543c14e0f"), "Service Impact", null, 99, null, "Not sure" },
                     { new Guid("018fd751-9880-7fe6-812e-3683961317a9"), "Community Impact", null, 1, null, "All road access blocked" },
                     { new Guid("018fd752-82e0-7560-8b2f-441c7ff1800a"), "Community Impact", null, 2, null, "Some road access blocked" },
                     { new Guid("018fd753-6d40-7327-b7dc-e5286d2a5bf3"), "Community Impact", null, 3, null, "No access to place of work" },
@@ -1086,12 +1072,24 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContactRecords_FloodReportId_UniqueWhenNoUser",
+                name: "IX_ContactRecordFloodReport_FloodReportsId",
+                schema: "fortpublic",
+                table: "ContactRecordFloodReport",
+                column: "FloodReportsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactRecords_ContactUserId",
                 schema: "fortpublic",
                 table: "ContactRecords",
-                column: "FloodReportId",
+                column: "ContactUserId",
                 unique: true,
-                filter: "\"ContactUserId\" IS NULL");
+                filter: "\"ContactUserId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactSubscribeRecords_ContactRecordId",
+                schema: "fortpublic",
+                table: "ContactSubscribeRecords",
+                column: "ContactRecordId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EligibilityCheckCommercials_FloodImpactId",
@@ -1142,16 +1140,11 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 column: "Category");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloodReportContactRecords_ContactRecordId",
-                schema: "fortpublic",
-                table: "FloodReportContactRecords",
-                column: "ContactRecordId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_FloodReports_EligibilityCheckId",
                 schema: "fortpublic",
                 table: "FloodReports",
-                column: "EligibilityCheckId");
+                column: "EligibilityCheckId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_FloodReports_Id",
@@ -1174,22 +1167,10 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FloodReports_ReportOwnerId",
-                schema: "fortpublic",
-                table: "FloodReports",
-                column: "ReportOwnerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_FloodReports_StatusId",
                 schema: "fortpublic",
                 table: "FloodReports",
                 column: "StatusId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_InboxState_Delivered",
-                schema: "fortpublic",
-                table: "InboxState",
-                column: "Delivered");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InvestigationActionsTaken_FloodMitigationId",
@@ -1252,6 +1233,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 column: "IsPeakDepthKnownId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Investigations_PropertyInsuredId",
+                schema: "fortpublic",
+                table: "Investigations",
+                column: "PropertyInsuredId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Investigations_WarningAppropriateId",
                 schema: "fortpublic",
                 table: "Investigations",
@@ -1288,6 +1275,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 column: "WhenWaterEnteredKnownId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvestigationServiceImpact_FloodImpactId",
+                schema: "fortpublic",
+                table: "InvestigationServiceImpact",
+                column: "FloodImpactId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InvestigationWarningSources_FloodMitigationId",
                 schema: "fortpublic",
                 table: "InvestigationWarningSources",
@@ -1300,61 +1293,34 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 column: "FloodAuthorityId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OutboxMessage_EnqueueTime",
+                name: "IX_OutboxMessages_Priority_Created",
                 schema: "fortpublic",
-                table: "OutboxMessage",
-                column: "EnqueueTime");
+                table: "OutboxMessages",
+                columns: new[] { "Priority", "Created" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OutboxMessage_ExpirationTime",
+                name: "IX_OutboxMessages_Status_Priority_Created",
                 schema: "fortpublic",
-                table: "OutboxMessage",
-                column: "ExpirationTime");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OutboxMessage_InboxMessageId_InboxConsumerId_SequenceNumber",
-                schema: "fortpublic",
-                table: "OutboxMessage",
-                columns: new[] { "InboxMessageId", "InboxConsumerId", "SequenceNumber" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OutboxMessage_OutboxId_SequenceNumber",
-                schema: "fortpublic",
-                table: "OutboxMessage",
-                columns: new[] { "OutboxId", "SequenceNumber" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OutboxState_Created",
-                schema: "fortpublic",
-                table: "OutboxState",
-                column: "Created");
+                table: "OutboxMessages",
+                columns: new[] { "Status", "Priority", "Created" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecordStatuses_Category",
                 schema: "fortpublic",
                 table: "RecordStatuses",
                 column: "Category");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_ContactRecords_FloodReports_FloodReportId",
-                schema: "fortpublic",
-                table: "ContactRecords",
-                column: "FloodReportId",
-                principalSchema: "fortpublic",
-                principalTable: "FloodReports",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_ContactRecords_FloodReports_FloodReportId",
-                schema: "fortpublic",
-                table: "ContactRecords");
+            migrationBuilder.DropTable(
+                name: "ContactRecordFloodReport",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "ContactSubscribeRecords",
+                schema: "fortpublic");
 
             migrationBuilder.DropTable(
                 name: "EligibilityCheckCommercials",
@@ -1374,10 +1340,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "FloodAuthorityFloodProblems",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
-                name: "FloodReportContactRecords",
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
@@ -1405,11 +1367,23 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
+                name: "InvestigationServiceImpact",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
                 name: "InvestigationWarningSources",
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
-                name: "OutboxMessage",
+                name: "OutboxMessages",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "FloodReports",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "ContactRecords",
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
@@ -1425,31 +1399,15 @@ namespace FloodOnlineReportingTool.Database.Migrations
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
-                name: "InboxState",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
-                name: "OutboxState",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
-                name: "FloodAuthorities",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
-                name: "FloodReports",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
-                name: "ContactRecords",
-                schema: "fortpublic");
-
-            migrationBuilder.DropTable(
                 name: "EligibilityChecks",
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(
                 name: "Investigations",
+                schema: "fortpublic");
+
+            migrationBuilder.DropTable(
+                name: "FloodAuthorities",
                 schema: "fortpublic");
 
             migrationBuilder.DropTable(

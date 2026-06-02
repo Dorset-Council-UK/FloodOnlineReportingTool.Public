@@ -3,9 +3,9 @@ using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
+using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.DbContexts;
@@ -30,6 +30,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<InvestigationEntry> InvestigationEntries { get; set; } // Relationship table
     public DbSet<InvestigationWarningSource> InvestigationWarningSources { get; set; } // Relationship table
     public DbSet<Organisation> Organisations { get; set; }
+    public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<RecordStatus> RecordStatuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,11 +38,6 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasDefaultSchema(SchemaNames.FortPublic);
-
-        // Add the inbox and outbox pattern messaging tables
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
 
         // Entity configurations
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PublicDbContext).Assembly);

@@ -1,5 +1,4 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
-using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
@@ -10,7 +9,6 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
@@ -19,6 +17,7 @@ public partial class Create(
     ILogger<Create> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     SessionStateService scopedSessionStorage,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
@@ -42,7 +41,6 @@ public partial class Create(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private ContactModel? _contactModel;
-    private Database.Models.Flood.FloodReport? _floodReport;
     private Guid _floodReportId;
     private string? _userId;
     private bool _isLoading = true;
@@ -93,7 +91,7 @@ public partial class Create(
         if (firstRender)
         {           
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -151,31 +149,39 @@ public partial class Create(
 
             // Generate a contact record
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            ContactRecordDto dto = new ContactRecordDto
+            SubscribeRecordDto subscribeRecordDto = new()
             {
-                UserId = _userId,
                 ContactType = _contactModel.ContactType!.Value,
                 ContactName = _contactModel.ContactName!,
                 EmailAddress = _contactModel.EmailAddress!,
                 PhoneNumber = _contactModel.PhoneNumber,
-                IsRecordOwner = false
+                IsRecordOwner = false,
             };
 
-            var contactRecord = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
-            Guid contactRecordId;
-            if (contactRecord.Count == 0)
+            Guid? contactRecordId = null;
+            var contactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+            if (contactRecords.Count == 0)
             {
-                var newRecord = await contactRepository.CreateForReport(_floodReportId, dto, _cts.Token);
-                if (!newRecord.IsSuccess)
+                var createResult = await contactRepository.Create(_userId, _floodReportId, _cts.Token);
+                if (!createResult.IsSuccess)
                 {
+                    foreach (var error in createResult.Errors)
+                    {
+                        logger.LogError("Error creating contact record: {ErrorMessage}", error);
+                    }
                     return;
                 }
-                contactRecordId = newRecord.ResultModel!.Id;
+                contactRecordId = createResult.Value.Id;
             }
             else
             {
-                contactRecordId = contactRecord.First().Id;
+                contactRecordId = contactRecords.FirstOrDefault()?.Id;
+                if (contactRecordId is null)
+                {
+                    return;
+                }
             }
+
             // Get authentication state
             var currentUserEmail = string.Empty;
             if (AuthenticationState is not null)
@@ -183,28 +189,30 @@ public partial class Create(
                 var authState = await AuthenticationState;
                 currentUserEmail = authState.User.Email;
             }
-            var generatedSubscribeRecord = await contactRepository.CreateSubscriptionRecord(contactRecordId, dto, currentUserEmail, false, _cts.Token);
-
-           if (generatedSubscribeRecord == null || !generatedSubscribeRecord.IsSuccess)
-            {
-                logger.LogError("There was a problem creating contact information");
-                return;
-            }
-            if (generatedSubscribeRecord.ResultModel == null)
+            var generatedSubscribeRecord = await subscribeRecordRepository.Create(contactRecordId.Value, subscribeRecordDto, currentUserEmail, userPresent: false, _cts.Token);
+            if (!generatedSubscribeRecord.IsSuccess)
             {
                 logger.LogError("There was a problem creating contact information");
                 return;
             }
 
-            if (!generatedSubscribeRecord.ResultModel.IsEmailVerified && !generatedSubscribeRecord.ResultModel.IsRecordOwner)
+            // TODO: Why create a new subscribe record and then update the verification code immediately?
+
+            SubscribeRecord subscribeRecord = generatedSubscribeRecord.Value;
+            if (!subscribeRecord.IsEmailVerified && !subscribeRecord.IsRecordOwner)
             {
-                var updatedVerification = await contactRepository.UpdateVerificationCode(generatedSubscribeRecord.ResultModel, false, _cts.Token);
-                if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
+                var updateResult = await subscribeRecordRepository.UpdateVerificationCode(subscribeRecord, userPresent: false, _cts.Token);
+                if (!updateResult.IsSuccess)
                 {
-                    logger.LogError("Error sending email verification notification");
+                    foreach (var error in updateResult.Errors)
+                    {
+                        logger.LogError("Error updating verification code: {ErrorMessage}", error);
+                    }
                     navigationManager.NavigateTo(ContactPages.Summary.Url);
                     return;
                 }
+
+                SubscribeRecord returnedSubscription = updateResult.Value;
                 if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
                 {
                     logger.LogError("Error sending email verification notification");

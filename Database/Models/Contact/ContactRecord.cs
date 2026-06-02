@@ -19,7 +19,8 @@ public record ContactRecord
     public DateTimeOffset RedactionDate { get; init; }
     public string? ContactUserId { get; set; }
 
-    public ICollection<SubscribeRecord> SubscribeRecords { get; set; } = [];
+    // Navigation properties
+    virtual public ICollection<SubscribeRecord> SubscribeRecords { get; init; } = [];
 
-    public ICollection<FloodReport> FloodReports { get; set; } = [];
+    virtual public ICollection<FloodReport> FloodReports { get; init; } = [];
 }

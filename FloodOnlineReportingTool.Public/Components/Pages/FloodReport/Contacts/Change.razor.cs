@@ -17,6 +17,7 @@ public partial class Change(
     ILogger<Change> logger,
     NavigationManager navigationManager,
     IContactRecordRepository contactRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     SessionStateService scopedSessionStorage,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
@@ -49,11 +50,9 @@ public partial class Change(
     private ContactModel? _contactModel;
     private SubscribeRecord? _subscribeModel;
     private Guid _floodReportId = Guid.Empty;
-    private Guid _contactId = Guid.Empty;
     private string? _userID;
     private bool _isLoading = true;
     private bool _isDataLoading = true;
-    private bool _isResent;
     private readonly CancellationTokenSource _cts = new();
 
     // Public Properties
@@ -107,11 +106,11 @@ public partial class Change(
                 return;
             }
 
-            _contactId = ContactId ?? Guid.Empty;
+            //_contactId = ContactId ?? Guid.Empty;
 
             // Retrieve the flood report ID from session storage
             _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -120,7 +119,7 @@ public partial class Change(
             }
 
             // Load the subscription record for the contact
-            _subscribeModel = await contactRepository.GetSubscriptionRecordById(_contactId, _cts.Token);
+            _subscribeModel = await subscribeRecordRepository.Get(subscriptionId: ContactId.Value, _cts.Token);
             if (_subscribeModel is not null)
             {
                 // Map subscription data to contact model for editing
@@ -176,7 +175,7 @@ public partial class Change(
         }
 
         // Convert to GDS option items for rendering in the form
-        ContactTypes = availableTypes.Select(CreateOption).ToArray();
+        ContactTypes = [.. availableTypes.Select(CreateOption)];
     }
 
     /// <remarks>
@@ -216,7 +215,7 @@ public partial class Change(
 
     private async Task UpdateContactAsync()
     {
-        logger.LogDebug("Updating contact information");
+        logger.LogDebug("Updating subscription information");
 
         if (_contactModel is null)
         {
@@ -226,34 +225,32 @@ public partial class Change(
 
         try
         {
-            // Retrieve the current subscription record
-            var selectedRecord = await contactRepository.GetSubscriptionRecordById(_contactId, _cts.Token);
-            if (selectedRecord is null)
+            SubscribeRecordDto subscribeRecordDto = new()
             {
-                logger.LogWarning("Subscription record not found");
+                PhoneNumber = _contactModel.PhoneNumber,
+                EmailAddress = _contactModel.EmailAddress!,
+                ContactName = _contactModel.ContactName!,
+                ContactType = _contactModel.ContactType!.Value,
+            };
+            var updateResult = await subscribeRecordRepository.Update(subscribeRecordId: ContactId!.Value, subscribeRecordDto, _cts.Token);
+            if (!updateResult.IsSuccess)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    logger.LogError("Failed to update subscription record ID: {SubscriptionId} Error: {Error}", ContactId.Value, error);
+                }
+                _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem updating the subscription information. Please try again but if this issue persists then please report a bug.");
+                _editContext.NotifyValidationStateChanged();
                 return;
             }
 
-            // Update subscription record with new values from the form
-            selectedRecord.PhoneNumber = _contactModel.PhoneNumber;
-            selectedRecord.EmailAddress = _contactModel.EmailAddress!;
-            selectedRecord.ContactName = _contactModel.ContactName!;
-            selectedRecord.ContactType = _contactModel.ContactType!.Value;
-
-            var updatedSubscription = await contactRepository.UpdateSubscriptionRecord(selectedRecord, _cts.Token);
-
-            logger.LogInformation("Contact information updated successfully");
-
-            if (updatedSubscription.ResultModel is not SubscribeRecord sub)
-            {
-                logger.LogError("Failed to update subscription record");
-                return;
-            }
+            logger.LogInformation("Subscription information updated successfully");
 
             // Handle email verification if the email is not yet verified
-            if (!sub.IsEmailVerified)
+            SubscribeRecord updatedSubscription = updateResult.Value;
+            if (!updatedSubscription.IsEmailVerified)
             {
-                await SendEmailVerificationAsync(sub);
+                await SendEmailVerificationAsync(updatedSubscription);
             }
 
             // Navigate back to contacts summary page
@@ -261,8 +258,8 @@ public partial class Change(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error updating contact information");
-            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem updating the contact information. Please try again but if this issue persists then please report a bug.");
+            logger.LogError(ex, "Error updating subscription information");
+            _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), "There was a problem updating the subscription information. Please try again but if this issue persists then please report a bug.");
             _editContext.NotifyValidationStateChanged();
         }
     }
@@ -272,14 +269,14 @@ public partial class Change(
         try
         {
             // Update the verification code and expiry (userPresent: false means automatic send)
-            var updatedVerification = await contactRepository.UpdateVerificationCode(subscription, userPresent: false, _cts.Token);
-
-            if (updatedVerification.ResultModel is not SubscribeRecord returnedSubscription)
+            var updatedResult = await subscribeRecordRepository.UpdateVerificationCode(subscription, userPresent: false, _cts.Token);
+            if (!updatedResult.IsSuccess)
             {
                 logger.LogWarning("Failed to update verification code for subscription {SubscriptionId}", subscription.Id);
                 return;
             }
 
+            SubscribeRecord returnedSubscription = updatedResult.Value;
             if (returnedSubscription.VerificationExpiryUtc is not DateTimeOffset expiry)
             {
                 logger.LogWarning("Verification expiry is null for subscription {SubscriptionId}", subscription.Id);
@@ -298,8 +295,6 @@ public partial class Change(
                 verificationLink: "To fix",
                 expiry
             );
-
-            _isResent = true;
         }
         catch (Exception ex)
         {

@@ -2,16 +2,22 @@
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
-
-using MassTransit;
+using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class InvestigationRepository(PublicDbContext context, IPublishEndpoint publishEndpoint) : IInvestigationRepository
+public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextFactory) : IInvestigationRepository
 {
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.Investigations.CountAsync(cancellationToken);
+    }
+
     public async Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
@@ -20,8 +26,9 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
             .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
     }
 
-    public async Task<Investigation> CreateForFloodReport(string userId, InvestigationDto investigationDto, CancellationToken ct)
+    public async Task<Result<Investigation>> CreateForFloodReport(string userId, InvestigationDto investigationDto, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         var floodReport = await context.FloodReports
             .AsNoTracking()
             .Where(cr => cr.Id == investigationDto.FloodReportId)
@@ -29,15 +36,15 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
 
         if (floodReport == null)
         {
-            throw new InvalidOperationException("No flood report found");
+            return Result<Investigation>.Failure(["No flood report found"]);
         }
         if (floodReport.InvestigationId != null)
         {
-            throw new InvalidOperationException("An investigation already exists for this flood report");
+            return Result<Investigation>.Failure(["An investigation already exists for this flood report"]);
         }
         if (floodReport.StatusId != RecordStatusIds.ActionNeeded)
         {
-            throw new InvalidOperationException("There is not currently an ongoing investigation for this flood report");
+            return Result<Investigation>.Failure(["There is not currently an ongoing investigation for this flood report"]);
         }
 
         var investigation = CreateBaseInvestigation(investigationDto)
@@ -55,17 +62,18 @@ public class InvestigationRepository(PublicDbContext context, IPublishEndpoint p
         context.FloodReports.Update(updatedFloodReport);
 
         // Publish a message to the message system
-        var message = investigation.ToMessageCreated(floodReport.Reference);
-        await publishEndpoint.Publish(message, ct);
+        // TODO: add save message to outbox pattern back in
+        //var message = investigation.ToMessageCreated(floodReport.Reference);
 
         // Save the investigation in the database
         await context.SaveChangesAsync(ct);
 
-        return investigation;
+        return Result<Investigation>.Success(investigation);
     }
 
     public async Task<Investigation?> ReportedByUserBasicInformation(string userId, CancellationToken ct)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)

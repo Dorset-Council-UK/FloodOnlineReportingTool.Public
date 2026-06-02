@@ -1,60 +1,48 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Contact;
-using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
-using FloodOnlineReportingTool.Database.Services;
-using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Security.Cryptography;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class ContactRecordRepository(
     ILogger<ContactRecordRepository> logger, 
-    IDbContextFactory<PublicDbContext> contextFactory,
-    IUserContext userContext
-    ) : IContactRecordRepository
+    IDbContextFactory<PublicDbContext> contextFactory
+) : IContactRecordRepository
 {
-    private const int VerificationExpiryMinutesUserPresent = 30;
-    private const int VerificationExpiryMinutesUserNotPresent = 4320; // 3 days
-    private const int RedactionDelayMinutes = 31;
-    private const int RedactionPeriod = 6;
+    private const int RedactionMonths = 6;
 
-    public async Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct)
+    public async Task<ContactRecord?> Get(Guid contactRecordId, CancellationToken cancellationToken)
     {
         logger.LogInformation("Getting contact record by ID: {ContactRecordId}", contactRecordId);
 
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.ContactRecords
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .Where(cr => cr.Id == contactRecordId)
             .OrderBy(cr => cr.Id)
             .Include(cr => cr.FloodReports)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<ContactRecord?> Get(string userId, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Getting contact record by user ID");
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Where(cr => cr.ContactUserId == userId)
+            .OrderBy(cr => cr.Id)
+            .Include(cr => cr.FloodReports)
+            .FirstOrDefaultAsync(cancellationToken);
     }
     
-    public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct)
-    {
-        logger.LogInformation("Getting report owner contact records for flood report ID: {FloodReportId}", floodReportId);
-
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var floodReport = await context.FloodReports
-        .AsNoTracking()
-        .IgnoreAutoIncludes()
-        .Include(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
-            .ThenInclude(cr => cr.SubscribeRecords)
-        .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
-
-        var ownerSubscribeRecord = floodReport?.ContactRecords
-        .SelectMany(cr => cr.SubscribeRecords)
-        .RoleBasedFilterPersonalData(userContext.CanViewPersonalData)
-        .FirstOrDefault(sr => sr.IsRecordOwner == true);
-
-        return ownerSubscribeRecord ?? null;
-    }
 
     public async Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct)
     {
@@ -74,57 +62,73 @@ public class ContactRecordRepository(
         return contactRecords ?? [];
     }
 
-    public async Task<CreateOrUpdateResult<ContactRecord>> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct)
+    public async Task<Result<ContactRecord>> Create(string? userId, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Creating contact record for flood report ID: {FloodReportId}", floodReportId);
+        return await Create(userId, floodReportId: null, cancellationToken);
+    }
 
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var floodReport = await context.FloodReports
-            .IgnoreAutoIncludes()
-            .Include(o => o.ContactRecords)
-            .FirstOrDefaultAsync(o => o.Id == floodReportId, ct);
-
-        if (floodReport == null)
+    public async Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportId, CancellationToken cancellationToken)
+    {
+        if (userId is null)
         {
-            return CreateOrUpdateResult<ContactRecord>.Failure([ $"No flood report found for ID {floodReportId}" ]);
+            logger.LogInformation("Creating contact record");
         }
-
-        // Does the user already have a contact record?
-        if (dto.UserId != null)
+        else
         {
-            string userId = dto.UserId;
-            var existingContactRecordId = await context.ContactRecords
-                .AsNoTracking()
-                .Where(cr => cr.ContactUserId == userId)
-                .Select(cr => (Guid?)cr.Id)
-                .FirstOrDefaultAsync(ct);
-            if (existingContactRecordId != null)
-            {
-                logger.LogInformation("User already has a contact record ID: {ContactRecordId}, trying to update the record instead", existingContactRecordId.Value);
-                return await UpdateForUser(userId, existingContactRecordId.Value, dto, ct);
-            }
+            logger.LogInformation("Creating contact record for a user");
         }
 
         var now = DateTimeOffset.UtcNow;
-        var contactRecordId = Guid.CreateVersion7();
-
         ContactRecord contactRecord = new()
         {
-            Id = contactRecordId,
+            Id = Guid.CreateVersion7(),
             CreatedUtc = now,
-            RedactionDate = now.AddMonths(RedactionPeriod),
-            ContactUserId = dto.UserId,
-            FloodReports = [floodReport],
+            RedactionDate = now.AddMonths(RedactionMonths),
+            ContactUserId = userId,
         };
 
-        // Add the contact record, including linking it to the flood report
-        context.ContactRecords.Add(contactRecord);
-        await context.SaveChangesAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return CreateOrUpdateResult<ContactRecord>.Success(contactRecord);
+        // Check if a contact record already exists for the user
+        bool contactRecordExistsForUser = userId is not null && await context.ContactRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .AnyAsync(cr => cr.ContactUserId == userId, cancellationToken);
+        if (contactRecordExistsForUser)
+        {
+            logger.LogInformation("Contact record already exists for user, cannot create another for user");
+            return Result<ContactRecord>.Failure(["Cannot create contact record for user, a record already exists"]);
+        }
+
+        if (floodReportId.HasValue)
+        {
+            if (floodReportId.Value == Guid.Empty)
+            {
+                logger.LogInformation("Empty flood report ID provided for contact record");
+                return Result<ContactRecord>.Failure(["Cannot create contact record with empty flood report ID"]);
+            }
+
+            FloodReport? floodReport = await context.FloodReports
+                .IgnoreAutoIncludes()
+                .FirstOrDefaultAsync(fr => fr.Id == floodReportId.Value, cancellationToken);
+
+            if (floodReport is null)
+            {
+                logger.LogInformation("Flood report {FloodReportId} not found for contact record", floodReportId);
+                return Result<ContactRecord>.Failure([$"Cannot create contact record, no flood report found for ID {floodReportId}"]);
+            }
+
+            logger.LogInformation("New contact record for flood report: {FloodReportId}", floodReportId);
+            contactRecord.FloodReports.Add(floodReport);
+        }
+
+        context.ContactRecords.Add(contactRecord);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result<ContactRecord>.Success(contactRecord);
     }
 
-    public async Task<GetResult<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
+    public async Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
     {
         logger.LogInformation("Linking contact record ID: {ContactRecordId} with record {FloodReportId}", contactRecordId, floodReportId);
 
@@ -132,20 +136,20 @@ public class ContactRecordRepository(
         var contactRecord = await context.ContactRecords
             .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
 
-        var floodReport = await context.FloodReports.FindAsync(floodReportId);
+        var floodReport = await context.FloodReports.FindAsync([floodReportId], ct);
         if (floodReport == null || contactRecord == null)
         {
-            return GetResult<ContactRecord>.Failure(["Record not found."]);
+            return Result<ContactRecord>.Failure(["Record not found."]);
         }
 
         contactRecord.FloodReports.Add(floodReport);
 
         await context.SaveChangesAsync(ct);
 
-        return GetResult<ContactRecord>.Success(contactRecord);
+        return Result<ContactRecord>.Success(contactRecord);
     }
 
-    public async Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct)
+    public async Task<Result<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, CancellationToken ct)
     {
         logger.LogInformation("Updating contact record ID: {ContactRecordId} for user", contactRecordId);
 
@@ -155,20 +159,19 @@ public class ContactRecordRepository(
 
         if (contactRecord == null)
         {
-            return CreateOrUpdateResult<ContactRecord>.Failure([ $"No contact record found for record type" ]);
+            return Result<ContactRecord>.Failure([ $"No contact record found for record type" ]);
         }
 
         contactRecord = contactRecord with
         {
             UpdatedUtc = DateTimeOffset.UtcNow,
-
             ContactUserId = userId,
         };
 
         context.Update(contactRecord);
         await context.SaveChangesAsync(ct);
 
-        return CreateOrUpdateResult<ContactRecord>.Success(contactRecord);
+        return Result<ContactRecord>.Success(contactRecord);
     }
 
     public async Task<DeleteResult<ContactRecord>> DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct)
@@ -177,6 +180,7 @@ public class ContactRecordRepository(
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
+            .Include(cr => cr.SubscribeRecords)
             .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
         
         if (contactRecord == null)
@@ -191,11 +195,12 @@ public class ContactRecordRepository(
         }
 
         // Remove the contact record from the flood report
-        if (subscribeRecordToRemove.IsRecordOwner == true || contactRecord.SubscribeRecords.Count == 1)
+        if (subscribeRecordToRemove.IsRecordOwner || contactRecord.SubscribeRecords.Count == 1)
         {
             // If this is the record owner or there is only one subscribe record, we can remove the whole contact record
             context.ContactRecords.Remove(contactRecord);
-        } else
+        }
+        else
         {
             // If there are multiple subscribe records we only remove the one matching the contact type
             if (subscribeRecordToRemove != null)
@@ -209,169 +214,6 @@ public class ContactRecordRepository(
 
         return DeleteResult<ContactRecord>.Success();
     }
-
-    public async Task<CreateOrUpdateResult<SubscribeRecord>> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct)
-    {
-        logger.LogInformation("Creating contact subscription record for email");
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        SubscribeRecord contactModel = new()
-        {
-            ContactName = dto.ContactName!,
-            EmailAddress = dto.EmailAddress!,
-            ContactType = dto.ContactType,
-            ContactRecordId = contactRecordId,
-        };
-
-        // Assumption, logged in users do not need to authenticate unless it is not their email address.
-        bool AutoVerifyEmail = false;
-        if (!string.IsNullOrEmpty(userEmail))
-        {
-            if (string.Equals(userEmail, dto.EmailAddress, StringComparison.OrdinalIgnoreCase))
-            {
-                AutoVerifyEmail = true;
-            }
-        }
-
-        // Only allow 1 instance of each type of contact to be created
-        if (context.ContactSubscribeRecords.Where(csr => csr.ContactRecordId == contactRecordId).Any(o => o.ContactType == dto.ContactType))
-        {
-            return CreateOrUpdateResult<SubscribeRecord>.Failure([$"A contact record of type {dto.ContactType} already exists for the user"]);
-        }
-
-        SubscribeRecord newSubscription = new SubscribeRecord()
-        {
-            ContactRecordId = contactRecordId,
-            ContactType = dto.ContactType,
-            ContactName = dto.ContactName,
-            EmailAddress = dto.EmailAddress,
-            IsEmailVerified = AutoVerifyEmail,   
-            IsSubscribed = false,
-            IsRecordOwner = dto.IsRecordOwner,
-            CreatedUtc = DateTimeOffset.UtcNow,
-            VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000),
-            VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? VerificationExpiryMinutesUserPresent : VerificationExpiryMinutesUserNotPresent)),
-            RedactionDate = DateTimeOffset.UtcNow.AddMinutes(RedactionDelayMinutes)
-        };
-
-        context.ContactSubscribeRecords.Add(newSubscription);
-        await context.SaveChangesAsync(ct);
-        return CreateOrUpdateResult<SubscribeRecord>.Success(newSubscription);
-    }
-
-    public async Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct)
-    {
-        logger.LogInformation("Getting contact subscription record for id: {SubscriptionID}", subscriptionId);
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.ContactSubscribeRecords
-            .AsNoTracking()
-            .IgnoreAutoIncludes()
-            .Where(sr => sr.Id == subscriptionId)
-            .Include(sr => sr.ContactRecord)
-            .OrderByDescending(sr => sr.CreatedUtc)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct)
-    {
-        logger.LogInformation("Verify subscription record for id: {SubscriptionID} by code", subscriptionId);
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var subscriptionRecord = await context.ContactSubscribeRecords
-                .IgnoreAutoIncludes()
-                .Where(sr => sr.Id == subscriptionId)
-                .OrderByDescending(sr => sr.CreatedUtc)
-                .FirstOrDefaultAsync(ct);
-
-        if (subscriptionRecord == null)
-        {
-            return false;
-        }
-
-        if( subscriptionRecord.VerificationCode == verificationCode && subscriptionRecord.VerificationExpiryUtc >  DateTimeOffset.UtcNow)
-        {
-            // Mark as verified
-            subscriptionRecord.IsEmailVerified = true;
-            subscriptionRecord.VerificationCode = null;
-            subscriptionRecord.VerificationExpiryUtc = null;
-
-            await context.SaveChangesAsync(ct);
-            return true;
-        } else
-        {
-           return false;
-        }
-
-    }
-
-    public async Task<CreateOrUpdateResult<SubscribeRecord>> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct)
-    {
-        logger.LogInformation("Updating contact subscription verification code for record ID: {SubscriptionId}", subscriptionRecord.Id);
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        subscriptionRecord.VerificationCode = RandomNumberGenerator.GetInt32(100000, 1000000);
-        subscriptionRecord.VerificationExpiryUtc = DateTimeOffset.UtcNow.AddMinutes((userPresent ? VerificationExpiryMinutesUserPresent : VerificationExpiryMinutesUserNotPresent));
-
-        context.ContactSubscribeRecords.Update(subscriptionRecord);
-        await context.SaveChangesAsync(ct);
-        return CreateOrUpdateResult<SubscribeRecord>.Success(subscriptionRecord);
-    }
-
-    public async Task<CreateOrUpdateResult<SubscribeRecord>> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct)
-    {
-        logger.LogInformation("Updating contact subscription record ID: {SubscriptionId}", subscriptionRecord.Id);
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        var subscribeRecord = await context.ContactSubscribeRecords
-            .FirstOrDefaultAsync(cr => cr.Id == subscriptionRecord.Id, ct);
-        if (subscribeRecord == null)
-        {
-            return CreateOrUpdateResult<SubscribeRecord>.Failure([$"No contact record found for ID {subscriptionRecord.ContactRecordId}"]);
-        }
-
-        if (subscriptionRecord.ContactType != subscribeRecord.ContactType && context.ContactSubscribeRecords.Any(o => o.ContactType == subscriptionRecord.ContactType && o.ContactRecord!.Id == subscriptionRecord.ContactRecordId))
-        {
-            return CreateOrUpdateResult<SubscribeRecord>.Failure([$"A contact record of type {subscriptionRecord.ContactType} already exists for the user"]);
-        }
-
-        // Determine if the email has changed; if it has, we need to reset the verified status
-        bool emailNotChanged = subscribeRecord.EmailAddress.Equals(subscriptionRecord.EmailAddress, StringComparison.OrdinalIgnoreCase);
-        var isEmailVerified = emailNotChanged && (subscribeRecord.IsEmailVerified || subscriptionRecord.IsEmailVerified);
-
-        subscribeRecord.IsRecordOwner = subscriptionRecord.IsRecordOwner;
-        subscribeRecord.ContactType = subscriptionRecord.ContactType;
-        subscribeRecord.IsSubscribed = subscriptionRecord.IsSubscribed;
-        subscribeRecord.IsEmailVerified = isEmailVerified;
-        subscribeRecord.EmailAddress = subscriptionRecord.EmailAddress;
-        subscribeRecord.ContactName = subscriptionRecord.ContactName;
-        subscribeRecord.PhoneNumber = subscriptionRecord.PhoneNumber;
-
-        await context.SaveChangesAsync(ct);
-        return CreateOrUpdateResult<SubscribeRecord>.Success(subscriptionRecord);
-    }
-
-    public async Task<DeleteResult<SubscribeRecord>> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct)
-    {
-        logger.LogInformation("Deleting subscription record ID: {SubscriptionId}", subscriptionId);
-
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var subscriptionRecord = await context.ContactSubscribeRecords
-            .Where(sr => sr.Id == subscriptionId)
-            .FirstOrDefaultAsync(ct);
-
-        if (subscriptionRecord == null)
-        {
-            return DeleteResult<SubscribeRecord>.Failure([$"No subscription record found"]);
-        }
-
-        // Remove the subscription record from the flood report
-        context.ContactSubscribeRecords.Remove(subscriptionRecord);
-
-        // Remove the subscription record and add the message to the database
-        await context.SaveChangesAsync(ct);
-
-        return DeleteResult<SubscribeRecord>.Success();
-    }
-
 
     public async Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
     {
@@ -388,6 +230,18 @@ public class ContactRecordRepository(
             .ToListAsync(ct);
 
         return [.. Enum.GetValues<ContactRecordType>().Where(o => o != ContactRecordType.Unknown && !usedRecordTypes.Contains(o))];
+    }
+
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> Count(string userId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords.CountAsync(cr => cr.ContactUserId == userId, cancellationToken);
     }
 
     public async Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
@@ -413,37 +267,31 @@ public class ContactRecordRepository(
         return allRecordTypes - usedRecordTypes;
     }
 
-    public async Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default)
+    public async Task<bool> Exists(Guid contactRecordId, CancellationToken cancellationToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.ContactRecords
             .AsNoTracking()
-            .AnyAsync(o => o.Id == contactRecordId, ct);
+            .IgnoreAutoIncludes()
+            .AnyAsync(o => o.Id == contactRecordId, cancellationToken);
     }
 
-    public async Task<Guid?> ContactRecordExistsForUser(string userId, CancellationToken ct = default)
+    public async Task<bool> Exists(string userId, CancellationToken cancellationToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.ContactRecords
             .AsNoTracking()
-            .Where(o => o.ContactUserId == userId)
-            .Select(o => o.Id)
-            .FirstOrDefaultAsync(ct);
+            .IgnoreAutoIncludes()
+            .AnyAsync(cr => cr.ContactUserId == userId, cancellationToken);
     }
 
-    /// <summary>
-    /// This function is for use in integration tests only.
-    /// </summary>
-    public async Task<Guid> GetRandomFloodReportWithSubscriber(CancellationToken ct = default)
+    public async Task<bool> Exists(Guid floodReportId, ContactRecordType contactRecordType, CancellationToken cancellationToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var reportLibrary = await context.FloodReports
-            .Include(fr => fr.ContactRecords)
-                .ThenInclude(cr => cr.SubscribeRecords)
-            .Where(fr => fr.ContactRecords.First().SubscribeRecords.Any())
-            .Select(fr => fr.Id)
-            .ToArrayAsync(ct);
-
-        return reportLibrary.Length > 0 ? reportLibrary[Random.Shared.Next(reportLibrary.Length)] : Guid.Empty;
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Where(cr => cr.FloodReports.Any(fr => fr.Id == floodReportId) && cr.SubscribeRecords.Any(sr => sr.ContactType == contactRecordType))
+            .AnyAsync(cancellationToken);
     }
 }

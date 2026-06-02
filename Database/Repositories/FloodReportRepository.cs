@@ -3,26 +3,40 @@ using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using FloodOnlineReportingTool.Database.Options;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
 public class FloodReportRepository(
     ILogger<FloodReportRepository> logger,
     ICommonRepository commonRepository,
-    IPublishEndpoint publishEndpoint,
     IOptions<GISOptions> options,
-    PublicDbContext dbContext,
     IDbContextFactory<PublicDbContext> contextFactory
 ) : IFloodReportRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
+    private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
+
+    public async Task<int> Count(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.FloodReports.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> Count(string userId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.FloodReports
+            .Where(fr => fr.ContactRecords.Any(cr => cr.ContactUserId == userId))
+            .CountAsync(cancellationToken);
+    }
 
     public async Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct)
     {
@@ -78,7 +92,7 @@ public class FloodReportRepository(
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<CreateOrUpdateResult<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    public async Task<Result<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -90,7 +104,7 @@ public class FloodReportRepository(
 
         if (floodReport == null)
         {
-            return CreateOrUpdateResult<FloodReport>.Failure(new List<string> { $"Flood report with id {floodReportId} not found." });
+            return Result<FloodReport>.Failure([$"Flood report with id {floodReportId} not found."]);
         }
         foreach(var contactRecord in floodReport.ContactRecords)
         {
@@ -101,7 +115,7 @@ public class FloodReportRepository(
         }
 
         await context.SaveChangesAsync(ct);
-        return CreateOrUpdateResult<FloodReport>.Success(floodReport);
+        return Result<FloodReport>.Success(floodReport);
     }
 
     private async Task<string> CreateReference(CancellationToken ct)
@@ -194,9 +208,7 @@ public class FloodReportRepository(
     {
         logger.LogInformation("Checking existence of flood report with reference number {Reference}.", reference);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.FloodReports
-            .AsNoTracking()
-            .AnyAsync(o => o.Reference == reference, ct);
+        return await context.FloodReports.AnyAsync(o => o.Reference == reference, ct);
     }
 
     public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct)
@@ -235,51 +247,173 @@ public class FloodReportRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<FloodReport> CreateWithEligiblityCheck(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReport>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report with eligibility check.");
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var eligibilityCheckId = Guid.CreateVersion7();
+        // Create eligibility check
         var now = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        EligibilityCheck eligibilityCheck = dto.ToCreatedEntity(Guid.CreateVersion7(), createdUtc: now, termsAgreed: now, impactDuration);
 
+        // Create flood report
         var floodReport = new FloodReport
         {
             Reference = await CreateReference(ct),
             CreatedUtc = now,
             StatusId = RecordStatusIds.New,
             ReportOwnerAccessUntil = now.AddMonths(_gisOptions.AccessTokenIssueDurationMonths),
-            EligibilityCheck = dto.ToCreatedEntity(eligibilityCheckId, createdUtc: now, termsAgreed: now, impactDuration),
+            EligibilityCheck = eligibilityCheck,
         };
 
-        // Add the flood report to the database
-        context.FloodReports.Add(floodReport);
+        // Create a message
+        FloodReportSourceCreated message = new(
+            floodReport.Id,
+            Buffer: 25,
+            floodReport.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            floodReport.CreatedUtc,
+            eligibilityCheck.ToEligibilityCheckRecord(
+                await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
+                await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
+            ),
+            floodReport.Investigation is not null,
+            floodReport.ContactRecords.Count > 0,
+            [.. floodReport.ContactRecords
+                .SelectMany(c => c.SubscribeRecords)
+                .Select(s => s.ContactType)
+                .Distinct(),
+            ]
+        );
+        OutboxMessage outboxMessage = new()
+        {
+            MessageType = nameof(FloodReportSourceCreated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+            Status = MessageStatus.Pending,
+        };
 
-        // Publish multiple messages to the message system
-        var responsibleOrganisations = await commonRepository
-            .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
-        var fullFloodSource = await commonRepository
-           .GetFullEligibilityFloodProblemSourceList(floodReport.EligibilityCheck, ct);
-        var eligibilityCheckRecord = floodReport.EligibilityCheck.ToMessageCreated(responsibleOrganisations, fullFloodSource);
+        try
+        {
+            // Save all changes
+            context.FloodReports.Add(floodReport);
+            context.OutboxMessages.Add(outboxMessage);
+            await context.SaveChangesAsync(ct);
 
-        // Save the flood report, eligibility check, and messages to the database
-        await context.SaveChangesAsync(ct);
-
-        var reportDetailsViewUriBase = new Uri($"{viewUriBase.AbsoluteUri.TrimEnd('/')}/details/");
-        var floodReportCreatedMessage = floodReport.ToMessageCreated(reportDetailsViewUriBase, eligibilityCheckRecord);
-        await SendBusMessages(floodReportCreatedMessage, ct);
-
-        return floodReport;
+            return Result<FloodReport>.Success(floodReport);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating flood report with eligibility check.");
+            return Result<FloodReport>.Failure(["Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug."]);
+        }
     }
 
-    private async Task SendBusMessages(FloodReportSourceCreated floodReportCreatedMessage, CancellationToken ct)
+    public async Task<Result<FloodReport?>> Update(Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
     {
-        // Separate method as we need to use the generic context for MassTransit to pickup the request
-        // and write to the outbox table.
-        await publishEndpoint.Publish(floodReportCreatedMessage, ct);
-        await dbContext.SaveChangesAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // Find the flood report
+        var floodReport = await context.FloodReports
+            .AsNoTracking()
+            .Include(fr => fr.EligibilityCheck)
+            .FirstOrDefaultAsync(fr => fr.EligibilityCheck != null && fr.EligibilityCheck.Id == id, ct);
+
+        if (floodReport is null)
+        {
+            logger.LogWarning("No flood report found for eligibility check id {Id}", id);
+            return Result<FloodReport?>.Failure([$"No flood report found for eligibility check id {id}."]);
+        }
+        if (floodReport.EligibilityCheck is null)
+        {
+            logger.LogWarning("No eligibility check found for id {Id}", id);
+            return Result<FloodReport?>.Failure([$"Eligibility check with id {id} not found."]);
+        }
+
+        // Update the eligibility check
+        var updatedUtc = DateTimeOffset.UtcNow;
+        var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReport.EligibilityCheck, updatedUtc, impactDuration);
+
+        // Create a message
+        FloodReportSourceUpdated message = new(
+            floodReport.Id,
+            floodReport.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            updatedUtc,
+            status,
+            EligibilityCheckRecord: null, // Temporary: this is going to be removed
+            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+        );
+        OutboxMessage outboxMessage = new()
+        {
+            MessageType = nameof(FloodReportSourceUpdated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+            Status = MessageStatus.Pending,
+        };
+
+        // Save all changes
+        context.EligibilityChecks.Update(updatedEligibilityCheck);
+        context.OutboxMessages.Add(outboxMessage);
+        await context.SaveChangesAsync(ct);
+
+        logger.LogInformation("Updated flood report with eligibility check id {Id}", id);
+        return Result<FloodReport?>.Success(floodReport);
+    }
+
+    public async Task<Result<FloodReport?>> Update(string userId, Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // Find the users flood report
+        var floodReport = await context.ContactRecords
+            .AsNoTracking()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReports)
+            .Include(fr => fr.EligibilityCheck)
+            .FirstOrDefaultAsync(fr => fr.EligibilityCheck != null && fr.EligibilityCheck.Id == id, ct);
+
+        if (floodReport is null)
+        {
+            logger.LogWarning("No flood report found for user and eligibility check id {Id}", id);
+            return Result<FloodReport?>.Failure([$"No flood report found for eligibility check id {id}."]);
+        }
+        if (floodReport.EligibilityCheck is null)
+        {
+            logger.LogWarning("No eligibility check found for user and id {Id}", id);
+            return Result<FloodReport?>.Failure([$"Eligibility check with id {id} not found."]);
+        }
+
+        // Update the users eligibility check
+        var updatedUtc = DateTimeOffset.UtcNow;
+        var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReport.EligibilityCheck, updatedUtc, impactDuration);
+
+        // Create a message
+        FloodReportSourceUpdated message = new(
+            floodReport.Id,
+            floodReport.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            updatedUtc,
+            status,
+            EligibilityCheckRecord: null, // Temporary: this is going to be removed
+            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+        );
+        OutboxMessage outboxMessage = new()
+        {
+            MessageType = nameof(FloodReportSourceUpdated),
+            Message = JsonSerializer.Serialize(message, _jsonOptions),
+            Status = MessageStatus.Pending,
+        };
+
+        // Save all changes
+        context.EligibilityChecks.Update(updatedEligibilityCheck);
+        context.OutboxMessages.Add(outboxMessage);
+        await context.SaveChangesAsync(ct);
+
+        logger.LogInformation("Updated users flood report with eligibility check id {Id}", id);
+        return Result<FloodReport?>.Success(floodReport);
     }
 
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)

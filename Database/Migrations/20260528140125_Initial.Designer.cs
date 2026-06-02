@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    [Migration("20251211171709_UpdateContactRecordsToHaveSubscriptions")]
-    partial class UpdateContactRecordsToHaveSubscriptions
+    [Migration("20260528140125_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("fortpublic")
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -46,8 +46,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ContactUserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ContactUserId")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
@@ -60,7 +60,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContactUserId");
+                    b.HasIndex("ContactUserId")
+                        .IsUnique()
+                        .HasFilter("\"ContactUserId\" IS NOT NULL");
 
                     b.ToTable("ContactRecords", "fortpublic", t =>
                         {
@@ -527,31 +529,24 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         },
                         new
                         {
-                            Id = new Guid("018fd71a-aa00-7ac0-b521-ccf27f194875"),
-                            Category = "Service Impact",
-                            OptionOrder = 1,
-                            TypeName = "Services not affected"
-                        },
-                        new
-                        {
                             Id = new Guid("018fd71b-9460-715b-aa13-d9eabd5b7ef1"),
                             Category = "Service Impact",
                             OptionOrder = 2,
-                            TypeName = "Private Sewer"
+                            TypeName = "Private sewer"
                         },
                         new
                         {
                             Id = new Guid("018fd71c-7ec0-7a1b-94a6-c7d7ae52b977"),
                             Category = "Service Impact",
                             OptionOrder = 3,
-                            TypeName = "Mains Sewer"
+                            TypeName = "Mains sewer"
                         },
                         new
                         {
                             Id = new Guid("018fd71d-6920-787b-ab3f-b6f251f4834b"),
                             Category = "Service Impact",
                             OptionOrder = 4,
-                            TypeName = "Water Supply"
+                            TypeName = "Water supply"
                         },
                         new
                         {
@@ -576,10 +571,17 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         },
                         new
                         {
+                            Id = new Guid("018fd71a-aa00-7ac0-b521-ccf27f194875"),
+                            Category = "Service Impact",
+                            OptionOrder = 98,
+                            TypeName = "Services not affected"
+                        },
+                        new
+                        {
                             Id = new Guid("018fd721-12a0-7341-a0fb-818543c14e0f"),
                             Category = "Service Impact",
                             OptionOrder = 99,
-                            TypeName = "Not Sure"
+                            TypeName = "Not sure"
                         },
                         new
                         {
@@ -1427,6 +1429,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<int?>("PeakOutsideCentimetres")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("PropertyInsuredId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1467,6 +1472,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.HasIndex("HistoryOfFloodingId");
 
                     b.HasIndex("IsPeakDepthKnownId");
+
+                    b.HasIndex("PropertyInsuredId");
 
                     b.HasIndex("WarningAppropriateId");
 
@@ -1576,6 +1583,24 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationServiceImpact", b =>
+                {
+                    b.Property<Guid>("InvestigationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FloodImpactId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("InvestigationId", "FloodImpactId");
+
+                    b.HasIndex("FloodImpactId");
+
+                    b.ToTable("InvestigationServiceImpact", "fortpublic", t =>
+                        {
+                            t.HasComment("Relationships between investigation and service flood impacts");
+                        });
+                });
+
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationWarningSource", b =>
                 {
                     b.Property<Guid>("InvestigationId")
@@ -1591,6 +1616,46 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.ToTable("InvestigationWarningSources", "fortpublic", t =>
                         {
                             t.HasComment("Relationships between investigation and water source flood mitigations");
+                        });
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Messaging.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Priority", "Created");
+
+                    b.HasIndex("Status", "Priority", "Created");
+
+                    b.ToTable("OutboxMessages", "fortpublic", t =>
+                        {
+                            t.HasComment("The outbox message table is used to store messages that need to be sent to other systems. It is part of a messaging outbox pattern.");
                         });
                 });
 
@@ -2401,174 +2466,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime?>("Consumed")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ConsumerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("Delivered")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExpirationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long?>("LastSequenceNumber")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("LockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ReceiveCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("Received")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Delivered");
-
-                    b.ToTable("InboxState", "fortpublic");
-                });
-
-            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
-                {
-                    b.Property<long>("SequenceNumber")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SequenceNumber"));
-
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("ConversationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CorrelationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DestinationAddress")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<DateTime?>("EnqueueTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExpirationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FaultAddress")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Headers")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("InboxConsumerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("InboxMessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("InitiatorId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MessageType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("OutboxId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Properties")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ResponseAddress")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<DateTime>("SentTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SourceAddress")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("SequenceNumber");
-
-                    b.HasIndex("EnqueueTime");
-
-                    b.HasIndex("ExpirationTime");
-
-                    b.HasIndex("OutboxId", "SequenceNumber")
-                        .IsUnique();
-
-                    b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
-                        .IsUnique();
-
-                    b.ToTable("OutboxMessage", "fortpublic");
-                });
-
-            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
-                {
-                    b.Property<Guid>("OutboxId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("Delivered")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long?>("LastSequenceNumber")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("LockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
-                    b.HasKey("OutboxId");
-
-                    b.HasIndex("Created");
-
-                    b.ToTable("OutboxState", "fortpublic");
-                });
-
             modelBuilder.Entity("ContactRecordFloodReport", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", null)
@@ -2727,6 +2624,12 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "PropertyInsured")
+                        .WithMany()
+                        .HasForeignKey("PropertyInsuredId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "WarningAppropriate")
                         .WithMany()
                         .HasForeignKey("WarningAppropriateId");
@@ -2766,6 +2669,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("HistoryOfFlooding");
 
                     b.Navigation("IsPeakDepthKnown");
+
+                    b.Navigation("PropertyInsured");
 
                     b.Navigation("WarningAppropriate");
 
@@ -2867,6 +2772,23 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodMitigation");
                 });
 
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationServiceImpact", b =>
+                {
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodImpact", "FloodImpact")
+                        .WithMany()
+                        .HasForeignKey("FloodImpactId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Investigate.Investigation", null)
+                        .WithMany("ServiceImpacts")
+                        .HasForeignKey("InvestigationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodImpact");
+                });
+
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationWarningSource", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodMitigation", "FloodMitigation")
@@ -2917,18 +2839,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodAuthority");
                 });
 
-            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
-                {
-                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
-                        .WithMany()
-                        .HasForeignKey("OutboxId");
-
-                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.InboxState", null)
-                        .WithMany()
-                        .HasForeignKey("InboxMessageId", "InboxConsumerId")
-                        .HasPrincipalKey("MessageId", "ConsumerId");
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Contact.ContactRecord", b =>
                 {
                     b.Navigation("SubscribeRecords");
@@ -2958,6 +2868,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("Entries");
 
                     b.Navigation("HelpReceived");
+
+                    b.Navigation("ServiceImpacts");
 
                     b.Navigation("WarningSources");
                 });

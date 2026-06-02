@@ -6,7 +6,6 @@ using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
-using MassTransit.Initializers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -16,13 +15,13 @@ public partial class Summary(
     ILogger<Summary> logger,
     IContactRecordRepository contactRepository,
     IFloodReportRepository floodReportRepository,
+    ISubscribeRecordRepository subscribeRecordRepository,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IGovNotifyEmailSender govNotifyEmailSender
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
-    private Guid _verificationId = Guid.Empty;
     private Guid _floodReportId = Guid.Empty;
     private bool _isLoading = true;
     private ContactModel? _reportOwnerContact;
@@ -72,7 +71,6 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            _verificationId = await scopedSessionStorage.GetVerificationId();
             _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
 
             await LoadContactData();
@@ -94,7 +92,7 @@ public partial class Summary(
 
     private async Task LoadContactData()
     {
-        var reportOwnerSubscribeRecord = await contactRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+        var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
         if (_reportOwnerContact is null)
@@ -107,22 +105,22 @@ public partial class Summary(
         var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
 
         // Filter out the report owner from the additional contacts list
-        _contactModels = allContactRecords
+        _contactModels = [.. allContactRecords
             .SelectMany(cr => cr.SubscribeRecords)
             .Where(sr => !sr.IsRecordOwner)
-            .Select(sr => sr.ToContactModel())
-            .ToList();
+            .Select(sr => sr.ToContactModel()),
+         ];
         _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
     }
 
     private async Task OnSubmit()
     {
 
-        var EnableSubscriptions = await floodReportRepository.EnableContactSubscriptionsForReport(_floodReportId, _cts.Token);
+        var enableSubscriptions = await floodReportRepository.EnableContactSubscriptionsForReport(_floodReportId, _cts.Token);
 
-        if (!EnableSubscriptions.IsSuccess)
+        if (!enableSubscriptions.IsSuccess)
         {
-            logger.LogError("Failed to enable contact subscriptions for flood report {FloodReportId}: {Errors}", _floodReportId, EnableSubscriptions.Errors);
+            logger.LogError("Failed to enable contact subscriptions for flood report {FloodReportId}: {Errors}", _floodReportId, enableSubscriptions.Errors);
             _messageStore.Add(new FieldIdentifier(Model, nameof(Model.ErrorMessage)), "An error occurred while updating your subscription preferences. Please try again.");
             _editContext.NotifyValidationStateChanged();
             return;
@@ -131,9 +129,10 @@ public partial class Summary(
         // Carry on whether this works or not
         try
         {
+            Database.Models.Flood.FloodReport floodReport = enableSubscriptions.Value;
             // TODO: move the email logic to the service bus to allow for retries and better handling
             // Send message with the details requesting email to be sent but don't actually send it here
-            foreach (var contactRecord in EnableSubscriptions.ResultModel!.ContactRecords)
+            foreach (var contactRecord in floodReport.ContactRecords)
             {
                 foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
                 {
@@ -150,26 +149,26 @@ public partial class Summary(
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
                             subscriptionRecord.IsRecordOwner,
                             canEdit,
-                            EnableSubscriptions.ResultModel.Reference,
-                            subscriptionRecord.ContactType!.LabelText(),
-                            subscriptionRecord.ContactName!,
-                            subscriptionRecord.EmailAddress!,
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.LocationDesc ?? "",
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.Easting,
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.Northing,
-                            EnableSubscriptions.ResultModel.CreatedUtc
+                            floodReport.Reference,
+                            subscriptionRecord.ContactType.LabelText(),
+                            subscriptionRecord.ContactName,
+                            subscriptionRecord.EmailAddress,
+                            floodReport.EligibilityCheck?.LocationDesc ?? "",
+                            floodReport.EligibilityCheck!.Easting,
+                            floodReport.EligibilityCheck!.Northing,
+                            floodReport.CreatedUtc
                             );
                     } else
                     {
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
-                            EnableSubscriptions.ResultModel.Reference,
-                            subscriptionRecord.ContactType!.LabelText(),
-                            subscriptionRecord.ContactName!,
-                            subscriptionRecord.EmailAddress!,
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.LocationDesc ?? "",
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.Easting,
-                            EnableSubscriptions.ResultModel.EligibilityCheck!.Northing,
-                            EnableSubscriptions.ResultModel.CreatedUtc
+                            floodReport.Reference,
+                            subscriptionRecord.ContactType.LabelText(),
+                            subscriptionRecord.ContactName,
+                            subscriptionRecord.EmailAddress,
+                            floodReport.EligibilityCheck?.LocationDesc ?? "",
+                            floodReport.EligibilityCheck!.Easting,
+                            floodReport.EligibilityCheck!.Northing,
+                            floodReport.CreatedUtc
                             );
                     }
                         

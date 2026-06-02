@@ -120,21 +120,24 @@ public partial class Summary(
     private async Task SaveInvestigation(InvestigationDto dto, string userId)
     {
         logger.LogDebug("Saving investigation information..");
-        try
-        {
-            await investigationRepository.CreateForFloodReport(userId, dto, _cts.Token);
 
-            // Clear the stored data
-            await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
-
-            logger.LogInformation("Investigation created successfully for user");
-            navigationManager.NavigateTo(InvestigationPages.Confirmation.Url);
-        }
-        catch (Exception ex)
+        var createInvestigation = await investigationRepository.CreateForFloodReport(userId, dto, _cts.Token);
+        if (!createInvestigation.IsSuccess)
         {
-            logger.LogError(ex, "There was a problem creating the investigation information");
+            logger.LogError("There was a problem creating the investigation information");
             _summaryErrors.Add("There was a problem saving the investigation. Please try again but if this issue happens again then please report a bug.");
+            foreach (var error in createInvestigation.Errors)
+            {
+                _summaryErrors.Add(error);
+            }
+            return;
         }
+
+        // Clear the stored data
+        await protectedSessionStorage.DeleteAsync(SessionConstants.Investigation);
+
+        logger.LogInformation("Investigation created successfully for user");
+        navigationManager.NavigateTo(InvestigationPages.Confirmation.Url);
     }
 
     private async Task<InvestigationDto> GetInvestigation()

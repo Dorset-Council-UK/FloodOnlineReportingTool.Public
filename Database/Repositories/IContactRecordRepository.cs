@@ -1,6 +1,5 @@
 ﻿using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models.Contact;
-using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
@@ -8,15 +7,14 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public interface IContactRecordRepository
 {
     /// <summary>
-    /// Gets a contact record by its ID value
+    /// Gets a contact record by its ID
     /// </summary>
-    Task<ContactRecord?> GetContactById(Guid contactRecordId, CancellationToken ct);
+    Task<ContactRecord?> Get(Guid contactRecordId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Get the report owner contact records associated with a flood report
+    /// Get a contact record using the users ID
     /// </summary>
-    /// <returns></returns>
-    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken ct);
+    Task<ContactRecord?> Get(string userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get all other contact records associated with a flood report
@@ -24,63 +22,48 @@ public interface IContactRecordRepository
     Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
 
     /// <summary>
-    /// Create a contact record for the user, going via the flood report
+    /// Create a contact record. User ID is optional
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
-    Task<CreateOrUpdateResult<ContactRecord>> CreateForReport(Guid floodReportId, ContactRecordDto dto, CancellationToken ct);
+    /// <returns>A result pattern with the created contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> Create(string? userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Create a contact record. User ID and flood report ID are optional
+    /// </summary>
+    /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    /// <returns>A result pattern with the created contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Adds the provided flood report to an existing contact record
     /// </summary>
-    /// <returns></returns>
-    Task<GetResult<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+    /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+
     /// <summary>
     /// Update the contact record, going via the flood report
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
-    Task<CreateOrUpdateResult<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, ContactRecordDto dto, CancellationToken ct);
+    /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
+    Task<Result<ContactRecord>> UpdateForUser(string userId, Guid contactRecordId, CancellationToken ct);
 
     /// <summary>
     /// Delete the contact record by ID
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
+    /// <returns>A result pattern indicating success, or a list of errors.</returns>
     Task<DeleteResult<ContactRecord>> DeleteById(Guid contactRecordId, ContactRecordType contactType, CancellationToken ct);
 
     /// <summary>
-    /// Creates a contact subscription record
+    /// Count the number of contact records
     /// </summary>
-    /// <returns>This record will be linked to a contact record once completed. Unlinked records will be deleted after retention date.</returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> CreateSubscriptionRecord(Guid contactRecordId, ContactRecordDto dto, string? userEmail, bool userPresent, CancellationToken ct);
+    Task<int> Count(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Returns a current subscription record by its ID
+    /// Count the number of contact records for a user
     /// </summary>
-    /// <returns></returns>
-    Task<SubscribeRecord?> GetSubscriptionRecordById(Guid subscriptionId, CancellationToken ct);
-
-    /// <summary>
-    /// Verifies a contact subscription record
-    /// </summary>
-    /// <returns></returns>
-    Task<bool> VerifySubscriptionRecord(Guid subscriptionId, int verificationCode, CancellationToken ct);
-
-    /// <summary>
-    /// This updates the verification code and expiry on a subscription record
-    /// </summary>
-    /// <returns></returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken ct);
-
-    /// <summary>
-    /// Updates a subscription record
-    /// </summary>
-    /// <returns></returns>
-    Task<CreateOrUpdateResult<SubscribeRecord>> UpdateSubscriptionRecord(SubscribeRecord subscriptionRecord, CancellationToken ct);
-
-    /// <summary>
-    /// Deletes a subscription record by its ID
-    /// </summary>
-    /// <returns></returns>
-    Task<DeleteResult<SubscribeRecord>> DeleteSubscriptionById(Guid subscriptionId, CancellationToken ct);
+    Task<int> Count(string userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Count the number of unused contact record types, going via the flood report
@@ -92,9 +75,18 @@ public interface IContactRecordRepository
     /// </summary>
     Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
 
-    Task<bool> ContactRecordExists(Guid contactRecordId, CancellationToken ct = default);
+    /// <summary>
+    /// Does the contact record exist using the ID
+    /// </summary>
+    Task<bool> Exists(Guid contactRecordId, CancellationToken cancellationToken);
 
-    Task<Guid?> ContactRecordExistsForUser(string userId, CancellationToken ct = default);
+    /// <summary>
+    /// Does the contact record exist for the user
+    /// </summary>
+    Task<bool> Exists(string userId, CancellationToken cancellationToken);
 
-    Task<Guid> GetRandomFloodReportWithSubscriber(CancellationToken ct = default);
+    /// <summary>
+    /// Does the contact record exist for the flood report and contact record type
+    /// </summary>
+    Task<bool> Exists(Guid floodReportId, ContactRecordType contactRecordType, CancellationToken cancellationToken);
 }
