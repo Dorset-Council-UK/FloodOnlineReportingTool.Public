@@ -17,7 +17,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Summary(
     ILogger<Summary> logger,
     ICommonRepository commonRepository,
-    IFloodReportRepository floodReportRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     IValidator<EligibilityCheckDto> validator,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
@@ -132,7 +132,7 @@ public partial class Summary(
 
         if (_eligibilityCheckDto is null)
         {
-            logger.LogError("Flood report information was not found");
+            logger.LogError("Flood report source information was not found");
             _validationFailures.Add(new ValidationFailure("accept", "Sorry there was a problem with your flood report information. Please try again but if this issue happens again then please report a bug."));
             return;
         }
@@ -141,17 +141,17 @@ public partial class Summary(
     }
 
     /// <summary>
-    /// Save the flood report, and eligibility check
+    /// Save the flood report source, and eligibility check
     /// </summary>
     private async Task SaveFloodReport(EligibilityCheckDto dto)
     {
-        // Create a new flood report
+        // Create a new flood report source
         var viewUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
-        var createFloodReport = await floodReportRepository.Create(dto, viewUri, _cts.Token);
+        var createFloodReportSource = await floodReportSourceRepository.Create(dto, viewUri, _cts.Token);
 
-        if (!createFloodReport.IsSuccess)
+        if (!createFloodReportSource.IsSuccess)
         {
-            foreach (var error in createFloodReport.Errors)
+            foreach (var error in createFloodReportSource.Errors)
             {
                 _validationFailures.Add(new ValidationFailure("save", error));
             }
@@ -163,10 +163,10 @@ public partial class Summary(
         await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck_ExtraData);
 
         // Navigate to the confirmation page with the reference number
-        logger.LogInformation("Flood report created successfully");
+        logger.LogInformation("Flood report source created successfully");
         var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
-            { "Reference", createFloodReport.Value.Reference },
+            { "Reference", createFloodReportSource.Value.Reference },
         };
         var confirmationUrl = navigationManager.GetUriWithQueryParameters(FloodReportCreatePages.Confirmation.Url, parameters.AsReadOnly());
         navigationManager.NavigateTo(confirmationUrl);

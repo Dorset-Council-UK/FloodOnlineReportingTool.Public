@@ -57,17 +57,17 @@ public partial class Confirmation(
                 {
                     var result = await eligibilityRepository.GetByReference(Reference, _cts.Token);
 
-                    if (result?.FloodReport != null)
+                    if (result?.FloodReportSource != null)
                     {
-                        _FloodReportId = result.FloodReport.Id;
-                        // Store the current flood report to session storage
+                        _FloodReportId = result.FloodReportSource.Id;
+                        // Store the current flood report source ID
                         if (_FloodReportId != Guid.Empty)
                         {
                             // Never save a blank Guid, only a real one
-                            await scopedSessionStorage.SaveFloodReportId(_FloodReportId);
+                            await scopedSessionStorage.SaveFloodReporSourcetId(_FloodReportId);
                         }
 
-                        _hasContactInformation = result.FloodReport.ContactRecords.Count > 0;
+                        _hasContactInformation = result.FloodReportSource.ContactRecords.Count > 0;
                     }
                 }
                 catch (InvalidOperationException ex)

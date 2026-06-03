@@ -2,6 +2,7 @@
 using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Repositories;
@@ -28,7 +29,7 @@ public partial class Test(
     ITestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
     IContactRecordRepository contactRepository,
-    IFloodReportRepository floodReportRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     IInvestigationRepository investigationRepository,
     IOutboxMessageService outboxMessageService,
     IOptions<GovNotifyOptions> govNotifyOptions,
@@ -86,17 +87,17 @@ public partial class Test(
     };
     private readonly Dictionary<string, ProtectedStorageInfo> _protectedStorageInfos = new(StringComparer.Ordinal)
     {
-        { SessionConstants.FloodReportId, new ProtectedStorageInfo("Flood report ID") },
+        { SessionConstants.FloodReportSourceId, new ProtectedStorageInfo("Flood report source ID") },
         { SessionConstants.EligibilityCheck, new ProtectedStorageInfo("Eligibility check") },
         { SessionConstants.EligibilityCheck_ExtraData, new ProtectedStorageInfo("Eligibility check extra data") },
         { SessionConstants.Investigation, new ProtectedStorageInfo("Investigation") },
         { SessionConstants.VerificationId, new ProtectedStorageInfo("Verification ID") },
     };
 
-    // Flood reports
-    private int _floodReportsCount;
-    private int _floodReportsCountUser;
-    private string? _floodReportsConfirmationReference;
+    // Flood report sources
+    private int _floodReportSourcesCount;
+    private int _floodReportSourcesCountUser;
+    private string? _floodReportSourcesConfirmationReference;
 
     // Contact records
     private int _contactRecordsCount;
@@ -108,7 +109,7 @@ public partial class Test(
 
     // Investigation
     private int _investigationsCount;
-    private Database.Models.Flood.FloodReport? _investigationFloodReport;
+    private FloodReportSource? _investigationFloodReportSource;
 
     // Outbox messages
     private int _outboxMessageCount;
@@ -159,8 +160,8 @@ public partial class Test(
                     // Protected storage
                     await ProtectedStorage_Refresh();
 
-                    // Flood reports
-                    await FloodReportsCounts_Refresh(userId);
+                    // Flood report sources
+                    await FloodReportSourcesCounts_Refresh(userId);
 
                     // Contact records
                     _contactRecordsCount = await contactRepository.Count(_cts.Token);
@@ -233,7 +234,7 @@ public partial class Test(
         logger.LogInformation("Contact Record {owner}", testContact);
 
         // Trigger the redaction on real data
-        var testId = await testService.GetRandomFloodReportWithSubscriber(_cts.Token);
+        var testId = await testService.GetRandomFloodReportSourceWithSubscriber(_cts.Token);
         if (testId.HasValue)
         {
             var subscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(testId.Value, _cts.Token);
@@ -249,7 +250,7 @@ public partial class Test(
     {
         foreach (var info in _protectedStorageInfos)
         {
-            if (info.Key is SessionConstants.FloodReportId)
+            if (info.Key is SessionConstants.FloodReportSourceId)
             {
                 var result = await protectedSessionStorage.GetAsync<Guid?>(info.Key);
                 info.Value.Exists = result.Success && result.Value is not null && result.Value != Guid.Empty;
@@ -295,7 +296,7 @@ public partial class Test(
     }
     private async Task ProtectedStorage_Create(string key)
     {
-        if (key is SessionConstants.FloodReportId)
+        if (key is SessionConstants.FloodReportSourceId)
         {
             await protectedSessionStorage.SetAsync(key, Guid.NewGuid());
         }
@@ -330,10 +331,10 @@ public partial class Test(
         }
     }
 
-    // Flood reports
-    private async Task FloodReportsCounts_Refresh(string? userId = null)
+    // Flood report sources
+    private async Task FloodReportSourcesCounts_Refresh(string? userId = null)
     {
-        _floodReportsCount = await floodReportRepository.Count(_cts.Token);
+        _floodReportSourcesCount = await floodReportSourceRepository.Count(_cts.Token);
 
         if (userId is null)
         {
@@ -347,27 +348,27 @@ public partial class Test(
             }
         }
 
-        _floodReportsCountUser = userId is not null
-            ? await floodReportRepository.Count(userId, _cts.Token)
+        _floodReportSourcesCountUser = userId is not null
+            ? await floodReportSourceRepository.Count(userId, _cts.Token)
             : 0;
     }
-    private async Task FloodReports_CreateTestConfirmation()
+    private async Task FloodReportSources_CreateTestConfirmation()
     {
         var viewUriBase = new Uri($"{navigationManager.BaseUri}{GeneralPages.Test.Url}");
-        var createResult = await floodReportRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
+        var createResult = await floodReportSourceRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
         if (!createResult.IsSuccess)
         {
-            logger.LogError("Failed to create a test flood report.");
+            logger.LogError("Failed to create a test flood report source.");
             throw new InvalidOperationException(string.Join(", ", createResult.Errors));
         }
 
         await ProtectedStorage_Delete([
             SessionConstants.EligibilityCheck,
             SessionConstants.EligibilityCheck_ExtraData,
-            SessionConstants.FloodReportId,
+            SessionConstants.FloodReportSourceId,
         ]);
-        await FloodReportsCounts_Refresh();
-        _floodReportsConfirmationReference = createResult.Value.Reference;
+        await FloodReportSourcesCounts_Refresh();
+        _floodReportSourcesConfirmationReference = createResult.Value.Reference;
     }
 
     // Investigation
@@ -375,7 +376,7 @@ public partial class Test(
     {
         _investigationsCount = await investigationRepository.Count(_cts.Token);
     }
-    private async Task Investigation_AddTestFloodReport()
+    private async Task Investigation_AddTestFloodReportSource()
     {
         string? userId = null;
         if (AuthenticationState is not null)
@@ -388,24 +389,24 @@ public partial class Test(
         }
         if (userId is null)
         {
-            logger.LogError("Cannot create a test flood report for investigation without an authenticated user.");
+            logger.LogError("Cannot create a test flood report source for investigation without an authenticated user.");
             throw new InvalidOperationException("User must be authenticated to create a test investigations.");
         }
 
-        // flood report
+        // flood report source
         var viewUriBase = new Uri(navigationManager.Uri);
-        var createFloodReportResult = await floodReportRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
-        if (!createFloodReportResult.IsSuccess)
+        var createReportResult = await floodReportSourceRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
+        if (!createReportResult.IsSuccess)
         {
-            logger.LogError("Failed to create a test flood report for investigation.");
-            throw new InvalidOperationException(string.Join(", ", createFloodReportResult.Errors));
+            logger.LogError("Failed to create a test flood report source for investigation.");
+            throw new InvalidOperationException(string.Join(", ", createReportResult.Errors));
         }
-        var floodReportId = createFloodReportResult.Value.Id;
-        await testService.TestFloodReport_SetInvestigationHasStarted(floodReportId, _cts.Token);
-        await FloodReportsCounts_Refresh(userId);
+        var floodReportSourceId = createReportResult.Value.Id;
+        await testService.TestFloodReportSource_SetInvestigationHasStarted(floodReportSourceId, _cts.Token);
+        await FloodReportSourcesCounts_Refresh(userId);
 
         // contact record
-        var createContactResult = await contactRepository.Create(userId, floodReportId, _cts.Token);
+        var createContactResult = await contactRepository.Create(userId, floodReportSourceId, _cts.Token);
         if (!createContactResult.IsSuccess)
         {
             logger.LogError("Failed to create a test contact record for investigation.");
@@ -429,9 +430,9 @@ public partial class Test(
         // investigation
         var investigationDto = testService.TestData_InvestigationDto with
         {
-            FloodReportId = floodReportId,
+            FloodReportSourceId = floodReportSourceId,
         };
-        var createInvestigationResult = await investigationRepository.CreateForFloodReport(userId, investigationDto, _cts.Token);
+        var createInvestigationResult = await investigationRepository.CreateForFloodReportSource(userId, investigationDto, _cts.Token);
         if (!createInvestigationResult.IsSuccess)
         {
             logger.LogError("Failed to create a test investigation.");
@@ -441,8 +442,8 @@ public partial class Test(
         await ProtectedStorage_Delete(SessionConstants.Investigation);
         await InvestigationsCount_Refresh();
 
-        // get the final updated flood report, status, and investigation
-        _investigationFloodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
+        // get the final updated flood report source, status, and investigation
+        _investigationFloodReportSource = await floodReportSourceRepository.GetById(floodReportSourceId, _cts.Token);
     }
 
     // Outbox messages

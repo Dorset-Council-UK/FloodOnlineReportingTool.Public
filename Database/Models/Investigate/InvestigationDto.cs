@@ -2,7 +2,7 @@
 
 public record InvestigationDto
 {
-    public Guid FloodReportId { get; init; }
+    public Guid FloodReportSourceId { get; init; }
 
     // Internal fields
     public Guid? WhenWaterEnteredKnownId { get; init; }

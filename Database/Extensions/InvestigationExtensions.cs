@@ -11,7 +11,7 @@ public static class InvestigationExtensions
 {
     extension(Investigation investigation)
     {
-        internal InvestigationCreated ToMessageCreated(string floodReportReference)
+        internal InvestigationCreated ToMessageCreated(string floodReportSourceReference)
         {
             var registeredWithFloodline = investigation.FloodlineId == RecordStatusIds.Yes;
 
@@ -25,7 +25,7 @@ public static class InvestigationExtensions
 
             return new InvestigationCreated
             {
-                FloodReportReference = floodReportReference,
+                FloodReportReference = floodReportSourceReference,
                 Id = investigation.Id,
                 CreatedUtc = investigation.CreatedUtc,
                 HasEntries = investigation.Entries.Any(o => o.FloodProblemId != FloodEntryIds.NotSure),

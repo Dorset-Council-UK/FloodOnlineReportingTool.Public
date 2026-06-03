@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Repositories;
+﻿using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 
 public partial class Index(
-    IFloodReportRepository floodReportRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     IAuthorizationService authorizationService,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage
@@ -27,7 +28,7 @@ public partial class Index(
 
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<Database.Models.Flood.FloodReport> _floodReports = [];
+    private IReadOnlyCollection<FloodReportSource> _floodReportSources = [];
     private readonly string _signInUrl = string.IsNullOrWhiteSpace(navigationManager.SignInRedirectUri)
         ? AccountPages.SignIn.Url
         : $"{AccountPages.SignIn.Url}?redirectUri={navigationManager.SignInRedirectUri}";
@@ -53,7 +54,7 @@ public partial class Index(
             /*
              * scenarios to handle:
              * Not authenticated
-             * Not authenticated with flood report ID in protected session storage
+             * Not authenticated with flood report source ID in protected session storage
              * Authenticated as an admin
              * Authenticated as a user
              */
@@ -66,13 +67,13 @@ public partial class Index(
                     var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
                     var hasAdminPolicy = adminPolicyCheck.Succeeded;
 
-                    _floodReports = hasAdminPolicy
-                        ? await GetAdminsFloodReports(authState, hasAdminPolicy)
-                        : await GetCurrentUsersFloodReports(authState, hasAdminPolicy);
+                    _floodReportSources = hasAdminPolicy
+                        ? await GetAdminsFloodReportSources(authState, hasAdminPolicy)
+                        : await GetCurrentUsersFloodReportSources(authState, hasAdminPolicy);
                 }
                 else
                 {
-                    _floodReports = await GetStoredFloodReports(authState);
+                    _floodReportSources = await GetStoredFloodReportSources(authState);
                 }
             }
 
@@ -82,10 +83,10 @@ public partial class Index(
     }
 
     /// <summary>
-    /// Gets all flood reports
+    /// Gets all flood report sources
     /// </summary>
     /// <remarks>The user has to be authenticated, and an admin.</remarks>
-    private async Task<IReadOnlyCollection<Database.Models.Flood.FloodReport>> GetAdminsFloodReports(AuthenticationState authState, bool hasAdminPolicy)
+    private async Task<IReadOnlyCollection<FloodReportSource>> GetAdminsFloodReportSources(AuthenticationState authState, bool hasAdminPolicy)
     {
         if (!authState.User.IsAuthenticated || !hasAdminPolicy)
         {
@@ -98,14 +99,14 @@ public partial class Index(
         _noneFoundText = "We cannot find any flood reports.";
         _tableCaption = "All flood reports";
 
-        return await floodReportRepository.GetAllOverview(_cts.Token);
+        return await floodReportSourceRepository.GetAllOverview(_cts.Token);
     }
 
     /// <summary>
-    /// Get the current users floods reports
+    /// Get the current users floods report sources
     /// </summary>
     /// <remarks>The user has to be authenticated, and NOT an admin.</remarks>
-    private async Task<IReadOnlyCollection<Database.Models.Flood.FloodReport>> GetCurrentUsersFloodReports(AuthenticationState authState, bool hasAdminPolicy)
+    private async Task<IReadOnlyCollection<FloodReportSource>> GetCurrentUsersFloodReportSources(AuthenticationState authState, bool hasAdminPolicy)
     {
         if (!authState.User.IsAuthenticated || hasAdminPolicy)
         {
@@ -118,35 +119,35 @@ public partial class Index(
             return [];
         }
 
-        return await floodReportRepository.ReportedByUser(userId, _cts.Token);
+        return await floodReportSourceRepository.ReportedByUser(userId, _cts.Token);
     }
 
     /// <summary>
-    /// Get the stored flood report
+    /// Get the stored flood report source
     /// </summary>
     /// <remarks>
-    ///     <para>The user has to not be authenticated. Flood report ID exists in protected storage.</para>
+    ///     <para>The user has to not be authenticated and the flood report source ID exists in protected storage.</para>
     ///     <para>This can happen from the /floodreport/create/confirmation page</para>
     /// </remarks>
-    private async Task<IReadOnlyCollection<Database.Models.Flood.FloodReport>> GetStoredFloodReports(AuthenticationState authState)
+    private async Task<IReadOnlyCollection<FloodReportSource>> GetStoredFloodReportSources(AuthenticationState authState)
     {
         if (authState.User.IsAuthenticated)
         {
             return [];
         }
 
-        var floodReportId = await scopedSessionStorage.GetFloodReportId();
-        if (floodReportId == Guid.Empty)
+        var floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+        if (floodReportSourceId == Guid.Empty)
         {
             return [];
         }
 
-        var floodReport = await floodReportRepository.GetById(floodReportId, _cts.Token);
-        if (floodReport is null)
+        var floodReportSource = await floodReportSourceRepository.GetById(floodReportSourceId, _cts.Token);
+        if (floodReportSource is null)
         {
             return [];
         }
 
-        return [floodReport];
+        return [floodReportSource];
     }
 }

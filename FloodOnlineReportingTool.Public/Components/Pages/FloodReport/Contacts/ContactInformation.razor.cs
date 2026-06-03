@@ -14,7 +14,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     public required ContactModel Contact { get; set; }
 
     [Parameter]
-    public required Guid FloodReportId { get; set; }
+    public required Guid FloodReportSourceId { get; set; }
 
     [Parameter]
     public bool SummaryCard { get; set; } = false;
@@ -59,7 +59,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
 
     private async Task<IReadOnlyCollection<GdsOptionItem<ContactRecordType>>> CreateContactTypeOptions()
     {
-        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(FloodReportId, _cts.Token);
+        IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(FloodReportSourceId, _cts.Token);
         if (Contact.Id != null)
         {
             unusedRecordTypes.Add(Contact.ContactType.Value);

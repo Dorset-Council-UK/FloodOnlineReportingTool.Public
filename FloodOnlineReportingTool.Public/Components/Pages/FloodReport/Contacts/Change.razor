@@ -19,7 +19,7 @@
                 @* <FluentValidationValidator /> *@
                 <GdsErrorSummary />
 
-                <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+                <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
                 <div class="govuk-button-group">
                     <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
@@ -47,7 +47,7 @@
                     <GdsErrorSummary />
 
                     @* Type dropdown only shows available types and the currently selected option (max one per type per report) *@
-                    <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+                    <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
                     <div class="govuk-button-group">
                         <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>

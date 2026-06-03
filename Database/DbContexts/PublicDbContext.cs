@@ -23,7 +23,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<FloodImpact> FloodImpacts { get; set; }
     public DbSet<FloodMitigation> FloodMitigations { get; set; }
     public DbSet<FloodProblem> FloodProblems { get; set; }
-    public DbSet<FloodReport> FloodReports { get; set; }
+    public DbSet<FloodReportSource> FloodReportSources { get; set; }
     public DbSet<FloodResponsibility> FloodResponsibilities { get; set; }
     public DbSet<Investigation> Investigations { get; set; }
     public DbSet<InvestigationDestination> InvestigationDestinations { get; set; } // Relationship table

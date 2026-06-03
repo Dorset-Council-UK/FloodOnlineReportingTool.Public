@@ -6,7 +6,7 @@ namespace FloodOnlineReportingTool.Public.Services;
 public class SessionStateService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
-    private ILogger<SessionStateService> _logger;
+    private readonly ILogger<SessionStateService> _logger;
 
     public SessionStateService(ProtectedSessionStorage sessionStorage, ILogger<SessionStateService> logger)
     {
@@ -14,23 +14,23 @@ public class SessionStateService
         _logger = logger;
     }
 
-    public async Task<Guid> GetFloodReportId()
+    public async Task<Guid> GetFloodReportSourceId()
     {
         try
         {
-            var storedId = await _sessionStorage.GetAsync<Guid>(SessionConstants.FloodReportId);
+            var storedId = await _sessionStorage.GetAsync<Guid>(SessionConstants.FloodReportSourceId);
             return storedId.Success ? storedId.Value : Guid.Empty;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError("Error getting flood report source ID from protected storeage: {ErrorMessage}", ex.Message);
             return Guid.Empty;
         }
     }
 
-    public async Task SaveFloodReportId(Guid floodReportId)
+    public async Task SaveFloodReporSourcetId(Guid floodReportSourceId)
     {
-        await _sessionStorage.SetAsync(SessionConstants.FloodReportId, floodReportId);
+        await _sessionStorage.SetAsync(SessionConstants.FloodReportSourceId, floodReportSourceId);
     }
 
     public async Task<Guid> GetVerificationId()
@@ -42,7 +42,7 @@ public class SessionStateService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError("Error getting verification ID from protected storeage: {ErrorMessage}", ex.Message);
             return Guid.Empty;
         }
     }

@@ -6,9 +6,9 @@ using FloodOnlineReportingTool.Database.Models.Status;
 namespace FloodOnlineReportingTool.Database.Models.Flood;
 
 /// <summary>
-/// Flood report overview.
+/// Flood report sources
 /// </summary>
-public record FloodReport
+public record FloodReportSource
 {
     public Guid Id { get; init; } = Guid.CreateVersion7();
     public string Reference { get; init; } = "";

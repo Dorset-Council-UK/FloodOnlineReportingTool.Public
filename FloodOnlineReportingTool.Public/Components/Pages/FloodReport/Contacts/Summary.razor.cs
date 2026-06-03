@@ -1,5 +1,6 @@
 using FloodOnlineReportingTool.Contracts.Shared;
 using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Contact.Subscribe;
@@ -14,7 +15,7 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Contacts;
 public partial class Summary(
     ILogger<Summary> logger,
     IContactRecordRepository contactRepository,
-    IFloodReportRepository floodReportRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     ISubscribeRecordRepository subscribeRecordRepository,
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
@@ -22,7 +23,7 @@ public partial class Summary(
 ) : IPageOrder, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts = new();
-    private Guid _floodReportId = Guid.Empty;
+    private Guid _floodReportSourceId = Guid.Empty;
     private bool _isLoading = true;
     private ContactModel? _reportOwnerContact;
     private IReadOnlyCollection<ContactModel> _contactModels = [];
@@ -31,7 +32,7 @@ public partial class Summary(
     private EditContext _editContext = default!;
 
     [Parameter]
-    public Guid? FloodReportId { get; set; }
+    public Guid? FloodReportSourceId { get; set; }
 
     private SubscribeModel Model { get; set; } = default!;
 
@@ -71,7 +72,7 @@ public partial class Summary(
     {
         if (firstRender)
         {
-            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
+            _floodReportSourceId = FloodReportSourceId ?? await scopedSessionStorage.GetFloodReportSourceId();
 
             await LoadContactData();
 
@@ -83,7 +84,7 @@ public partial class Summary(
     protected override async Task OnParametersSetAsync()
     {
         // This runs every time parameters change OR when navigating back to the page
-        if (_floodReportId != Guid.Empty && !_isLoading)
+        if (_floodReportSourceId != Guid.Empty && !_isLoading)
         {
             await LoadContactData();
             StateHasChanged();
@@ -92,7 +93,7 @@ public partial class Summary(
 
     private async Task LoadContactData()
     {
-        var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+        var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportSourceId, _cts.Token);
         _reportOwnerContact = reportOwnerSubscribeRecord?.ToContactModel();
 
         if (_reportOwnerContact is null)
@@ -102,7 +103,7 @@ public partial class Summary(
             return;
         }
 
-        var allContactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+        var allContactRecords = await contactRepository.GetContactsByReport(_floodReportSourceId, _cts.Token);
 
         // Filter out the report owner from the additional contacts list
         _contactModels = [.. allContactRecords
@@ -110,17 +111,21 @@ public partial class Summary(
             .Where(sr => !sr.IsRecordOwner)
             .Select(sr => sr.ToContactModel()),
          ];
-        _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportId, _cts.Token);
+        _numberOfUnusedRecordTypes = await contactRepository.CountUnusedRecordTypes(_floodReportSourceId, _cts.Token);
     }
 
     private async Task OnSubmit()
     {
 
-        var enableSubscriptions = await floodReportRepository.EnableContactSubscriptionsForReport(_floodReportId, _cts.Token);
+        var enableSubscriptionsResult = await floodReportSourceRepository.EnableContactSubscriptionsForReport(_floodReportSourceId, _cts.Token);
 
-        if (!enableSubscriptions.IsSuccess)
+        if (!enableSubscriptionsResult.IsSuccess)
         {
-            logger.LogError("Failed to enable contact subscriptions for flood report {FloodReportId}: {Errors}", _floodReportId, enableSubscriptions.Errors);
+            logger.LogError("Failed to enable contact subscriptions for flood report source {FloodReportSourceId}", _floodReportSourceId);
+            foreach (var error in enableSubscriptionsResult.Errors)
+            {
+                logger.LogError("Enable contact subscriptions error: {Error}", error);
+            }
             _messageStore.Add(new FieldIdentifier(Model, nameof(Model.ErrorMessage)), "An error occurred while updating your subscription preferences. Please try again.");
             _editContext.NotifyValidationStateChanged();
             return;
@@ -129,10 +134,10 @@ public partial class Summary(
         // Carry on whether this works or not
         try
         {
-            Database.Models.Flood.FloodReport floodReport = enableSubscriptions.Value;
+            FloodReportSource floodReportSource = enableSubscriptionsResult.Value;
             // TODO: move the email logic to the service bus to allow for retries and better handling
             // Send message with the details requesting email to be sent but don't actually send it here
-            foreach (var contactRecord in floodReport.ContactRecords)
+            foreach (var contactRecord in floodReportSource.ContactRecords)
             {
                 foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
                 {
@@ -149,26 +154,26 @@ public partial class Summary(
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedNotification(
                             subscriptionRecord.IsRecordOwner,
                             canEdit,
-                            floodReport.Reference,
+                            floodReportSource.Reference,
                             subscriptionRecord.ContactType.LabelText(),
                             subscriptionRecord.ContactName,
                             subscriptionRecord.EmailAddress,
-                            floodReport.EligibilityCheck?.LocationDesc ?? "",
-                            floodReport.EligibilityCheck!.Easting,
-                            floodReport.EligibilityCheck!.Northing,
-                            floodReport.CreatedUtc
+                            floodReportSource.EligibilityCheck?.LocationDesc ?? "",
+                            floodReportSource.EligibilityCheck!.Easting,
+                            floodReportSource.EligibilityCheck!.Northing,
+                            floodReportSource.CreatedUtc
                             );
                     } else
                     {
                         var sentNotification = await govNotifyEmailSender.SendReportSubmittedCopyNotification(
-                            floodReport.Reference,
+                            floodReportSource.Reference,
                             subscriptionRecord.ContactType.LabelText(),
                             subscriptionRecord.ContactName,
                             subscriptionRecord.EmailAddress,
-                            floodReport.EligibilityCheck?.LocationDesc ?? "",
-                            floodReport.EligibilityCheck!.Easting,
-                            floodReport.EligibilityCheck!.Northing,
-                            floodReport.CreatedUtc
+                            floodReportSource.EligibilityCheck?.LocationDesc ?? "",
+                            floodReportSource.EligibilityCheck!.Easting,
+                            floodReportSource.EligibilityCheck!.Northing,
+                            floodReportSource.CreatedUtc
                             );
                     }
                         
@@ -176,10 +181,10 @@ public partial class Summary(
             }
         } catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send subscription notification emails for flood report {FloodReportId}", _floodReportId);
+            logger.LogError(ex, "Failed to send subscription notification emails for flood report source {FloodReportSourceId}", _floodReportSourceId);
         }
 
-        // Navigate back to flood report overview
+        // Navigate back to flood report overview page
         navigationManager.NavigateTo(FloodReportPages.Overview.Url);
     }
 }

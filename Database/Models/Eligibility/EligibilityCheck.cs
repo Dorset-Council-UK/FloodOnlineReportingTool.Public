@@ -33,5 +33,5 @@ public record EligibilityCheck
     public IList<EligibilityCheckRunoffSource> SecondarySources { get; init; } = [];
 
     // Navigation properties
-    public FloodReport? FloodReport { get; init; }
+    public FloodReportSource? FloodReportSource { get; init; }
 }

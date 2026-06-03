@@ -121,7 +121,7 @@ public partial class Summary(
     {
         logger.LogDebug("Saving investigation information..");
 
-        var createInvestigation = await investigationRepository.CreateForFloodReport(userId, dto, _cts.Token);
+        var createInvestigation = await investigationRepository.CreateForFloodReportSource(userId, dto, _cts.Token);
         if (!createInvestigation.IsSuccess)
         {
             logger.LogError("There was a problem creating the investigation information");

@@ -39,7 +39,6 @@ public partial class Index(
 
     // Private Fields
     private readonly CancellationTokenSource _cts = new();
-    private Guid _floodReportId = Guid.Empty;
     private string? _userID;
     private bool _isLoading = true;
     private EditContext _editContext = default!;
@@ -118,12 +117,21 @@ public partial class Index(
                 if (contactRecord != null)
                 {
                     // Connect to the existing record and skip the subscription setup steps
-                    _floodReportId = await scopedSessionStorage.GetFloodReportId();
+                    var floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
 
-                    var updateContactRecord = await contactRepository.LinkContactByReport(_floodReportId, contactRecord.Id, _cts.Token);
-                    if (updateContactRecord.IsSuccess)
+                    var updateContactRecord = await contactRepository.LinkContactByReport(floodReportSourceId, contactRecord.Id, _cts.Token);
+                    if (!updateContactRecord.IsSuccess)
                     {
-                        var recordOwner = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+                        var errorField = _editContext.Field(nameof(Model.ContactRecord));
+                        foreach (var error in updateContactRecord.Errors)
+                        {
+                            _messageStore.Add(errorField, error);
+                        }
+                        _editContext.NotifyValidationStateChanged();
+                    }
+                    else
+                    {
+                        var recordOwner = await subscribeRecordRepository.GetReportOwnerContactByReport(floodReportSourceId, _cts.Token);
                         if (recordOwner == null)
                         {
                             // Can't proceed if not authenticated
@@ -193,7 +201,7 @@ public partial class Index(
         // Error handling back into the Razor. Use validation message store or ErrorBoundary
 
         // Generate a contact record
-        _floodReportId = await scopedSessionStorage.GetFloodReportId();
+        var floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
         SubscribeRecordDto subscribeRecordDto = new()
         {
             ContactType = Model.ContactType,
@@ -203,10 +211,10 @@ public partial class Index(
         };
 
         Guid? contactRecordId;
-        var contactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+        var contactRecords = await contactRepository.GetContactsByReport(floodReportSourceId, _cts.Token);
         if (contactRecords.Count == 0)
         {
-            var createResult = await contactRepository.Create(_userID, _floodReportId, _cts.Token);
+            var createResult = await contactRepository.Create(_userID, floodReportSourceId, _cts.Token);
             if (!createResult.IsSuccess)
             {
                 foreach (var error in createResult.Errors)
@@ -224,7 +232,7 @@ public partial class Index(
             contactRecordId = contactRecords.FirstOrDefault()?.Id;
             if (contactRecordId is null)
             {
-                logger.LogWarning("Couldn't find a contact record for this flood report.");
+                logger.LogWarning("Couldn't find a contact record for this flood report source.");
                 _messageStore.Add(_editContext.Field(nameof(Model.ErrorMessage)), "Sorry, something went wrong");
                 _editContext.NotifyValidationStateChanged();
                 return;

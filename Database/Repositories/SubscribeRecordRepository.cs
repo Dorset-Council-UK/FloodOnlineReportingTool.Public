@@ -83,19 +83,19 @@ public class SubscribeRecordRepository(
     public async Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var floodReport = await context.FloodReports
+        var floodReportSource = await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .Include(fr => fr.ContactRecords.OrderBy(cr => cr.Id))
                 .ThenInclude(cr => cr.SubscribeRecords)
             .FirstOrDefaultAsync(fr => fr.Id == floodReportId, cancellationToken);
 
-        if (floodReport is null)
+        if (floodReportSource is null)
         {
             return null;
         }
 
-        var ownerSubscribeRecord = floodReport.ContactRecords
+        var ownerSubscribeRecord = floodReportSource.ContactRecords
             .SelectMany(cr => cr.SubscribeRecords)
             .RoleBasedFilterPersonalData(userContext.CanViewPersonalData)
             .FirstOrDefault(sr => sr.IsRecordOwner);

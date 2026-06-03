@@ -1,12 +1,12 @@
 # Overview flow
 
-## All flood reports page
+## All flood report sources page
 ```mermaid
 flowchart TD
     User(("User")) --> Authenticated{"Authenticated?"}
     Authenticated -->|No| SignInFlow("Sign in flow")
-    Authenticated -->|Yes| GetData("Get flood reports")
-    GetData --> DisplayFloodReports["Display all flood reports"]
+    Authenticated -->|Yes| GetData("Get flood report sources")
+    GetData --> DisplayReports["Display all flood report sources"]
 ```
 
 Note: This application creates flood report sources, but users will see a `flood report source` referred to as a `flood report` because that is how they understand their report.
@@ -23,5 +23,5 @@ flowchart TD
     Authenticated -->|No| SignInFlow("Sign in flow")
     SignInFlow --> Authenticated
     Authenticated -->|Yes| ListOfReports{"List of all reports<br>(bypass if only one)"}
-    ListOfReports --> DisplayFloodReport["Display Flood Report Source"]
+    ListOfReports --> DisplayFloodReport["Display flood report source"]
 ```
