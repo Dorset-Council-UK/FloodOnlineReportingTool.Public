@@ -1,12 +1,15 @@
 using FloodOnlineReportingTool.Contracts.Topics;
+using ServiceDefaults;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var serviceBus = builder.AddAzureServiceBus("service-bus")
-    .RunAsEmulator(e => e.WithLifetime(ContainerLifetime.Persistent));
+var serviceBus = builder.AddAzureServiceBus(ConnectionStringNames.ServiceBus)
+    .RunAsEmulator();
 
-serviceBus.AddServiceBusTopic(TopicNames.FloodSourceCreated)
-    .AddServiceBusSubscription("floodreport-public");
+serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceCreated)
+    .AddServiceBusSubscription("test-subscription-1", "test-fort-public");
+serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceUpdated)
+    .AddServiceBusSubscription("test-subscription-2", "test-fort-public");
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "18-3.6")
@@ -14,13 +17,13 @@ var postgres = builder.AddPostgres("postgres")
     .WithLifetime(ContainerLifetime.Persistent)
     .WithPgAdmin(options => options.WithImageTag("latest"));
 
-var databasePublic = postgres.AddDatabase("FloodReportingPublic");
+var databasePublic = postgres.AddDatabase(ConnectionStringNames.Public);
 
 var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(databasePublic)
     .WaitFor(databasePublic);
 
-var connectionStringBoundaries = builder.AddConnectionString("Boundaries");
+var connectionStringBoundaries = builder.AddConnectionString(ConnectionStringNames.Boundaries);
 
 builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithDeveloperCertificateTrust(true)
@@ -28,9 +31,7 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithHttpHealthCheck("/health")
     .WithReference(databasePublic)
     .WithReference(connectionStringBoundaries)
-    .WithReference(serviceBus)
     .WaitFor(connectionStringBoundaries)
-    .WaitFor(serviceBus)
     .WaitForCompletion(migrations)
     .WithUrls(context =>
     {
@@ -50,5 +51,11 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
             );
         }
     });
+
+builder.AddProject<Projects.Outbox>("outbox")
+    .WithReference(databasePublic)
+    .WithReference(serviceBus)
+    .WaitFor(serviceBus)
+    .WaitForCompletion(migrations);
 
 await builder.Build().RunAsync();

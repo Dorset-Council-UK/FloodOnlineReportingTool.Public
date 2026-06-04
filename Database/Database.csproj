@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Dorset-Council-UK.FloodOnlineReportingTool.Contracts" />
-    <PackageReference Include="MassTransit.EntityFrameworkCore" />
     <PackageReference Include="Meziantou.Analyzer">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

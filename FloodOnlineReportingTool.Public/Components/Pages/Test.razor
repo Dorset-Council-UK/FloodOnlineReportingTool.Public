@@ -1,227 +1,725 @@
 ﻿@page "/test"
+@using FloodOnlineReportingTool.Contracts.Shared
+@using FloodOnlineReportingTool.Database.Models.Messaging
 @using FloodOnlineReportingTool.Public.Authentication
+@using FloodOnlineReportingTool.Public.Models
 @using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@GeneralPages.Test.Title</PageTitle>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<h1 class="govuk-heading-xl">@GeneralPages.Test.Title</h1>
 
-<div class="govuk-summary-card">
-    <div class="govuk-summary-card__title-wrapper">
-        <h2 class="govuk-summary-card__title">General information</h2>
-        <ul class="govuk-summary-card__actions">
-            <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestMessage" title="Create a test contract message and publish it">
-                    Send test message
-                </a>
-            </li>
-            <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestNotifcation" title="Create a test notification and email it to configured email">
-                    Send test notification
-                </a>
-            </li>
-            <li class="govuk-summary-card__action">
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="TestFloodReport" title="Create a test flood report">
-                    Create test flood report
-                </a>
-            </li>
-        </ul>
-    </div>
-    <div class="govuk-summary-card__content">
-        <dl class="govuk-summary-list">
-            <AuthorizeView>
-                <Authorized>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">Fort user is signed in</dt>
-                        <dd class="govuk-summary-list__value">true</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}")">Sign Out</a>
-                        </dd>
-                    </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">Fort Name</dt>
-                        <dd class="govuk-summary-list__value">@context.User.Identity?.Name</dd>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">Fort user is signed in</dt>
-                        <dd class="govuk-summary-list__value">false</dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="@SignInUrl">@AccountPages.SignIn.Title</a>
-                        </dd>
-                    </div>
-                </NotAuthorized>
-            </AuthorizeView>
-        </dl>
-    </div>
-</div>
-
-<h2 class="govuk-heading-l">Session details</h2>
-<dl class="govuk-summary-list">
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Has create data</dt>
-        <dd class="govuk-summary-list__value">@_hasCreateData</dd>
-        <dd class="govuk-summary-list__actions">
-            @if (_hasCreateData)
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateData" title="Delete the create data in the session">
-                    Delete<span class="govuk-visually-hidden"> the create data in the session</span>
-                </a>
-            }
-            else
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateData" title="Create blank create data in the session">
-                    Create<span class="govuk-visually-hidden"> blank create data in the session</span>
-                </a>
-            }
-        </dd>
-    </div>
-
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Has create extra data</dt>
-        <dd class="govuk-summary-list__value">@_hasCreateExtraData</dd>
-        <dd class="govuk-summary-list__actions">
-            @if (_hasCreateExtraData)
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="DeleteCreateExtraData" title="Delete the create extra data in the session">
-                    Delete<span class="govuk-visually-hidden"> the create extra data in the session</span>
-                </a>
-            }
-            else
-            {
-                <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-link" data-module="govuk-button" href="javascript: void(0)" @onclick="BlankCreateExtraData" title="Create blank create extra data in the session">
-                    Create<span class="govuk-visually-hidden"> blank create extra data in the session</span>
-                </a>
-            }
-        </dd>
-    </div>
-</dl>
-
-<div>
-    <h2 class="govuk-heading-l">General pages</h2>
-    <ul class="govuk-list">
-        <li><a class="govuk-link" href="@GeneralPages.Home.Url">@GeneralPages.Home.Title</a></li>
-        <li><a class="govuk-link" href="@GeneralPages.Error.Url">@GeneralPages.Error.Title</a></li>
-        <li><a class="govuk-link" href="@GeneralPages.AccessDenied.Url">@GeneralPages.AccessDenied.Title</a></li>
-    </ul>
-</div>
-
-<div>
-    <h2 class="govuk-heading-l">Create flood report pages</h2>
-    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-        <ol style="display:flex; flex-wrap:wrap;" class="govuk-breadcrumbs__list">
-            @foreach (var info in _floodReportCreatePages)
-            {
-                string MarkupNote = info.Note != null ? info.Note.ToString(): "";
-                <li class= "govuk-breadcrumbs__list-item"><a class= "govuk-breadcrumbs__link" href = "@info.Url"> @info.Title  @((MarkupString)MarkupNote)</a></li>
-            }
-        </ol>
-    </nav>
-    <GdsInsetText Text="1. ^ User may pass through one or both pages"></GdsInsetText>
-</div>
-
-<div>
-    <h2 class="govuk-heading-l">Investigation pages</h2>
-
+@* General information *@
+<div class="govuk-!-margin-bottom-6">
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
-            <h2 class="govuk-summary-card__title">Status</h2>
-            <ul class="govuk-summary-card__actions">
-                <AuthorizeView>
-                    <Authorized>
-                        @if (_investigationHasStarted == true && _investigationInProtectedStorage)
-                        {
-                            <li class="govuk-summary-card__action">
-                                <a href="@InvestigationPages.Summary.Url" class="govuk-link govuk-link--no-visited-state" draggable="false">View<span class="govuk-visually-hidden"> the investigation</span></a>
-                            </li>
-                        }
-                    </Authorized>
-                </AuthorizeView>
-            </ul>
+            <h2 class="govuk-summary-card__title">General information</h2>
         </div>
         <div class="govuk-summary-card__content">
             <dl class="govuk-summary-list">
                 <AuthorizeView>
                     <Authorized>
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">Investigation started</dt>
-                            <dd class="govuk-summary-list__value">@(_investigationHasStarted is null ? "?" : _investigationHasStarted)</dd>
+                            <dt class="govuk-summary-list__key">Is signed in</dt>
+                            <dd class="govuk-summary-list__value">@true</dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a class="govuk-link" draggable="false" href="@($"{AccountPages.SignOut.Url}?returnUrl={GeneralPages.Test.Url}")">@AccountPages.SignOut.Title</a>
+                            </dd>
                         </div>
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">Flood report status</dt>
-                            <dd class="govuk-summary-list__value">@(_floodReportStatusText ?? "?")</dd>
-                            @if (_investigationHasStarted == false)
-                            {
-                                <dd class="govuk-summary-list__actions">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationActionNeededStatus" @onclick:preventDefault>Set 'Action needed'<span class="govuk-visually-hidden"> flood report status</span></a>
-                                </dd>
-                            }
+                            <dt class="govuk-summary-list__key">Name</dt>
+                            <dd class="govuk-summary-list__value">@context.User.Identity?.Name</dd>
                         </div>
                     </Authorized>
                     <NotAuthorized>
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">Last flood report found</dt>
-                            <dd class="govuk-summary-list__value">?</dd>
+                            <dt class="govuk-summary-list__key">Is signed in</dt>
+                            <dd class="govuk-summary-list__value">@false</dd>
                             <dd class="govuk-summary-list__actions">
-                                <a href="@SignInUrl" class="govuk-link govuk-link--no-visited-state" draggable="false">@AccountPages.SignIn.Title</a>
+                                <a class="govuk-link" draggable="false" href="@SignInUrl">@AccountPages.SignIn.Title</a>
                             </dd>
                         </div>
                     </NotAuthorized>
                 </AuthorizeView>
                 <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">In protected storage</dt>
-                    <dd class="govuk-summary-list__value">@_investigationInProtectedStorage</dd>
-                    <dd class="govuk-summary-list__actions">
-                        @if (_investigationInProtectedStorage)
-                        {
-                            <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationRemove" @onclick:preventDefault>Remove<span class="govuk-visually-hidden"> the investigation</span></a>
-                        }
-                        else
-                        {
-                            <ul class="govuk-summary-list__actions-list">
-                                <li class="govuk-summary-list__actions-list-item">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddEmpty" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> empty investigation</span></a>
-                                </li>
-                                <li class="govuk-summary-list__actions-list-item">
-                                    <a href="test" class="govuk-link govuk-link--no-visited-state" draggable="false" @onclick="InvestigationAddTest" @onclick:preventDefault>Add test data<span class="govuk-visually-hidden"> investigation</span></a>
-                                </li>
-                            </ul>
-                        }
+                    <dt class="govuk-summary-list__key">Has reader policy</dt>
+                    <dd class="govuk-summary-list__value">
+                        <AuthorizeView Policy="@PolicyNames.Reader">
+                            <Authorized>@true</Authorized>
+                            <NotAuthorized>@false</NotAuthorized>
+                        </AuthorizeView>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Has writer policy</dt>
+                    <dd class="govuk-summary-list__value">
+                        <AuthorizeView Policy="@PolicyNames.Writer">
+                            <Authorized>@true</Authorized>
+                            <NotAuthorized>@false</NotAuthorized>
+                        </AuthorizeView>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Has admin policy</dt>
+                    <dd class="govuk-summary-list__value">
+                        <AuthorizeView Policy="@PolicyNames.Admin">
+                            <Authorized>@true</Authorized>
+                            <NotAuthorized>@false</NotAuthorized>
+                        </AuthorizeView>
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Has personal data policy</dt>
+                    <dd class="govuk-summary-list__value">
+                        <AuthorizeView Policy="@PolicyNames.PersonalData">
+                            <Authorized>@true</Authorized>
+                            <NotAuthorized>@false</NotAuthorized>
+                        </AuthorizeView>
                     </dd>
                 </div>
             </dl>
         </div>
     </div>
 
+    <h2 class="govuk-heading-m">General pages</h2>
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@GeneralPages.Home.Url">@GeneralPages.Home.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@GeneralPages.Error.Url">@GeneralPages.Error.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@GeneralPages.AccessDenied.Url">@GeneralPages.AccessDenied.Title</a>
+            </li>
+        </ol>
+    </nav>
+
+    <h2 class="govuk-heading-m">Account pages</h2>
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@AccountPages.MyAccount.Url">@AccountPages.MyAccount.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@SignInUrl">@AccountPages.SignIn.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@AccountPages.SignOut.Url">@AccountPages.SignOut.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@AccountPages.SignedOut.Url">@AccountPages.SignedOut.Title</a>
+            </li>
+        </ol>
+    </nav>
+</div>
+
+@* Protected storage *@
+<div>
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Protected storage</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Protected storage</h2>
+                    <ul class="govuk-summary-card__actions">
+                        <li class="govuk-summary-card__action">
+                            <a class="govuk-link" draggable="false" href="" @onclick="ProtectedStorage_Refresh" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> protected storage information</span></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        @foreach (var info in _protectedStorageInfos)
+                        {
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">@info.Value.Label</dt>
+                                <dd class="govuk-summary-list__value">
+                                    @if (info.Value.Exists)
+                                    {
+                                        <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
+                                    }
+                                    else
+                                    {
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                    }
+                                </dd>
+                                <dd class="govuk-summary-list__actions">
+                                    <ul class="govuk-summary-list__actions-list">
+                                        @if (info.Value.Exists)
+                                        {
+                                            <li class="govuk-summary-list__actions-list-item">
+                                                <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Delete(info.Key)" @onclick:preventDefault>Delete<span class="govuk-visually-hidden"> protected storage information</span></a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="govuk-summary-list__actions-list-item">
+                                                <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create(info.Key)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> protected storage information</span></a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@* Flood reports *@
+<div class="govuk-!-margin-bottom-6">
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Flood reports</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Flood reports</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Total</dt>
+                            <dd class="govuk-summary-list__value">@_floodReportsCount</dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => FloodReportsCounts_Refresh()" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> flood report counts</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">You created</dt>
+                            <dd class="govuk-summary-list__value">@_floodReportsCountUser</dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">In protected storage</dt>
+                            <dd class="govuk-summary-list__value">
+                                @if (_protectedStorageInfos[SessionConstants.EligibilityCheck].Exists && _protectedStorageInfos[SessionConstants.EligibilityCheck_ExtraData].Exists)
+                                {
+                                    <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
+                                }
+                                else
+                                {
+                                    <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                }
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    @if (_protectedStorageInfos[SessionConstants.EligibilityCheck].Exists && _protectedStorageInfos[SessionConstants.EligibilityCheck_ExtraData].Exists)
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="@FloodReportCreatePages.Summary.Url">Summary page<span class="govuk-visually-hidden"> for the flood report</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create([SessionConstants.EligibilityCheck, SessionConstants.EligibilityCheck_ExtraData])" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report protected storage information</span></a>
+                                        </li>
+                                    }
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Confirmation reference</dt>
+                            <dd class="govuk-summary-list__value">@_floodReportsConfirmationReference</dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    @if (_floodReportsConfirmationReference is null)
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="FloodReports_CreateTestConfirmation" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report for confirmation page</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="@($"{FloodReportCreatePages.Confirmation.Url}?reference={_floodReportsConfirmationReference}")">Confirmation page<span class="govuk-visually-hidden"> for your flood report</span></a>
+                                        </li>
+                                    }
+                                </ul>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@FloodReportPages.Home.Url">@FloodReportPages.Home.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@FloodReportPages.Details.Url">@FloodReportPages.Details.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@FloodReportPages.Update.Url">@FloodReportPages.Update.Title</a>
+            </li>
+        </ol>
+    </nav>
+    
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol style="display:flex; flex-wrap:wrap;" class="govuk-breadcrumbs__list">
+            @foreach (var info in _floodReportCreatePages)
+            {
+                var markupNote = new MarkupString(info.Note ?? "");
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @markupNote</a>
+                </li>
+            }
+        </ol>
+    </nav>
+    <GdsInsetText Text="1. ^ User may pass through one or both pages"></GdsInsetText>
+</div>
+
+@* Contact records *@
+<div class="govuk-!-margin-bottom-6">
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Contact records</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Contact records</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Total</dt>
+                            <dd class="govuk-summary-list__value">@_contactRecordsCount</dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">You created</dt>
+                            <dd class="govuk-summary-list__value">@_contactRecordsCountUser</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@ContactPages.Create.Url">@ContactPages.Create.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@ContactPages.Change.Url">@ContactPages.Change.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@ContactPages.Delete.Url">@ContactPages.Delete.Title</a>
+            </li>
+        </ol>
+    </nav>
+</div>
+
+@* Subscribe records *@
+<div class="govuk-!-margin-bottom-6">
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Subscribe records</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Subscribe records</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Total</dt>
+                            <dd class="govuk-summary-list__value">@_subscribeRecordsCount</dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">You created</dt>
+                            <dd class="govuk-summary-list__value">@_subscribeRecordsCountUser</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@SubscriptionPages.Home.Url">@SubscriptionPages.Home.Title</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@SubscriptionPages.Verify.Url">@SubscriptionPages.Verify.Title</a>
+            </li>
+        </ol>
+    </nav>
+</div>
+
+@* Investigation *@
+<div class="govuk-!-margin-bottom-6">
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Investigation</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Investigation - Create</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Total</dt>
+                            <dd class="govuk-summary-list__value">@_investigationsCount</dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="InvestigationsCount_Refresh" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> investigations count</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Flood report</dt>
+                            <dd class="govuk-summary-list__value">
+                                @if (_investigationFloodReport is null)
+                                {
+                                    <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                }
+                                else
+                                {
+                                    <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
+                                }
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    @if (_investigationFloodReport is null)
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="Investigation_AddTestFloodReport" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report for investigation</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="@InvestigationPages.Confirmation.Url">Confirmation page<span class="govuk-visually-hidden"> for your investigation</span></a>
+                                        </li>
+                                    }
+                                </ul>
+                            </dd>
+                        </div>
+                        @if (_investigationFloodReport is not null)
+                        {
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">Reference</dt>
+                                <dd class="govuk-summary-list__value">
+                                    @if (_investigationFloodReport is null)
+                                    {
+                                        <GdsTag Text="Unknown" Colour="GdsTagColour.Grey" />
+                                    }
+                                    else
+                                    {
+                                        @_investigationFloodReport.Reference
+                                    }
+                                </dd>
+                            </div>
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">Status</dt>
+                                <dd class="govuk-summary-list__value">
+                                    @if (_investigationFloodReport is null)
+                                    {
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                    }
+                                    else if (_investigationFloodReport.Status?.Text is null)
+                                    {
+                                        <GdsTag Text="Unknown" Colour="GdsTagColour.Grey" />
+                                    }
+                                    else
+                                    {
+                                        <GdsTag Text="@_investigationFloodReport.Status.Text" Colour="GdsTagColour.Blue" />
+                                    }
+                                </dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Investigation - Simple</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">In protected storage</dt>
+                            <dd class="govuk-summary-list__value">
+                                @if (@_protectedStorageInfos[SessionConstants.Investigation].Exists)
+                                {
+                                    <GdsTag Text="Exists" Colour="GdsTagColour.Green" />
+                                }
+                                else
+                                {
+                                    <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
+                                }
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <ul class="govuk-summary-list__actions-list">
+                                    @if (_protectedStorageInfos[SessionConstants.Investigation].Exists)
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="@InvestigationPages.Summary.Url">Summary page<span class="govuk-visually-hidden"> for investigation</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create(SessionConstants.Investigation)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> investigation protected storage information</span></a>
+                                        </li>
+                                    }
+                                </ul>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
         <ol class="govuk-breadcrumbs__list">
             @foreach (var info in _investigationPages)
             {
-                <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @info.Note</a></li>
+                var markupNote = new MarkupString(info.Note ?? "");
+                <li class="govuk-breadcrumbs__list-item">
+                    <a class="govuk-breadcrumbs__link" href="@info.Url">@info.Title @markupNote</a>
+                </li>
             }
         </ol>
     </nav>
 </div>
 
+@* Outbox messages *@
 <div>
-    <h2 class="govuk-heading-l">Account pages</h2>
-    <ul class="govuk-list">
-        @foreach (var info in _accountPages)
-        {
-            <li><a class="govuk-link" href="@info.Url">@info.Title @info.Note</a></li>
-        }
-    </ul>
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Outbox messages</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Outbox messages</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Status</dt>
+                            <dd class="govuk-summary-list__value">
+                                <GdsTag Text="@($"{_outboxMessageCount} messages")" Colour="GdsTagColour.Blue" />
+                                <GdsTag Text="@($"{_outboxMessageCountPending} pending")" Colour="GdsTagColour.Yellow" />
+                                <GdsTag Text="@($"{_outboxMessageCountProcessed} processed")" Colour="GdsTagColour.Green" />
+                                <GdsTag Text="@($"{_outboxMessageCountFailed} failed")" Colour="GdsTagColour.Red" />
+                            </dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="OutboxMessage_GetCounts" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> outbox message counts</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceCreated</dt>
+                            <dd class="govuk-summary-list__value">Pending</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceCreated_Add(MessageStatus.Pending)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source created message with the status of pending</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceCreated</dt>
+                            <dd class="govuk-summary-list__value">Failed</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceCreated_Add(MessageStatus.Failed)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source created message with the status of failed</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceUpdated</dt>
+                            <dd class="govuk-summary-list__value">Pending</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus.Pending)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source updated message with the status of pending</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">FloodReportSourceUpdated</dt>
+                            <dd class="govuk-summary-list__value">Failed</dd>
+                            <dd class="govuk-summary-list__actions" style="width: 10%">
+                                <ul class="govuk-summary-list__actions-list">
+                                    <li class="govuk-summary-list__actions-list-item">
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => OutboxMessage_FloodReportSourceUpdated_Add(MessageStatus.Failed)" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source updated message with the status of failed</span></a>
+                                    </li>
+                                </ul>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <div><GdsWarning Text="Set Outbox:TopicSuffix in the Outbox project to send messages to test topics" /></div>
+        </Authorized>
+    </AuthorizeView>
 </div>
 
+@* Notifications *@
 <div>
-    <h2 class="govuk-heading-l">User pages</h2>
-    <p>Secured pages</p>
-    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-        <ol class="govuk-breadcrumbs__list">
-            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></li>
-            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@ContactPages.Summary.Url">@ContactPages.Summary.Title</a></li>
-            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@ContactPages.Create.Url">@ContactPages.Create.Title</a></li>
-        </ol>
-    </nav>
+    <AuthorizeView Policy="@PolicyNames.Admin">
+        <NotAuthorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Notifications</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <GdsWarning Text="Administrator policy is required" />
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </NotAuthorized>
+        <Authorized>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">Notifications</h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">Test notification</dt>
+                            <dd class="govuk-summary-list__value">
+                                @if (string.IsNullOrWhiteSpace(_notificationTestEmailAddress))
+                                {
+                                    <div>
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Red" /> GovNotify:TestEmail
+                                    </div>
+                                }
+                                else if (!_notificationHasTestNotification)
+                                {
+                                    <div>
+                                        <GdsTag Text="Missing" Colour="GdsTagColour.Red" /> GovNotify:Templates:TestNotification
+                                    </div>
+                                }
+                                else
+                                {
+                                    <GdsTag Text="Available" Colour="GdsTagColour.Green" />
+                                }
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                @if (!string.IsNullOrWhiteSpace(_notificationTestEmailAddress) && _notificationHasTestNotification)
+                                {
+                                    <ul class="govuk-summary-list__actions-list">
+                                        <li class="govuk-summary-list__actions-list-item">
+                                            <a class="govuk-link" draggable="false" href="" @onclick="Notifcation_SendTest" @onclick:preventDefault>Send<span class="govuk-visually-hidden"> test notification</span></a>
+                                        </li>
+                                    </ul>
+                                }
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 </div>

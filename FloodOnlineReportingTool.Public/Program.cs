@@ -26,8 +26,6 @@ builder.AddAuthentication();
 builder.Services.AddScoped<SessionStateService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
-// Configure messaging system
-builder.AddMessageSystem();
 builder.AddGovNotify();
 
 // Configure API versioning and OpenAPI
@@ -50,7 +48,7 @@ builder.Services
 // Add the databases
 builder
     .AddFloodReportingDatabase()
-    .AddFloodReportingDatabaseRepositories()
+    .AddFloodReportingDatabaseServices()
     .AddBoundariesDatabase();
 
 // Add project related health checks
@@ -59,7 +57,7 @@ builder.AddFloodReportingHealthChecks();
 // Add all the validation rules
 builder.Services.AddValidatorsFromAssembly(assembly);
 
-builder.Services.AddScoped<TestService>();
+builder.Services.AddScoped<ITestService, TestService>();
 
 var app = builder.Build();
 

@@ -1,4 +1,4 @@
-﻿using FloodOnlineReportingTool.Contracts;
+﻿using FloodOnlineReportingTool.Contracts.Shared.Models;
 using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
@@ -11,7 +11,7 @@ public static class EligibilityExtensions
 {
     extension(EligibilityCheck eligibilityCheck)
     {
-        internal EligibilityCheckRecord ToMessageCreated(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
+        internal EligibilityCheckRecord ToEligibilityCheckRecord(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
         {
             return new(
                 eligibilityCheck.Id,
@@ -32,65 +32,14 @@ public static class EligibilityExtensions
                         o.FloodAuthorityId,
                         o.FloodAuthority.AuthorityName
                     )),
-                ], [..
-                    floodProblems.Select(p => new EligibilityCheckFloodSource(
-                        p.Id,
-                        p.TypeName
-                    )),
-                ]
-            );
-        }
-
-        internal EligibilityCheckUpdated ToMessageUpdated(IList<Organisation> organisations, IList<FloodProblem> floodProblems)
-        {
-            return new(
-                eligibilityCheck.Id,
-                eligibilityCheck.UpdatedUtc ?? DateTimeOffset.UtcNow,
-                eligibilityCheck.Uprn,
-                eligibilityCheck.Usrn,
-                eligibilityCheck.Easting,
-                eligibilityCheck.Northing,
-                eligibilityCheck.ImpactStart,
-                eligibilityCheck.ImpactDuration,
-                eligibilityCheck.OnGoing,
-                eligibilityCheck.Uninhabitable,
-                eligibilityCheck.VulnerableCount,
-                eligibilityCheck.LocationDesc,
+                ],
                 [..
-                    organisations.Select(o => new EligibilityCheckOrganisation(
-                        o.Id,
-                        o.Name,
-                        o.FloodAuthorityId,
-                        o.FloodAuthority.AuthorityName
-                    )),
-                ], [..
                     floodProblems.Select(p => new EligibilityCheckFloodSource(
                         p.Id,
-                        p.TypeName
+                        p.TypeName ?? ""
                     )),
                 ]
             );
-        }
-
-        public EligibilityCheckDto ToDto()
-        {
-            return new()
-            {
-                IsAddress = eligibilityCheck.IsAddress,
-                Uprn = eligibilityCheck.Uprn,
-                Usrn = eligibilityCheck.Usrn,
-                Easting = eligibilityCheck.Easting,
-                Northing = eligibilityCheck.Northing,
-                LocationDesc = eligibilityCheck.LocationDesc,
-                ImpactStart = eligibilityCheck.ImpactStart,
-                ImpactDuration = eligibilityCheck.ImpactDuration,
-                OnGoing = eligibilityCheck.OnGoing,
-                Uninhabitable = eligibilityCheck.Uninhabitable,
-                VulnerableCount = eligibilityCheck.VulnerableCount,
-                Sources = [.. eligibilityCheck.Sources.Select(o => o.FloodProblemId)],
-                Residentials = [.. eligibilityCheck.Residentials.Select(o => o.FloodImpactId)],
-                Commercials = [.. eligibilityCheck.Commercials.Select(o => o.FloodImpactId)],
-            };
         }
 
         /// <summary>

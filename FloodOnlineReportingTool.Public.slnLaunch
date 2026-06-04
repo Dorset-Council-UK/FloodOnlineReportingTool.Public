@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "Public + Outbox (no Aspire)",
+    "Projects": [
+      {
+        "Path": "FloodOnlineReportingTool.Public\\FloodOnlineReportingTool.Public.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "Outbox\\Outbox.csproj",
+        "Action": "Start",
+        "DebugTarget": "start"
+      }
+    ]
+  }
+]
