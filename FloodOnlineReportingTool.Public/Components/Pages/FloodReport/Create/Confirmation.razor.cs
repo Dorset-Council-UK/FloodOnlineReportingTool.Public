@@ -23,8 +23,6 @@ public partial class Confirmation(
     private Guid _FloodReportId;
     private bool _hasContactInformation;
     
-    private string _redirectTargetUrl = $"{SubscriptionPages.Home.Url}?Me=true&Owns=true";
-
     // Public Properties
     public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [

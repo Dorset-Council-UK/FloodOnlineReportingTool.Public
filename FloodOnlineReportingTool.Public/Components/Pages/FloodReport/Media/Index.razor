@@ -1,0 +1,93 @@
+﻿@page "/floodreport/media/add-photos-or-videos"
+
+<PageTitle>@Title</PageTitle>
+
+<GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
+
+<h1 class="govuk-heading-l">@Title</h1>
+
+<p>Upload some photos or videos that show the flooding or damage caused. </p>
+<p>Please ensure there are no identifiable people or personal data in your uploaded files.</p>
+<p>You can upload up to 5 files, maximum of 20MB per file.</p>
+
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Media">
+    <FluentValidationValidator />
+    <GdsErrorSummary />
+
+    <GdsSpinner Show="_isLoading" ShowMessage="true" />
+
+    <GdsFormGroup For="() => Model.UploadedFiles">
+        <GdsLabel Text="Add photos, videos or supporting documents" />
+        <GdsHint>Accepted file types: PDF, DOCX, JPG</GdsHint>
+        <GdsErrorMessage />
+        <GdsFileInput IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
+    </GdsFormGroup>
+
+
+    @if((Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0) || (_uploadingFiles is not null && _uploadingFiles.Count != 0) || (_rejectedFiles is not null && _rejectedFiles.Count != 0))
+    {
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header">File</th>
+                    <th scope="col" class="govuk-table__header">Status</th>
+                    <th scope="col" class="govuk-table__header">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                @foreach (var file in _uploadingFiles)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@file.Name</td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--blue">
+                                Uploading
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                        </td>
+                    </tr>
+                }
+                @foreach (var file in Model.UploadedFiles)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@file.Name</td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--green">
+                                Uploaded
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+                        </td>
+                    </tr>
+                }
+                @foreach (var rejectedFile in _rejectedFiles)
+                {
+                    var errorMessage = GetErrorMessageForFile(rejectedFile);
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
+                        <td class="govuk-table__cell">
+                            <strong class="govuk-tag govuk-tag--red">
+                                Rejected
+                            </strong>
+                        </td>
+                        <td class="govuk-table__cell">
+                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+       
+        </table>
+    }
+    @if (!_isLoading)
+    {
+        <div class="govuk-button-group">
+            <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save changes</button>
+            <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@PreviousPage.Url">Cancel</a>
+        </div>
+    }
+</EditForm>
+
+
