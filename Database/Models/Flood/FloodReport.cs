@@ -27,4 +27,9 @@ public record FloodReport
     /// All contact records, including the report owner.
     /// </summary>
     public ICollection<ContactRecord> ContactRecords { get; set; } = [];
+    
+    /// <summary>
+    /// All media items associated with the flood report.
+    /// </summary>
+    public ICollection<MediaItem> MediaItems { get; set; } = [];
 }

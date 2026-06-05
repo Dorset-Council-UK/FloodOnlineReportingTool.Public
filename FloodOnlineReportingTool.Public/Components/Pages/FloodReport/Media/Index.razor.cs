@@ -1,3 +1,6 @@
+using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Media;
@@ -14,15 +17,18 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Media;
 
 public partial class Index(
     ILogger<Index> logger,
-    ProtectedSessionStorage protectedSessionStorage,
+    SessionStateService scopedSessionStorage,
     NavigationManager navigationManager,
     IJSRuntime JS,
-    IBlobStorageService blobStorageService
+    IBlobStorageService blobStorageService,
+    IMediaItemRepository mediaItemRepository
 ) : IAsyncDisposable
 {
     // Page order properties
     public string Title { get; set; } = MediaPages.Home.Title;
 
+    [Parameter]
+    public Guid? FloodReportId { get; set; }
     [SupplyParameterFromQuery(Name = "back_url")]
     public string BackURL { get; set; } = "confirmation";
 
@@ -33,6 +39,8 @@ public partial class Index(
     private const int MaxNumFiles = 10;
     private const int MaxFileSizeMB = 20;
     private const long MaxFileSize = MaxFileSizeMB * 1024 * 1024; // Convert MB to bytes
+
+    private int RemainingSlots => MaxNumFiles - Model.UploadedFiles.Count;
 
     private static readonly string[] AllowedFileTypes = [
         "image/jpeg",
@@ -53,10 +61,13 @@ public partial class Index(
     private EditContext _editContext = default!;
     private ValidationMessageStore _validationMessageStore = default!;
     private FieldIdentifier _fieldIdentifier;
+
+    private Guid _floodReportId;
     private bool _isLoading = true;
 
     private readonly List<IBrowserFile> _uploadingFiles = [];
     private readonly List<RejectedFile> _rejectedFiles = [];
+    private string? _uploadLimitError;
 
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
@@ -90,24 +101,39 @@ public partial class Index(
     {
         if (firstRender)
         {
+            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
+            await LoadExistingMediaItems();
+
             _isLoading = false;
-
-            //// Set any previously entered data
-            //var data = await GetCreateExtraData();
-            //if (data is not null && data.Media is not null)
-            //{
-            //    Model.UploadedFiles = data.Media;
-            //}
-
             StateHasChanged();
         }
+    }
+
+    private async Task LoadExistingMediaItems()
+    {
+        if (_floodReportId == Guid.Empty)
+        {
+            logger.LogWarning("Flood report ID was not available when loading media items");
+            return;
+        }
+
+        var mediaItems = await mediaItemRepository.GetByReport(_floodReportId, _cts.Token);
+        Model.UploadedFiles = mediaItems
+            .Select(mediaItem => new Models.FloodReport.Create.MediaItem
+            {
+                Id = mediaItem.Id,
+                Name = mediaItem.Title ?? Path.GetFileName(mediaItem.URL),
+                Url = mediaItem.URL,
+                ContentType = string.Empty,
+            })
+            .ToList();
     }
 
     private async Task OnFilesSubmitted(IReadOnlyList<IBrowserFile>? files)
     {
         _isLoading = true;
 
-        if (!ValidateFileUploadLimits(files, out var errorMessage))
+        if (!ValidateFileUploadLimits(files))
         {
             StateHasChanged();
             _isLoading = false;
@@ -154,7 +180,7 @@ public partial class Index(
 
             if (blobUrl != null)
             {
-                Model.UploadedFiles.Add(new MediaItem
+                Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
                     Name = file.Name,
                     Url = blobUrl,
@@ -172,12 +198,28 @@ public partial class Index(
         return false;
     }
 
-    private async Task DeleteUploadedFile(MediaItem file)
+    private async Task DeleteUploadedFile(Models.FloodReport.Create.MediaItem file)
     {
         //confirm
         bool confirmDelete = await JS.InvokeAsync<bool>("confirm", _cts.Token, "Are you sure you want to delete this file?");
         if (confirmDelete)
         {
+            if (file.Id.HasValue)
+            {
+                var deleteMediaItem = await mediaItemRepository.Delete(file.Id.Value, _cts.Token);
+                if (!deleteMediaItem.IsSuccess)
+                {
+                    foreach (var error in deleteMediaItem.Errors)
+                    {
+                        logger.LogWarning("Couldn't delete a media item: {ErrorMessage}", error);
+                    }
+
+                    _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
+                    _editContext.NotifyValidationStateChanged();
+                    return;
+                }
+            }
+
             //delete from storage
             if (!await blobStorageService.DeleteFileFromBlobByURLAsync(file.Url))
             {
@@ -198,25 +240,19 @@ public partial class Index(
         StateHasChanged();
     }
 
-    private bool ValidateFileUploadLimits(IReadOnlyList<IBrowserFile>? files, out string? errorMessage)
+    private bool ValidateFileUploadLimits(IReadOnlyList<IBrowserFile>? files)
     {
-        errorMessage = null;
+        _uploadLimitError = null;
 
         if (files is null || files.Count > MaxNumFiles)
         {
-            errorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessageConstants.TooManyFiles, MaxNumFiles);
-            _validationMessageStore.Clear();
-            _validationMessageStore.Add(_fieldIdentifier, errorMessage);
-            _editContext.NotifyValidationStateChanged();
+            _uploadLimitError = string.Format(CultureInfo.CurrentCulture, ErrorMessageConstants.TooManyFiles, MaxNumFiles);
             return false;
         }
 
         if (files.Count > (MaxNumFiles - Model.UploadedFiles.Count))
         {
-            errorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessageConstants.TooManyTotalFiles, MaxNumFiles);
-            _validationMessageStore.Clear();
-            _validationMessageStore.Add(_fieldIdentifier, errorMessage);
-            _editContext.NotifyValidationStateChanged();
+            _uploadLimitError = string.Format(CultureInfo.CurrentCulture, ErrorMessageConstants.TooManyTotalFiles, MaxNumFiles);
             return false;
         }
 
@@ -226,6 +262,7 @@ public partial class Index(
     private void CheckValidationStateOfFileUploads()
     {
         // Clear any existing validation errors first
+        _uploadLimitError = null;
         _validationMessageStore.Clear();
 
         // Add validation errors for specific fields
@@ -264,7 +301,51 @@ public partial class Index(
 
     private async Task OnValidSubmit()
     {
-        //TODO - Save the media to the flood report
+        _validationMessageStore.Clear();
+        _editContext.NotifyValidationStateChanged();
+
+        if (_floodReportId == Guid.Empty)
+        {
+            logger.LogWarning("Flood report ID was not available when saving media items");
+            _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
+            _editContext.NotifyValidationStateChanged();
+            return;
+        }
+
+        if (Model.UploadedFiles.Count == 0)
+        {
+            navigationManager.NavigateTo(PreviousPage.Url);
+            return;
+        }
+
+        var mediaItems = Model.UploadedFiles
+            .Where(file => !file.Id.HasValue)
+            .Select(file => new Database.Models.MediaItem
+            {
+                UploadDateUtc = DateTimeOffset.UtcNow,
+                URL = file.Url,
+                Title = file.Name,
+            })
+            .ToList();
+
+        if (mediaItems.Count == 0)
+        {
+            navigationManager.NavigateTo(PreviousPage.Url);
+            return;
+        }
+
+        var createMediaItems = await mediaItemRepository.Create(_floodReportId, mediaItems, _cts.Token);
+        if (!createMediaItems.IsSuccess)
+        {
+            foreach (var error in createMediaItems.Errors)
+            {
+                logger.LogWarning("Couldn't create a media item: {ErrorMessage}", error);
+            }
+
+            _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
+            _editContext.NotifyValidationStateChanged();
+            return;
+        }
 
         navigationManager.NavigateTo(PreviousPage.Url);
     }

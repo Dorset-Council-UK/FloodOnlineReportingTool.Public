@@ -1,4 +1,5 @@
-﻿@page "/floodreport/media/add-photos-or-videos"
+﻿@page "/floodreport/media/add-photos-or-videos/{FloodReportId:guid?}"
+@page "/floodreport/media/add-photos-or-videos"
 
 <PageTitle>@Title</PageTitle>
 
@@ -8,7 +9,7 @@
 
 <p>Upload some photos or videos that show the flooding or damage caused. </p>
 <p>Please ensure there are no identifiable people or personal data in your uploaded files.</p>
-<p>You can upload up to 5 files, maximum of 20MB per file.</p>
+<p>You can upload up to @MaxNumFiles files, maximum of @MaxFileSizeMB MB per file.</p>
 
 <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Media">
     <FluentValidationValidator />
@@ -20,7 +21,21 @@
         <GdsLabel Text="Add photos, videos or supporting documents" />
         <GdsHint>Accepted file types: PDF, DOCX, JPG</GdsHint>
         <GdsErrorMessage />
-        <GdsFileInput IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
+        @if (_uploadLimitError is not null)
+        {
+            <p class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>
+                @_uploadLimitError
+            </p>
+        }
+        @if (RemainingSlots > 0)
+        {
+            <GdsFileInput IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
+        }
+        else
+        {
+            <p class="govuk-body">You have reached the maximum of @MaxNumFiles files. Delete a file to upload a different one.</p>
+        }
     </GdsFormGroup>
 
 

@@ -78,7 +78,7 @@
                             </li>
                         }
                         <li>
-                            <a class="govuk-link" href="@(MediaPages.Home.Url)?back_url=manage">Add photos or videos</a>
+                            <a class="govuk-link" href="@($"{MediaPages.Home.Url}/{item.Id}")?back_url=manage">Add photos or videos</a>
                         </li>
                     </ul>
                 </GdsTableTd>
