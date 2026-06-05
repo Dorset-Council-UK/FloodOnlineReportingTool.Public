@@ -81,8 +81,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
 
     public async Task<IList<FloodProblem>> GetFullEligibilityFloodProblemSourceList(EligibilityCheck eligibilityCheck, CancellationToken ct)
     {
-        IList<Guid> primarySources = [.. eligibilityCheck.Sources.Select(r => r.FloodProblemId)];
-        IList<Guid> secondarySources = [.. eligibilityCheck.SecondarySources.Select(r => r.FloodProblemId)];
+        IList<Guid> primarySources = [.. eligibilityCheck.Causes.Select(r => r.FloodProblemId)];
+        IList<Guid> secondarySources = [.. eligibilityCheck.SecondaryCauses.Select(r => r.FloodProblemId)];
 
         var allSources = primarySources.Concat(secondarySources);
 

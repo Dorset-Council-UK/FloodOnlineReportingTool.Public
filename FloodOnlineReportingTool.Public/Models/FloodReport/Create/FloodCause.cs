@@ -2,8 +2,8 @@
 
 namespace FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 
-public class FloodSecondarySource
+public class FloodCause
 {
     [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
-    public IReadOnlyCollection<GdsOptionItem<Guid>> FloodSecondarySourceOptions { get; set; } = [];
+    public IReadOnlyCollection<GdsOptionItem<Guid>> CauseOptions { get; set; } = [];
 }

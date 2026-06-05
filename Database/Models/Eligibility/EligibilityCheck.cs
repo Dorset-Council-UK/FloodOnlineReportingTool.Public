@@ -29,8 +29,8 @@ public record EligibilityCheck
     public DateTimeOffset TermsAgreed { get; init; }
     public IList<EligibilityCheckResidential> Residentials { get; init; } = [];
     public IList<EligibilityCheckCommercial> Commercials { get; init; } = [];
-    public IList<EligibilityCheckSource> Sources { get; init; } = [];
-    public IList<EligibilityCheckRunoffSource> SecondarySources { get; init; } = [];
+    public IList<EligibilityCheckCause> Causes { get; init; } = [];
+    public IList<EligibilityCheckRunoffCause> SecondaryCauses { get; init; } = [];
 
     // Navigation properties
     public FloodReportSource? FloodReportSource { get; init; }

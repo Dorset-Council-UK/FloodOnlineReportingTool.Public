@@ -46,11 +46,11 @@ internal sealed class TestService(
             FloodImpactIds.InsideBuilding,
             FloodImpactIds.CarPark,
         ],
-        Sources = [
+        Causes = [
             PrimaryCauseIds.River,
             PrimaryCauseIds.WaterRisingOutOfTheGround,
         ],
-        SecondarySources = [
+        SecondaryCauses = [
             SecondaryCauseIds.RunoffFromRoad,
             SecondaryCauseIds.RunoffFromTrackOrPath,
         ],

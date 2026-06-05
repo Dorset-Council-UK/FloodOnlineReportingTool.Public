@@ -26,7 +26,7 @@ public partial class Summary(
     private readonly IReadOnlyCollection<GdsBreadcrumb> _breadcrumbs = [
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
-        FloodReportCreatePages.FloodSource.ToGdsBreadcrumb(),
+        FloodReportCreatePages.Cause.ToGdsBreadcrumb(),
     ];
 
     [PersistentState(AllowUpdates = true)]
@@ -359,7 +359,7 @@ public partial class Summary(
         }
 
         return [.. EligibilityCheckFloodProblems
-            .Where(o => _eligibilityCheckDto.Sources.Contains(o.Id))
+            .Where(o => _eligibilityCheckDto.Causes.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }
@@ -374,7 +374,7 @@ public partial class Summary(
         }
 
         return [.. EligibilityCheckFloodProblems
-            .Where(o => _eligibilityCheckDto.SecondarySources.Contains(o.Id))
+            .Where(o => _eligibilityCheckDto.SecondaryCauses.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }

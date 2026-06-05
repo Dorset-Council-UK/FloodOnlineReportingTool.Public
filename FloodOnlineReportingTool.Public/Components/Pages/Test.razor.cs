@@ -51,8 +51,8 @@ public partial class Test(
         new (FloodReportCreatePages.Vulnerability),
         new (FloodReportCreatePages.FloodStarted),
         new (FloodReportCreatePages.FloodDuration, "(optional)"),
-        new (FloodReportCreatePages.FloodSource),
-        new (FloodReportCreatePages.FloodSecondarySource, "(optional)"),
+        new (FloodReportCreatePages.Cause),
+        new (FloodReportCreatePages.SecondaryCause, "(optional)"),
         new (FloodReportCreatePages.Summary),
         new (FloodReportCreatePages.Confirmation),
     ];

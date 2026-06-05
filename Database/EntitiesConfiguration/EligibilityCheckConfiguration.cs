@@ -37,11 +37,11 @@ internal class EligibilityCheckConfiguration : IEntityTypeConfiguration<Eligibil
             .AutoInclude();
 
         builder
-            .Navigation(o => o.Sources)
+            .Navigation(o => o.Causes)
             .AutoInclude();
 
         builder
-            .Navigation(o => o.SecondarySources)
+            .Navigation(o => o.SecondaryCauses)
             .AutoInclude();
 
         builder

@@ -8,23 +8,24 @@ using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 
-public partial class FloodSource(
-    ILogger<FloodSource> logger,
+public partial class SecondaryCause(
+    ILogger<SecondaryCause> logger,
     ICommonRepository commonRepository,
     ProtectedSessionStorage protectedSessionStorage,
     NavigationManager navigationManager
 ) : IAsyncDisposable
 {
-    // Page order properties
-    public string Title { get; set; } = FloodReportCreatePages.FloodSource.Title;
-
-    private Models.FloodReport.Create.FloodSource Model { get; set; } = default!;
-
+    private Models.FloodReport.Create.FloodSecondaryCause Model { get; set; } = default!;
+    
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo? PreviousPage;
+    private static PageInfo NextPage => FloodReportCreatePages.Summary;
+    private PageInfo PreviousPage => FromSummary
+        ? FloodReportCreatePages.Summary
+        : FloodReportCreatePages.Cause;
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
@@ -58,11 +59,7 @@ public partial class FloodSource(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            Model.FloodSourceOptions = await CreateFloodSourceOptions(eligibilityCheck.Sources);
-
-            PreviousPage = FromSummary
-                ? FloodReportCreatePages.Summary
-                : eligibilityCheck.OnGoing ? FloodReportCreatePages.FloodStarted : FloodReportCreatePages.FloodDuration;
+            Model.SecondaryCauseOptions = await CreateSecondaryCauseOptions(eligibilityCheck.SecondaryCauses);
 
             _isLoading = false;
             StateHasChanged(); 
@@ -81,61 +78,33 @@ public partial class FloodSource(
     {
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
-
-        var selectedOptions = Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value);
-        IList<Guid> secondarySources = eligibilityCheck.SecondarySources;
-        if (!selectedOptions.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
-        {
-            // We need to remove any run off options as it has not been selected
-            secondarySources = [];
-        }
         var updated = eligibilityCheck with
         {
-            Sources = [.. Model.FloodSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
-            SecondarySources = secondarySources,
+            SecondaryCauses = [.. Model.SecondaryCauseOptions.Where(o => o.Selected).Select(o => o.Value)],
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
 
-        // Go to the next page, summary or secondary source when rainwater flowing over the ground is selected
-        PageInfo? nextPage = null;
-        if (FromSummary)
-        {
-            // The summary page takes priority
-            nextPage = FloodReportCreatePages.Summary;
-        }
-        else if (updated.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
-        {
-            nextPage = FloodReportCreatePages.FloodSecondarySource;
-        }
-        else
-        {
-            // The next page is summary anyway
-            nextPage = FloodReportCreatePages.Summary;
-        }
-
-        navigationManager.NavigateTo(nextPage.Url);
+        // Go to the next page, which is always the summary
+        navigationManager.NavigateTo(NextPage.Url);
     }
 
     private async Task<EligibilityCheckDto> GetEligibilityCheck()
     {
         var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
-        if (data.Success)
+        if (data.Success && data.Value != null)
         {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
+            return data.Value;
         }
 
         logger.LogDebug("Eligibility Check was not found in the protected storage.");
         return new();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateFloodSourceOptions(IList<Guid> selectedValues)
+    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateSecondaryCauseOptions(IList<Guid> selectedValues)
     {
-        const string idPrefix = "flood-source";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.PrimaryCause, _cts.Token);
+        const string idPrefix = "secondary-cause";
+        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
         return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
     }
 
@@ -144,9 +113,8 @@ public partial class FloodSource(
         var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
         var label = floodProblem.TypeName.AsSpan();
         var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
+        var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
 
         return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
     }
 }
-
