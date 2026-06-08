@@ -51,8 +51,8 @@ public partial class Summary(
     private string? _isUninhabitableLabel;
     private string? _floodingLastedLabel;
     private string? _vulnerablePeopleLabel;
-    private string[] _sourceLabels = [];
-    private string[] _secondarySourceLabels = [];
+    private string[] _causeLabels = [];
+    private string[] _secondaryCauseLabels = [];
     private readonly CancellationTokenSource _cts = new();
     private Task _initializationTask = Task.CompletedTask;
     private bool _isLoading = true;
@@ -112,8 +112,8 @@ public partial class Summary(
             _isUninhabitableLabel = GetIsUninhabitable();
             _floodingLastedLabel = GetFloodingLasted();
             _vulnerablePeopleLabel = GetVulnerablePeople();
-            _sourceLabels = GetSources();
-            _secondarySourceLabels = GetSecondarySources();
+            _causeLabels = GetCauses();
+            _secondaryCauseLabels = GetSecondaryCauses();
 
             _isLoading = false;
             await Validate();
@@ -349,7 +349,7 @@ public partial class Summary(
         };
     }
 
-    private string[] GetSources()
+    private string[] GetCauses()
     {
         if (_eligibilityCheckDto is null
             || EligibilityCheckFloodProblems is null
@@ -364,7 +364,7 @@ public partial class Summary(
         ];
     }
 
-    private string[] GetSecondarySources()
+    private string[] GetSecondaryCauses()
     {
         if (_eligibilityCheckDto is null
             || EligibilityCheckFloodProblems is null

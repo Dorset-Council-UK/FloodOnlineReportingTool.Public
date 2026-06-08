@@ -109,12 +109,12 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
             .OverridePropertyName(nameof(EligibilityCheckDto.Residentials))
             .WithMessage("At least one of residential or commercial properties must be provided.");
 
-        // Sources / FloodProblem's
+        // Causes / FloodProblem's
         RuleFor(dto => dto.Causes)
             .NotEmpty()
             .WithState(dto => FloodReportCreatePages.Cause);
 
-        // Secondary sources / FloodProblem's
+        // Secondary causes / FloodProblem's
         RuleFor(dto => dto.SecondaryCauses)
             .NotEmpty()
             .WithState(dto => FloodReportCreatePages.SecondaryCause)

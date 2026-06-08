@@ -129,20 +129,20 @@ else if (_eligibilityCheckDto is not null)
         </div>
 
         <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flood source</dt>
-            @ValuesOrMissing(_sourceLabels, FloodReportCreatePages.Cause)
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Causes</dt>
+            @ValuesOrMissing(_causeLabels, FloodReportCreatePages.Cause)
             <dd class="govuk-summary-list__actions">
-                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Cause.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of the flooding</span></a>
+                <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.Cause.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the cause of the flooding</span></a>
             </dd>
         </div>
 
         @if (_eligibilityCheckDto.Causes.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround))
         {
             <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Runoff source</dt>
-                @ValuesOrMissing(_secondarySourceLabels, FloodReportCreatePages.SecondaryCause)
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Secondary causes</dt>
+                @ValuesOrMissing(_secondaryCauseLabels, FloodReportCreatePages.SecondaryCause)
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.SecondaryCause.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the source of runoff</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.SecondaryCause.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> the secondary cause of the flooding</span></a>
                 </dd>
             </div>
         }

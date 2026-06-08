@@ -278,7 +278,7 @@ public class FloodReportSourceRepository(
             floodReportSource.CreatedUtc,
             eligibilityCheck.ToEligibilityCheckRecord(
                 await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
-                await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
+                await commonRepository.GetFloodProblemsForCauses(eligibilityCheck, ct)
             ),
             floodReportSource.Investigation is not null,
             floodReportSource.ContactRecords.Count > 0,

@@ -79,19 +79,19 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         return [.. problemList.Where(p => filterHashSet.Contains(p.Id))];
     }
 
-    public async Task<IList<FloodProblem>> GetFullEligibilityFloodProblemSourceList(EligibilityCheck eligibilityCheck, CancellationToken ct)
+    public async Task<IList<FloodProblem>> GetFloodProblemsForCauses(EligibilityCheck eligibilityCheck, CancellationToken ct)
     {
-        IList<Guid> primarySources = [.. eligibilityCheck.Causes.Select(r => r.FloodProblemId)];
-        IList<Guid> secondarySources = [.. eligibilityCheck.SecondaryCauses.Select(r => r.FloodProblemId)];
+        IList<Guid> primaryCauses = [.. eligibilityCheck.Causes.Select(r => r.FloodProblemId)];
+        IList<Guid> secondaryCauses = [.. eligibilityCheck.SecondaryCauses.Select(r => r.FloodProblemId)];
 
-        var allSources = primarySources.Concat(secondarySources);
+        var allCauses = primaryCauses.Concat(secondaryCauses);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        IList<FloodProblem> fullFloodSource = await context.FloodProblems
-            .Where(fp => allSources.Contains(fp.Id))
+        IList<FloodProblem> floodProblems = await context.FloodProblems
+            .Where(fp => allCauses.Contains(fp.Id))
             .ToListAsync(ct);
 
-        return fullFloodSource;
+        return floodProblems;
     }
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategory(string category, CancellationToken ct)
