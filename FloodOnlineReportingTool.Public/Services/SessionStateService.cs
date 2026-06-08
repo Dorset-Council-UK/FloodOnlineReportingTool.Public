@@ -23,12 +23,12 @@ public class SessionStateService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error getting flood report source ID from protected storeage: {ErrorMessage}", ex.Message);
+            _logger.LogError(ex, "Error getting flood report source ID from protected storage: {ErrorMessage}", ex.Message);
             return Guid.Empty;
         }
     }
 
-    public async Task SaveFloodReporSourcetId(Guid floodReportSourceId)
+    public async Task SaveFloodReporSourceId(Guid floodReportSourceId)
     {
         await _sessionStorage.SetAsync(SessionConstants.FloodReportSourceId, floodReportSourceId);
     }
@@ -42,7 +42,7 @@ public class SessionStateService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error getting verification ID from protected storeage: {ErrorMessage}", ex.Message);
+            _logger.LogError(ex, "Error getting verification ID from protected storage: {ErrorMessage}", ex.Message);
             return Guid.Empty;
         }
     }

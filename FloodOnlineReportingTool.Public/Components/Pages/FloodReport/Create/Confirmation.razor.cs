@@ -64,7 +64,7 @@ public partial class Confirmation(
                         if (_FloodReportId != Guid.Empty)
                         {
                             // Never save a blank Guid, only a real one
-                            await scopedSessionStorage.SaveFloodReporSourcetId(_FloodReportId);
+                            await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
                         }
 
                         _hasContactInformation = result.FloodReportSource.ContactRecords.Count > 0;
