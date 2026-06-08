@@ -29,7 +29,7 @@ public partial class FloodDuration(
     private bool FromSummary { get; set; }
     private PageInfo NextPage => FromSummary 
         ? FloodReportCreatePages.Summary 
-        : FloodReportCreatePages.FloodSource;
+        : FloodReportCreatePages.Cause;
     private PageInfo PreviousPage => FromSummary
         ? FloodReportCreatePages.Summary
         : FloodReportCreatePages.FloodStarted;

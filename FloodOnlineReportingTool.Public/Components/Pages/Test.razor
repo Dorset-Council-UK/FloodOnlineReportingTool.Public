@@ -1,5 +1,4 @@
 ﻿@page "/test"
-@using FloodOnlineReportingTool.Contracts.Shared
 @using FloodOnlineReportingTool.Database.Models.Messaging
 @using FloodOnlineReportingTool.Public.Authentication
 @using FloodOnlineReportingTool.Public.Models
@@ -183,13 +182,13 @@
     </AuthorizeView>
 </div>
 
-@* Flood reports *@
+@* Flood report sources *@
 <div class="govuk-!-margin-bottom-6">
     <AuthorizeView Policy="@PolicyNames.Admin">
         <NotAuthorized>
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
-                    <h2 class="govuk-summary-card__title">Flood reports</h2>
+                    <h2 class="govuk-summary-card__title">Flood report sources</h2>
                 </div>
                 <div class="govuk-summary-card__content">
                     <dl class="govuk-summary-list">
@@ -203,24 +202,24 @@
         <Authorized>
             <div class="govuk-summary-card">
                 <div class="govuk-summary-card__title-wrapper">
-                    <h2 class="govuk-summary-card__title">Flood reports</h2>
+                    <h2 class="govuk-summary-card__title">Flood report sources</h2>
                 </div>
                 <div class="govuk-summary-card__content">
                     <dl class="govuk-summary-list">
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key">Total</dt>
-                            <dd class="govuk-summary-list__value">@_floodReportsCount</dd>
+                            <dd class="govuk-summary-list__value">@_floodReportSourcesCount</dd>
                             <dd class="govuk-summary-list__actions">
                                 <ul class="govuk-summary-list__actions-list">
                                     <li class="govuk-summary-list__actions-list-item">
-                                        <a class="govuk-link" draggable="false" href="" @onclick="() => FloodReportsCounts_Refresh()" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> flood report counts</span></a>
+                                        <a class="govuk-link" draggable="false" href="" @onclick="() => FloodReportSourcesCounts_Refresh()" @onclick:preventDefault>Refresh<span class="govuk-visually-hidden"> flood report source counts</span></a>
                                     </li>
                                 </ul>
                             </dd>
                         </div>
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key">You created</dt>
-                            <dd class="govuk-summary-list__value">@_floodReportsCountUser</dd>
+                            <dd class="govuk-summary-list__value">@_floodReportSourcesCountUser</dd>
                         </div>
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key">In protected storage</dt>
@@ -239,13 +238,13 @@
                                     @if (_protectedStorageInfos[SessionConstants.EligibilityCheck].Exists && _protectedStorageInfos[SessionConstants.EligibilityCheck_ExtraData].Exists)
                                     {
                                         <li class="govuk-summary-list__actions-list-item">
-                                            <a class="govuk-link" draggable="false" href="@FloodReportCreatePages.Summary.Url">Summary page<span class="govuk-visually-hidden"> for the flood report</span></a>
+                                            <a class="govuk-link" draggable="false" href="@FloodReportCreatePages.Summary.Url">Summary page<span class="govuk-visually-hidden"> for the flood report source</span></a>
                                         </li>
                                     }
                                     else
                                     {
                                         <li class="govuk-summary-list__actions-list-item">
-                                            <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create([SessionConstants.EligibilityCheck, SessionConstants.EligibilityCheck_ExtraData])" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report protected storage information</span></a>
+                                            <a class="govuk-link" draggable="false" href="" @onclick="() => ProtectedStorage_Create([SessionConstants.EligibilityCheck, SessionConstants.EligibilityCheck_ExtraData])" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> flood report source protected storage information</span></a>
                                         </li>
                                     }
                                 </ul>
@@ -253,19 +252,19 @@
                         </div>
                         <div class="govuk-summary-list__row">
                             <dt class="govuk-summary-list__key">Confirmation reference</dt>
-                            <dd class="govuk-summary-list__value">@_floodReportsConfirmationReference</dd>
+                            <dd class="govuk-summary-list__value">@_floodReportSourcesConfirmationReference</dd>
                             <dd class="govuk-summary-list__actions">
                                 <ul class="govuk-summary-list__actions-list">
-                                    @if (_floodReportsConfirmationReference is null)
+                                    @if (_floodReportSourcesConfirmationReference is null)
                                     {
                                         <li class="govuk-summary-list__actions-list-item">
-                                            <a class="govuk-link" draggable="false" href="" @onclick="FloodReports_CreateTestConfirmation" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report for confirmation page</span></a>
+                                            <a class="govuk-link" draggable="false" href="" @onclick="FloodReportSources_CreateTestConfirmation" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report source for confirmation page</span></a>
                                         </li>
                                     }
                                     else
                                     {
                                         <li class="govuk-summary-list__actions-list-item">
-                                            <a class="govuk-link" draggable="false" href="@($"{FloodReportCreatePages.Confirmation.Url}?reference={_floodReportsConfirmationReference}")">Confirmation page<span class="govuk-visually-hidden"> for your flood report</span></a>
+                                            <a class="govuk-link" draggable="false" href="@($"{FloodReportCreatePages.Confirmation.Url}?reference={_floodReportSourcesConfirmationReference}")">Confirmation page<span class="govuk-visually-hidden"> for your flood report source</span></a>
                                         </li>
                                     }
                                 </ul>
@@ -450,9 +449,9 @@
                             </dd>
                         </div>
                         <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">Flood report</dt>
+                            <dt class="govuk-summary-list__key">Flood report source</dt>
                             <dd class="govuk-summary-list__value">
-                                @if (_investigationFloodReport is null)
+                                @if (_investigationFloodReportSource is null)
                                 {
                                     <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
                                 }
@@ -463,10 +462,10 @@
                             </dd>
                             <dd class="govuk-summary-list__actions">
                                 <ul class="govuk-summary-list__actions-list">
-                                    @if (_investigationFloodReport is null)
+                                    @if (_investigationFloodReportSource is null)
                                     {
                                         <li class="govuk-summary-list__actions-list-item">
-                                            <a class="govuk-link" draggable="false" href="" @onclick="Investigation_AddTestFloodReport" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report for investigation</span></a>
+                                            <a class="govuk-link" draggable="false" href="" @onclick="Investigation_AddTestFloodReportSource" @onclick:preventDefault>Add<span class="govuk-visually-hidden"> test flood report source for investigation</span></a>
                                         </li>
                                     }
                                     else
@@ -478,35 +477,35 @@
                                 </ul>
                             </dd>
                         </div>
-                        @if (_investigationFloodReport is not null)
+                        @if (_investigationFloodReportSource is not null)
                         {
                             <div class="govuk-summary-list__row">
                                 <dt class="govuk-summary-list__key">Reference</dt>
                                 <dd class="govuk-summary-list__value">
-                                    @if (_investigationFloodReport is null)
+                                    @if (_investigationFloodReportSource is null)
                                     {
                                         <GdsTag Text="Unknown" Colour="GdsTagColour.Grey" />
                                     }
                                     else
                                     {
-                                        @_investigationFloodReport.Reference
+                                        @_investigationFloodReportSource.Reference
                                     }
                                 </dd>
                             </div>
                             <div class="govuk-summary-list__row">
                                 <dt class="govuk-summary-list__key">Status</dt>
                                 <dd class="govuk-summary-list__value">
-                                    @if (_investigationFloodReport is null)
+                                    @if (_investigationFloodReportSource is null)
                                     {
                                         <GdsTag Text="Missing" Colour="GdsTagColour.Grey" />
                                     }
-                                    else if (_investigationFloodReport.Status?.Text is null)
+                                    else if (_investigationFloodReportSource.Status?.Text is null)
                                     {
                                         <GdsTag Text="Unknown" Colour="GdsTagColour.Grey" />
                                     }
                                     else
                                     {
-                                        <GdsTag Text="@_investigationFloodReport.Status.Text" Colour="GdsTagColour.Blue" />
+                                        <GdsTag Text="@_investigationFloodReportSource.Status.Text" Colour="GdsTagColour.Blue" />
                                     }
                                 </dd>
                             </div>

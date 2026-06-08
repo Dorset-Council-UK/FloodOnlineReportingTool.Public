@@ -23,7 +23,7 @@ This affects whether the record can be edited later or whether further informati
 
 ### Eligibility Check
 
-An **Eligibility Check** is the information captured when someone completes the online flood report form. It represents an assessment of whether a person may qualify for assistance related to flood damage.
+An **Eligibility Check** is the information captured when someone completes the online flood report source form. It represents an assessment of whether a person may qualify for assistance related to flood damage.
 
 It includes key details about the flood event, including whether vulnerable people are involved.
 
@@ -46,7 +46,7 @@ Contact details may be provided directly by the public or on behalf of someone e
 
 ### Report Owner
 
-The **Report Owner** is the main contact identified from a flood report's contact records, where the related `SubscribeRecord` is marked with `IsRecordOwner` within `FloodReport.ContactRecords`.
+The **Report Owner** is the main contact identified from a flood report sources contact records, where the related `SubscribeRecord` is marked with `IsRecordOwner` within `FloodReportSource.ContactRecords`.
 
 This identified contact represents the person with primary ownership of the submitted record. Depending on how the record was created, this may allow future access, updates, or requests for more information.
 

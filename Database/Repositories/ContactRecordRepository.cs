@@ -25,7 +25,7 @@ public class ContactRecordRepository(
             .IgnoreAutoIncludes()
             .Where(cr => cr.Id == contactRecordId)
             .OrderBy(cr => cr.Id)
-            .Include(cr => cr.FloodReports)
+            .Include(cr => cr.FloodReportSources)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -39,35 +39,34 @@ public class ContactRecordRepository(
             .IgnoreAutoIncludes()
             .Where(cr => cr.ContactUserId == userId)
             .OrderBy(cr => cr.Id)
-            .Include(cr => cr.FloodReports)
+            .Include(cr => cr.FloodReportSources)
             .FirstOrDefaultAsync(cancellationToken);
     }
     
 
-    public async Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct)
+    public async Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportSourceId, CancellationToken ct)
     {
-        logger.LogInformation("Getting contact records for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Getting contact records for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var floodReport = await context.FloodReports
-        .AsNoTracking()
-        .IgnoreAutoIncludes()
-        .Include(fr => fr.ContactRecords)
-            .ThenInclude(sr => sr.SubscribeRecords)
-        .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+        var floodReportSource = await context.FloodReportSources
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Include(frs => frs.ContactRecords)
+                .ThenInclude(cr => cr.SubscribeRecords)
+            .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId, ct);
 
-        var contactRecords = floodReport?.ContactRecords
-            .ToList();
+        var contactRecords = floodReportSource?.ContactRecords.ToList();
 
         return contactRecords ?? [];
     }
 
     public async Task<Result<ContactRecord>> Create(string? userId, CancellationToken cancellationToken)
     {
-        return await Create(userId, floodReportId: null, cancellationToken);
+        return await Create(userId, floodReportSourceId: null, cancellationToken);
     }
 
-    public async Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportId, CancellationToken cancellationToken)
+    public async Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportSourceId, CancellationToken cancellationToken)
     {
         if (userId is null)
         {
@@ -100,26 +99,26 @@ public class ContactRecordRepository(
             return Result<ContactRecord>.Failure(["Cannot create contact record for user, a record already exists"]);
         }
 
-        if (floodReportId.HasValue)
+        if (floodReportSourceId.HasValue)
         {
-            if (floodReportId.Value == Guid.Empty)
+            if (floodReportSourceId.Value == Guid.Empty)
             {
-                logger.LogInformation("Empty flood report ID provided for contact record");
+                logger.LogInformation("Empty flood report source ID provided for contact record");
                 return Result<ContactRecord>.Failure(["Cannot create contact record with empty flood report ID"]);
             }
 
-            FloodReport? floodReport = await context.FloodReports
+            FloodReportSource? floodReportSource = await context.FloodReportSources
                 .IgnoreAutoIncludes()
-                .FirstOrDefaultAsync(fr => fr.Id == floodReportId.Value, cancellationToken);
+                .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId.Value, cancellationToken);
 
-            if (floodReport is null)
+            if (floodReportSource is null)
             {
-                logger.LogInformation("Flood report {FloodReportId} not found for contact record", floodReportId);
-                return Result<ContactRecord>.Failure([$"Cannot create contact record, no flood report found for ID {floodReportId}"]);
+                logger.LogInformation("Flood report source {FloodReportSourceId} not found for contact record", floodReportSourceId);
+                return Result<ContactRecord>.Failure(["Cannot create contact record, no flood report found"]);
             }
 
-            logger.LogInformation("New contact record for flood report: {FloodReportId}", floodReportId);
-            contactRecord.FloodReports.Add(floodReport);
+            logger.LogInformation("New contact record for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
+            contactRecord.FloodReportSources.Add(floodReportSource);
         }
 
         context.ContactRecords.Add(contactRecord);
@@ -128,21 +127,27 @@ public class ContactRecordRepository(
         return Result<ContactRecord>.Success(contactRecord);
     }
 
-    public async Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct)
+    public async Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportSourceId, Guid contactRecordId, CancellationToken ct)
     {
-        logger.LogInformation("Linking contact record ID: {ContactRecordId} with record {FloodReportId}", contactRecordId, floodReportId);
+        logger.LogInformation("Linking contact record ID: {ContactRecordId} and flood report source ID: {FloodReportSourceId}", contactRecordId, floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         var contactRecord = await context.ContactRecords
             .FirstOrDefaultAsync(cr => cr.Id == contactRecordId, ct);
-
-        var floodReport = await context.FloodReports.FindAsync([floodReportId], ct);
-        if (floodReport == null || contactRecord == null)
+        if (contactRecord is null)
         {
-            return Result<ContactRecord>.Failure(["Record not found."]);
+            logger.LogInformation("Contact record not found for linking, ID: {ContactRecordId}", contactRecordId);
+            return Result<ContactRecord>.Failure(["Could not link contact record to flood report, the contact record was not found"]);
         }
 
-        contactRecord.FloodReports.Add(floodReport);
+        var floodReportSource = await context.FloodReportSources.FindAsync([floodReportSourceId], ct);
+        if (floodReportSource is null)
+        {
+            logger.LogInformation("Flood report source not found for linking, ID: {FloodReportSourceId}", floodReportSourceId);
+            return Result<ContactRecord>.Failure(["Could not link contact record to flood report, the flood report was not found"]);
+        }
+
+        contactRecord.FloodReportSources.Add(floodReportSource);
 
         await context.SaveChangesAsync(ct);
 
@@ -194,7 +199,7 @@ public class ContactRecordRepository(
             return DeleteResult<ContactRecord>.Failure([$"No contact record found for record type {contactType}"]);
         }
 
-        // Remove the contact record from the flood report
+        // Remove the contact record from the flood report source
         if (subscribeRecordToRemove.IsRecordOwner || contactRecord.SubscribeRecords.Count == 1)
         {
             // If this is the record owner or there is only one subscribe record, we can remove the whole contact record
@@ -215,16 +220,16 @@ public class ContactRecordRepository(
         return DeleteResult<ContactRecord>.Success();
     }
 
-    public async Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
+    public async Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportSourceId, CancellationToken ct)
     {
-        logger.LogInformation("Getting unused contact record types for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Getting unused contact record types for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var usedRecordTypes = await context.FloodReports
+        var usedRecordTypes = await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Where(f => f.Id == floodReportId)
-            .SelectMany(f => f.ContactRecords)
+            .Where(frs => frs.Id == floodReportSourceId)
+            .SelectMany(frs => frs.ContactRecords)
             .SelectMany(cr => cr.SubscribeRecords)
             .Select(sr => sr.ContactType)
             .ToListAsync(ct);
@@ -244,20 +249,20 @@ public class ContactRecordRepository(
         return await context.ContactRecords.CountAsync(cr => cr.ContactUserId == userId, cancellationToken);
     }
 
-    public async Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct)
+    public async Task<int> CountUnusedRecordTypes(Guid floodReportSourceId, CancellationToken ct)
     {
-        logger.LogInformation("Counting unused contact record types for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Counting unused contact record types for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
         // get how many contact record types are in the enum
         var allRecordTypes = Enum.GetValues<ContactRecordType>().Count(o => o != ContactRecordType.Unknown);
 
         // get how many unique contact record types are in the database
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var usedRecordTypes = await context.FloodReports
+        var usedRecordTypes = await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Where(f => f.Id == floodReportId)
-            .SelectMany(f => f.ContactRecords)
+            .Where(frs => frs.Id == floodReportSourceId)
+            .SelectMany(frs => frs.ContactRecords)
             .SelectMany(cr => cr.SubscribeRecords)
             .Select(sr => sr.ContactType)
             .Distinct()
@@ -273,7 +278,7 @@ public class ContactRecordRepository(
         return await context.ContactRecords
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .AnyAsync(o => o.Id == contactRecordId, cancellationToken);
+            .AnyAsync(cr => cr.Id == contactRecordId, cancellationToken);
     }
 
     public async Task<bool> Exists(string userId, CancellationToken cancellationToken)
@@ -285,13 +290,13 @@ public class ContactRecordRepository(
             .AnyAsync(cr => cr.ContactUserId == userId, cancellationToken);
     }
 
-    public async Task<bool> Exists(Guid floodReportId, ContactRecordType contactRecordType, CancellationToken cancellationToken)
+    public async Task<bool> Exists(Guid floodReportSourceId, ContactRecordType contactRecordType, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.ContactRecords
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Where(cr => cr.FloodReports.Any(fr => fr.Id == floodReportId) && cr.SubscribeRecords.Any(sr => sr.ContactType == contactRecordType))
+            .Where(cr => cr.FloodReportSources.Any(frs => frs.Id == floodReportSourceId) && cr.SubscribeRecords.Any(sr => sr.ContactType == contactRecordType))
             .AnyAsync(cancellationToken);
     }
 }

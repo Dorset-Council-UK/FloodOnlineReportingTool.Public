@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FloodOnlineReportingTool.Database.EntitiesConfiguration;
 
-internal class FloodReportConfiguration : IEntityTypeConfiguration<FloodReport>
+internal class FloodReportSourceConfiguration : IEntityTypeConfiguration<FloodReportSource>
 {
-    public void Configure(EntityTypeBuilder<FloodReport> builder)
+    public void Configure(EntityTypeBuilder<FloodReportSource> builder)
     {
         builder
-            .ToTable(o => o.HasComment("Flood report overviews"));
+            .ToTable(o => o.HasComment("Flood report sources"));
 
         builder
             .Property(o => o.Id)

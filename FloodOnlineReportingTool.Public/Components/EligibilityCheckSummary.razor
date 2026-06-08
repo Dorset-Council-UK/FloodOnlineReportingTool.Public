@@ -115,7 +115,7 @@
     </dl>
 }
 
-@if (ShowImpactStart || ShowIsOnGoing || ShowFloodingLasted || ShowVulnerablePeople || ShowSources || ShowSecondarySources)
+@if (ShowImpactStart || ShowIsOnGoing || ShowFloodingLasted || ShowVulnerablePeople || ShowCauses || ShowSecondaryCauses)
 {
     <h2 class="govuk-heading-l">Flood details</h2>
     <dl class="govuk-summary-list">
@@ -159,13 +159,13 @@
             </div>
         }
 
-        @if (ShowSources)
+        @if (ShowCauses)
         {
             <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Flood source</dt>
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Causes</dt>
                 <SummaryListValue>
                     <ul class="govuk-list">
-                        @foreach (var label in _sourceLabels)
+                        @foreach (var label in _causeLabels)
                         {
                             <li>@label</li>
                         }
@@ -174,13 +174,13 @@
             </div>
         }
 
-        @if (ShowSecondarySources)
+        @if (ShowSecondaryCauses)
         {
             <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Runoff source</dt>
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Secondary causes</dt>
                 <SummaryListValue>
                     <ul class="govuk-list">
-                        @foreach (var label in _secondarySourceLabels)
+                        @foreach (var label in _secondaryCauseLabels)
                         {
                             <li>@label</li>
                         }

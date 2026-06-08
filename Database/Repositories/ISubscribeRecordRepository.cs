@@ -46,10 +46,10 @@ public interface ISubscribeRecordRepository
     Task<SubscribeRecord?> Get(Guid contactRecordId, Guid subscribeRecordId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Get the report owner contact records associated with a flood report
+    /// Get the report owner subscribe records associated with a flood report source
     /// </summary>
     /// <returns></returns>
-    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportId, CancellationToken cancellationToken);
+    Task<SubscribeRecord?> GetReportOwnerContactByReport(Guid floodReportSourceId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates a contact subscription record
@@ -79,7 +79,7 @@ public interface ISubscribeRecordRepository
     Task<DeleteResult<SubscribeRecord>> Delete(Guid subscribeRecordId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Verifies a contact subscription record
+    /// Verifies a subscription record
     /// </summary>
     Task<bool> Verify(Guid subscribeRecordId, int verificationCode, CancellationToken cancellationToken);
 }

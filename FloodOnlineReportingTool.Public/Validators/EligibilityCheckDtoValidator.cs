@@ -109,16 +109,16 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
             .OverridePropertyName(nameof(EligibilityCheckDto.Residentials))
             .WithMessage("At least one of residential or commercial properties must be provided.");
 
-        // Sources / FloodProblem's
-        RuleFor(dto => dto.Sources)
+        // Causes / FloodProblem's
+        RuleFor(dto => dto.Causes)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.FloodSource);
+            .WithState(dto => FloodReportCreatePages.Cause);
 
-        // Secondary sources / FloodProblem's
-        RuleFor(dto => dto.SecondarySources)
+        // Secondary causes / FloodProblem's
+        RuleFor(dto => dto.SecondaryCauses)
             .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.FloodSecondarySource)
-            .When(dto => dto.Sources.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround));
+            .WithState(dto => FloodReportCreatePages.SecondaryCause)
+            .When(dto => dto.Causes.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround));
     }
 
     private bool IsCommercialOrOther(EligibilityCheckDto dto)

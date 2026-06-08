@@ -4,10 +4,14 @@ using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextFactory) : IInvestigationRepository
+public class InvestigationRepository(
+    ILogger<InvestigationRepository> logger,
+    IDbContextFactory<PublicDbContext> contextFactory
+) : IInvestigationRepository
 {
     public async Task<int> Count(CancellationToken cancellationToken)
     {
@@ -15,51 +19,54 @@ public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextF
         return await context.Investigations.CountAsync(cancellationToken);
     }
 
-    public async Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct)
+    public async Task<Investigation?> ReportedByUser(string userId, Guid investigationId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Select(o => o.Investigation)
-            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
+            .SelectMany(cr => cr.FloodReportSources)
+            .Select(frs => frs.Investigation)
+            .FirstOrDefaultAsync(i => i != null && i.Id == investigationId, ct);
     }
 
-    public async Task<Result<Investigation>> CreateForFloodReport(string userId, InvestigationDto investigationDto, CancellationToken ct)
+    public async Task<Result<Investigation>> CreateForFloodReportSource(string userId, InvestigationDto investigationDto, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        var floodReport = await context.FloodReports
+        var floodReportSource = await context.FloodReportSources
             .AsNoTracking()
-            .Where(cr => cr.Id == investigationDto.FloodReportId)
+            .Where(frs => frs.Id == investigationDto.FloodReportSourceId)
             .FirstOrDefaultAsync(ct);
 
-        if (floodReport == null)
+        if (floodReportSource == null)
         {
+            logger.LogInformation("No flood report source found for id {FloodReportSourceId}", investigationDto.FloodReportSourceId);
             return Result<Investigation>.Failure(["No flood report found"]);
         }
-        if (floodReport.InvestigationId != null)
+        if (floodReportSource.InvestigationId != null)
         {
+            logger.LogInformation("An investigation already exists for flood report source ID {FloodReportSourceId}", investigationDto.FloodReportSourceId);
             return Result<Investigation>.Failure(["An investigation already exists for this flood report"]);
         }
-        if (floodReport.StatusId != RecordStatusIds.ActionNeeded)
+        if (floodReportSource.StatusId != RecordStatusIds.ActionNeeded)
         {
+            logger.LogInformation("Flood report source ID {FloodReportSourceId} is not in the correct status for an investigation to be created. Status ID: {StatusId}", investigationDto.FloodReportSourceId, floodReportSource.StatusId);
             return Result<Investigation>.Failure(["There is not currently an ongoing investigation for this flood report"]);
         }
 
         var investigation = CreateBaseInvestigation(investigationDto)
-            .ApplyInternalFields(investigationDto, floodReport.EligibilityCheck?.IsInternal ?? false)
+            .ApplyInternalFields(investigationDto, floodReportSource.EligibilityCheck?.IsInternal ?? false)
             .ApplyPeakDepth(investigationDto)
             .ApplyFloodlineWarnings(investigationDto);
 
-        var updatedFloodReport = floodReport with
+        var updatedFloodReportSource = floodReportSource with
         {
             InvestigationId = investigation.Id,
             StatusId = RecordStatusIds.ActionCompleted,
         };
 
         context.Investigations.Add(investigation);
-        context.FloodReports.Update(updatedFloodReport);
+        context.FloodReportSources.Update(updatedFloodReportSource);
 
         // Publish a message to the message system
         // TODO: add save message to outbox pattern back in
@@ -68,6 +75,7 @@ public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextF
         // Save the investigation in the database
         await context.SaveChangesAsync(ct);
 
+        logger.LogInformation("Investigation with ID {InvestigationId} created for flood report source ID {FloodReportSourceId}", investigation.Id, investigationDto.FloodReportSourceId);
         return Result<Investigation>.Success(investigation);
     }
 
@@ -77,8 +85,8 @@ public class InvestigationRepository(IDbContextFactory<PublicDbContext> contextF
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Select(o => o.Investigation)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Select(frs => frs.Investigation)
             .FirstOrDefaultAsync(ct);
     }
 

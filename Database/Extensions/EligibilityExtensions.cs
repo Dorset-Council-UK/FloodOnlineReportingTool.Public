@@ -156,8 +156,8 @@ public static class EligibilityExtensions
                 VulnerableCount = eligibilityCheckDto.VulnerableCount,
                 Residentials = [.. eligibilityCheckDto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
                 Commercials = [.. eligibilityCheckDto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
-                Sources = [.. eligibilityCheckDto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
-                SecondarySources = [.. eligibilityCheckDto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))],
+                Causes = [.. eligibilityCheckDto.Causes.Select(floodProblemId => new EligibilityCheckCause(id, floodProblemId))],
+                SecondaryCauses = [.. eligibilityCheckDto.SecondaryCauses.Select(floodProblemId => new EligibilityCheckRunoffCause(id, floodProblemId))],
             };
         }
 
@@ -194,8 +194,8 @@ public static class EligibilityExtensions
                 VulnerableCount = eligibilityCheckDto.VulnerableCount,
                 Residentials = [.. eligibilityCheckDto.Residentials.Select(floodImpactId => new EligibilityCheckResidential(id, floodImpactId))],
                 Commercials = [.. eligibilityCheckDto.Commercials.Select(floodImpactId => new EligibilityCheckCommercial(id, floodImpactId))],
-                Sources = [.. eligibilityCheckDto.Sources.Select(floodProblemId => new EligibilityCheckSource(id, floodProblemId))],
-                SecondarySources = [.. eligibilityCheckDto.SecondarySources.Select(floodProblemId => new EligibilityCheckRunoffSource(id, floodProblemId))],
+                Causes = [.. eligibilityCheckDto.Causes.Select(floodProblemId => new EligibilityCheckCause(id, floodProblemId))],
+                SecondaryCauses = [.. eligibilityCheckDto.SecondaryCauses.Select(floodProblemId => new EligibilityCheckRunoffCause(id, floodProblemId))],
             };
         }
     }

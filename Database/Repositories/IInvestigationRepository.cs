@@ -11,15 +11,15 @@ public interface IInvestigationRepository
     Task<int> Count(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Get the investigation for the given user, going via the flood report
+    /// Get the investigation for the given user
     /// </summary>
-    Task<Investigation?> ReportedByUser(string userId, Guid id, CancellationToken ct);
+    Task<Investigation?> ReportedByUser(string userId, Guid investigationId, CancellationToken ct);
 
     /// <summary>
-    /// Create the investigation for the given user, going via the flood report
+    /// Create the investigation for the given user, going via the flood report source
     /// </summary>
     /// <returns>A result pattern with the created investigation, or a list of errors.</returns>
-    Task<Result<Investigation>> CreateForFloodReport(string userId, InvestigationDto dto, CancellationToken ct);
+    Task<Result<Investigation>> CreateForFloodReportSource(string userId, InvestigationDto dto, CancellationToken ct);
 
     /// <summary>
     /// Get basic investigation information for the given user. (no related records)

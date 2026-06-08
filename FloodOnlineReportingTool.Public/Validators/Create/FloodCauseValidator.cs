@@ -3,12 +3,12 @@ using FluentValidation;
 
 namespace FloodOnlineReportingTool.Public.Validators.Create;
 
-public class FloodSourceValidator : AbstractValidator<FloodSource>
+public class FloodCauseValidator : AbstractValidator<FloodCause>
 {
-    public FloodSourceValidator()
+    public FloodCauseValidator()
     {
-        RuleFor(o => o.FloodSourceOptions)
-            .Must(o => o.Any(x => x.Selected))
+        RuleFor(o => o.CauseOptions)
+            .Must(o => o.Any(item =>item.Selected))
             .WithMessage("Select where the flooding came from or select 'Not sure'");
     }
 }

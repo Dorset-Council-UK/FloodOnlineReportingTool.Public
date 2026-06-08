@@ -100,15 +100,15 @@ public partial class EligibilityCheckSummary(
     public bool ShowVulnerablePeople { get; set; } = true;
     private string? _vulnerablePeopleLabel;
 
-    // Sources
+    // Causes
     [Parameter]
-    public bool ShowSources { get; set; } = true;
-    private string[] _sourceLabels = [];
+    public bool ShowCauses { get; set; } = true;
+    private string[] _causeLabels = [];
 
-    // Secondary sources
+    // Secondary causes
     [Parameter]
-    public bool ShowSecondarySources { get; set; } = true;
-    private string[] _secondarySourceLabels = [];
+    public bool ShowSecondaryCauses { get; set; } = true;
+    private string[] _secondaryCauseLabels = [];
 
     private readonly CancellationTokenSource _cts = new();
 
@@ -144,8 +144,8 @@ public partial class EligibilityCheckSummary(
         GetIsOnGoing();
         GetFloodingLasted();
         GetVulnerablePeople();
-        GetSources();
-        GetSecondarySources();
+        GetCauses();
+        GetSecondaryCauses();
     }
 
     public async ValueTask DisposeAsync()
@@ -428,36 +428,36 @@ public partial class EligibilityCheckSummary(
         };
     }
 
-    private void GetSources()
+    private void GetCauses()
     {
-        if (!ShowSources
+        if (!ShowCauses
             || EligibilityCheckFloodProblems is null
             || EligibilityCheckFloodProblems.Count == 0)
         {
-            _sourceLabels = [];
+            _causeLabels = [];
             return;
         }
 
-        var sourceIds = Entity.Sources.Select(s => s.FloodProblemId).ToHashSet();
-        _sourceLabels = [.. EligibilityCheckFloodProblems
-            .Where(o => sourceIds.Contains(o.Id))
+        var causeIds = Entity.Causes.Select(s => s.FloodProblemId).ToHashSet();
+        _causeLabels = [.. EligibilityCheckFloodProblems
+            .Where(o => causeIds.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }
 
-    private void GetSecondarySources()
+    private void GetSecondaryCauses()
     {
-        if (!ShowSecondarySources
+        if (!ShowSecondaryCauses
             || EligibilityCheckFloodProblems is null
             || EligibilityCheckFloodProblems.Count == 0)
         {
-            _secondarySourceLabels = [];
+            _secondaryCauseLabels = [];
             return;
         }
 
-        var secondarySourceIds = Entity.SecondarySources.Select(s => s.FloodProblemId).ToHashSet();
-        _secondarySourceLabels = [.. EligibilityCheckFloodProblems
-            .Where(o => secondarySourceIds.Contains(o.Id))
+        var secondaryCauseIds = Entity.SecondaryCauses.Select(s => s.FloodProblemId).ToHashSet();
+        _secondaryCauseLabels = [.. EligibilityCheckFloodProblems
+            .Where(o => secondaryCauseIds.Contains(o.Id))
             .Select(o => o.TypeName ?? "Unknown"),
         ];
     }

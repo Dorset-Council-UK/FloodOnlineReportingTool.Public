@@ -1,5 +1,5 @@
-﻿@page "/floodreport/overview/details/{FloodReportId:guid?}"
-@page "/floodreport/overview/details/{FloodReportReference?}"
+﻿@page "/floodreport/overview/details/{FloodReportSourceId:guid?}"
+@page "/floodreport/overview/details/{FloodReportSourceReference?}"
 
 @using FloodOnlineReportingTool.Public.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -10,7 +10,7 @@
 
 <h1 class="govuk-heading-xl">@FloodReportPages.Details.Title</h1>
 
-@if (FloodReportId is null && string.IsNullOrWhiteSpace(FloodReportReference))
+@if (FloodReportSourceId is null && string.IsNullOrWhiteSpace(FloodReportSourceReference))
 {
     <GdsWarning Text="A flood report ID or reference is needed to view the details." />
 }
@@ -18,12 +18,12 @@ else
 {
     <AuthorizeView Policy="@PolicyNames.Admin">
         <Authorized>
-            <OverviewDetailsAdmin FloodReportId="@FloodReportId" FloodReportReference="@FloodReportReference" />
+            <OverviewDetailsAdmin FloodReportSourceId="@FloodReportSourceId" FloodReportSourceReference="@FloodReportSourceReference" />
         </Authorized>
         <NotAuthorized>
             <AuthorizeView Policy="@PolicyNames.Reader" Context="userContext">
                 <Authorized>
-                    <OverviewDetailsUser FloodReportId="@FloodReportId" FloodReportReference="@FloodReportReference" />
+                    <OverviewDetailsUser FloodReportSourceId="@FloodReportSourceId" FloodReportSourceReference="@FloodReportSourceReference" />
                 </Authorized>
                 <NotAuthorized>
                     <OverviewDetailsAnonymous />
@@ -35,8 +35,8 @@ else
 
 @code {
     [Parameter]
-    public Guid? FloodReportId { get; set; }
+    public Guid? FloodReportSourceId { get; set; }
 
     [Parameter]
-    public string? FloodReportReference { get; set; }
+    public string? FloodReportSourceReference { get; set; }
 }

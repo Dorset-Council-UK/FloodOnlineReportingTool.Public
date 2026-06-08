@@ -22,8 +22,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodImpacts
             .AsNoTracking()
-            .Where(o => o.Category == category)
-            .OrderBy(o => o.OptionOrder)
+            .Where(fi => fi.Category == category)
+            .OrderBy(fi => fi.OptionOrder)
             .ToListAsync(ct);
     }
 
@@ -32,8 +32,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodImpacts
             .AsNoTracking()
-            .Where(o => categories.Contains(o.Category))
-            .OrderBy(o => o.OptionOrder)
+            .Where(fi => categories.Contains(fi.Category))
+            .OrderBy(fi=> fi.OptionOrder)
             .ToListAsync(ct);
     }
 
@@ -48,7 +48,7 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Category == category && o.Id == id, ct);
+            .FirstOrDefaultAsync(fp => fp.Category == category && fp.Id == id, ct);
     }
 
     public async Task<IList<FloodProblem>> GetFloodProblemsByCategory(string category, CancellationToken ct)
@@ -56,8 +56,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
-            .Where(o => o.Category == category)
-            .OrderBy(o => o.OptionOrder)
+            .Where(fp => fp.Category == category)
+            .OrderBy(fp => fp.OptionOrder)
             .ToListAsync(ct);
     }
 
@@ -66,32 +66,32 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodProblems
             .AsNoTracking()
-            .Where(o => categories.Contains(o.Category))
-            .OrderBy(o => o.OptionOrder)
+            .Where(fp => categories.Contains(fp.Category))
+            .OrderBy(fp => fp.OptionOrder)
             .ToListAsync(ct);
     }
 
     public async Task<IList<FloodProblem>> FilterFloodProblemsByCategories(string[] categories, IList<FloodProblem> problemList, CancellationToken ct)
     {
         var filterHashSet = (await GetFloodProblemsByCategories(categories, ct))
-            .Select(f => f.Id)
+            .Select(fp => fp.Id)
             .ToHashSet();
         return [.. problemList.Where(p => filterHashSet.Contains(p.Id))];
     }
 
-    public async Task<IList<FloodProblem>> GetFullEligibilityFloodProblemSourceList(EligibilityCheck eligibilityCheck, CancellationToken ct)
+    public async Task<IList<FloodProblem>> GetFloodProblemsForCauses(EligibilityCheck eligibilityCheck, CancellationToken ct)
     {
-        IList<Guid> primarySources = [.. eligibilityCheck.Sources.Select(r => r.FloodProblemId)];
-        IList<Guid> secondarySources = [.. eligibilityCheck.SecondarySources.Select(r => r.FloodProblemId)];
+        IList<Guid> primaryCauses = [.. eligibilityCheck.Causes.Select(r => r.FloodProblemId)];
+        IList<Guid> secondaryCauses = [.. eligibilityCheck.SecondaryCauses.Select(r => r.FloodProblemId)];
 
-        var allSources = primarySources.Concat(secondarySources);
+        var allCauses = primaryCauses.Concat(secondaryCauses);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        IList<FloodProblem> fullFloodSource = await context.FloodProblems
-            .Where(f => allSources.Contains(f.Id))
+        IList<FloodProblem> floodProblems = await context.FloodProblems
+            .Where(fp => allCauses.Contains(fp.Id))
             .ToListAsync(ct);
 
-        return fullFloodSource;
+        return floodProblems;
     }
 
     public async Task<IList<FloodMitigation>> GetFloodMitigationsByCategory(string category, CancellationToken ct)
@@ -99,8 +99,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodMitigations
             .AsNoTracking()
-            .Where(o => o.Category == category)
-            .OrderBy(o => o.OptionOrder)
+            .Where(fm => fm.Category == category)
+            .OrderBy(fm => fm.OptionOrder)
             .ToListAsync(ct);
     }
 
@@ -109,8 +109,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.FloodMitigations
             .AsNoTracking()
-            .Where(o => categories.Contains(o.Category))
-            .OrderBy(o => o.OptionOrder)
+            .Where(fm => categories.Contains(fm.Category))
+            .OrderBy(fm => fm.OptionOrder)
             .ToListAsync(ct);
     }
 
@@ -125,8 +125,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.RecordStatuses
             .AsNoTracking()
-            .Where(o => o.Category == category)
-            .OrderBy(o => o.Order)
+            .Where(rs => rs.Category == category)
+            .OrderBy(rs => rs.Order)
             .ToListAsync(ct);
     }
 
@@ -135,8 +135,8 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.RecordStatuses
             .AsNoTracking()
-            .Where(o => categories.Contains(o.Category))
-            .OrderBy(o => o.Order)
+            .Where(rs => categories.Contains(rs.Category))
+            .OrderBy(rs => rs.Order)
             .ToListAsync(ct);
     }
 

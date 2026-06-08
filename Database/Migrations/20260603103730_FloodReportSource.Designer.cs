@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603103730_FloodReportSource")]
+    partial class FloodReportSource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,24 +189,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckCause", b =>
-                {
-                    b.Property<Guid>("EligibilityCheckId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FloodProblemId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("EligibilityCheckId", "FloodProblemId");
-
-                    b.HasIndex("FloodProblemId");
-
-                    b.ToTable("EligibilityCheckCauses", "fortpublic", t =>
-                        {
-                            t.HasComment("Relationships between eligibility checks and cause flood problems");
-                        });
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckCommercial", b =>
                 {
                     b.Property<Guid>("EligibilityCheckId")
@@ -240,7 +225,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckRunoffCause", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckRunoffSource", b =>
                 {
                     b.Property<Guid>("EligibilityCheckId")
                         .HasColumnType("uuid");
@@ -252,9 +237,27 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasIndex("FloodProblemId");
 
-                    b.ToTable("EligibilityCheckRunoffCause", "fortpublic", t =>
+                    b.ToTable("EligibilityCheckRunoffSource", "fortpublic", t =>
                         {
-                            t.HasComment("Relationships between eligibility checks and cause runoff flood problems");
+                            t.HasComment("Relationships between eligibility checks and source runoff flood problems");
+                        });
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckSource", b =>
+                {
+                    b.Property<Guid>("EligibilityCheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FloodProblemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("EligibilityCheckId", "FloodProblemId");
+
+                    b.HasIndex("FloodProblemId");
+
+                    b.ToTable("EligibilityCheckSources", "fortpublic", t =>
+                        {
+                            t.HasComment("Relationships between eligibility checks and source flood problems");
                         });
                 });
 
@@ -1616,34 +1619,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.MediaItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FloodReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("UploadDateUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FloodReportId");
-
-                    b.ToTable("MediaItems", "fortpublic", t =>
-                        {
-                            t.HasComment("Media items linked to flood reports");
-                        });
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Messaging.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2526,23 +2501,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("VulnerablePeople");
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckCause", b =>
-                {
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", null)
-                        .WithMany("Causes")
-                        .HasForeignKey("EligibilityCheckId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodProblem", "FloodProblem")
-                        .WithMany()
-                        .HasForeignKey("FloodProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FloodProblem");
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckCommercial", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", null)
@@ -2577,10 +2535,27 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodImpact");
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckRunoffCause", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckRunoffSource", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", null)
-                        .WithMany("SecondaryCauses")
+                        .WithMany("SecondarySources")
+                        .HasForeignKey("EligibilityCheckId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodProblem", "FloodProblem")
+                        .WithMany()
+                        .HasForeignKey("FloodProblemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FloodProblem");
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheckSource", b =>
+                {
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", null)
+                        .WithMany("Sources")
                         .HasForeignKey("EligibilityCheckId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2831,13 +2806,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodMitigation");
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.MediaItem", b =>
-                {
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", null)
-                        .WithMany("MediaItems")
-                        .HasForeignKey("FloodReportId");
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Responsibilities.FloodAuthorityFloodProblem", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodProblem", "FloodProblem")
@@ -2878,20 +2846,15 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Eligibility.EligibilityCheck", b =>
                 {
-                    b.Navigation("Causes");
-
                     b.Navigation("Commercials");
 
                     b.Navigation("FloodReportSource");
 
                     b.Navigation("Residentials");
 
-                    b.Navigation("SecondaryCauses");
-                });
+                    b.Navigation("SecondarySources");
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", b =>
-                {
-                    b.Navigation("MediaItems");
+                    b.Navigation("Sources");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.Investigation", b =>

@@ -22,6 +22,6 @@ public record EligibilityCheckDto
     public int? VulnerableCount { get; init; }
     public IList<Guid> Residentials { get; init; } = [];
     public IList<Guid> Commercials { get; init; } = [];
-    public IList<Guid> Sources { get; init; } = [];
-    public IList<Guid> SecondarySources { get; init; } = [];
+    public IList<Guid> Causes { get; init; } = [];
+    public IList<Guid> SecondaryCauses { get; init; } = [];
 }

@@ -22,5 +22,5 @@ public record ContactRecord
     // Navigation properties
     virtual public ICollection<SubscribeRecord> SubscribeRecords { get; init; } = [];
 
-    virtual public ICollection<FloodReport> FloodReports { get; init; } = [];
+    virtual public ICollection<FloodReportSource> FloodReportSources { get; init; } = [];
 }

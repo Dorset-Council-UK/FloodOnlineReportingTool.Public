@@ -17,9 +17,9 @@ public interface IContactRecordRepository
     Task<ContactRecord?> Get(string userId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Get all other contact records associated with a flood report
+    /// Get all other contact records associated with a flood report source
     /// </summary>
-    Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportId, CancellationToken ct);
+    Task<IReadOnlyCollection<ContactRecord>> GetContactsByReport(Guid floodReportSourceId, CancellationToken ct);
 
     /// <summary>
     /// Create a contact record. User ID is optional
@@ -29,20 +29,20 @@ public interface IContactRecordRepository
     Task<Result<ContactRecord>> Create(string? userId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Create a contact record. User ID and flood report ID are optional
+    /// Create a contact record. User ID and flood report source ID are optional
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
     /// <returns>A result pattern with the created contact record, or a list of errors.</returns>
-    Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportId, CancellationToken cancellationToken);
+    Task<Result<ContactRecord>> Create(string? userId, Guid? floodReportSourceId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Adds the provided flood report to an existing contact record
+    /// Adds the provided flood report source to an existing contact record
     /// </summary>
     /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
-    Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportId, Guid contactRecordId, CancellationToken ct);
+    Task<Result<ContactRecord>> LinkContactByReport(Guid floodReportSourceId, Guid contactRecordId, CancellationToken ct);
 
     /// <summary>
-    /// Update the contact record, going via the flood report
+    /// Update the contact record, going via the flood report source
     /// </summary>
     /// <remarks>This system is fully responsible for all contact communication. No notifications are sent out at this point.</remarks>
     /// <returns>A result pattern with the updated contact record, or a list of errors.</returns>
@@ -66,14 +66,14 @@ public interface IContactRecordRepository
     Task<int> Count(string userId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Count the number of unused contact record types, going via the flood report
+    /// Count the number of unused contact record types, going via the flood report source
     /// </summary>
-    Task<int> CountUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
+    Task<int> CountUnusedRecordTypes(Guid floodReportSourceId, CancellationToken ct);
 
     /// <summary>
-    /// Get the unused contact record types, going via the flood report
+    /// Get the unused contact record types, going via the flood report source
     /// </summary>
-    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportId, CancellationToken ct);
+    Task<IList<ContactRecordType>> GetUnusedRecordTypes(Guid floodReportSourceId, CancellationToken ct);
 
     /// <summary>
     /// Does the contact record exist using the ID
@@ -86,7 +86,7 @@ public interface IContactRecordRepository
     Task<bool> Exists(string userId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Does the contact record exist for the flood report and contact record type
+    /// Does the contact record exist for the flood report source and contact record type
     /// </summary>
-    Task<bool> Exists(Guid floodReportId, ContactRecordType contactRecordType, CancellationToken cancellationToken);
+    Task<bool> Exists(Guid floodReportSourceId, ContactRecordType contactRecordType, CancellationToken cancellationToken);
 }

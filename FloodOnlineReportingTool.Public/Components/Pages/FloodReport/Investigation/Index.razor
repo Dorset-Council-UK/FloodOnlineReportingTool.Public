@@ -1,4 +1,4 @@
-﻿@page "/floodreport/investigation/{FloodReportId:guid}"
+﻿@page "/floodreport/investigation/{FloodReportSourceId:guid}"
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
@@ -12,7 +12,7 @@
         <AccessDenied />
     </NotAuthorized>
     <Authorized>
-        @if (!_hasFloodReport)
+        @if (!_hasFloodReportSource)
         {
             <GdsWarning Text="We cannot find your flood report." />
         }

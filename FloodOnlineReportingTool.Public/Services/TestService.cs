@@ -46,11 +46,11 @@ internal sealed class TestService(
             FloodImpactIds.InsideBuilding,
             FloodImpactIds.CarPark,
         ],
-        Sources = [
+        Causes = [
             PrimaryCauseIds.River,
             PrimaryCauseIds.WaterRisingOutOfTheGround,
         ],
-        SecondarySources = [
+        SecondaryCauses = [
             SecondaryCauseIds.RunoffFromRoad,
             SecondaryCauseIds.RunoffFromTrackOrPath,
         ],
@@ -204,7 +204,7 @@ internal sealed class TestService(
         EmailAddress = "test@test.com",
     };
 
-    public async Task TestFloodReport_SetInvestigationHasStarted(Guid floodReportId, CancellationToken cancellationToken)
+    public async Task TestFloodReportSource_SetInvestigationHasStarted(Guid floodReportSourceId, CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
         {
@@ -212,15 +212,15 @@ internal sealed class TestService(
         }
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var floodReport = await context.FloodReports.FindAsync([floodReportId], cancellationToken);
-        if (floodReport is null)
+        var floodReportSource = await context.FloodReportSources.FindAsync([floodReportSourceId], cancellationToken);
+        if (floodReportSource is null)
         {
             return;
         }
 
-        if (floodReport.StatusId != RecordStatusIds.ActionNeeded)
+        if (floodReportSource.StatusId != RecordStatusIds.ActionNeeded)
         {
-            floodReport.StatusId = RecordStatusIds.ActionNeeded;
+            floodReportSource.StatusId = RecordStatusIds.ActionNeeded;
             await context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -297,7 +297,7 @@ internal sealed class TestService(
         return outboxMessage;
     }
 
-    public async Task<Guid?> GetRandomFloodReportWithSubscriber(CancellationToken cancellationToken)
+    public async Task<Guid?> GetRandomFloodReportSourceWithSubscriber(CancellationToken cancellationToken)
     {
         if (!environment.IsDevelopment())
         {
@@ -305,7 +305,7 @@ internal sealed class TestService(
         }
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var reportLibrary = await context.FloodReports
+        var reportLibrary = await context.FloodReportSources
             .Include(fr => fr.ContactRecords)
                 .ThenInclude(cr => cr.SubscribeRecords)
             .Where(fr => fr.ContactRecords.Any(cr => cr.SubscribeRecords.Count != 0))

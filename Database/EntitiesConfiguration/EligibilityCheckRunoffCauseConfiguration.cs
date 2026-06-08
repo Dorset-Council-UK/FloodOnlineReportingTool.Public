@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FloodOnlineReportingTool.Database.EntitiesConfiguration;
 
-internal class EligibilityCheckRunoffSourceConfiguration : IEntityTypeConfiguration<EligibilityCheckRunoffSource>
+internal class EligibilityCheckRunoffCauseConfiguration : IEntityTypeConfiguration<EligibilityCheckRunoffCause>
 {
-    public void Configure(EntityTypeBuilder<EligibilityCheckRunoffSource> builder)
+    public void Configure(EntityTypeBuilder<EligibilityCheckRunoffCause> builder)
     {
         builder
             .HasKey(o => new { o.EligibilityCheckId, o.FloodProblemId });
@@ -20,7 +20,7 @@ internal class EligibilityCheckRunoffSourceConfiguration : IEntityTypeConfigurat
             .ValueGeneratedNever();
 
         builder
-            .ToTable(o => o.HasComment("Relationships between eligibility checks and source runoff flood problems"));
+            .ToTable(o => o.HasComment("Relationships between eligibility checks and cause runoff flood problems"));
 
         // Auto includes
         builder

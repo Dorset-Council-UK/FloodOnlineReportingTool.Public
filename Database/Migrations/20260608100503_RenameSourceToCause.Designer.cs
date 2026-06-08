@@ -3,6 +3,7 @@ using System;
 using FloodOnlineReportingTool.Database.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloodOnlineReportingTool.Database.Migrations
 {
     [DbContext(typeof(PublicDbContext))]
-    partial class PublicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608100503_RenameSourceToCause")]
+    partial class RenameSourceToCause
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1616,34 +1619,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.MediaItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FloodReportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("UploadDateUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FloodReportId");
-
-                    b.ToTable("MediaItems", "fortpublic", t =>
-                        {
-                            t.HasComment("Media items linked to flood reports");
-                        });
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Messaging.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2831,13 +2806,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("FloodMitigation");
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.MediaItem", b =>
-                {
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", null)
-                        .WithMany("MediaItems")
-                        .HasForeignKey("FloodReportId");
-                });
-
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Responsibilities.FloodAuthorityFloodProblem", b =>
                 {
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodProblem", "FloodProblem")
@@ -2887,11 +2855,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("Residentials");
 
                     b.Navigation("SecondaryCauses");
-                });
-
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", b =>
-                {
-                    b.Navigation("MediaItems");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.Investigation", b =>

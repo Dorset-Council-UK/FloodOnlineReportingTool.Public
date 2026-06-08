@@ -14,12 +14,12 @@ using System.Text.Json;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class FloodReportRepository(
-    ILogger<FloodReportRepository> logger,
+public class FloodReportSourceRepository(
+    ILogger<FloodReportSourceRepository> logger,
     ICommonRepository commonRepository,
     IOptions<GISOptions> options,
     IDbContextFactory<PublicDbContext> contextFactory
-) : IFloodReportRepository
+) : IFloodReportSourceRepository
 {
     private readonly GISOptions _gisOptions = options.Value;
     private readonly JsonSerializerOptions _jsonOptions = JsonSerializerOptions.Web;
@@ -27,18 +27,18 @@ public class FloodReportRepository(
     public async Task<int> Count(CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.FloodReports.CountAsync(cancellationToken);
+        return await context.FloodReportSources.CountAsync(cancellationToken);
     }
 
     public async Task<int> Count(string userId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await context.FloodReports
-            .Where(fr => fr.ContactRecords.Any(cr => cr.ContactUserId == userId))
+        return await context.FloodReportSources
+            .Where(frs => frs.ContactRecords.Any(cr => cr.ContactUserId == userId))
             .CountAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<FloodReport>> ReportedByUser(string userId, CancellationToken ct)
+    public async Task<IReadOnlyCollection<FloodReportSource>> ReportedByUser(string userId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -47,16 +47,16 @@ public class FloodReportRepository(
             .AsNoTracking()
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Include(fr => fr.ContactRecords)
-            .Include(fr => fr.EligibilityCheck)
-            .Include(fr => fr.Investigation)
-            .Include(fr => fr.Status)
-            .OrderByDescending(fr => fr.CreatedUtc)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.EligibilityCheck)
+            .Include(frs => frs.Investigation)
+            .Include(frs => frs.Status)
+            .OrderByDescending(frs => frs.CreatedUtc)
             .ToListAsync(ct);
     }
 
-    public async Task<FloodReport?> ReportedByUser(string userId, Guid floodReportId, CancellationToken ct)
+    public async Task<FloodReportSource?> ReportedByUser(string userId, Guid floodReportSourceId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -65,16 +65,16 @@ public class FloodReportRepository(
             .AsNoTracking()
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Where(fr => fr.Id == floodReportId)
-            .Include(fr => fr.ContactRecords)
-            .Include(fr => fr.EligibilityCheck)
-            .Include(fr => fr.Investigation)
-            .Include(fr => fr.Status)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Where(frs => frs.Id == floodReportSourceId)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.EligibilityCheck)
+            .Include(frs => frs.Investigation)
+            .Include(frs => frs.Status)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<FloodReport?> ReportedByUser(string userId, string reference, CancellationToken ct)
+    public async Task<FloodReportSource?> ReportedByUser(string userId, string reference, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -83,30 +83,31 @@ public class FloodReportRepository(
             .AsNoTracking()
             .AsSplitQuery()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Where(fr => fr.Reference == reference)
-            .Include(fr => fr.ContactRecords)
-            .Include(fr => fr.EligibilityCheck)
-            .Include(fr => fr.Investigation)
-            .Include(fr => fr.Status)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Where(frs => frs.Reference == reference)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.EligibilityCheck)
+            .Include(frs => frs.Investigation)
+            .Include(frs => frs.Status)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<Result<FloodReport>> EnableContactSubscriptionsForReport(Guid floodReportId, CancellationToken ct)
+    public async Task<Result<FloodReportSource>> EnableContactSubscriptionsForReport(Guid floodReportSourceId, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var floodReport = await context.FloodReports
-            .Include(fr => fr.ContactRecords)
+        var floodReportSource = await context.FloodReportSources
+            .Include(frs => frs.ContactRecords)
                 .ThenInclude(cr => cr.SubscribeRecords)
-            .Include(fr => fr.EligibilityCheck)
-            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, ct);
+            .Include(frs => frs.EligibilityCheck)
+            .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId, ct);
 
-        if (floodReport == null)
+        if (floodReportSource == null)
         {
-            return Result<FloodReport>.Failure([$"Flood report with id {floodReportId} not found."]);
+            logger.LogInformation("Flood report source with ID {FloodReportSourceId} not found", floodReportSourceId);
+            return Result<FloodReportSource>.Failure(["Flood report not found."]);
         }
-        foreach(var contactRecord in floodReport.ContactRecords)
+        foreach(var contactRecord in floodReportSource.ContactRecords)
         {
             foreach (var subscriptionRecord in contactRecord.SubscribeRecords)
             {
@@ -115,7 +116,7 @@ public class FloodReportRepository(
         }
 
         await context.SaveChangesAsync(ct);
-        return Result<FloodReport>.Success(floodReport);
+        return Result<FloodReportSource>.Success(floodReportSource);
     }
 
     private async Task<string> CreateReference(CancellationToken ct)
@@ -133,7 +134,7 @@ public class FloodReportRepository(
         }
         if(!reportWithReferenceExists)
         {
-            logger.LogInformation("Creating a new flood report reference number {Reference}.", reference);
+            logger.LogInformation("Creating a new flood report source reference number {Reference}.", reference);
             return reference;
         }
 
@@ -141,99 +142,99 @@ public class FloodReportRepository(
         throw new Exception("Could not generate a unique reference");
     }
 
-    public async Task<IReadOnlyCollection<FloodReport>> GetAllOverview(CancellationToken ct)
+    public async Task<IReadOnlyCollection<FloodReportSource>> GetAllOverview(CancellationToken ct)
     {
-        logger.LogInformation("Getting all flood reports, with simple overview information.");
+        logger.LogInformation("Getting all flood report sources, with simple overview information.");
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        return await context.FloodReports
+        return await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Include(o => o.Status)
-            .Include(o => o.EligibilityCheck)
-            .OrderByDescending(o => o.CreatedUtc)
+            .Include(frs => frs.Status)
+            .Include(frs => frs.EligibilityCheck)
+            .OrderByDescending(frs => frs.CreatedUtc)
             .ToListAsync(ct);
     }
 
-    public async Task<FloodReport?> GetById(Guid reference, CancellationToken ct)
+    public async Task<FloodReportSource?> GetById(Guid floodReportSourceId, CancellationToken ct)
     {
-        logger.LogInformation("Getting flood report by id {Reference}.", reference);
+        logger.LogInformation("Getting flood report source by ID: {FloodReportSourceId}.", floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         // Include all related tables
-        return await context.FloodReports
+        return await context.FloodReportSources
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(o => o.EligibilityCheck)
+            .Include(frs => frs.EligibilityCheck)
                 .ThenInclude(ec => ec.Residentials)
-            .Include(o => o.EligibilityCheck)
+            .Include(frs => frs.EligibilityCheck)
                 .ThenInclude(ec => ec.Commercials)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.Sources)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.SecondarySources)
-            .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
-            .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.Id == reference, ct);
+            .Include(frs => frs.EligibilityCheck)
+                .ThenInclude(ec => ec.Causes)
+            .Include(frs => frs.EligibilityCheck)
+                .ThenInclude(ec => ec.SecondaryCauses)
+            .Include(frs => frs.Investigation)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.Status)
+            .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId, ct);
     }
 
-    public async Task<FloodReport?> GetByReference(string reference, CancellationToken ct)
+    public async Task<FloodReportSource?> GetByReference(string reference, CancellationToken ct)
     {
-        logger.LogInformation("Getting flood report by reference number {Reference}.", reference);
+        logger.LogInformation("Getting flood report source by reference number {Reference}.", reference);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         // Include all related tables
-        return await context.FloodReports
+        return await context.FloodReportSources
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(o => o.EligibilityCheck)
+            .Include(frs => frs.EligibilityCheck)
                 .ThenInclude(ec => ec.Residentials)
-            .Include(o => o.EligibilityCheck)
+            .Include(frs => frs.EligibilityCheck)
                 .ThenInclude(ec => ec.Commercials)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.Sources)
-            .Include(o => o.EligibilityCheck)
-                .ThenInclude(ec => ec.SecondarySources)
-            .Include(o => o.Investigation)
-            .Include(o => o.ContactRecords)
-            .Include(o => o.Status)
-            .FirstOrDefaultAsync(o => o.Reference == reference, ct);
+            .Include(frs => frs.EligibilityCheck)
+                .ThenInclude(ec => ec.Causes)
+            .Include(frs => frs.EligibilityCheck)
+                .ThenInclude(ec => ec.SecondaryCauses)
+            .Include(frs => frs.Investigation)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.Status)
+            .FirstOrDefaultAsync(frs => frs.Reference == reference, ct);
     }
 
     public async Task<bool> ReportWithReferenceExists(string reference, CancellationToken ct)
     {
-        logger.LogInformation("Checking existence of flood report with reference number {Reference}.", reference);
+        logger.LogInformation("Checking existence of flood report source with reference: {Reference}.", reference);
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.FloodReports.AnyAsync(o => o.Reference == reference, ct);
+        return await context.FloodReportSources.AnyAsync(frs => frs.Reference == reference, ct);
     }
 
-    public async Task<(bool hasFloodReport, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid FloodReportId, CancellationToken ct)
+    public async Task<(bool hasFloodReportSource, bool hasInvestigation, bool hasInvestigationStarted, DateTimeOffset? investigationCreatedUtc)> InvestigationBasicInformation(Guid floodReportSourceId, CancellationToken ct)
     {
-        logger.LogInformation("Getting flood report details by id.");
+        logger.LogInformation("Getting flood report source details by ID: {FloodReportSourceId}", floodReportSourceId);
 
         // In simple terms only 2 fields are needed, StatusId and Investigation.CreatedUtc
         // Calling the standard ReportedByUser method is not efficient as it loads all related tables
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var result = await context.FloodReports
+        var result = await context.FloodReportSources
             .AsNoTracking()
-            .Where(cr => cr.Id == FloodReportId)
-            .Include(cr => cr.Investigation)
-            .Select(o => new
+            .Where(frs => frs.Id == floodReportSourceId)
+            .Include(frs => frs.Investigation)
+            .Select(frs => new
             {
-                o.StatusId,
-                o.Investigation,
+                frs.StatusId,
+                frs.Investigation,
             })
             .FirstOrDefaultAsync(ct);
 
         if (result == null)
         {
-            logger.LogWarning("No flood report found for user.");
+            logger.LogWarning("No flood report source found for user.");
             return (false, false, false, null);
         }
 
@@ -247,9 +248,9 @@ public class FloodReportRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<Result<FloodReport>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReportSource>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
-        logger.LogInformation("Creating a new flood report with eligibility check.");
+        logger.LogInformation("Creating a new flood report source with eligibility check.");
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
@@ -258,8 +259,8 @@ public class FloodReportRepository(
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
         EligibilityCheck eligibilityCheck = dto.ToCreatedEntity(Guid.CreateVersion7(), createdUtc: now, termsAgreed: now, impactDuration);
 
-        // Create flood report
-        var floodReport = new FloodReport
+        // Create flood report source
+        var floodReportSource = new FloodReportSource
         {
             Reference = await CreateReference(ct),
             CreatedUtc = now,
@@ -270,18 +271,18 @@ public class FloodReportRepository(
 
         // Create a message
         FloodReportSourceCreated message = new(
-            floodReport.Id,
+            floodReportSource.Id,
             Buffer: 25,
-            floodReport.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
-            floodReport.CreatedUtc,
+            floodReportSource.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
+            floodReportSource.CreatedUtc,
             eligibilityCheck.ToEligibilityCheckRecord(
                 await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
-                await commonRepository.GetFullEligibilityFloodProblemSourceList(eligibilityCheck, ct)
+                await commonRepository.GetFloodProblemsForCauses(eligibilityCheck, ct)
             ),
-            floodReport.Investigation is not null,
-            floodReport.ContactRecords.Count > 0,
-            [.. floodReport.ContactRecords
+            floodReportSource.Investigation is not null,
+            floodReportSource.ContactRecords.Count > 0,
+            [.. floodReportSource.ContactRecords
                 .SelectMany(c => c.SubscribeRecords)
                 .Select(s => s.ContactType)
                 .Distinct(),
@@ -297,50 +298,50 @@ public class FloodReportRepository(
         try
         {
             // Save all changes
-            context.FloodReports.Add(floodReport);
+            context.FloodReportSources.Add(floodReportSource);
             context.OutboxMessages.Add(outboxMessage);
             await context.SaveChangesAsync(ct);
 
-            return Result<FloodReport>.Success(floodReport);
+            return Result<FloodReportSource>.Success(floodReportSource);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error creating flood report with eligibility check.");
-            return Result<FloodReport>.Failure(["Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug."]);
+            logger.LogError(ex, "Error creating flood report source with eligibility check.");
+            return Result<FloodReportSource>.Failure(["Sorry there was a problem saving your flood report. Please try again but if this issue happens again then please report a bug."]);
         }
     }
 
-    public async Task<Result<FloodReport?>> Update(Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReportSource?>> Update(Guid eligibilityCheckId, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        // Find the flood report
-        var floodReport = await context.FloodReports
+        // Find the flood report source
+        var floodReportSource = await context.FloodReportSources
             .AsNoTracking()
-            .Include(fr => fr.EligibilityCheck)
-            .FirstOrDefaultAsync(fr => fr.EligibilityCheck != null && fr.EligibilityCheck.Id == id, ct);
+            .Include(frs => frs.EligibilityCheck)
+            .FirstOrDefaultAsync(frs => frs.EligibilityCheck != null && frs.EligibilityCheck.Id == eligibilityCheckId, ct);
 
-        if (floodReport is null)
+        if (floodReportSource is null)
         {
-            logger.LogWarning("No flood report found for eligibility check id {Id}", id);
-            return Result<FloodReport?>.Failure([$"No flood report found for eligibility check id {id}."]);
+            logger.LogWarning("No flood report source found for eligibility check id {EligibilityCheckId}", eligibilityCheckId);
+            return Result<FloodReportSource?>.Failure([$"No flood report found for eligibility check id {eligibilityCheckId}."]);
         }
-        if (floodReport.EligibilityCheck is null)
+        if (floodReportSource.EligibilityCheck is null)
         {
-            logger.LogWarning("No eligibility check found for id {Id}", id);
-            return Result<FloodReport?>.Failure([$"Eligibility check with id {id} not found."]);
+            logger.LogWarning("No eligibility check found for id {EligibilityCheckId}", eligibilityCheckId);
+            return Result<FloodReportSource?>.Failure([$"Eligibility check with id {eligibilityCheckId} not found."]);
         }
 
         // Update the eligibility check
         var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReport.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReport.Id,
-            floodReport.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            floodReportSource.Id,
+            floodReportSource.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
             updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
@@ -358,43 +359,43 @@ public class FloodReportRepository(
         context.OutboxMessages.Add(outboxMessage);
         await context.SaveChangesAsync(ct);
 
-        logger.LogInformation("Updated flood report with eligibility check id {Id}", id);
-        return Result<FloodReport?>.Success(floodReport);
+        logger.LogInformation("Updated flood report source with eligibility check ID: {EligibilityCheckId}", eligibilityCheckId);
+        return Result<FloodReportSource?>.Success(floodReportSource);
     }
 
-    public async Task<Result<FloodReport?>> Update(string userId, Guid id, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReportSource?>> Update(string userId, Guid eligibilityCheckId, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        // Find the users flood report
-        var floodReport = await context.ContactRecords
+        // Find the users flood report source
+        var floodReportSource = await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Include(fr => fr.EligibilityCheck)
-            .FirstOrDefaultAsync(fr => fr.EligibilityCheck != null && fr.EligibilityCheck.Id == id, ct);
+            .SelectMany(cr => cr.FloodReportSources)
+            .Include(frs => frs.EligibilityCheck)
+            .FirstOrDefaultAsync(frs => frs.EligibilityCheck != null && frs.EligibilityCheck.Id == eligibilityCheckId, ct);
 
-        if (floodReport is null)
+        if (floodReportSource is null)
         {
-            logger.LogWarning("No flood report found for user and eligibility check id {Id}", id);
-            return Result<FloodReport?>.Failure([$"No flood report found for eligibility check id {id}."]);
+            logger.LogWarning("No flood report source found for user and eligibility check id {EligibilityCheckId}", eligibilityCheckId);
+            return Result<FloodReportSource?>.Failure([$"No flood report found for eligibility check id {eligibilityCheckId}."]);
         }
-        if (floodReport.EligibilityCheck is null)
+        if (floodReportSource.EligibilityCheck is null)
         {
-            logger.LogWarning("No eligibility check found for user and id {Id}", id);
-            return Result<FloodReport?>.Failure([$"Eligibility check with id {id} not found."]);
+            logger.LogWarning("No eligibility check found for user and id {EligibilityCheckId}", eligibilityCheckId);
+            return Result<FloodReportSource?>.Failure([$"Eligibility check with id {eligibilityCheckId} not found."]);
         }
 
         // Update the users eligibility check
         var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReport.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReport.Id,
-            floodReport.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReport.Reference)}"),
+            floodReportSource.Id,
+            floodReportSource.Reference,
+            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
             updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
@@ -412,44 +413,44 @@ public class FloodReportRepository(
         context.OutboxMessages.Add(outboxMessage);
         await context.SaveChangesAsync(ct);
 
-        logger.LogInformation("Updated users flood report with eligibility check id {Id}", id);
-        return Result<FloodReport?>.Success(floodReport);
+        logger.LogInformation("Updated users flood report source with eligibility check id {EligibilityCheckId}", eligibilityCheckId);
+        return Result<FloodReportSource?>.Success(floodReportSource);
     }
 
     public async Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct)
     {
-        logger.LogInformation("Calculating eligibility for flood report reference {Reference}", reference);
+        logger.LogInformation("Calculating eligibility for flood report source reference {Reference}", reference);
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var floodReport = await context.FloodReports
+        var floodReportSource = await context.FloodReportSources
             .AsNoTracking()
-            .Include(o => o.ContactRecords)
-            .Include(o => o.EligibilityCheck)
-            .Where(o => o.Reference == reference)
+            .Include(frs => frs.ContactRecords)
+            .Include(frs => frs.EligibilityCheck)
+            .Where(frs => frs.Reference == reference)
             .FirstOrDefaultAsync(ct);
 
-        if (floodReport is null)
+        if (floodReportSource is null)
         {
-            logger.LogWarning("No flood report found for reference {Reference}", reference);
+            logger.LogWarning("No flood report source found for reference {Reference}", reference);
             throw new InvalidOperationException($"No flood report found for reference {reference}");
         }
 
-        if (floodReport.EligibilityCheck is null)
+        if (floodReportSource.EligibilityCheck is null)
         {
-            logger.LogWarning("No eligibility check found for flood report reference {Reference}", reference);
+            logger.LogWarning("No eligibility check found for flood report source reference {Reference}", reference);
             throw new InvalidOperationException($"No eligibility check found for flood report reference {reference}");
         }
 
         var responsibleOrganisations = await commonRepository
-                .GetResponsibleOrganisations(floodReport.EligibilityCheck.Easting, floodReport.EligibilityCheck.Northing, ct);
+                .GetResponsibleOrganisations(floodReportSource.EligibilityCheck.Easting, floodReportSource.EligibilityCheck.Northing, ct);
 
         return new EligibilityResult
         {
-            HasContactInformation = floodReport.ContactRecords.Count > 0,
-            FloodInvestigation = floodReport.EligibilityCheck.IsInternal ? EligibilityOptions.Conditional : EligibilityOptions.None,
+            HasContactInformation = floodReportSource.ContactRecords.Count > 0,
+            FloodInvestigation = floodReportSource.EligibilityCheck.IsInternal ? EligibilityOptions.Conditional : EligibilityOptions.None,
             ResponsibleOrganisations = responsibleOrganisations,
-            FloodReportId = floodReport.Id,
+            FloodReportSourceId = floodReportSource.Id,
 
             // These don't have any logic yet
             IsEmergencyResponse = false,

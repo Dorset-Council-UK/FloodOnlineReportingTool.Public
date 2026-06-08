@@ -22,9 +22,9 @@ internal class EligibilityCheckConfiguration : IEntityTypeConfiguration<Eligibil
             .HasDefaultValue(RecordStatusIds.NotSure);
 
         builder
-            .HasOne(e => e.FloodReport)
+            .HasOne(e => e.FloodReportSource)
             .WithOne(f => f.EligibilityCheck)
-            .HasForeignKey<FloodReport>(f => f.EligibilityCheckId)
+            .HasForeignKey<FloodReportSource>(f => f.EligibilityCheckId)
             .IsRequired(false);
 
         // Auto includes
@@ -37,11 +37,11 @@ internal class EligibilityCheckConfiguration : IEntityTypeConfiguration<Eligibil
             .AutoInclude();
 
         builder
-            .Navigation(o => o.Sources)
+            .Navigation(o => o.Causes)
             .AutoInclude();
 
         builder
-            .Navigation(o => o.SecondarySources)
+            .Navigation(o => o.SecondaryCauses)
             .AutoInclude();
 
         builder
