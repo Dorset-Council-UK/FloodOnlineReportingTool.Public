@@ -101,7 +101,7 @@ public partial class Index(
     {
         if (firstRender)
         {
-            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportId();
+            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportSourceId();
             await LoadExistingMediaItems();
 
             _isLoading = false;

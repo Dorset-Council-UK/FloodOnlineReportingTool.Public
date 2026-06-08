@@ -17,7 +17,7 @@ public class MediaItemRepository(
         logger.LogInformation("Getting media items for flood report ID: {FloodReportId}", floodReportId);
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var floodReport = await context.FloodReports
+        var floodReport = await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
             .Include(fr => fr.MediaItems)
@@ -47,7 +47,7 @@ public class MediaItemRepository(
         }
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        FloodReport? floodReport = await context.FloodReports
+        FloodReportSource? floodReport = await context.FloodReportSources
             .Include(fr => fr.MediaItems)
             .FirstOrDefaultAsync(fr => fr.Id == floodReportId, cancellationToken);
 
