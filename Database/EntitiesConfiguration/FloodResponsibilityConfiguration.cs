@@ -21,7 +21,7 @@ internal class FloodResponsibilityConfiguration : IEntityTypeConfiguration<Flood
             .ValueGeneratedNever();
 
         builder
-            .ToTable(o => o.HasComment("Areas responsible for handling flood reports/eligibility checks."));
+            .ToTable(o => o.HasComment("Areas responsible for handling flood report sources/eligibility checks."));
 
         builder
             .HasData(InitialData.FloodResponsibilityData());

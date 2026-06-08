@@ -53,7 +53,7 @@ Please follow these best practices for commit messages:
 - Use separate commits for logically distinct changes.
 
 Examples: 
-`Add initial flood report form`
+`Add initial flood report source form`
 `Fix null reference error in report handler`
 
 ### Be possible to merge automatically

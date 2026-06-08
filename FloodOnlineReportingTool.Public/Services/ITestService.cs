@@ -13,7 +13,7 @@ public interface ITestService
     InvestigationDto TestData_InvestigationDto { get; }
     SubscribeRecordDto TestData_SubscribeRecordDto { get; }
 
-    Task TestFloodReport_SetInvestigationHasStarted(Guid floodReportId, CancellationToken cancellationToken);
+    Task TestFloodReportSource_SetInvestigationHasStarted(Guid floodReportSourceId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Create a test outbox FloodReportSourceCreated message with the given message status
@@ -30,5 +30,5 @@ public interface ITestService
     /// <summary>
     /// This function is for use in integration tests only.
     /// </summary>
-    Task<Guid?> GetRandomFloodReportWithSubscriber(CancellationToken cancellationToken);
+    Task<Guid?> GetRandomFloodReportSourceWithSubscriber(CancellationToken cancellationToken);
 }

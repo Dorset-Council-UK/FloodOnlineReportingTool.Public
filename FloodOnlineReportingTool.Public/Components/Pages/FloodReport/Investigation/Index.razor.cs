@@ -7,14 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
 [Authorize]
 public partial class Index(
     ProtectedSessionStorage protectedSessionStorage,
-    IFloodReportRepository floodReportRepository
+    IFloodReportSourceRepository floodReportSourceRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -25,13 +24,13 @@ public partial class Index(
     ];
 
     [Parameter]
-    public Guid FloodReportId { get; set; }
+    public Guid FloodReportSourceId { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     private readonly CancellationTokenSource _cts = new();
-    private bool _hasFloodReport;
+    private bool _hasFloodReportSource;
     private bool _hasInvestigation;
     private bool _hasInvestigationStarted;
     private DateTimeOffset? _investigationCreatedUtc;
@@ -52,19 +51,19 @@ public partial class Index(
 
     protected override async Task OnInitializedAsync()
     {
-        (_hasFloodReport, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportRepository.InvestigationBasicInformation(FloodReportId, _cts.Token);
+        (_hasFloodReportSource, _hasInvestigation, _hasInvestigationStarted, _investigationCreatedUtc) = await floodReportSourceRepository.InvestigationBasicInformation(FloodReportSourceId, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (_hasInvestigationStarted == false)
+            if (!_hasInvestigationStarted)
             {
                 //We start it here
                 InvestigationDto investigation = new InvestigationDto() with
                 {
-                    FloodReportId = FloodReportId
+                    FloodReportSourceId = FloodReportSourceId,
                 };
                 await protectedSessionStorage.SetAsync(SessionConstants.Investigation, investigation);
             }

@@ -1,4 +1,5 @@
 ﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Overview;
 
 public partial class OverviewDetailsAdmin(
-    IFloodReportRepository floodReportRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     IAuthorizationService authorizationService,
     NavigationManager navigationManager
 ) : IAsyncDisposable
@@ -19,13 +20,13 @@ public partial class OverviewDetailsAdmin(
     public Task<AuthenticationState>? AuthenticationState { get; set; }
 
     [Parameter]
-    public Guid? FloodReportId { get; set; }
+    public Guid? FloodReportSourceId { get; set; }
 
     [Parameter]
-    public string? FloodReportReference { get; set; }
+    public string? FloodReportSourceReference { get; set; }
 
     private readonly CancellationTokenSource _cts = new();
-    private Database.Models.Flood.FloodReport? _floodReport;
+    private FloodReportSource? _floodReportSource;
     private EligibilityResult? _eligibilityResult;
     private bool _usersAccessHasExpired = true;
     private TimeSpan? _usersAccessTimeLeft;
@@ -61,27 +62,27 @@ public partial class OverviewDetailsAdmin(
 
                 if (hasAdminPolicy)
                 {
-                    if (FloodReportId is not null)
+                    if (FloodReportSourceId is not null)
                     {
-                        // Can we get the flood report by ID
-                        _floodReport = await floodReportRepository.GetById(FloodReportId.Value, _cts.Token);
+                        // Can we get the flood report source by ID
+                        _floodReportSource = await floodReportSourceRepository.GetById(FloodReportSourceId.Value, _cts.Token);
                     }
-                    else if (!string.IsNullOrWhiteSpace(FloodReportReference))
+                    else if (!string.IsNullOrWhiteSpace(FloodReportSourceReference))
                     {
-                        // Can we get the flood report by reference
-                        _floodReport = await floodReportRepository.GetByReference(FloodReportReference, _cts.Token);
+                        // Can we get the flood report source by reference
+                        _floodReportSource = await floodReportSourceRepository.GetByReference(FloodReportSourceReference, _cts.Token);
                     }
 
-                    if (_floodReport is not null)
+                    if (_floodReportSource is not null)
                     {
                         // Check if the users access has expired
-                        if (_floodReport.ReportOwnerAccessUntil is not null)
+                        if (_floodReportSource.ReportOwnerAccessUntil is not null)
                         {
-                            _usersAccessTimeLeft = _floodReport.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
+                            _usersAccessTimeLeft = _floodReportSource.ReportOwnerAccessUntil.Value - DateTimeOffset.UtcNow;
                             _usersAccessHasExpired = _usersAccessTimeLeft <= TimeSpan.Zero;
                         }
 
-                        _eligibilityResult = await floodReportRepository.CalculateEligibilityWithReference(_floodReport.Reference, _cts.Token);
+                        _eligibilityResult = await floodReportSourceRepository.CalculateEligibilityWithReference(_floodReportSource.Reference, _cts.Token);
                     }
                 }
             }

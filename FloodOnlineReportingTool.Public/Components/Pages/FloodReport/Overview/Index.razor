@@ -1,6 +1,6 @@
 ﻿@page "/floodreport/overview"
 @using FloodOnlineReportingTool.Contracts.Shared
-@using FloodOnlineReportingTool.Public.Authentication
+@using FloodOnlineReportingTool.Database.Models.Flood
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@FloodReportPages.Overview.Title</PageTitle>
@@ -21,7 +21,7 @@
             </li>
         </ul>
 
-        <GdsTable T="Database.Models.Flood.FloodReport" Items="@_floodReports" Caption="@_tableCaption" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
+        <GdsTable T="FloodReportSource" Items="@_floodReportSources" Caption="@_tableCaption" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
             <HeaderContent>
                 <GdsTableTh>Reference</GdsTableTh>
                 <GdsTableTh>Status</GdsTableTh>
@@ -94,7 +94,7 @@ else
     <div class="govuk-grid-row">
         <AuthorizeView>
             <NotAuthorized>
-                @if (_floodReports.Count == 0)
+                @if (_floodReportSources.Count == 0)
                 {
                     <div class="govuk-grid-column-full">
                         <GdsWarning Text="You need to sign in to view and manage your flood reports." />
@@ -108,7 +108,7 @@ else
             </NotAuthorized>
 
             <Authorized>
-                @if (_floodReports.Count == 0)
+                @if (_floodReportSources.Count == 0)
                 {
                     <div class="govuk-grid-column-full">
                         <GdsWarning Text="@_noneFoundText" />

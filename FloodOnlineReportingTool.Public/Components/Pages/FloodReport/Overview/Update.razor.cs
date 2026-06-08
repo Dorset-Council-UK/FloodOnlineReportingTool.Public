@@ -16,7 +16,7 @@ public partial class Update(
     ILogger<Update> logger,
     NavigationManager navigationManager,
     IEligibilityCheckRepository eligibilityCheckRepository,
-    IFloodReportRepository floodReportRepository
+    IFloodReportSourceRepository floodReportSourceRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Page order properties
@@ -76,14 +76,14 @@ public partial class Update(
             return;
         }
 
-        await UpdateFloodReport();
+        await UpdateFloodReportSource();
     }
 
-    private async Task UpdateFloodReport()
+    private async Task UpdateFloodReportSource()
     {
         if (_updateModel is null)
         {
-            logger.LogError("Update model was null. Cannot update flood report.");
+            logger.LogError("Update model was null. Cannot update flood report source.");
         }
 
         string? userId = null;
@@ -99,22 +99,23 @@ public partial class Update(
 
         if (_updateModel is null || userId is null)
         {
+            logger.LogError("Could not update flood report source due to missing information.");
             _messageStore.Add(_editContext.Field(nameof(_updateModel.UprnText)), "There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
             _editContext.NotifyValidationStateChanged();
             return;
         }
 
-        logger.LogDebug("Updating flood report");
+        logger.LogDebug("Updating flood report source");
         var viewBaseUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
-        var status = Guid.Empty; // TODO: Decide what status is used when updating a flood report from the overview page
-        var updateFloodReport = await floodReportRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), status, viewBaseUri, _cts.Token);
-        if (!updateFloodReport.IsSuccess)
+        var status = Guid.Empty; // TODO: Decide what status is used when updating a flood report source from the overview page
+        var updateResult = await floodReportSourceRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), status, viewBaseUri, _cts.Token);
+        if (!updateResult.IsSuccess)
         {
             var errorField = _editContext.Field(nameof(_updateModel.UprnText));
             _messageStore.Add(errorField, $"There was a problem updating the flood report. Please try again but if this issue happens again then please report a bug.");
-            foreach (var error in updateFloodReport.Errors)
+            foreach (var error in updateResult.Errors)
             {
-                logger.LogError("Error updating flood report: {Error}", error);
+                logger.LogError("Error updating flood report source: {Error}", error);
                 _messageStore.Add(errorField, error);
             }
             _editContext.NotifyValidationStateChanged();

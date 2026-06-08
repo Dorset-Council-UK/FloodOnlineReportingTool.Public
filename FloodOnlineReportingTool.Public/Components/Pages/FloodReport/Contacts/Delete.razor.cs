@@ -16,8 +16,7 @@ public partial class Delete(
     NavigationManager navigationManager,
     SessionStateService scopedSessionStorage,
     IContactRecordRepository contactRepository,
-    ISubscribeRecordRepository subscribeRecordRepository,
-    IGovNotifyEmailSender govNotifyEmailSender
+    ISubscribeRecordRepository subscribeRecordRepository
 ) : IPageOrder, IAsyncDisposable
 {
     // Public Properties
@@ -39,9 +38,7 @@ public partial class Delete(
     private ContactModel? _contactModel;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
-    private Guid _floodReportId = Guid.Empty;
     private Guid _contactId = Guid.Empty;
-    private string _floodReportReference = string.Empty;
     private bool _isLoading = true;
     private bool _deletePermited = true;
     private readonly CancellationTokenSource _cts = new();
@@ -73,9 +70,8 @@ public partial class Delete(
             }
             _contactId = ContactId ?? Guid.Empty;
 
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
-
-            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            var floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(floodReportSourceId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -140,7 +136,7 @@ public partial class Delete(
             logger.LogError(ex, "There was a problem deleting contact information");
             _messageStore.Add(
                 _editContext.Field(nameof(_contactModel.ContactType)),
-                $"There was a problem deleting the contact information. Please try again. If the problem continues, please contact support using the details on the Help or Contact us page and include your flood report reference '{_floodReportReference}'.");
+                $"There was a problem deleting the contact information. Please try again. If the problem continues, please contact support.");
             _editContext.NotifyValidationStateChanged();
         }
     }
@@ -151,7 +147,6 @@ public partial class Delete(
     {
         // Set safe defaults
         _deletePermited = false;
-        _floodReportReference = string.Empty;
 
         var contactRecord = await contactRepository.Get(_contactId, _cts.Token);
         if (contactRecord == null)
@@ -159,11 +154,11 @@ public partial class Delete(
             return null;
         }
 
-        var floodReport = contactRecord.FloodReports.FirstOrDefault(fr => fr.Id == _floodReportId);
-        if (contactRecord.FloodReports.Count == 1 && floodReport != null)
+        var floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+        var floodReportSource = contactRecord.FloodReportSources.FirstOrDefault(frs => frs.Id == floodReportSourceId);
+        if (contactRecord.FloodReportSources.Count == 1 && floodReportSource != null)
         {
             _deletePermited = true;
-            _floodReportReference = floodReport.Reference;
         }
 
         return contactRecord.ToContactModel();

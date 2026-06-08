@@ -14,7 +14,7 @@ internal class RecordStatusConfiguration : IEntityTypeConfiguration<RecordStatus
             .ValueGeneratedNever();
 
         builder
-            .ToTable(o => o.HasComment("Status used in various places including flood reports."));
+            .ToTable(o => o.HasComment("Status used in various places including flood report sources."));
 
         builder
             .HasData(InitialData.RecordStatusData());

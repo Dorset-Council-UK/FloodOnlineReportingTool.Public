@@ -7,16 +7,19 @@
 
 <h1 class="govuk-heading-l">@Title</h1>
 
-<GdsSpinner Show="_isLoading" />
-
-@if (!_isLoading)
+@if (_isLoading)
 {
-    if(_floodReportId == Guid.Empty)
+    <GdsSpinner Show />
+}
+else
+{
+    if (_floodReportSourceId == Guid.Empty)
     {
         <p class="govuk-error-message">
             <span class="govuk-visually-hidden">Error:</span> <span>Sorry there was a problem setting up contacts. Please try again but if this issue happens again then please report a bug.</span>
         </p>
-    } else
+    }
+    else
     {
         <AuthorizeView Context="authContext">
             <NotAuthorized>
@@ -30,11 +33,9 @@
         </AuthorizeView>
 
         <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateContact" novalidate>
-            @* novalidate used to disable browser validation as this form needs to only validate on submit due to a validation glitch *@
-            @* <FluentValidationValidator /> *@
             <GdsErrorSummary />
 
-            <ContactInformation Contact="_contactModel" FloodReportId="_floodReportId" ContactTypes="ContactTypes" />
+            <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
             <div class="govuk-button-group">
                 <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>

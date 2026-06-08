@@ -12,46 +12,44 @@ public class EligibilityCheckRepository(
 {
     public async Task<EligibilityCheck?> ReportedByUser(string userId, CancellationToken ct)
     {
-        // TODO: Might need to check a status on the flood report
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Select(fr => fr.EligibilityCheck)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Select(frs => frs.EligibilityCheck)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<EligibilityCheck?> ReportedByUser(string userId, Guid id, CancellationToken ct)
+    public async Task<EligibilityCheck?> ReportedByUser(string userId, Guid eligibilityCheckId, CancellationToken ct)
     {
-        // TODO: Might need to check a status on the flood report
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.ContactRecords
             .AsNoTracking()
             .Where(cr => cr.ContactUserId == userId)
-            .SelectMany(cr => cr.FloodReports)
-            .Select(fr => fr.EligibilityCheck)
-            .FirstOrDefaultAsync(o => o != null && o.Id == id, ct);
+            .SelectMany(cr => cr.FloodReportSources)
+            .Select(frs => frs.EligibilityCheck)
+            .FirstOrDefaultAsync(ec => ec != null && ec.Id == eligibilityCheckId, ct);
     }
 
-    public async Task<EligibilityCheck?> GetById(Guid id, CancellationToken ct)
+    public async Task<EligibilityCheck?> GetById(Guid eligibilityCheckId, CancellationToken ct)
     {
-        logger.LogInformation("Getting eligibility check by id {Id}", id);
+        logger.LogInformation("Getting eligibility check by id {EligibilityCheckId}", eligibilityCheckId);
 
         // FloodProblems, and FloodImpacts will be auto included
         await using var context = await contextFactory.CreateDbContextAsync(ct);
-        return await context.EligibilityChecks.FindAsync([id], ct);
+        return await context.EligibilityChecks.FindAsync([eligibilityCheckId], ct);
     }
 
     public async Task<EligibilityCheck?> GetByReference(string reference, CancellationToken ct)
     {
-        logger.LogInformation("Getting eligibility check by flood report reference {Reference}", reference.Replace(Environment.NewLine, "", StringComparison.OrdinalIgnoreCase));
+        logger.LogInformation("Getting eligibility check by flood report source reference {Reference}", reference.Replace(Environment.NewLine, "", StringComparison.OrdinalIgnoreCase));
 
         await using var context = await contextFactory.CreateDbContextAsync(ct);
         return await context.EligibilityChecks
             .AsNoTracking()
-            .Include(o => o.FloodReport)
-            .Where(o => o.FloodReport != null && o.FloodReport.Reference == reference)
+            .Include(ec => ec.FloodReportSource)
+            .Where(ec => ec.FloodReportSource != null && ec.FloodReportSource.Reference == reference)
             .FirstOrDefaultAsync(ct);
     }
 }

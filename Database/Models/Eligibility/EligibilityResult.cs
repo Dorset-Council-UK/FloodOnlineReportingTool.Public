@@ -7,7 +7,7 @@ public readonly record struct EligibilityResult
     bool HasContactInformation,
     bool IsEmergencyResponse,
     string? Section19Url,
-    Guid FloodReportId,
+    Guid FloodReportSourceId,
     EligibilityOptions Section19,
     EligibilityOptions FloodInvestigation,
     EligibilityOptions PropertyProtection,

@@ -49,7 +49,7 @@ public partial class Change(
     private ValidationMessageStore _messageStore = default!;
     private ContactModel? _contactModel;
     private SubscribeRecord? _subscribeModel;
-    private Guid _floodReportId = Guid.Empty;
+    private Guid _floodReportSourceId = Guid.Empty;
     private string? _userID;
     private bool _isLoading = true;
     private bool _isDataLoading = true;
@@ -108,9 +108,9 @@ public partial class Change(
 
             //_contactId = ContactId ?? Guid.Empty;
 
-            // Retrieve the flood report ID from session storage
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            // Retrieve the flood report source ID from session storage
+            _floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportSourceId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -153,15 +153,15 @@ public partial class Change(
 
     /// <summary>
     /// Loads the available contact types that can be selected for this contact.
-    /// Excludes types already in use for the current flood report, except the current contact's type.
+    /// Excludes types already in use for the current flood report source, except the current contact's type.
     /// </summary>
     /// <remarks>
-    /// Design decision: Only one contact of each type is allowed per flood report.
+    /// Design decision: Only one contact of each type is allowed per flood report source.
     /// </remarks>
     private async Task LoadAvailableContactTypesAsync()
     {
-        // Get contact types not currently used in this flood report
-        var unusedTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
+        // Get contact types not currently used in this flood report source
+        var unusedTypes = await contactRepository.GetUnusedRecordTypes(_floodReportSourceId, _cts.Token);
         var allTypes = Enum.GetValues<ContactRecordType>();
         var availableTypes = new List<ContactRecordType>();
 

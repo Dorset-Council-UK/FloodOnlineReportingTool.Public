@@ -1,18 +1,18 @@
-﻿@page "/floodreport/create/floodsource"
+﻿@page "/floodreport/create/cause"
 
-<PageTitle>@Title</PageTitle>
+<PageTitle>@FloodReportCreatePages.Cause.Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage?.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<h1 class="govuk-heading-xl">@FloodReportCreatePages.Cause.Title</h1>
 
-<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodSource">
+<EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CauseForm">
     <FluentValidationValidator />
     <GdsErrorSummary />
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.FloodSourceOptions" Show="!_isLoading">
+    <GdsFormGroup For="() => Model.CauseOptions" Show="!_isLoading">
         <GdsFieldsetGroup>
             <Heading>
                 <h2 class="govuk-fieldset__heading">Do you know where the water is coming from?</h2>
@@ -20,7 +20,7 @@
             <Content>
                 <GdsHint>Select all that apply</GdsHint>
                 <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.FloodSourceOptions" />
+                <GdsCheckboxes Options="Model.CauseOptions" />
             </Content>
         </GdsFieldsetGroup>
     </GdsFormGroup>

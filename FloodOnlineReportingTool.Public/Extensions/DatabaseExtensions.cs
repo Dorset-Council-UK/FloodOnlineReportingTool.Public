@@ -46,7 +46,7 @@ internal static class DatabaseExtensions
                 .AddScoped<ICommonRepository, CommonRepository>()
                 .AddScoped<IContactRecordRepository, ContactRecordRepository>()
                 .AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>()
-                .AddScoped<IFloodReportRepository, FloodReportRepository>()
+                .AddScoped<IFloodReportSourceRepository, FloodReportSourceRepository>()
                 .AddScoped<IInvestigationRepository, InvestigationRepository>()
                 .AddScoped<IOutboxMessageService, OutboxMessageService>()
                 .AddScoped<ISearchRepository, SearchRepository>()

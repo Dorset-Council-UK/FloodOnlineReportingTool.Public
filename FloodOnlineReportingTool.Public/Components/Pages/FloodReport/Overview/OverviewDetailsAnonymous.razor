@@ -11,7 +11,7 @@
 <div class="govuk-grid-row">
     <AuthorizeView>
         <NotAuthorized>
-            @if (_floodReport is null)
+            @if (_floodReportSource is null)
             {
                 <div class="govuk-grid-column-full">
                     <GdsWarning Text="You need to sign in to view and manage your flood reports." />
@@ -24,11 +24,11 @@
                     <GdsTabs Title="Contents">
                         <GdsTabPanel Id="overview" Heading="Overview">
                             <p class="govuk-body-l">
-                                <strong class="govuk-tag">@(_floodReport.Status?.Text ?? "Unknown")</strong>
-                                Flood reference <strong>@_floodReport.Reference</strong>
+                                <strong class="govuk-tag">@(_floodReportSource.Status?.Text ?? "Unknown")</strong>
+                                Flood reference <strong>@_floodReportSource.Reference</strong>
                             </p>
 
-                            <p>Created on @_floodReport.CreatedUtc.GdsReadable()</p>
+                            <p>Created on @_floodReportSource.CreatedUtc.GdsReadable()</p>
                             @if (_accessHasExpired)
                             {
                                 <GdsWarning Text="Access to your flood report has expired" />
@@ -116,11 +116,11 @@
                             {
                                 <section id="investigation-actions">
                                     <h3 class="govuk-heading-m">Tell us more</h3>
-                                    @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                                    @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
                                     {
                                         <p>There is currently an ongoing investigation.</p>
                                     }
-                                    else if (_floodReport.StatusId == RecordStatusIds.ActionCompleted)
+                                    else if (_floodReportSource.StatusId == RecordStatusIds.ActionCompleted)
                                     {
                                         <p>An investigation has been completed for your flood report.</p>
                                     }
@@ -134,18 +134,18 @@
 
                         <GdsTabPanel Id="eligibility-form" Heading="Eligibility results">
                             <p class="govuk-body-l">Details of your flood report can be seen below.</p>
-                            @if (_floodReport.EligibilityCheck is not null)
+                            @if (_floodReportSource.EligibilityCheck is not null)
                             {
-                                <EligibilityCheckSummary Entity="@_floodReport.EligibilityCheck" />
+                                <EligibilityCheckSummary Entity="@_floodReportSource.EligibilityCheck" />
                             }
                         </GdsTabPanel>
 
                         <GdsTabPanel Id="investigation-form" Heading="Tell us more">
-                            @if (_floodReport.StatusId == RecordStatusIds.ActionNeeded)
+                            @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
                             {
                                 <p>There is currently an ongoing investigation.</p>
                             }
-                            else if (_floodReport.StatusId == RecordStatusIds.ActionCompleted)
+                            else if (_floodReportSource.StatusId == RecordStatusIds.ActionCompleted)
                             {
                                 <p>An investigation has been completed for your flood report.</p>
                                 // TODO: investigation summary

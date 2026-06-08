@@ -41,7 +41,7 @@ public partial class Create(
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
     private ContactModel? _contactModel;
-    private Guid _floodReportId;
+    private Guid _floodReportSourceId;
     private string? _userId;
     private bool _isLoading = true;
     private readonly CancellationTokenSource _cts = new();
@@ -90,8 +90,8 @@ public partial class Create(
     {
         if (firstRender)
         {           
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
-            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportId, _cts.Token);
+            _floodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+            var reportOwnerSubscribeRecord = await subscribeRecordRepository.GetReportOwnerContactByReport(_floodReportSourceId, _cts.Token);
             if (reportOwnerSubscribeRecord is null)
             {
                 // This is not allowed, setup an owner
@@ -100,7 +100,7 @@ public partial class Create(
             }
 
             // This is a create page, so we need to get the unused contact types only
-            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportId, _cts.Token);
+            var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportSourceId, _cts.Token);
             ContactTypes = [.. allTypes.Select(CreateOption)];
 
             _isLoading = false;
@@ -148,7 +148,6 @@ public partial class Create(
             }
 
             // Generate a contact record
-            _floodReportId = await scopedSessionStorage.GetFloodReportId();
             SubscribeRecordDto subscribeRecordDto = new()
             {
                 ContactType = _contactModel.ContactType!.Value,
@@ -159,10 +158,10 @@ public partial class Create(
             };
 
             Guid? contactRecordId = null;
-            var contactRecords = await contactRepository.GetContactsByReport(_floodReportId, _cts.Token);
+            var contactRecords = await contactRepository.GetContactsByReport(_floodReportSourceId, _cts.Token);
             if (contactRecords.Count == 0)
             {
-                var createResult = await contactRepository.Create(_userId, _floodReportId, _cts.Token);
+                var createResult = await contactRepository.Create(_userId, _floodReportSourceId, _cts.Token);
                 if (!createResult.IsSuccess)
                 {
                     foreach (var error in createResult.Errors)
@@ -192,7 +191,12 @@ public partial class Create(
             var generatedSubscribeRecord = await subscribeRecordRepository.Create(contactRecordId.Value, subscribeRecordDto, currentUserEmail, userPresent: false, _cts.Token);
             if (!generatedSubscribeRecord.IsSuccess)
             {
-                logger.LogError("There was a problem creating contact information");
+                foreach(var error in generatedSubscribeRecord.Errors)
+                {
+                    logger.LogError("Error creating subscribe record: {ErrorMessage}", error);
+                }
+                _messageStore.Add(_editContext.Field(nameof(_contactModel.ContactType)), $"There was a problem creating the contact information. Please try again but if this issue happens again then please report a bug.");
+                _editContext.NotifyValidationStateChanged();
                 return;
             }
 
@@ -238,7 +242,7 @@ public partial class Create(
                 }
             }
         
-            logger.LogInformation("Contact information created successfully for report {_floodReportId}", _floodReportId);
+            logger.LogInformation("Contact information created successfully for report {FloodReportSourceId}", _floodReportSourceId);
             navigationManager.NavigateTo(ContactPages.Summary.Url);
         }
         catch (Exception ex)
