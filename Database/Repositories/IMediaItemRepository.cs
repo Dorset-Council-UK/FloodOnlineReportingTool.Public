@@ -6,6 +6,11 @@ namespace FloodOnlineReportingTool.Database.Repositories;
 public interface IMediaItemRepository
 {
     /// <summary>
+    /// Gets a count of all media items associated with a flood report.
+    /// </summary>
+    /// <returns>Integer indicating total number of media items</returns>
+    Task<int> GetCountByReport(Guid floodReportId, CancellationToken cancellationToken);
+    /// <summary>
     /// Get all media items associated with a flood report.
     /// </summary>
     Task<IReadOnlyCollection<MediaItem>> GetByReport(Guid floodReportId, CancellationToken cancellationToken);

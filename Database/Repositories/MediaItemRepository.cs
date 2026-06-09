@@ -12,6 +12,19 @@ public class MediaItemRepository(
     IDbContextFactory<PublicDbContext> contextFactory
 ) : IMediaItemRepository
 {
+    public async Task<int> GetCountByReport(Guid floodReportId, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Getting media items for flood report ID: {FloodReportId}", floodReportId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var floodReport = await context.FloodReportSources
+            .AsNoTracking()
+            .IgnoreAutoIncludes()
+            .Include(fr => fr.MediaItems)
+            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, cancellationToken);
+
+        return floodReport?.MediaItems.Count ?? 0;
+    }
     public async Task<IReadOnlyCollection<MediaItem>> GetByReport(Guid floodReportId, CancellationToken cancellationToken)
     {
         logger.LogInformation("Getting media items for flood report ID: {FloodReportId}", floodReportId);
