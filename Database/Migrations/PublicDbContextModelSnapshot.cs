@@ -1621,7 +1621,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("FloodReportId")
+                    b.Property<Guid?>("FloodReportSourceId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Title")
@@ -1636,7 +1636,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FloodReportId");
+                    b.HasIndex("FloodReportSourceId");
 
                     b.ToTable("MediaItems", "fortpublic", t =>
                         {
@@ -2833,9 +2833,9 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.MediaItem", b =>
                 {
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", null)
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Flood.FloodReportSource", null)
                         .WithMany("MediaItems")
-                        .HasForeignKey("FloodReportId");
+                        .HasForeignKey("FloodReportSourceId");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Responsibilities.FloodAuthorityFloodProblem", b =>
@@ -2889,7 +2889,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("SecondaryCauses");
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Flood.FloodReport", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Flood.FloodReportSource", b =>
                 {
                     b.Navigation("MediaItems");
                 });
