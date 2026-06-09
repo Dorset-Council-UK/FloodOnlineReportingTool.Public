@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Public.Models.Media;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -10,6 +11,7 @@ using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Media;
 
+[Authorize]
 public partial class Index(
     ILogger<Index> logger,
     SessionStateService scopedSessionStorage,
@@ -148,7 +150,6 @@ public partial class Index(
 
         _isLoading = false;
         StateHasChanged();
-        await UpdateStoredMediaData();
     }
 
     private async Task<bool> ProcessSingleFileAsync(IBrowserFile file)
@@ -168,12 +169,13 @@ public partial class Index(
         try
         {
             var trustedFileNameForFileStorage = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            await using var fileStream = file.OpenReadStream(MaxFileSize, _cts.Token);
             var blobUrl = await blobStorageService.UploadFileToBlobAsync(
                 trustedFileNameForFileStorage,
                 file.ContentType,
-                file.OpenReadStream(MaxFileSize, _cts.Token));
+                fileStream);
 
-            if (blobUrl != null)
+            if (!string.IsNullOrWhiteSpace(blobUrl))
             {
                 Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
@@ -224,7 +226,6 @@ public partial class Index(
             Model.UploadedFiles.Remove(file);
             CheckValidationStateOfFileUploads();
             StateHasChanged();
-            await UpdateStoredMediaData();
         }
     }
     private void DeleteRejectedFile(RejectedFile file)
@@ -287,11 +288,6 @@ public partial class Index(
                 break;
         }
         return errorMessage;
-    }
-
-    private async Task UpdateStoredMediaData()
-    {
-
     }
 
     private async Task OnValidSubmit()

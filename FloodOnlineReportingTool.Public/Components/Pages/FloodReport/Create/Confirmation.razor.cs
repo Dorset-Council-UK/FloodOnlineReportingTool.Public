@@ -108,6 +108,7 @@ public partial class Confirmation(
 
         var result = await floodReportSourceRepository.GetById(_FloodReportId, _cts.Token);
         Reference = result?.Reference;
+        _hasContactInformation = result?.ContactRecords.Count > 0;
         await LoadMediaItemCountAsync();
     }
 

@@ -27,7 +27,7 @@ internal class BlobStorageService : IBlobStorageService
     private async Task<BlobContainerClient?> GetContainer()
     {
         var container = new BlobContainerClient(_blobStorageConnection, _blobContainerName);
-        await container.CreateIfNotExistsAsync(PublicAccessType.Blob).ConfigureAwait(false);
+        await container.CreateIfNotExistsAsync(PublicAccessType.None).ConfigureAwait(false);
         return container;
     }
 
@@ -63,7 +63,9 @@ internal class BlobStorageService : IBlobStorageService
     public async Task<bool> DeleteFileFromBlobByURLAsync(string url)
     {
         var uri = new Uri(url);
-        var fileName = uri.PathAndQuery.Replace($"/{_blobContainerName}/", "", StringComparison.OrdinalIgnoreCase);
+        var absolutePath = Uri.UnescapeDataString(uri.AbsolutePath);
+        var fileName = absolutePath.Replace($"/{_blobContainerName}/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
+
         return await DeleteFileFromBlobAsync(fileName).ConfigureAwait(false);
     }
 

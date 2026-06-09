@@ -17,7 +17,7 @@ internal static class StringExtensions
         {
             0 => string.Empty,
             1 => itemArray[0],
-            2 => $"{itemArray[0]} {finalSeparator} {itemArray[1]}",
+            2 => $"{itemArray[0]}{finalSeparator}{itemArray[1]}",
             _ => $"{string.Join(separator, itemArray[..^1])}{finalSeparator}{itemArray[^1]}",
         };
     }
