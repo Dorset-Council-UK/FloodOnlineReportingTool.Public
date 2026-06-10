@@ -8,7 +8,7 @@
 <GdsSpinner Show="_isLoading" />
 
 @{
-    var signInUrl = $"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(_redirectTargetUrl)}";
+    var signInUrl = $"{AccountPages.SignIn.Url}";
     var me = "";
 }
 
@@ -86,13 +86,27 @@
                                         </strong>
                                     </div>
                                 </li>
+                                <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
+                                    <div class="govuk-task-list__name-and-hint">
+
+                                        <a href="@(MediaPages.Home.Url)?back_url=confirmation" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Add photos or videos to your report</a>
+                                        <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
+                                            You can provide up to 10 photos, videos or documents to support your report.
+                                        </div>
+                                    </div>
+                                    <div class="govuk-task-list__status">
+                                        <strong class="govuk-tag govuk-tag--@(_mediaItemsAssociatedWithReport == 0 ? "blue" : "green")" id="add-media-not-logged-in">
+                                            @(_mediaItemsAssociatedWithReport == 0 ? "Incomplete" : "Complete")
+                                        </strong>
+                                    </div>
+                                </li>
                             </Authorized>
                             <NotAuthorized>
 
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
                                         
-                                        <a href="@signInUrl" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
+                                        <a href="@($"{signInUrl}?redirectUri={Uri.EscapeDataString(SubscriptionPages.Home.Url + "?Me=true&Owns=true")}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
                                         <div id="report-and-check-2-contacts-login-hint" class="govuk-task-list__hint">
                                             You will be allowed to login and manage your notifications and reports on this website.
                                         </div>
@@ -112,6 +126,20 @@
                                     </div>
                                     <div class="govuk-task-list__status">
                                         <strong class="govuk-tag govuk-tag--blue" id="report-and-check-2-contacts">
+                                            Incomplete
+                                        </strong>
+                                    </div>
+                                </li>
+                                <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
+                                    <div class="govuk-task-list__name-and-hint">
+
+                                        <a href="@($"{signInUrl}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url + "?back_url=confirmation")}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to add photos or videos to your report
+                                        <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
+                                            You need to register for an account to provide photos for your report. This will also allow you to manage your report and subscriptions.
+                                        </div>
+                                    </div>
+                                    <div class="govuk-task-list__status">
+                                        <strong class="govuk-tag govuk-tag--blue" id="add-media-not-logged-in">
                                             Incomplete
                                         </strong>
                                     </div>

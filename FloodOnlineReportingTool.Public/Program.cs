@@ -1,6 +1,7 @@
 using FloodOnlineReportingTool.Database.Compliance;
 using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using Microsoft.Identity.Web;
@@ -17,11 +18,13 @@ builder.AddKeyVaults();
 
 // Configure all the options.
 var gisOptions = builder.AddOptions_Required<GISOptions>(GISOptions.SectionName);
+var azureBlobStorageOptions = builder.AddOptions_Required<AzureBlobStorageOptions>(AzureBlobStorageOptions.SectionName);
 
 // Configure authentication 
 var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Constants.AzureAd);
 builder.AddAuthentication();
 builder.Services.AddScoped<SessionStateService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 builder.AddGovNotify();
 

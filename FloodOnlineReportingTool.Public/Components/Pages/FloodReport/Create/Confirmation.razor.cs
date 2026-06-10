@@ -9,6 +9,8 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
 public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
+    IMediaItemRepository mediaItemRepository,
+    IFloodReportSourceRepository floodReportSourceRepository,
     SessionStateService scopedSessionStorage
 ) : IPageOrder, IAsyncDisposable
 {
@@ -22,9 +24,8 @@ public partial class Confirmation(
     private bool _loadingError;
     private Guid _FloodReportId;
     private bool _hasContactInformation;
+    private int _mediaItemsAssociatedWithReport;
     
-    private string _redirectTargetUrl = $"{SubscriptionPages.Home.Url}?Me=true&Owns=true";
-
     // Public Properties
     public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
@@ -49,36 +50,70 @@ public partial class Confirmation(
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender)
         {
-            if (!string.IsNullOrWhiteSpace(Reference))
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Reference))
+        {
+            await LoadFromReferenceAsync();
+        }
+        else
+        {
+            await LoadFromSessionAsync();
+        }
+
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadFromReferenceAsync()
+    {
+        try
+        {
+            var result = await eligibilityRepository.GetByReference(Reference!, _cts.Token);
+            var floodReportSource = result?.FloodReportSource;
+
+            if (floodReportSource is null)
             {
-                try
-                {
-                    var result = await eligibilityRepository.GetByReference(Reference, _cts.Token);
-
-                    if (result?.FloodReportSource != null)
-                    {
-                        _FloodReportId = result.FloodReportSource.Id;
-                        // Store the current flood report source ID
-                        if (_FloodReportId != Guid.Empty)
-                        {
-                            // Never save a blank Guid, only a real one
-                            await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
-                        }
-
-                        _hasContactInformation = result.FloodReportSource.ContactRecords.Count > 0;
-                    }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    logger.LogError(ex, "There was a problem getting the eligibility check from the database");
-                    _loadingError = true;
-                }
+                return;
             }
 
-            _isLoading = false;
-            StateHasChanged();
+            _FloodReportId = floodReportSource.Id;
+
+            if (_FloodReportId != Guid.Empty)
+            {
+                await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
+                await LoadMediaItemCountAsync();
+            }
+
+            _hasContactInformation = floodReportSource.ContactRecords.Count > 0;
         }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError(ex, "There was a problem getting the eligibility check from the database");
+            _loadingError = true;
+        }
+    }
+
+    private async Task LoadFromSessionAsync()
+    {
+        _FloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
+
+        if (_FloodReportId == Guid.Empty)
+        {
+            return;
+        }
+
+        var result = await floodReportSourceRepository.GetById(_FloodReportId, _cts.Token);
+        Reference = result?.Reference;
+        _hasContactInformation = result?.ContactRecords.Count > 0;
+        await LoadMediaItemCountAsync();
+    }
+
+    private async Task LoadMediaItemCountAsync()
+    {
+        _mediaItemsAssociatedWithReport = await mediaItemRepository.GetCountByReport(_FloodReportId, _cts.Token);
     }
 }

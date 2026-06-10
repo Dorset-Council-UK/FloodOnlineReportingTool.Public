@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Database.Models.Contact;
+﻿using FloodOnlineReportingTool.Database.Models;
+using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
@@ -29,6 +30,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<InvestigationDestination> InvestigationDestinations { get; set; } // Relationship table
     public DbSet<InvestigationEntry> InvestigationEntries { get; set; } // Relationship table
     public DbSet<InvestigationWarningSource> InvestigationWarningSources { get; set; } // Relationship table
+    public DbSet<MediaItem> MediaItems { get; set; }
     public DbSet<Organisation> Organisations { get; set; }
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<RecordStatus> RecordStatuses { get; set; }
