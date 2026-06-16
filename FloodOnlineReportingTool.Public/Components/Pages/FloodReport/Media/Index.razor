@@ -1,7 +1,9 @@
 ﻿@page "/floodreport/media/add-photos-or-videos/{FloodReportId:guid?}"
 @page "/floodreport/media/add-photos-or-videos"
 @using Microsoft.AspNetCore.Components.Authorization
-
+@using Microsoft.Extensions.Options
+@using FloodOnlineReportingTool.Public.Options
+@inject IOptions<AzureBlobStorageOptions> blobStoageOptions;
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
@@ -49,6 +51,7 @@
                 <table class="govuk-table">
                     <thead class="govuk-table__head">
                         <tr class="govuk-table__row">
+                            <th scope="col" class="govuk-table__header">Preview</th>
                             <th scope="col" class="govuk-table__header">File</th>
                             <th scope="col" class="govuk-table__header">Status</th>
                             <th scope="col" class="govuk-table__header">Actions</th>
@@ -58,6 +61,7 @@
                         @foreach (var file in _uploadingFiles)
                         {
                             <tr class="govuk-table__row">
+                                <td class="govuk-table__cell"><GdsSpinner Show="true" ShowMessage="false"></GdsSpinner></td>
                                 <td class="govuk-table__cell">@file.Name</td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--blue">
@@ -71,6 +75,16 @@
                         @foreach (var file in Model.UploadedFiles)
                         {
                             <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    @if (ImageFileTypes.Contains(file.ContentType))
+                                    {
+                                        <img class="media-image-preview" src="@(file.Url)?@(blobStoageOptions.Value.ReadSASToken)" alt="Preview of @file.Name" />
+                                    }
+                                    else
+                                    {
+                                        <span>No preview</span>
+                                    }
+                                </td>
                                 <td class="govuk-table__cell">@file.Name</td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--green">
@@ -86,6 +100,7 @@
                         {
                             var errorMessage = GetErrorMessageForFile(rejectedFile);
                             <tr class="govuk-table__row">
+                                <td class="govuk-table__cell"><img src="@(Assets["~/images/ban.svg"])" alt="Failed image upload icon" /></td>
                                 <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--red">

@@ -38,16 +38,24 @@ public partial class Index(
     private const long MaxFileSize = MaxFileSizeMB * 1024 * 1024; // Convert MB to bytes
 
     private int RemainingSlots => MaxNumFiles - Model.UploadedFiles.Count;
-
-    private static readonly string[] AllowedFileTypes = [
+    private static readonly string[] ImageFileTypes = [
         "image/jpeg",
         "image/jpg",
         "image/png",
         "image/gif",
+    ];
+    private static readonly string[] VideoFileTypes = [
         "video/mp4",
         "video/webm",
         "video/ogg",
-        "application/pdf",
+    ];
+    private static readonly string[] DocumentFileTypes = [
+        "application/pdf"
+    ];
+    private static readonly string[] AllowedFileTypes = [
+        .. ImageFileTypes, 
+        .. VideoFileTypes, 
+        .. DocumentFileTypes,
     ];
 
     private static readonly string[] FriendlyFileTypes = [
@@ -121,7 +129,7 @@ public partial class Index(
                 Id = mediaItem.Id,
                 Name = mediaItem.Title ?? Path.GetFileName(mediaItem.URL),
                 Url = mediaItem.URL,
-                ContentType = string.Empty,
+                ContentType = GetContentTypeFromUrl(mediaItem.URL),
             })
             .ToList();
     }
@@ -193,6 +201,26 @@ public partial class Index(
 
         _rejectedFiles.Add(new RejectedFile(file, FileRejectionReason.UploadError));
         return false;
+    }
+
+    private static readonly Dictionary<string, string> _extensionToContentType = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { ".jpg",  "image/jpeg" },
+        { ".jpeg", "image/jpeg" },
+        { ".png",  "image/png" },
+        { ".gif",  "image/gif" },
+        { ".mp4",  "video/mp4" },
+        { ".webm", "video/webm" },
+        { ".ogg",  "video/ogg" },
+        { ".pdf",  "application/pdf" },
+    };
+
+    private static string GetContentTypeFromUrl(string url)
+    {
+        var extension = Path.GetExtension(new Uri(url).LocalPath);
+        return _extensionToContentType.TryGetValue(extension, out var contentType)
+            ? contentType
+            : string.Empty;
     }
 
     private async Task DeleteUploadedFile(Models.FloodReport.Create.MediaItem file)
