@@ -80,10 +80,19 @@
                                     {
                                         <img class="media-image-preview" src="@(file.Url)?@(blobStoageOptions.Value.ReadSASToken)" alt="Preview of @file.Name" />
                                     }
-                                    else
+                                    else if(VideoFileTypes.Contains(file.ContentType))
                                     {
-                                        <span>No preview</span>
+                                        <span class="media-placeholder">
+                                            <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
+                                        </span>
                                     }
+                                    else if (DocumentFileTypes.Contains(file.ContentType))
+                                    {
+                                        <span class="media-placeholder">
+                                            <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
+                                        </span>
+                                    }
+                                    
                                 </td>
                                 <td class="govuk-table__cell">@file.Name</td>
                                 <td class="govuk-table__cell">
