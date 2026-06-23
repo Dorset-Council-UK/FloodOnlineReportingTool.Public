@@ -76,6 +76,7 @@ public partial class Index(
 
     private Models.FloodReport.Create.MediaItem? _renamingFile;
     private string _renameText = string.Empty;
+    private string? _renameError;
 
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
@@ -230,18 +231,31 @@ public partial class Index(
     {
         _renamingFile = file;
         _renameText = file.Name;
+        _renameError = null;
     }
 
     private void CancelRename()
     {
         _renamingFile = null;
         _renameText = string.Empty;
+        _renameError = null;
     }
+
+    private const int MaxRenameTitleLength = 255;
 
     private async Task SaveRename(Models.FloodReport.Create.MediaItem file)
     {
+        _renameError = null;
+
         if (string.IsNullOrWhiteSpace(_renameText))
         {
+            _renameError = "Enter a file name";
+            return;
+        }
+
+        if (_renameText.Length > MaxRenameTitleLength)
+        {
+            _renameError = $"File name must be {MaxRenameTitleLength} characters or fewer";
             return;
         }
 

@@ -97,13 +97,19 @@
                                 <td class="govuk-table__cell">
                                     @if (_renamingFile == file)
                                     {
-                                        <GdsFormGroup For="() => _renameText">
+                                        <GdsFormGroup For="() => _renameText" AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
                                             <GdsLabel Text="File name" />
-                                            <GdsErrorMessage />
-                                            <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="govuk-input govuk-input--width-20" />
+                                            @if (_renameError is not null)
+                                            {
+                                                <p class="govuk-error-message">
+                                                    <span class="govuk-visually-hidden">Error:</span>
+                                                    @_renameError
+                                                </p>
+                                            }
+                                            <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="@($"govuk-input govuk-input--width-20{(_renameError is not null ? " govuk-input--error" : "")}")" />
                                         </GdsFormGroup>
 
-                                        <div class="govuk-button-group govuk-!-margin-top-2">
+                                        <div class="govuk-button-group">
                                             <button type="button" class="govuk-button govuk-button--primary" @onclick="() => SaveRename(file)">Save</button>
                                             <button type="button" class="govuk-button govuk-button--secondary" @onclick="CancelRename">Cancel</button>
                                         </div>
