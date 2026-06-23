@@ -64,3 +64,14 @@ body {
         }
     }
 }
+
+// Links
+/* special style for buttons rendered like links */
+button.govuk-link {
+    background: none;
+    border: none;
+    font-size: inherit;
+    color: var(--govuk-frontend-color-blue);
+    padding: 0;
+    cursor: pointer;
+}

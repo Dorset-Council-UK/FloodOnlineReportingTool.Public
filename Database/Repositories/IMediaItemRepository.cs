@@ -22,6 +22,12 @@ public interface IMediaItemRepository
     Task<Result<IReadOnlyCollection<MediaItem>>> Create(Guid floodReportId, IReadOnlyCollection<MediaItem> mediaItems, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Update the title of a media item.
+    /// </summary>
+    /// <returns>A result pattern with the updated media item, or a list of errors.</returns>
+    Task<Result<MediaItem>> UpdateTitle(Guid mediaItemId, string title, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Delete a media item by ID.
     /// </summary>
     /// <returns>A result pattern indicating success, or a list of errors.</returns>

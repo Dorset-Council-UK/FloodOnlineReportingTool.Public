@@ -107,4 +107,23 @@ public class MediaItemRepository(
 
         return DeleteResult<MediaItem>.Success();
     }
+
+    public async Task<Result<MediaItem>> UpdateTitle(Guid mediaItemId, string title, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Updating title for media item ID: {MediaItemId}", mediaItemId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var mediaItem = await context.MediaItems
+            .FirstOrDefaultAsync(mi => mi.Id == mediaItemId, cancellationToken);
+
+        if (mediaItem is null)
+        {
+            return Result<MediaItem>.Failure([$"No media item found for ID {mediaItemId}"]);
+        }
+
+        mediaItem.Title = title;
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result<MediaItem>.Success(mediaItem);
+    }
 }

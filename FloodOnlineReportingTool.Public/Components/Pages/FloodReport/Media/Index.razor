@@ -94,7 +94,26 @@
                                     }
                                     
                                 </td>
-                                <td class="govuk-table__cell">@file.Name</td>
+                                <td class="govuk-table__cell">
+                                    @if (_renamingFile == file)
+                                    {
+                                        <GdsFormGroup For="() => _renameText">
+                                            <GdsLabel Text="File name" />
+                                            <GdsErrorMessage />
+                                            <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="govuk-input govuk-input--width-20" />
+                                        </GdsFormGroup>
+
+                                        <div class="govuk-button-group govuk-!-margin-top-2">
+                                            <button type="button" class="govuk-button govuk-button--primary" @onclick="() => SaveRename(file)">Save</button>
+                                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="CancelRename">Cancel</button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @file.Name
+                                        <br /><button type="button" class="govuk-link govuk-link--no-visited-state" @onclick="() => StartRename(file)" @onclick:preventDefault>Rename<span class="govuk-visually-hidden"> file '@file.Name'</span></button>
+                                    }
+                                </td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--green">
                                         Uploaded

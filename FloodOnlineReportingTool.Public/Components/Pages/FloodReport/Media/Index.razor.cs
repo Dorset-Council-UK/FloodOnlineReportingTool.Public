@@ -74,6 +74,9 @@ public partial class Index(
     private readonly List<RejectedFile> _rejectedFiles = [];
     private string? _uploadLimitError;
 
+    private Models.FloodReport.Create.MediaItem? _renamingFile;
+    private string _renameText = string.Empty;
+
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
     protected override void OnInitialized()
@@ -221,6 +224,46 @@ public partial class Index(
         return _extensionToContentType.TryGetValue(extension, out var contentType)
             ? contentType
             : string.Empty;
+    }
+
+    private void StartRename(Models.FloodReport.Create.MediaItem file)
+    {
+        _renamingFile = file;
+        _renameText = file.Name;
+    }
+
+    private void CancelRename()
+    {
+        _renamingFile = null;
+        _renameText = string.Empty;
+    }
+
+    private async Task SaveRename(Models.FloodReport.Create.MediaItem file)
+    {
+        if (string.IsNullOrWhiteSpace(_renameText))
+        {
+            return;
+        }
+
+        if (file.Id.HasValue)
+        {
+            var result = await mediaItemRepository.UpdateTitle(file.Id.Value, _renameText, _cts.Token);
+            if (!result.IsSuccess)
+            {
+                foreach (var error in result.Errors)
+                {
+                    logger.LogWarning("Couldn't rename media item: {ErrorMessage}", error);
+                }
+
+                _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
+        }
+
+        file.Name = _renameText;
+        _renamingFile = null;
+        _renameText = string.Empty;
     }
 
     private async Task DeleteUploadedFile(Models.FloodReport.Create.MediaItem file)
