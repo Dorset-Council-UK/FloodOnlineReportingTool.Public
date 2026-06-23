@@ -101,7 +101,8 @@
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+                                    <a href="@(file.Url)?@(blobStoageOptions.Value.ReadSASToken)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
@@ -109,7 +110,11 @@
                         {
                             var errorMessage = GetErrorMessageForFile(rejectedFile);
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell"><img src="@(Assets["~/images/ban.svg"])" alt="Failed image upload icon" /></td>
+                                <td class="govuk-table__cell">
+                                    <span class="media-placeholder">
+                                        <img src="@Assets["/images/ban.svg"]" alt="Document file icon" class="media-placeholder__icon" />
+                                    </span>
+                                </td>
                                 <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--red">
@@ -117,7 +122,7 @@
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
+                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
                                 </td>
                             </tr>
                         }
