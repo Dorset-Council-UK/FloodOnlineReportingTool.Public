@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.Extensions.Options
 @using FloodOnlineReportingTool.Public.Options
-@inject IOptions<AzureBlobStorageOptions> blobStoageOptions;
+@inject IOptions<AzureBlobStorageOptions> blobStoageOptions
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
@@ -78,7 +78,7 @@
                                 <td class="govuk-table__cell">
                                     @if (ImageFileTypes.Contains(file.ContentType))
                                     {
-                                        <img class="media-image-preview" src="@(file.Url)?@(blobStoageOptions.Value.ReadSASToken)" alt="Preview of @file.Name" />
+<img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
                                     }
                                     else if(VideoFileTypes.Contains(file.ContentType))
                                     {
@@ -127,7 +127,7 @@
                                 </td>
                                 <td class="govuk-table__cell">
                                     <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
-                                    <a href="@(file.Url)?@(blobStoageOptions.Value.ReadSASToken)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+<a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
@@ -137,7 +137,7 @@
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
                                     <span class="media-placeholder">
-                                        <img src="@Assets["/images/ban.svg"]" alt="Document file icon" class="media-placeholder__icon" />
+<img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
                                     </span>
                                 </td>
                                 <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>

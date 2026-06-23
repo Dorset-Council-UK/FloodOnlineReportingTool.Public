@@ -269,8 +269,7 @@ public partial class Index(
                     logger.LogWarning("Couldn't rename media item: {ErrorMessage}", error);
                 }
 
-                _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
-                _editContext.NotifyValidationStateChanged();
+                _renameError = "Sorry, something went wrong";
                 return;
             }
         }
