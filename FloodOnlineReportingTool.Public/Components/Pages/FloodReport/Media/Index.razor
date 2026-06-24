@@ -1,7 +1,9 @@
 ﻿@page "/floodreport/media/add-photos-or-videos/{FloodReportId:guid?}"
 @page "/floodreport/media/add-photos-or-videos"
 @using Microsoft.AspNetCore.Components.Authorization
-
+@using Microsoft.Extensions.Options
+@using FloodOnlineReportingTool.Public.Options
+@inject IOptions<AzureBlobStorageOptions> blobStoageOptions
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
@@ -49,6 +51,7 @@
                 <table class="govuk-table">
                     <thead class="govuk-table__head">
                         <tr class="govuk-table__row">
+                            <th scope="col" class="govuk-table__header">Preview</th>
                             <th scope="col" class="govuk-table__header">File</th>
                             <th scope="col" class="govuk-table__header">Status</th>
                             <th scope="col" class="govuk-table__header">Actions</th>
@@ -58,6 +61,7 @@
                         @foreach (var file in _uploadingFiles)
                         {
                             <tr class="govuk-table__row">
+                                <td class="govuk-table__cell"><GdsSpinner Show="true" ShowMessage="false"></GdsSpinner></td>
                                 <td class="govuk-table__cell">@file.Name</td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--blue">
@@ -71,14 +75,59 @@
                         @foreach (var file in Model.UploadedFiles)
                         {
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@file.Name</td>
+                                <td class="govuk-table__cell">
+                                    @if (ImageFileTypes.Contains(file.ContentType))
+                                    {
+<img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
+                                    }
+                                    else if(VideoFileTypes.Contains(file.ContentType))
+                                    {
+                                        <span class="media-placeholder">
+                                            <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
+                                        </span>
+                                    }
+                                    else if (DocumentFileTypes.Contains(file.ContentType))
+                                    {
+                                        <span class="media-placeholder">
+                                            <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
+                                        </span>
+                                    }
+                                    
+                                </td>
+                                <td class="govuk-table__cell">
+                                    @if (_renamingFile == file)
+                                    {
+                                        <GdsFormGroup For="() => _renameText" AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
+                                            <GdsLabel Text="File name" />
+                                            @if (_renameError is not null)
+                                            {
+                                                <p class="govuk-error-message">
+                                                    <span class="govuk-visually-hidden">Error:</span>
+                                                    @_renameError
+                                                </p>
+                                            }
+                                            <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="@($"govuk-input govuk-input--width-20{(_renameError is not null ? " govuk-input--error" : "")}")" />
+                                        </GdsFormGroup>
+
+                                        <div class="govuk-button-group">
+                                            <button type="button" class="govuk-button govuk-button--primary" @onclick="() => SaveRename(file)">Save</button>
+                                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="CancelRename">Cancel</button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @file.Name
+                                        <br /><button type="button" class="govuk-link govuk-link--no-visited-state" @onclick="() => StartRename(file)" @onclick:preventDefault>Rename<span class="govuk-visually-hidden"> file '@file.Name'</span></button>
+                                    }
+                                </td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--green">
                                         Uploaded
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
+<a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
@@ -86,6 +135,11 @@
                         {
                             var errorMessage = GetErrorMessageForFile(rejectedFile);
                             <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <span class="media-placeholder">
+<img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
+                                    </span>
+                                </td>
                                 <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
                                 <td class="govuk-table__cell">
                                     <strong class="govuk-tag govuk-tag--red">
@@ -93,7 +147,7 @@
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--secondary" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
+                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
                                 </td>
                             </tr>
                         }

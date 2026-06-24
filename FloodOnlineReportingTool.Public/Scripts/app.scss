@@ -11,7 +11,14 @@ body {
 // Fill the space when the parent is flex
 .flex-fill {
     flex: 1;
-    width: 100%;
+    min-width: 0;
+    // Below 1020px, .govuk-width-container uses fixed margins and align-self: stretch
+    // correctly sizes the element (content box = viewport - margins). Above 1020px,
+    // auto margins disable stretch, so we force an explicit width so that max-width
+    // and margin: auto can centre the 960px container as intended.
+    @media (min-width: 1020px) {
+        width: 100%;
+    }
 }
 
 // Header
@@ -56,4 +63,15 @@ body {
             color: #0b0c0c;
         }
     }
+}
+
+// Links
+/* special style for buttons rendered like links */
+button.govuk-link {
+    background: none;
+    border: none;
+    font-size: inherit;
+    color: var(--govuk-frontend-color-blue);
+    padding: 0;
+    cursor: pointer;
 }

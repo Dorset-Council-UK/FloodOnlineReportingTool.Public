@@ -93,7 +93,13 @@ You must set up user secrets for development. Run the following command in the t
 Then add your configuration:
 
 - **ConnectionStrings**: Required for database access and optional message system.
-- **GIS**: Used to configure the Dorset Council Address API (customizable).
+- **AzureBlobStorage**: Required for file storage.
+  - The `ReadSASToken` is optional and can be used to provide read-only access to the blob storage.
+- **GIS**: Used to configure the Address API and other mapping related services.
+- **GovNotify**: Used to configure the GovNotify service for sending notifications.
+- **Messaging**: Used to configure the messaging system.
+- **DownstreamApis**: Used to configure downstream APIs.
+- **AzureAd**: Used to configure Azure Active Directory for authentication.
 
 Example secrets file:
 ```json
@@ -102,6 +108,11 @@ Example secrets file:
     "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic",
     "service-bus": "Endpoint=YourEndpoint;SharedAccessKeyName=YourKeyName;SharedAccessKey=YourAccessKey"
   },
+  "AzureBlobStorage": {
+    "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YourAccountName;AccountKey=YourAccountKey;EndpointSuffix=core.windows.net",
+    "ContainerName": "YourContainerName",
+    "ReadSASToken": "YourReadSASToken"
+  },
   "GIS": {
     "ApiKey": "YourApiKey",
     "AddressSearchUrl": "YourAddressUrl",
@@ -109,7 +120,42 @@ Example secrets file:
     "AccessTokenIssueDurationMonths": 6,
     "OSApiKey": "Your OS Maps API Key here",
     "DataRetentionYears": 7
-  }
+  },
+  "GovNotify": {
+    "ApiKey": "YourGovNotifyAPIKey",
+    "TestEmail": "test@example.com",
+    "Templates": {
+      "TestNotification": "TemplateID",
+      "VerifyEmailAddress": "TemplateID",
+      "ConfirmContactUpdated": "TemplateID",
+      "ConfirmContactDeleted": "TemplateID",
+      "RequestDpaUpdate": "TemplateID",
+      "Unsubscribe": "TemplateID",
+      "RequestFullReport": "TemplateID",
+      "SendStatusUpdate": "TemplateID",
+      "SendPublicComment": "TemplateID",
+      "SendCopyOfReport": "TemplateID",
+      "RecordDeletion": "TemplateID"
+    }
+  },
+  "Messaging": {
+    "Enabled": "true",
+    "ConnectionString": "YourServiceBusConnectionString"
+  },
+  "DownstreamApis": {
+    "ReportStatusApi": {
+      "BaseUrl": "YourReportStatusApiBaseUrl",
+      "Scopes": "ScopesRequired"
+    }
+  },
+  "AzureAd": {
+    "ClientId": "YourEntraClientID",
+    "ClientSecret": "YourEntraClientSecret",
+    "Domain": "YourEntraDomain",
+    "Instance": "https://YourEntraInstance/",
+    "ResponseType": "code",
+    "TenantId": "YourEntraTenantID"
+  },
 }
 ```
 
@@ -122,9 +168,9 @@ Authentication is not required to create a flood report. However, certain areas 
 
 The project integrates with the Dorset Council Address API. This is customizable via the `GIS` section in your configuration.
 
-For messaging, the connection string `service-bus` allows you to enable or disable the messaging system.
+For messaging, the connection string in the `Messaging` section allows you to enable or disable the messaging system.
 
-If you want to disable messaging, remove the `service-bus` connection string from your configuration.
+If you want to disable messaging, set `"Enabled": "false"` in your `Messaging` configuration.
 
 ## Further Help
 

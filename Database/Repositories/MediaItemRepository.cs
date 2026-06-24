@@ -4,6 +4,7 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -99,12 +100,32 @@ public class MediaItemRepository(
 
         if (mediaItem is null)
         {
-            return DeleteResult<MediaItem>.Failure([$"No media item found for ID {mediaItemId}"]);
+            return DeleteResult<MediaItem>.Failure([$"An error occurred deleting the media item"]);
         }
 
         context.MediaItems.Remove(mediaItem);
         await context.SaveChangesAsync(cancellationToken);
 
         return DeleteResult<MediaItem>.Success();
+    }
+
+    public async Task<Result<MediaItem>> UpdateTitle(Guid mediaItemId, string title, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Updating title for media item ID: {MediaItemId}", mediaItemId);
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var mediaItem = await context.MediaItems
+            .FirstOrDefaultAsync(mi => mi.Id == mediaItemId, cancellationToken);
+
+        if (mediaItem is null)
+        {
+            logger.LogWarning(message: "Couldn't rename media item. No media item found for ID {mediaItemId}", mediaItemId);
+            return Result<MediaItem>.Failure([$"An error occurred renaming the media item"]);
+        }
+
+        mediaItem.Title = title;
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result<MediaItem>.Success(mediaItem);
     }
 }

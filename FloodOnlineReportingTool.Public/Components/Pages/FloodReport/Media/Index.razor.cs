@@ -38,16 +38,24 @@ public partial class Index(
     private const long MaxFileSize = MaxFileSizeMB * 1024 * 1024; // Convert MB to bytes
 
     private int RemainingSlots => MaxNumFiles - Model.UploadedFiles.Count;
-
-    private static readonly string[] AllowedFileTypes = [
+    private static readonly string[] ImageFileTypes = [
         "image/jpeg",
         "image/jpg",
         "image/png",
         "image/gif",
+    ];
+    private static readonly string[] VideoFileTypes = [
         "video/mp4",
         "video/webm",
         "video/ogg",
-        "application/pdf",
+    ];
+    private static readonly string[] DocumentFileTypes = [
+        "application/pdf"
+    ];
+    private static readonly string[] AllowedFileTypes = [
+        .. ImageFileTypes, 
+        .. VideoFileTypes, 
+        .. DocumentFileTypes,
     ];
 
     private static readonly string[] FriendlyFileTypes = [
@@ -65,6 +73,10 @@ public partial class Index(
     private readonly List<IBrowserFile> _uploadingFiles = [];
     private readonly List<RejectedFile> _rejectedFiles = [];
     private string? _uploadLimitError;
+
+    private Models.FloodReport.Create.MediaItem? _renamingFile;
+    private string _renameText = string.Empty;
+    private string? _renameError;
 
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
@@ -121,7 +133,7 @@ public partial class Index(
                 Id = mediaItem.Id,
                 Name = mediaItem.Title ?? Path.GetFileName(mediaItem.URL),
                 Url = mediaItem.URL,
-                ContentType = string.Empty,
+                ContentType = GetContentTypeFromUrl(mediaItem.URL),
             })
             .ToList();
     }
@@ -179,7 +191,7 @@ public partial class Index(
             {
                 Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
-                    Name = file.Name,
+                    Name = Path.GetFileNameWithoutExtension(file.Name),
                     Url = blobUrl,
                     ContentType = file.ContentType,
                 });
@@ -193,6 +205,73 @@ public partial class Index(
 
         _rejectedFiles.Add(new RejectedFile(file, FileRejectionReason.UploadError));
         return false;
+    }
+
+    private static readonly Dictionary<string, string> _extensionToContentType = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { ".jpg",  "image/jpeg" },
+        { ".jpeg", "image/jpeg" },
+        { ".png",  "image/png" },
+        { ".gif",  "image/gif" },
+        { ".mp4",  "video/mp4" },
+        { ".webm", "video/webm" },
+        { ".ogg",  "video/ogg" },
+        { ".pdf",  "application/pdf" },
+    };
+
+    private static string GetContentTypeFromUrl(string url)
+    {
+        var extension = Path.GetExtension(new Uri(url).LocalPath);
+        return _extensionToContentType.TryGetValue(extension, out var contentType)
+            ? contentType
+            : string.Empty;
+    }
+
+    private void StartRename(Models.FloodReport.Create.MediaItem file)
+    {
+        _renamingFile = file;
+        _renameText = file.Name;
+        _renameError = null;
+    }
+
+    private void CancelRename()
+    {
+        _renamingFile = null;
+        _renameText = string.Empty;
+        _renameError = null;
+    }
+
+    private const int MaxRenameTitleLength = 255;
+
+    private async Task SaveRename(Models.FloodReport.Create.MediaItem file)
+    {
+        _renameError = null;
+
+        if (string.IsNullOrWhiteSpace(_renameText))
+        {
+            _renameError = "Enter a file name";
+            return;
+        }
+
+        if (_renameText.Length > MaxRenameTitleLength)
+        {
+            _renameError = $"File name must be {MaxRenameTitleLength} characters or fewer";
+            return;
+        }
+
+        if (file.Id.HasValue)
+        {
+            var result = await mediaItemRepository.UpdateTitle(file.Id.Value, _renameText, _cts.Token);
+            if (!result.IsSuccess)
+            {
+                _renameError = string.Join(", ", result.Errors);
+                return;
+            }
+        }
+
+        file.Name = _renameText;
+        _renamingFile = null;
+        _renameText = string.Empty;
     }
 
     private async Task DeleteUploadedFile(Models.FloodReport.Create.MediaItem file)
