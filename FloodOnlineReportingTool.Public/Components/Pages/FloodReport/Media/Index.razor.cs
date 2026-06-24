@@ -191,7 +191,7 @@ public partial class Index(
             {
                 Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
-                    Name = file.Name,
+                    Name = Path.GetFileNameWithoutExtension(file.Name),
                     Url = blobUrl,
                     ContentType = file.ContentType,
                 });
