@@ -264,13 +264,7 @@ public partial class Index(
             var result = await mediaItemRepository.UpdateTitle(file.Id.Value, _renameText, _cts.Token);
             if (!result.IsSuccess)
             {
-                foreach (var error in result.Errors)
-                {
-                    logger.LogWarning("Couldn't rename media item: {ErrorMessage}", error);
-                }
-
-                _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
-                _editContext.NotifyValidationStateChanged();
+                _renameError = string.Join(", ", result.Errors);
                 return;
             }
         }

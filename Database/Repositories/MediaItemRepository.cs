@@ -4,6 +4,7 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -99,7 +100,7 @@ public class MediaItemRepository(
 
         if (mediaItem is null)
         {
-            return DeleteResult<MediaItem>.Failure([$"No media item found for ID {mediaItemId}"]);
+            return DeleteResult<MediaItem>.Failure([$"An error occurred deleting the media item"]);
         }
 
         context.MediaItems.Remove(mediaItem);
@@ -118,7 +119,8 @@ public class MediaItemRepository(
 
         if (mediaItem is null)
         {
-            return Result<MediaItem>.Failure([$"No media item found for ID {mediaItemId}"]);
+            logger.LogWarning(message: "Couldn't rename media item. No media item found for ID {mediaItemId}", mediaItemId);
+            return Result<MediaItem>.Failure([$"An error occurred renaming the media item"]);
         }
 
         mediaItem.Title = title;
