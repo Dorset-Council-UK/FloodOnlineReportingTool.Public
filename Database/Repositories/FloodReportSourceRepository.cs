@@ -271,11 +271,9 @@ public class FloodReportSourceRepository(
 
         // Create a message
         FloodReportSourceCreated message = new(
-            floodReportSource.Id,
             Buffer: 25,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            floodReportSource.CreatedUtc,
             eligibilityCheck.ToEligibilityCheckRecord(
                 await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
                 await commonRepository.GetFloodProblemsForCauses(eligibilityCheck, ct)
@@ -333,19 +331,17 @@ public class FloodReportSourceRepository(
         }
 
         // Update the eligibility check
-        var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, DateTimeOffset.UtcNow, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReportSource.Id,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
-            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+            ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
+            floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {
@@ -389,17 +385,16 @@ public class FloodReportSourceRepository(
         // Update the users eligibility check
         var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, DateTimeOffset.UtcNow, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReportSource.Id,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
-            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+            ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
+            floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {

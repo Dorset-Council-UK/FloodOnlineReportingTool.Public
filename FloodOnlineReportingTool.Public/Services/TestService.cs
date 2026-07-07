@@ -235,11 +235,9 @@ internal sealed class TestService(
         var now = DateTimeOffset.UtcNow;
 
         FloodReportSourceCreated message = new(
-            Id: Guid.CreateVersion7(),
             Buffer: 25,
             Reference: "TEST1234",
             ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
-            CreatedUtc: now,
             EligibilityCheckRecord: TestData_EligibilityCheckRecord,
             HasInvestigation: false,
             HasContacts: false,
@@ -269,21 +267,18 @@ internal sealed class TestService(
             return null;
         }
 
-        var now = DateTimeOffset.UtcNow;
-
         FloodReportSourceUpdated message = new(
-            Id: Guid.CreateVersion7(),
             Reference: "TEST1234",
             ViewUri: new Uri("https://localhost:7039/report-flooding/test"),
-            UpdatedUtc: now,
             RecordStatusUpdate: Guid.Empty, // TODO: When FloodReportRepository.Update is used, create a real record status update and use its ID here
             EligibilityCheckRecord: TestData_EligibilityCheckRecord,
-            ActionStatusUpdates: []
+            ActionStatusUpdates: [],
+            Id: Guid.CreateVersion7()
         );
 
         OutboxMessage outboxMessage = new()
         {
-            Created = now,
+            Created = DateTimeOffset.UtcNow,
             Status = messageStatus,
             Priority = MessagePriority.Low,
             MessageType = nameof(FloodReportSourceUpdated),
