@@ -52,7 +52,7 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
         }
     });
 
-builder.AddProject<Projects.Outbox>("outbox")
+builder.AddProject<Projects.Messaging>("messaging")
     .WithReference(databasePublic)
     .WithReference(serviceBus)
     .WaitFor(serviceBus)

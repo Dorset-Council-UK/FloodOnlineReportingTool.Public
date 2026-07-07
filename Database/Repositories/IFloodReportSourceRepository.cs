@@ -85,6 +85,12 @@ public interface IFloodReportSourceRepository
     Task<Result<FloodReportSource?>> Update(string userId, Guid eligibilityCheckId, EligibilityCheckDto dto, Guid status, Uri viewUriBase, CancellationToken ct);
 
     /// <summary>
+    /// Update the flood report source
+    /// </summary>
+    /// <returns>A result pattern with the users updated flood report source, or a list of errors.</returns>
+    Task<Result<FloodReportSource?>> Update(string reference, Guid statusId, CancellationToken ct);
+
+    /// <summary>
     ///     <para>Gets the result model with information about the eligibility status of the current record</para>
     /// </summary>
     Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct);
