@@ -64,7 +64,7 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    ```
    or if using the Package Manager Console in Visual Studio, set the default project to Database and run:
 
-   ```shell
+   ```powershell
    Update-Database -StartupProject FloodOnlineReportingTool.Public -Context PublicDbContext
    ```
 
