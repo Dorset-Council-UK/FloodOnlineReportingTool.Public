@@ -12,21 +12,17 @@ internal class FloodReportSourceConfiguration : IEntityTypeConfiguration<FloodRe
         builder
             .ToTable(o => o.HasComment("Flood report sources"));
 
+        builder.HasKey(o => o.Id);
+        // Unique constraint ensures Reference is consistent across FORT modules
+        builder.HasAlternateKey(o => o.Reference);
+
         builder
             .Property(o => o.Id)
             .ValueGeneratedNever();
 
         builder
-            .HasIndex(o => o.Id)
-            .IsUnique();
-
-        builder
-            .HasIndex(o => o.Reference)
-            .IsUnique();
-
-        builder
             .Property(o => o.Reference)
-            .HasMaxLength(8);
+            .HasMaxLength(15);
 
         builder
             .Property(o => o.StatusId)
