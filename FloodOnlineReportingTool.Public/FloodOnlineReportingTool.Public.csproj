@@ -43,6 +43,7 @@
     <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" />
     <PackageReference Include="Microsoft.Identity.Web" />
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" />
+    <PackageReference Include="Microsoft.OpenApi" />
 	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
