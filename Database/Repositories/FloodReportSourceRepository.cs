@@ -341,7 +341,7 @@ public class FloodReportSourceRepository(
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
             ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
-            floodReportSource.Id
+            Id: floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {
@@ -393,7 +393,7 @@ public class FloodReportSourceRepository(
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
             ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
-            floodReportSource.Id
+            Id: floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {

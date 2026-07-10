@@ -81,7 +81,7 @@ public class FloodReportExtraInfoRequestConsumerTests
     public Task TopicName_Returns_ExpectedTopicName_ForConfiguredSuffix(string? suffix, string expectedTopicName)
     {
         // Arrange
-        _configuration["Messaging:TopicSuffix"] = suffix;
+        _configuration["Messaging:TopicSuffix"].Returns(suffix);
         var consumer = new FloodReportExtraInfoRequestConsumer(_logger, _configuration, _serviceScopeFactory);
 
         // Act
