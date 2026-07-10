@@ -271,11 +271,9 @@ public class FloodReportSourceRepository(
 
         // Create a message
         FloodReportSourceCreated message = new(
-            floodReportSource.Id,
             Buffer: 25,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            floodReportSource.CreatedUtc,
             eligibilityCheck.ToEligibilityCheckRecord(
                 await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
                 await commonRepository.GetFloodProblemsForCauses(eligibilityCheck, ct)
@@ -333,19 +331,17 @@ public class FloodReportSourceRepository(
         }
 
         // Update the eligibility check
-        var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, DateTimeOffset.UtcNow, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReportSource.Id,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
-            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+            ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
+            Id: floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {
@@ -387,19 +383,17 @@ public class FloodReportSourceRepository(
         }
 
         // Update the users eligibility check
-        var updatedUtc = DateTimeOffset.UtcNow;
         var impactDuration = await dto.CalculateImpactDurationHours(context, ct);
-        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, updatedUtc, impactDuration);
+        var updatedEligibilityCheck = dto.ToUpdatedEntity(floodReportSource.EligibilityCheck, DateTimeOffset.UtcNow, impactDuration);
 
         // Create a message
         FloodReportSourceUpdated message = new(
-            floodReportSource.Id,
             floodReportSource.Reference,
             ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
-            updatedUtc,
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
-            ActionStatusUpdates: [] // Temporary: this is going to be removed or changed
+            ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
+            Id: floodReportSource.Id
         );
         OutboxMessage outboxMessage = new()
         {
@@ -414,6 +408,30 @@ public class FloodReportSourceRepository(
         await context.SaveChangesAsync(ct);
 
         logger.LogInformation("Updated users flood report source with eligibility check id {EligibilityCheckId}", eligibilityCheckId);
+        return Result<FloodReportSource?>.Success(floodReportSource);
+    }
+
+    public async Task<Result<FloodReportSource?>> Update(string reference, Guid statusId, CancellationToken ct)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // Find the users flood report source
+        var floodReportSource = await context.FloodReportSources
+            .IgnoreAutoIncludes()
+            .FirstOrDefaultAsync(frs => frs.Reference == reference, ct);
+
+        if (floodReportSource is null)
+        {
+            logger.LogWarning("No flood report source found for reference {Reference}", reference);
+            return Result<FloodReportSource?>.Failure([$"No flood report found for reference {reference}."]);
+        }
+
+        floodReportSource.StatusId = statusId;
+
+        context.Update(floodReportSource);
+        await context.SaveChangesAsync(ct);
+
+        logger.LogInformation("Updated flood report source for reference {Reference}", reference);
         return Result<FloodReportSource?>.Success(floodReportSource);
     }
 

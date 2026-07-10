@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Net.Mime;
 
-namespace Outbox;
+namespace Messaging;
 
 #pragma warning disable MA0051 // Method is too long
 
-public sealed class Worker(
-    ILogger<Worker> logger,
+public sealed class OutboxWorker(
+    ILogger<OutboxWorker> logger,
     IConfiguration configuration,
     IServiceProvider serviceProvider,
     IHostEnvironment hostEnvironment,
@@ -116,7 +116,7 @@ public sealed class Worker(
     /// <summary>
     /// Retrieves the topic name associated with the specified message type.
     /// </summary>
-    /// <remarks>Optional suffix can be set via configuration (Outbox:TopicSuffix) and will be appended to end of the topic name. Useful for testing.</remarks>
+    /// <remarks>Optional suffix can be set via configuration (Messaging:TopicSuffix) and will be appended to end of the topic name. Useful for testing.</remarks>
     /// <param name="messageType">The name of the message type for which to obtain the corresponding topic name. Must match a supported message type exactly.</param>
     /// <returns>The topic name corresponding to the specified message type.</returns>
     /// <exception cref="NotSupportedException">Thrown if the specified message type is not supported.</exception>
@@ -129,7 +129,7 @@ public sealed class Worker(
             _ => throw new NotSupportedException($"Message type {messageType} is not supported."),
         };
 
-        string? suffix = configuration["Outbox:TopicSuffix"];
+        string? suffix = configuration["Messaging:TopicSuffix"];
         return string.IsNullOrWhiteSpace(suffix) ? topicName : $"{topicName}{suffix}";
     }
 }
