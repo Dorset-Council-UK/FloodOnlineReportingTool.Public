@@ -11,7 +11,7 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 
 - **PostgreSQL 13+ with PostGIS extension**: This is the default database provider. The project uses Entity Framework, making it adaptable to other providers with minimal effort.
 - **.NET**: Ensure you have the .NET 10 SDK installed.
-- **Message system (optional)**: The project includes a messaging system using Azure Service Bus. You can enable or disable this system through the connection string `service-bus` in your configuration.
+- **Message system (optional)**: The project includes a messaging system project using Azure Service Bus.
 - **GDS Framework**: The project relies on the Government Digital Service (GDS) framework for its front-end.
 
 ## Getting Started
@@ -76,7 +76,7 @@ Create a default user with the following credentials:
 The username and password is then used in the connection string FloodReportingPublic.
 
 ### Connection Strings
-The project requires a `ConnectionStrings` section in your user secrets. And a connection string named `FloodReportingPublic`. Ensure the connection string contains `;Search Path=fortpublic` for proper functionality.
+The project requires a `ConnectionStrings` section in your user secrets. And a connection string named `FloodReportingPublic`. Ensure the connection string contains `;Search Path=fortpublic,public` for proper functionality.
 
 For an example see `Example secrets file` below.
 
@@ -92,21 +92,20 @@ You must set up user secrets for development. Run the following command in the t
   ```
 Then add your configuration:
 
-- **ConnectionStrings**: Required for database access and optional message system.
+- **ConnectionStrings**: Required for database access and boundaries database access.
 - **AzureBlobStorage**: Required for file storage.
   - The `ReadSASToken` is optional and can be used to provide read-only access to the blob storage.
 - **GIS**: Used to configure the Address API and other mapping related services.
 - **GovNotify**: Used to configure the GovNotify service for sending notifications.
-- **Messaging**: Used to configure the messaging system.
 - **DownstreamApis**: Used to configure downstream APIs.
 - **AzureAd**: Used to configure Azure Active Directory for authentication.
 
-Example secrets file:
+Example public secrets file:
 ```json
 {
   "ConnectionStrings": {
-    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic",
-    "service-bus": "Endpoint=YourEndpoint;SharedAccessKeyName=YourKeyName;SharedAccessKey=YourAccessKey"
+    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public",
+    "Boundaries": "Host=YourHost;Port=YourPort;Database=YourDatabase;Search Path=YourSearchPath"
   },
   "AzureBlobStorage": {
     "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YourAccountName;AccountKey=YourAccountKey;EndpointSuffix=core.windows.net",
@@ -138,10 +137,6 @@ Example secrets file:
       "RecordDeletion": "TemplateID"
     }
   },
-  "Messaging": {
-    "Enabled": "true",
-    "ConnectionString": "YourServiceBusConnectionString"
-  },
   "DownstreamApis": {
     "ReportStatusApi": {
       "BaseUrl": "YourReportStatusApiBaseUrl",
@@ -159,6 +154,19 @@ Example secrets file:
 }
 ```
 
+Example messaging secrets file:
+```json
+{
+  "ConnectionStrings": {
+    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public",
+    "Boundaries": "Host=YourHost;Port=YourPort;Database=YourDatabase;Search Path=YourSearchPath",
+    "service-bus": "Endpoint=YourEndpoint;SharedAccessKeyName=YourKeyName;SharedAccessKey=YourKey",
+  },
+  "Messaging:TopicSuffix": "-test",
+  "Inbox:SubscriptionName": "testing"
+}
+```
+
 ## Authentication
 
 The project uses Microsoft Identity with OpenID Connect for Authentication.
@@ -168,9 +176,7 @@ Authentication is not required to create a flood report. However, certain areas 
 
 The project integrates with the Dorset Council Address API. This is customizable via the `GIS` section in your configuration.
 
-For messaging, the connection string in the `Messaging` section allows you to enable or disable the messaging system.
-
-If you want to disable messaging, set `"Enabled": "false"` in your `Messaging` configuration.
+For messaging, the separate `Messaging` project allows you to optionally choose if you want to run the inbox and outbox.
 
 ## Further Help
 
