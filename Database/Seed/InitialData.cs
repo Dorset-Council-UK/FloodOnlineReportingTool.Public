@@ -144,6 +144,9 @@ internal static class InitialData
             new FloodImpact(FloodImpactIds.GreaterThanSixMonths, "Impact Duration", ">6 months", FloodImpactPriority.None, 5),
             new FloodImpact(FloodImpactIds.StillUnable, "Impact Duration", "Still unable", FloodImpactPriority.None, 6),
             new FloodImpact(FloodImpactIds.ImpactDurationNotSure, "Impact Duration", "Not Sure", FloodImpactPriority.None, 99),
+
+            // Import unknown - don't include in any forms but will be needed for displaying imported data with unknown values
+            new FloodImpact(new("019f6a3a-f7eb-74ef-824d-5b673146160e"),"All", "Unknown", "Imported record with unknown value", 99),
         ];
     }
 
@@ -188,6 +191,9 @@ internal static class InitialData
             new FloodMitigation(FloodMitigationIds.DuringFlooding, FloodMitigationCategory.WardenAwareness, "During flooding", 2),
             new FloodMitigation(FloodMitigationIds.AfterFlooding, FloodMitigationCategory.WardenAwareness, "After flooding", 3),
             new FloodMitigation(FloodMitigationIds.NotSureFloodWarden, FloodMitigationCategory.WardenAwareness, "What are flood wardens/volunteers?", 4),
+
+            // Import unknown - don't include in any forms but will be needed for displaying imported data with unknown values
+            new FloodMitigation(new("019f6a3a-f7eb-7c43-97d8-2c7cfa9d79e3"), "All", "Imported record with unknown value", 99),
         ];
     }
 
@@ -256,6 +262,9 @@ internal static class InitialData
             new FloodProblem(FloodDestinationIds.DitchesAndDrainageChannels, FloodProblemCategory.Destination, "Ditches and drainage channels", "The flood water was flowing into a ditch or channel", 4),
             new FloodProblem(FloodDestinationIds.RoadDrainage, FloodProblemCategory.Destination, "Road drainage", "The flood water was flowing into road drains", 5),
             new FloodProblem(FloodDestinationIds.NotSure, FloodProblemCategory.Destination, "Not Sure", "I don't know which option is right", 99),
+
+            // Import unknown - don't include in any forms but will be needed for displaying imported data with unknown values
+            new FloodProblem(new("019f6a3a-f7eb-748d-a169-a057be99f012"),"All", "Unknown", "Imported record with unknown value", 99),
         ];
     }
 
