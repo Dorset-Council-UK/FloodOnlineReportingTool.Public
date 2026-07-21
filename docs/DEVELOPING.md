@@ -62,10 +62,9 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
    ```shell
    dotnet ef database update --project "Database" --startup-project "FloodOnlineReportingTool.Public" --context PublicDbContext
    ```
-   or if using the Package Manager Console in Visual Studio, set the default project to Database and run:
-
-   ```powershell
-   Update-Database -StartupProject FloodOnlineReportingTool.Public -Context PublicDbContext
+   or if using the Package Manager Console in Visual Studio and run:
+    ```powershell
+    Update-Database -Project Database -StartupProject FloodOnlineReportingTool.Public -Context PublicDbContext
    ```
 
 ## Database Setup
