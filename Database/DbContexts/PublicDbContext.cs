@@ -36,7 +36,7 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<RecordStatus> RecordStatuses { get; set; }
 
-    public DbSet<FailedImports> FailedImports { get; set; } // Table to track failed imports
+    public DbSet<FailedImport> FailedImports { get; set; } // Table to track failed imports
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
