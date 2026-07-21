@@ -5,11 +5,12 @@
 /// </summary>
 public record FloodMitigation
 {
-    public FloodMitigation(Guid id, string category, string typeName, int optionOrder)
+    public FloodMitigation(Guid id, string category, string typeName, string typeDescription, int optionOrder)
     {
         Id = id;
         Category = category;
         TypeName = typeName;
+        TypeDescription = typeDescription;
         OptionOrder = optionOrder;
     }
 

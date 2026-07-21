@@ -293,6 +293,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd63e-f000-732d-9d84-5f1f4f54f3bd"),
                             Category = "Property Type",
                             OptionOrder = 1,
+                            TypeDescription = "Residential",
                             TypeName = "Residential"
                         },
                         new
@@ -300,6 +301,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd63f-da60-7c6c-9a7c-a197c733e7ea"),
                             Category = "Property Type",
                             OptionOrder = 2,
+                            TypeDescription = "Commercial",
                             TypeName = "Commercial"
                         },
                         new
@@ -307,6 +309,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd640-c4c0-7e7c-aa03-d4d09a3e2e80"),
                             Category = "Property Type",
                             OptionOrder = 3,
+                            TypeDescription = "Other",
                             TypeName = "Other"
                         },
                         new
@@ -314,6 +317,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd641-af20-74f2-9576-38b0dd12f330"),
                             Category = "Property Type",
                             OptionOrder = 99,
+                            TypeDescription = "Not Specified",
                             TypeName = "Not Specified"
                         },
                         new
@@ -322,6 +326,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Priority",
                             CategoryPriority = "Internal",
                             OptionOrder = 1,
+                            TypeDescription = "Building",
                             TypeName = "Building"
                         },
                         new
@@ -330,6 +335,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Priority",
                             CategoryPriority = "External",
                             OptionOrder = 2,
+                            TypeDescription = "Grounds",
                             TypeName = "Grounds"
                         },
                         new
@@ -338,6 +344,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Priority",
                             CategoryPriority = "Both",
                             OptionOrder = 3,
+                            TypeDescription = "Both",
                             TypeName = "Both"
                         },
                         new
@@ -346,6 +353,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Priority",
                             CategoryPriority = "Other",
                             OptionOrder = 4,
+                            TypeDescription = "Unknown",
                             TypeName = "Unknown"
                         },
                         new
@@ -354,6 +362,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Priority",
                             CategoryPriority = "Other",
                             OptionOrder = 9,
+                            TypeDescription = "Not Specified",
                             TypeName = "Not Specified"
                         },
                         new
@@ -362,6 +371,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Internal",
                             OptionOrder = 1,
+                            TypeDescription = "Inside living area",
                             TypeName = "Inside living area"
                         },
                         new
@@ -370,6 +380,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Internal",
                             OptionOrder = 2,
+                            TypeDescription = "Mobile Home / Caravan",
                             TypeName = "Mobile Home / Caravan"
                         },
                         new
@@ -378,6 +389,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Internal",
                             OptionOrder = 3,
+                            TypeDescription = "Basement / Cellar",
                             TypeName = "Basement / Cellar"
                         },
                         new
@@ -386,6 +398,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Internal",
                             OptionOrder = 4,
+                            TypeDescription = "Garage attached to property",
                             TypeName = "Garage attached to property"
                         },
                         new
@@ -394,6 +407,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Internal",
                             OptionOrder = 5,
+                            TypeDescription = "Under floorboards",
                             TypeName = "Under floorboards"
                         },
                         new
@@ -402,6 +416,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "External",
                             OptionOrder = 6,
+                            TypeDescription = "Against property wall",
                             TypeName = "Against property wall"
                         },
                         new
@@ -410,6 +425,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "External",
                             OptionOrder = 7,
+                            TypeDescription = "Property Access",
                             TypeName = "Property Access"
                         },
                         new
@@ -418,6 +434,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "External",
                             OptionOrder = 8,
+                            TypeDescription = "Outbuilding(s)",
                             TypeName = "Outbuilding(s)"
                         },
                         new
@@ -426,6 +443,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "External",
                             OptionOrder = 9,
+                            TypeDescription = "Garden",
                             TypeName = "Garden"
                         },
                         new
@@ -434,6 +452,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "External",
                             OptionOrder = 10,
+                            TypeDescription = "Road",
                             TypeName = "Road"
                         },
                         new
@@ -442,6 +461,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-R",
                             CategoryPriority = "Other",
                             OptionOrder = 99,
+                            TypeDescription = "Not Sure",
                             TypeName = "Not Sure"
                         },
                         new
@@ -450,6 +470,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "Internal",
                             OptionOrder = 1,
+                            TypeDescription = "Inside building",
                             TypeName = "Inside building"
                         },
                         new
@@ -458,6 +479,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "Internal",
                             OptionOrder = 2,
+                            TypeDescription = "Below ground level floors",
                             TypeName = "Below ground level floors"
                         },
                         new
@@ -466,6 +488,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "Internal",
                             OptionOrder = 3,
+                            TypeDescription = "Under floorboards",
                             TypeName = "Under floorboards"
                         },
                         new
@@ -474,6 +497,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 4,
+                            TypeDescription = "Against property wall",
                             TypeName = "Against property wall"
                         },
                         new
@@ -482,6 +506,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 5,
+                            TypeDescription = "Outbuilding(s)",
                             TypeName = "Outbuilding(s)"
                         },
                         new
@@ -490,6 +515,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 6,
+                            TypeDescription = "Fields / Business Land",
                             TypeName = "Fields / Business Land"
                         },
                         new
@@ -498,6 +524,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 7,
+                            TypeDescription = "Car Park",
                             TypeName = "Car Park"
                         },
                         new
@@ -506,6 +533,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 8,
+                            TypeDescription = "Access",
                             TypeName = "Access"
                         },
                         new
@@ -514,6 +542,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "External",
                             OptionOrder = 9,
+                            TypeDescription = "Road",
                             TypeName = "Road"
                         },
                         new
@@ -522,6 +551,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Category = "Zone-C",
                             CategoryPriority = "Other",
                             OptionOrder = 99,
+                            TypeDescription = "Not Sure",
                             TypeName = "Not Sure"
                         },
                         new
@@ -529,6 +559,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71b-9460-715b-aa13-d9eabd5b7ef1"),
                             Category = "Service Impact",
                             OptionOrder = 2,
+                            TypeDescription = "Private sewer",
                             TypeName = "Private sewer"
                         },
                         new
@@ -536,6 +567,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71c-7ec0-7a1b-94a6-c7d7ae52b977"),
                             Category = "Service Impact",
                             OptionOrder = 3,
+                            TypeDescription = "Mains sewer",
                             TypeName = "Mains sewer"
                         },
                         new
@@ -543,6 +575,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71d-6920-787b-ab3f-b6f251f4834b"),
                             Category = "Service Impact",
                             OptionOrder = 4,
+                            TypeDescription = "Water supply",
                             TypeName = "Water supply"
                         },
                         new
@@ -550,6 +583,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71e-5380-79a2-8e37-ab4e24f063a2"),
                             Category = "Service Impact",
                             OptionOrder = 5,
+                            TypeDescription = "Gas",
                             TypeName = "Gas"
                         },
                         new
@@ -557,6 +591,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71f-3de0-7551-b3a4-7916759c83fe"),
                             Category = "Service Impact",
                             OptionOrder = 6,
+                            TypeDescription = "Electricity",
                             TypeName = "Electricity"
                         },
                         new
@@ -564,6 +599,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd720-2840-7273-bfcd-4ce03f7f249e"),
                             Category = "Service Impact",
                             OptionOrder = 7,
+                            TypeDescription = "Phoneline",
                             TypeName = "Phoneline"
                         },
                         new
@@ -571,6 +607,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd71a-aa00-7ac0-b521-ccf27f194875"),
                             Category = "Service Impact",
                             OptionOrder = 98,
+                            TypeDescription = "Services not affected",
                             TypeName = "Services not affected"
                         },
                         new
@@ -578,6 +615,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd721-12a0-7341-a0fb-818543c14e0f"),
                             Category = "Service Impact",
                             OptionOrder = 99,
+                            TypeDescription = "Not sure",
                             TypeName = "Not sure"
                         },
                         new
@@ -585,6 +623,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd751-9880-7fe6-812e-3683961317a9"),
                             Category = "Community Impact",
                             OptionOrder = 1,
+                            TypeDescription = "All road access blocked",
                             TypeName = "All road access blocked"
                         },
                         new
@@ -592,6 +631,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd752-82e0-7560-8b2f-441c7ff1800a"),
                             Category = "Community Impact",
                             OptionOrder = 2,
+                            TypeDescription = "Some road access blocked",
                             TypeName = "Some road access blocked"
                         },
                         new
@@ -599,6 +639,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd753-6d40-7327-b7dc-e5286d2a5bf3"),
                             Category = "Community Impact",
                             OptionOrder = 3,
+                            TypeDescription = "No access to place of work",
                             TypeName = "No access to place of work"
                         },
                         new
@@ -606,6 +647,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd754-57a0-7009-b36e-49d223f5515c"),
                             Category = "Community Impact",
                             OptionOrder = 4,
+                            TypeDescription = "Public transport disrupted",
                             TypeName = "Public transport disrupted"
                         },
                         new
@@ -613,6 +655,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd755-4200-706e-89da-48876a818c73"),
                             Category = "Community Impact",
                             OptionOrder = 5,
+                            TypeDescription = "Local shop(s) closed",
                             TypeName = "Local shop(s) closed"
                         },
                         new
@@ -620,6 +663,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd756-2c60-7616-a03f-6e03f996cd1f"),
                             Category = "Community Impact",
                             OptionOrder = 99,
+                            TypeDescription = "Not Sure",
                             TypeName = "Not Sure"
                         },
                         new
@@ -627,6 +671,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd788-8700-723b-aa01-d93fa589ab4d"),
                             Category = "Impact Duration",
                             OptionOrder = 1,
+                            TypeDescription = "Use not disrupted",
                             TypeName = "Use not disrupted"
                         },
                         new
@@ -634,6 +679,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd789-7160-74da-b17b-871e5de26e3a"),
                             Category = "Impact Duration",
                             OptionOrder = 2,
+                            TypeDescription = "Up to 1 week",
                             TypeName = "Up to 1 week"
                         },
                         new
@@ -641,6 +687,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd78a-5bc0-77fe-9930-fe113cc34dc9"),
                             Category = "Impact Duration",
                             OptionOrder = 3,
+                            TypeDescription = "1 week to 1 month",
                             TypeName = "1 week to 1 month"
                         },
                         new
@@ -648,6 +695,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd78b-4620-72d5-bb2c-6eb8edb20691"),
                             Category = "Impact Duration",
                             OptionOrder = 4,
+                            TypeDescription = "1 month to 6 months",
                             TypeName = "1 month to 6 months"
                         },
                         new
@@ -655,6 +703,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd78c-3080-7d4e-88ef-4b3013a8bb91"),
                             Category = "Impact Duration",
                             OptionOrder = 5,
+                            TypeDescription = ">6 months",
                             TypeName = ">6 months"
                         },
                         new
@@ -662,6 +711,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd78d-1ae0-7fb3-bc3e-a9adc9b3dd7f"),
                             Category = "Impact Duration",
                             OptionOrder = 6,
+                            TypeDescription = "Still unable",
                             TypeName = "Still unable"
                         },
                         new
@@ -669,14 +719,15 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fd78e-0540-7b80-ac80-b58c96edc173"),
                             Category = "Impact Duration",
                             OptionOrder = 99,
+                            TypeDescription = "Not Sure",
                             TypeName = "Not Sure"
                         },
                         new
                         {
                             Id = new Guid("019f6a3a-f7eb-74ef-824d-5b673146160e"),
                             Category = "All",
-                            CategoryPriority = "Imported record with unknown value",
                             OptionOrder = 99,
+                            TypeDescription = "Imported record with unknown value",
                             TypeName = "Unknown"
                         });
                 });
@@ -711,6 +762,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb65-4c00-7552-bcf3-0a398a590464"),
                             Category = "Action Taken",
                             OptionOrder = 99,
+                            TypeDescription = "No Action Taken",
                             TypeName = "No Action Taken"
                         },
                         new
@@ -718,6 +770,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb66-3660-70ed-af58-61a95da37750"),
                             Category = "Action Taken",
                             OptionOrder = 2,
+                            TypeDescription = "Sandbags",
                             TypeName = "Sandbags"
                         },
                         new
@@ -725,6 +778,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb67-20c0-7c09-8aa3-818bc80648f6"),
                             Category = "Action Taken",
                             OptionOrder = 3,
+                            TypeDescription = "Sandless Sandbag",
                             TypeName = "Sandless Sandbag"
                         },
                         new
@@ -732,6 +786,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb68-0b20-7840-bbb4-4cc1120720ac"),
                             Category = "Action Taken",
                             OptionOrder = 4,
+                            TypeDescription = "Flood Boards / Gate",
                             TypeName = "Flood Boards / Gate"
                         },
                         new
@@ -739,6 +794,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb68-f580-761f-8f45-805d18c65823"),
                             Category = "Action Taken",
                             OptionOrder = 5,
+                            TypeDescription = "Flood Door",
                             TypeName = "Flood Door"
                         },
                         new
@@ -746,6 +802,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb69-dfe0-735a-ba5a-389eb2f5f753"),
                             Category = "Action Taken",
                             OptionOrder = 6,
+                            TypeDescription = "Back-flow valve",
                             TypeName = "Back-flow valve"
                         },
                         new
@@ -753,6 +810,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb6a-ca40-7e06-b6cd-0dab09a39e90"),
                             Category = "Action Taken",
                             OptionOrder = 7,
+                            TypeDescription = "Air brick cover",
                             TypeName = "Air brick cover"
                         },
                         new
@@ -760,6 +818,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb6b-b4a0-77c5-9721-e3a1cac011fa"),
                             Category = "Action Taken",
                             OptionOrder = 8,
+                            TypeDescription = "Pumped Water",
                             TypeName = "Pumped Water"
                         },
                         new
@@ -767,6 +826,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb6c-9f00-732f-9d67-a087fa117a8a"),
                             Category = "Action Taken",
                             OptionOrder = 9,
+                            TypeDescription = "Move Valuables",
                             TypeName = "Move Valuables"
                         },
                         new
@@ -774,6 +834,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb6d-8960-7e00-a446-056d1f74e329"),
                             Category = "Action Taken",
                             OptionOrder = 10,
+                            TypeDescription = "Move Car",
                             TypeName = "Move Car"
                         },
                         new
@@ -781,6 +842,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb6e-73c0-71c8-a533-0bff3d55eb59"),
                             Category = "Action Taken",
                             OptionOrder = 11,
+                            TypeDescription = "Other",
                             TypeName = "Other"
                         },
                         new
@@ -788,6 +850,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb9c-3a80-7300-8a49-5b3df75adf2a"),
                             Category = "Help Received From",
                             OptionOrder = 99,
+                            TypeDescription = "No Help",
                             TypeName = "No Help"
                         },
                         new
@@ -795,6 +858,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb9d-24e0-78ba-9fff-95ac94b38f7c"),
                             Category = "Help Received From",
                             OptionOrder = 2,
+                            TypeDescription = "Neighbours / Family",
                             TypeName = "Neighbours / Family"
                         },
                         new
@@ -802,6 +866,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb9e-0f40-7061-959a-23bfb2bba985"),
                             Category = "Help Received From",
                             OptionOrder = 3,
+                            TypeDescription = "Wardens / Volunteers",
                             TypeName = "Wardens / Volunteers"
                         },
                         new
@@ -809,6 +874,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb9e-f9a0-70ba-9475-5793cbf66ece"),
                             Category = "Help Received From",
                             OptionOrder = 4,
+                            TypeDescription = "Fire and Rescue / Police",
                             TypeName = "Fire and Rescue / Police"
                         },
                         new
@@ -816,6 +882,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdb9f-e400-77bf-868a-633a7e27bc8c"),
                             Category = "Help Received From",
                             OptionOrder = 5,
+                            TypeDescription = "Environment Agency",
                             TypeName = "Environment Agency"
                         },
                         new
@@ -823,6 +890,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdba0-ce60-77e4-a0a6-91ab51596fad"),
                             Category = "Help Received From",
                             OptionOrder = 6,
+                            TypeDescription = "Highways",
                             TypeName = "Highways"
                         },
                         new
@@ -830,6 +898,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdba1-b8c0-765c-89f6-bd1d9019db0c"),
                             Category = "Help Received From",
                             OptionOrder = 7,
+                            TypeDescription = "Local Authority",
                             TypeName = "Local Authority"
                         },
                         new
@@ -837,6 +906,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdba2-a320-793d-afd9-126986a9a3fb"),
                             Category = "Help Received From",
                             OptionOrder = 8,
+                            TypeDescription = "Floodline",
                             TypeName = "Floodline"
                         },
                         new
@@ -844,6 +914,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd3-2900-7fed-9c52-9f4668e28618"),
                             Category = "Warning Source",
                             OptionOrder = 99,
+                            TypeDescription = "I did not get a warning",
                             TypeName = "I did not get a warning"
                         },
                         new
@@ -851,6 +922,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd4-1360-7df8-80a2-a8ae26685016"),
                             Category = "Warning Source",
                             OptionOrder = 2,
+                            TypeDescription = "Floodline",
                             TypeName = "Floodline"
                         },
                         new
@@ -858,6 +930,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd4-fdc0-71a4-8973-f5efce80c875"),
                             Category = "Warning Source",
                             OptionOrder = 3,
+                            TypeDescription = "Television",
                             TypeName = "Television"
                         },
                         new
@@ -865,6 +938,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd5-e820-7eb6-bee7-d1de8738d312"),
                             Category = "Warning Source",
                             OptionOrder = 4,
+                            TypeDescription = "Radio",
                             TypeName = "Radio"
                         },
                         new
@@ -872,6 +946,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd6-d280-7d17-9fc4-78608036bd36"),
                             Category = "Warning Source",
                             OptionOrder = 5,
+                            TypeDescription = "Social Media/Internet",
                             TypeName = "Social Media/Internet"
                         },
                         new
@@ -879,6 +954,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd7-bce0-7545-8aa2-a19a5bda2e83"),
                             Category = "Warning Source",
                             OptionOrder = 6,
+                            TypeDescription = "Flood Warden/Volunteer",
                             TypeName = "Flood Warden/Volunteer"
                         },
                         new
@@ -886,6 +962,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd8-a740-7dbf-9f3b-393e01305c25"),
                             Category = "Warning Source",
                             OptionOrder = 7,
+                            TypeDescription = "Neighbours",
                             TypeName = "Neighbours"
                         },
                         new
@@ -893,6 +970,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdbd9-91a0-763d-9773-de4670ae0781"),
                             Category = "Warning Source",
                             OptionOrder = 8,
+                            TypeDescription = "Other",
                             TypeName = "Other"
                         },
                         new
@@ -900,6 +978,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdc0a-1780-793d-9239-fe2a17b52571"),
                             Category = "Flood Warden Awareness",
                             OptionOrder = 1,
+                            TypeDescription = "Before flooding",
                             TypeName = "Before flooding"
                         },
                         new
@@ -907,6 +986,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdc0b-01e0-78f7-864b-0297b744acad"),
                             Category = "Flood Warden Awareness",
                             OptionOrder = 2,
+                            TypeDescription = "During flooding",
                             TypeName = "During flooding"
                         },
                         new
@@ -914,6 +994,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdc0b-ec40-7769-be33-afc5bf808f01"),
                             Category = "Flood Warden Awareness",
                             OptionOrder = 3,
+                            TypeDescription = "After flooding",
                             TypeName = "After flooding"
                         },
                         new
@@ -921,6 +1002,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("018fdc0c-d6a0-73ae-b83c-d13ccfc0da71"),
                             Category = "Flood Warden Awareness",
                             OptionOrder = 4,
+                            TypeDescription = "What are flood wardens/volunteers?",
                             TypeName = "What are flood wardens/volunteers?"
                         },
                         new
@@ -928,7 +1010,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                             Id = new Guid("019f6a3a-f7eb-7c43-97d8-2c7cfa9d79e3"),
                             Category = "All",
                             OptionOrder = 99,
-                            TypeName = "Imported record with unknown value"
+                            TypeDescription = "Imported record with unknown value",
+                            TypeName = "Unknown"
                         });
                 });
 
@@ -1391,7 +1474,7 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Imports.FailedImports", b =>
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Imports.FailedImport", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
