@@ -5,11 +5,12 @@
 /// </summary>
 public record FloodImpact
 {
-    public FloodImpact(Guid id, string category, string typeName, string? categoryPriority, int optionOrder)
+    public FloodImpact(Guid id, string category, string typeName, string typeDescription, string? categoryPriority, int optionOrder)
     {
         Id = id;
         Category = category;
         TypeName = typeName;
+        TypeDescription = typeDescription;
         CategoryPriority = categoryPriority;
         OptionOrder = optionOrder;
     }

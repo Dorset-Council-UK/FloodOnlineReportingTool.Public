@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.Models.Contact;
 using FloodOnlineReportingTool.Database.Models.Contact.Subscribe;
 using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
+using FloodOnlineReportingTool.Database.Models.Imports;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Messaging;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
@@ -34,6 +35,8 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
     public DbSet<Organisation> Organisations { get; set; }
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<RecordStatus> RecordStatuses { get; set; }
+
+    public DbSet<FailedImport> FailedImports { get; set; } // Table to track failed imports
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
