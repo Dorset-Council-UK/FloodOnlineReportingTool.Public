@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using System.Runtime;
 using System.Text.Json;
 
 namespace Tests.Messaging.Consumers;

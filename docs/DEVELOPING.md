@@ -13,6 +13,8 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 - **.NET**: Ensure you have the .NET 10 SDK installed.
 - **Message system (optional)**: The project includes a messaging system project using Azure Service Bus.
 - **GDS Framework**: The project relies on the Government Digital Service (GDS) framework for its front-end.
+- **Node**: Used for build scripts.
+- **NPM Task Runner extension for Visual Studio (optional)**: This is optional but recommended for running front-end build tasks.
 
 ## Getting Started
 
@@ -30,7 +32,7 @@ To run Flood Online Reporting Tool - Public with minimal modification, you will 
 3. **Install front-end dependencies**:
 
    - [Install Bun](https://bun.com/docs/installation) and run `bun install` from within the `FloodOnlineReportingTool.Public` project to download the dependencies
-   - Previously we recommended using the NPM Task Runner extension in Visual Studio. This can still be used for other tasks, but `install` commands should be run using `bun install` in a separate terminal
+   - Previously we recommended using the NPM Task Runner extension in Visual Studio. This can still be used for other tasks, but `install` commands should be run against the project rather than the solution using `bun install` in a separate terminal
 
 4. **AI standards module**:
     

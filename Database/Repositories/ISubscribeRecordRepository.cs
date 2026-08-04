@@ -71,7 +71,13 @@ public interface ISubscribeRecordRepository
     /// </summary>
     /// <returns>A result pattern indicating success, or a list of errors.</returns>
     Task<Result<SubscribeRecord>> UpdateVerificationCode(SubscribeRecord subscriptionRecord, bool userPresent, CancellationToken cancellationToken);
-
+    
+    /// <summary>
+    /// This updates the verification status on a subscription record
+    /// </summary>
+    /// <returns>A result pattern indicating success, or a list of errors.</returns>
+    Task<Result<SubscribeRecord>> UpdateVerificationStatus(Guid subscribeRecordId, bool isEmailVerified, CancellationToken cancellationToken);
+    
     /// <summary>
     /// Deletes a subscription record by its ID
     /// </summary>

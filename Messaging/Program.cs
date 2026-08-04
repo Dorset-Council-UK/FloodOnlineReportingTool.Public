@@ -1,11 +1,12 @@
-using FloodOnlineReportingTool.Database.DbContexts;
-using Microsoft.EntityFrameworkCore;
-using Messaging;
-using ServiceDefaults;
-using Microsoft.Extensions.Azure;
 using Azure.Messaging.ServiceBus;
-using Messaging.Consumers;
+using FloodOnlineReportingTool.Database.DbContexts;
 using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Database.Services;
+using Messaging;
+using Messaging.Consumers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
+using ServiceDefaults;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -14,11 +15,14 @@ builder.AddServiceDefaults();
 // Services
 builder.Services
     .AddScoped<ICommonRepository, CommonRepository>()
-    .AddScoped<IFloodReportSourceRepository, FloodReportSourceRepository>();
+    .AddScoped<IFloodReportSourceRepository, FloodReportSourceRepository>()
+    .AddScoped<IUserContext, UserContext>()
+    .AddScoped<ISubscribeRecordRepository, SubscribeRecordRepository>();
 
 // Consumers
 builder.Services
-    .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>();
+    .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>()
+    .AddSingleton<IInboxConsumer, FloodReportSourceVerifyContactConsumer>();
 
 builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<InboxWorker>();
