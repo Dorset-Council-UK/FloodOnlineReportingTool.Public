@@ -191,6 +191,24 @@ public class SubscribeRecordRepository(
         return Result<SubscribeRecord>.Success(subscriptionRecord);
     }
 
+    public async Task<Result<SubscribeRecord>> UpdateVerificationStatus(Guid subscribeRecordId, bool isEmailVerified, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var subscribeRecord = await context.ContactSubscribeRecords
+            .FirstOrDefaultAsync(sr => sr.Id == subscribeRecordId, cancellationToken);
+        if (subscribeRecord is null)
+        {
+            return Result<SubscribeRecord>.Failure([$"Cannot update subscription record. No subscription record found for ID {subscribeRecordId}"]);
+        }
+
+        subscribeRecord.IsEmailVerified = isEmailVerified;
+        
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result<SubscribeRecord>.Success(subscribeRecord);
+    }
+
     public async Task<DeleteResult<SubscribeRecord>> Delete(Guid subscribeRecordId, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);

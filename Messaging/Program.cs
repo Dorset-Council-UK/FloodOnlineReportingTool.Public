@@ -14,11 +14,13 @@ builder.AddServiceDefaults();
 // Services
 builder.Services
     .AddScoped<ICommonRepository, CommonRepository>()
-    .AddScoped<IFloodReportSourceRepository, FloodReportSourceRepository>();
+    .AddScoped<IFloodReportSourceRepository, FloodReportSourceRepository>()
+    .AddScoped<ISubscribeRecordRepository, SubscribeRecordRepository>();
 
 // Consumers
 builder.Services
-    .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>();
+    .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>()
+    .AddSingleton<IInboxConsumer, FloodReportSourceVerifyContactConsumer>();
 
 builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<InboxWorker>();
