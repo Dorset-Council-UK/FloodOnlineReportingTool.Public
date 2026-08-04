@@ -15,7 +15,8 @@
   </Project>
   <Project Path="FloodOnlineReportingTool.Public/FloodOnlineReportingTool.Public.csproj" />
   <Project Path="Messaging/Messaging.csproj">
-    <Build Solution="Debug|*" Project="false" />
+    <Build Solution="Debug|x64" Project="false" />
+    <Build Solution="Debug|x86" Project="false" />
   </Project>
   <Project Path="MigrationService/MigrationService.csproj" />
   <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
