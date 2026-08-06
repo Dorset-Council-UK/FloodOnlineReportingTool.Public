@@ -166,7 +166,7 @@
                         <GdsTabPanel Id="investigation-form" Heading="Investigation">
                             @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
                             {
-                                <p>There is currently an ongoing investigation.</p>
+                                <p class="govuk-body-l">There is currently an ongoing investigation.</p>
                                 if (_usersAccessHasExpired)
                                 {
                                     <p>The user's access to the flood report has expired, so they are cannot provide any more information to help with the investigation.</p>
@@ -178,13 +178,14 @@
                             }
                             else if (_floodReportSource.StatusId == RecordStatusIds.ActionCompleted)
                             {
-                                <p>An investigation has been completed for the flood report.</p>
-                                // TODO: investigation summary
-                                <p>TODO: investigation summary component goes here.</p>
+                                <p class="govuk-body-l">An investigation has been completed for the flood report.</p>
+                                <InvestigationSummary Entity="@_floodReportSource.Investigation" IsInternal="true" />
                             }
                             else
                             {
-                                <p>There is no active investigation for the flood report.</p>
+                                <p class="govuk-body-l">There is no active investigation for the flood report.</p>
+                                @* Putting this in for initial devlopment *@
+                                <InvestigationSummary Entity="@_floodReportSource.Investigation" IsInternal="true" />
                             }
                         </GdsTabPanel>
                     </GdsTabs>

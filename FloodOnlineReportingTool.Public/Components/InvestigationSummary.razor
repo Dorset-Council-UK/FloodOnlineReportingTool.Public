@@ -1,0 +1,212 @@
+﻿<h2 class="govuk-heading-l">Details</h2>
+<dl class="govuk-summary-list">
+    @if (ShowWaterSpeed)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started</dt>
+            <SummaryListValue>
+                @_beginLabel
+            </SummaryListValue>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Water movement</dt>
+            <SummaryListValue>
+                @_waterSpeedLabel
+            </SummaryListValue>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The water looked</dt>
+            <SummaryListValue>
+                @_appearanceLabel
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowWaterDestination)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Where the water was going</dt>
+            <SummaryListValue>
+                <SummaryListList Labels=_destinationLabels />
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowDamagedVehicles)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Vehicles damaged</dt>
+            <SummaryListValue>
+                @_vehiclesDamagedMessage
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (IsInternal)
+    {
+        if (ShowInternalHow)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">How the water entered</dt>
+                <SummaryListValue>
+                    <SummaryListList Labels=_entryLabels />
+                </SummaryListValue>
+            </div>
+        }
+        if (ShowInternalWhen)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">When the water entered</dt>
+                <SummaryListValue>
+                    @_internalWhen
+                </SummaryListValue>
+            </div>
+        }
+    }
+
+    @if (ShowPeakDepth)
+    {
+        if (_isPeakDepthKnown)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth inside</dt>
+                <SummaryListValue>
+                    @_peakDepthInsideMessage
+                </SummaryListValue>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth outside</dt>
+                <SummaryListValue>
+                    @_peakDepthOutsideMessage
+                </SummaryListValue>
+            </div>
+        }
+        else
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth</dt>
+                <SummaryListValue>
+                    @_peakDepthNotKnownMessage
+                </SummaryListValue>
+            </div>
+        }
+    }
+
+    @if (ShowServiceImpacts)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on services</dt>
+            <SummaryListValue>
+                <SummaryListList Labels=_serviceImpactLabels />
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowCommunityImpacts)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Impact on the community</dt>
+            <SummaryListValue>
+                <SummaryListList Labels=_communityImpactLabels />
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowBlockages)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Known problems</dt>
+            <SummaryListValue>
+                @_blockagesKnownProblemsLabel
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowActionsTaken)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Actions taken</dt>
+            <SummaryListValue>
+                <SummaryListList Labels=_actionsTakenLabels />
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowHistory)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Has a history of flooding</dt>
+            <SummaryListValue>
+                @_historyOfFloodingLabel
+            </SummaryListValue>
+        </div>
+    }
+
+    @if (ShowInsurance)
+    {
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Is the property insured</dt>
+            <SummaryListValue>
+                @_propertyInsuredLabel
+            </SummaryListValue>
+        </div>
+    }
+</dl>
+
+@if (ShowWarnings())
+{
+    <h2 class="govuk-heading-l">Warnings</h2>
+    <dl class="govuk-summary-list">
+        @if (ShowHelpReceivedWarnings)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Help received</dt>
+                <SummaryListValue>
+                    <SummaryListList Labels=_helpReceivedLabels />
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowBeforeFloodingWarnings)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Registered with Floodline</dt>
+                <SummaryListValue>
+                    @_registeredWithFloodlineLabel
+                </SummaryListValue>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Other warnings received</dt>
+                <SummaryListValue>
+                    @_otherWarningReceivedLabel
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowWarningSources)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Received warnings from</dt>
+                <SummaryListValue>
+                    <SummaryListList Labels=_warningSourcesLabels />
+                </SummaryListValue>
+            </div>
+        }
+
+        @if (ShowFloodlineWarnings)
+        {
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Timely floodline warning</dt>
+                <SummaryListValue>
+                    @_warningTimelyLabel
+                </SummaryListValue>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Warning correctly worded</dt>
+                <SummaryListValue>
+                    @_warningAppropriateLabel
+                </SummaryListValue>
+            </div>
+        }
+    </dl>
+}
