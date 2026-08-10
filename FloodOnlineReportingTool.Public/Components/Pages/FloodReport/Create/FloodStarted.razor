@@ -12,7 +12,7 @@
 
     <GdsInputDate Id="flood-start" For="() => Model.StartDate" Show="!_isLoading">
         <Heading>
-            <h1 class="govuk-fieldset__heading">When did the flooding start?</h1>
+            <GdsHeading Level="1">When did the flooding start?</GdsHeading>
         </Heading>
         <Hint>For example, 27 3 2024</Hint>
     </GdsInputDate>
@@ -40,7 +40,7 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
     }
 
 </EditForm>
