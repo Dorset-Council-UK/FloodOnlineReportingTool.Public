@@ -51,7 +51,7 @@ public class StringExtensionsTests
     [InlineData(63, StringExtensions.MeasurementDisplayType.FeetAndInches, "2 feet 1 inch")]
     [InlineData(89, StringExtensions.MeasurementDisplayType.FeetAndInches, "2 feet 11 inches")]
     [InlineData(999, StringExtensions.MeasurementDisplayType.FeetAndInches, "32 feet 9 inches")]
-    internal Task TopicName_Returns_ExpectedTopicName_ForConfiguredSuffix(int? cm, StringExtensions.MeasurementDisplayType mdt, string expectedResult)
+    internal Task ConvertMeasurementToDisplayString_ReturnsExpectedString_ForAllScenarios(int? cm, StringExtensions.MeasurementDisplayType mdt, string expectedResult)
     {
         var actualResult = cm.ConvertMeasurementToDisplayString(mdt);
 
