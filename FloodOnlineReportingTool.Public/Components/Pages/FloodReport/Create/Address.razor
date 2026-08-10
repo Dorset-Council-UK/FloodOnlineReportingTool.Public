@@ -4,7 +4,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Address">
     <FluentValidationValidator />
@@ -15,11 +15,12 @@
     @if (!_isSearching && Model.AddressOptions.Count == 0 && Model.IsAddress)
     {
         <p class="govuk-error-message">
-            <span class="govuk-visually-hidden">Error:</span> <span>No addresses were found, please check the postcode and search again</span>
+            <span class="govuk-visually-hidden">Error:</span> 
+            <span>No addresses were found, please check the postcode and search again</span>
         </p>
     }
 
-    <GdsFormGroup For="() => Model.UPRN" Show="Model.AddressOptions.Count > 0">
+    <GdsFormGroup Show="Model.AddressOptions.Count > 0">
         @{
             var hintId = "UPRN-hint";
             var errorId = "UPRN-error";
@@ -36,7 +37,8 @@
             }
         </InputSelect>
     </GdsFormGroup>
-    <GdsFormGroup For="() => Model.Postcode">
+
+    <GdsFormGroup>
         <GdsLabel Text="Postcode" />
         @{
             if (Model.UPRN is null && (Model.Easting is not null || Model.Northing is not null))
@@ -50,9 +52,9 @@
         }
         <GdsErrorMessage />
         <GdsInputText @bind-Value="Model.Postcode" class="govuk-input govuk-input--width-10" autocomplete="postal-code" />
-        <button type="button" data-prevent-double-click="true" class="govuk-button govuk-button--secondary" data-module="govuk-button" @onclick="SearchAgain">Search again</button>
+        <GdsButton IsSubmit="false" PreventDoubleClick OnClick="SearchAgain" AdditionalCssClasses="govuk-button govuk-button--secondary" Text="Search again" />
     </GdsFormGroup>
     
-    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
 
 </EditForm>
