@@ -1,5 +1,4 @@
 ﻿@page "/floodreport/create/location"
-@using Microsoft.JSInterop
 
 <HeadContent>
     <link rel="stylesheet" href="/css/maplibre-gl.css">
@@ -9,7 +8,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-l">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="Location">
     <FluentValidationValidator />
@@ -26,7 +25,7 @@
 
         @if (Model.IsAddress == false)
         {
-            <GdsFormGroup For="() => Model.LocationDesc">
+            <GdsFormGroup>
                 <GdsLabel Text="Describe the location selected" />
                 <GdsHint>For example: Barn in far field</GdsHint>
                 <GdsErrorMessage />
@@ -36,7 +35,7 @@
 
         <div>
             <p>
-                <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" disabled="@_isSearching">Continue</button>
+                <GdsButton IsSubmit="true" PreventDoubleClick disabled="@_isSearching" Text="Continue" />
             </p>
             <div>
                 <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Please wait whilst we search for the nearest property." />
