@@ -1,12 +1,11 @@
 ﻿@page "/floodreport/create/floodduration"
-@using FloodOnlineReportingTool.Database.Models
 @using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodDuration">
     <FluentValidationValidator />
@@ -46,47 +45,47 @@
         </p>
     }
 
-    <GdsFormGroup For="() => Model.DurationKnownId" Show="!_isLoading">
-        <InputRadioGroup @bind-Value="Model.DurationKnownId">
+    <GdsFormGroup Show="!_isLoading">
             <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">What was the duration of the flooding?</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>Select one option.</GdsHint>
-                    <GdsErrorMessage />
+                <GdsFieldsetLegend>
+                    <GdsFieldsetHeading Level="2">What was the duration of the flooding?</GdsFieldsetHeading>
+                </GdsFieldsetLegend>
 
-                    <div class="govuk-radios" data-module="govuk-radios">
-                        @foreach (var option in _durationOptions)
-                        {
-                            var conditionalId = option.Value == FloodDurationIds.DurationKnown ? "conditional-known" : null;
-                            <GdsRadio Option="option" ConditionalId="@conditionalId" />
-                            if (conditionalId != null)
-                            {
-                                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                    <GdsFormGroup For="() => Model.DurationDaysText">
-                                        <GdsLabel Text="Days" />
-                                        <GdsErrorMessage />
-                                        <GdsInputNumber @bind-Value="Model.DurationDaysText" @bind-NumberValue="Model.DurationDaysNumber" class="govuk-input govuk-input--width-3" />
-                                    </GdsFormGroup>
+                <GdsHint>Select one option.</GdsHint>
+                <GdsErrorMessage />
 
-                                    <GdsFormGroup For="() => Model.DurationHoursText">
-                                        <GdsLabel Text="Hours" />
-                                        <GdsErrorMessage />
-                                        <GdsInputNumber @bind-Value="Model.DurationHoursText" @bind-NumberValue="Model.DurationHoursNumber" class="govuk-input govuk-input--width-3" />
-                                    </GdsFormGroup>
-                                </div>
-                            }
-                        }
-                    </div>
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+                <GdsRadios @bind-Value="Model.DurationKnownId">
+                @foreach (var option in _durationOptions)
+                {
+                    var conditionalId = option.Value == FloodDurationIds.DurationKnown ? "conditional-known" : null;
+                    <GdsRadioItem>
+                        <GdsInputRadio Value="@option" ConditionalId="@conditionalId" />
+                        <GdsRadioLabel Text="@option.Label" />
+                    </GdsRadioItem>
+                    if (conditionalId != null)
+                    {
+                        <GdsRadioConditional Id="@conditionalId">
+                            <GdsFormGroup>
+                                <GdsLabel Text="Days" />
+                                <GdsErrorMessage />
+                                <GdsInputNumber @bind-Value="Model.DurationDaysText" @bind-NumberValue="Model.DurationDaysNumber" class="govuk-input govuk-input--width-3" />
+                            </GdsFormGroup>
+
+                            <GdsFormGroup>
+                                <GdsLabel Text="Hours" />
+                                <GdsErrorMessage />
+                                <GdsInputNumber @bind-Value="Model.DurationHoursText" @bind-NumberValue="Model.DurationHoursNumber" class="govuk-input govuk-input--width-3" />
+                            </GdsFormGroup>
+                        </GdsRadioConditional>
+                    }
+                }
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
     }
 
 </EditForm>
