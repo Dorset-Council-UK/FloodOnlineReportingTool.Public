@@ -8,7 +8,7 @@
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<h1 class="govuk-heading-l">@Title</h1>
+<GdsHeading Level="1" Size="GdsSize.Large">@Title</GdsHeading>
 
 <p>
     By confirming your subscription, you agree to receive updates about your report.
@@ -28,7 +28,7 @@
 
     @if (!_isLoading)
     {
-        <h2 class="govuk-heading-l">Your contact details</h2>
+        <GdsHeading Level="2" Size="GdsSize.Large">Your contact details</GdsHeading>
 
         if (_reportOwnerContact == null)
         {
@@ -97,7 +97,7 @@
         <AuthorizeView Context="authContext">
             <Authorized>
 
-                <h2 class="govuk-heading-l">Additional contacts</h2>
+                <GdsHeading Level="2" Size="GdsSize.Large">Additional contacts</GdsHeading>
 
                 @foreach (ContactModel contact in _contactModels)
                 {
@@ -156,14 +156,14 @@
 
                 @if (_numberOfUnusedRecordTypes > 0)
                 {
-                    <p><a href="@ContactPages.Create.Url" role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">
-                        Add additional contacts
-                    </a></p>
+                    <p>
+                        <GdsLink Href="@ContactPages.Create.Url" data-prevent-double-click="true">Add additional contacts</GdsLink>
+                    </p>
                 }
             </Authorized>
         </AuthorizeView>
 
-        <h2 class="govuk-heading-l">Finalise your subscriptions</h2>
+        <GdsHeading Level="2" Size="GdsSize.Large">Finalise your subscriptions</GdsHeading>
 
         <AuthorizeView Context="authContext">
             <Authorized>
@@ -175,9 +175,10 @@
                 <p>You cannot update your record but may be asked for more information if needed.</p>
             </NotAuthorized>
         </AuthorizeView>
+        
         <p>An email notification of your report will be forwarded to your nominated emails once you subscribe.</p>
         
-        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Subscribe and email</button>
+        <GdsButton IsSubmit="true" PreventDoubleClick Text="Subscribe and email" />
     }
 </EditForm>
 
