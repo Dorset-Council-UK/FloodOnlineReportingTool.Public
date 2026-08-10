@@ -53,25 +53,31 @@
         }
     }
 
-    <GdsFormGroup For="() => Model.Property" Show="Model.PropertyOptions.Count > 0">
-        <InputRadioGroup @bind-Value="Model.Property">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Property type</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>
-                        <div>Select one option.</div>
-                        @if (!string.IsNullOrWhiteSpace(_classification))
-                        {
-                            <div>The selected address/location is listed as @_classification. Select a different property type if this is incorrect.</div>
-                        }
-                    </GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="Model.PropertyOptions" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+    <GdsFormGroup Show="Model.PropertyOptions.Count > 0">
+        <GdsFieldsetGroup>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Property type</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>
+                <div>Select one option.</div>
+                @if (!string.IsNullOrWhiteSpace(_classification))
+                {
+                    <div>The selected address/location is listed as @_classification. Select a different property type if this is incorrect.</div>
+                }
+            </GdsHint>
+            <GdsErrorMessage />
+
+            <GdsRadios @bind-Value="Model.Property">
+                @foreach (var propertyOptionType in Model.PropertyOptions)
+                {
+                    <GdsRadioItem>
+                        <GdsInputRadio Value="@propertyOptionType" />
+                        <GdsRadioLabel Text="@propertyOptionType.Label" />
+                    </GdsRadioItem>
+                }
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
     <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>

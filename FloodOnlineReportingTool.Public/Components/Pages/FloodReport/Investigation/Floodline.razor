@@ -25,22 +25,28 @@
                 </p>
             }
 
-            <GdsFormGroup For="() => Model.WarningTimelyId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.WarningTimelyId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Was the floodline warning timely?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>
-                                <div>Select one option.</div>
-                                <div>The message should have arrived in time for you to act, accepting that some flooding can start very quickly.</div>
-                            </GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_timelyOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Was the floodline warning timely?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>
+                        <div>Select one option.</div>
+                        <div>The message should have arrived in time for you to act, accepting that some flooding can start very quickly.</div>
+                    </GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.WarningTimelyId">
+                        @foreach (var timelyOptionType in _timelyOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@timelyOptionType" />
+                                <GdsRadioLabel Text="@timelyOptionType.Label" />
+                            </GdsRadioItem>     
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading && _appropriateOptions.Count <= 0)
@@ -50,22 +56,28 @@
                 </p>
             }
 
-            <GdsFormGroup For="() => Model.WarningAppropriateId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.WarningAppropriateId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Was the warning message correctly worded?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>
-                                <div>Select one option.</div>
-                                <div>The warning should have provided the information you needed.</div>
-                            </GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_appropriateOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Was the warning message correctly worded?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>
+                        <div>Select one option.</div>
+                        <div>The warning should have provided the information you needed.</div>
+                    </GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.WarningAppropriateId">
+                        @foreach (var appropriateOptionType in _appropriateOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@appropriateOptionType" />
+                                <GdsRadioLabel Text="@appropriateOptionType.Label" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)

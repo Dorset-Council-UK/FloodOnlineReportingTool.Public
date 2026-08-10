@@ -77,19 +77,25 @@ else
         <input type="hidden" name="Contact.ContactType" value="@Contact.ContactType" />
     } else
     {
-        <GdsFormGroup For="() => Contact.ContactType">
-            <InputRadioGroup @bind-Value="Contact.ContactType">
-                <GdsFieldsetGroup>
-                    <Heading>
-                        <h2 class="govuk-fieldset__heading">Type of contact</h2>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select one option.</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsRadios Options="ContactTypes" />
-                    </Content>
-                </GdsFieldsetGroup>
-            </InputRadioGroup>
+        <GdsFormGroup>
+            <GdsFieldsetGroup>
+                <GdsFieldsetLegend>
+                    <GdsFieldsetHeading Level="2">Type of contact</GdsFieldsetHeading>
+                </GdsFieldsetLegend>
+
+                <GdsHint>Select one option.</GdsHint>
+                <GdsErrorMessage />
+
+                <GdsRadios @bind-Value="Contact.ContactType">
+                    @foreach (var contactType in ContactTypes)
+                    {
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@contactType" />
+                            <GdsRadioLabel Text="@contactType.Label" />
+                        </GdsRadioItem>
+                    }
+                </GdsRadios>
+            </GdsFieldsetGroup>
         </GdsFormGroup>
     }
 

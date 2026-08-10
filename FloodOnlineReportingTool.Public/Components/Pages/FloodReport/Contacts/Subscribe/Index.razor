@@ -27,19 +27,25 @@
         <GdsInputText @bind-Value="Model.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Model.ContactType">
-        <InputRadioGroup @bind-Value="Model.ContactType">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Who are you?</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>Select one option.</GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="ContactTypes" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+    <GdsFormGroup>
+        <GdsFieldsetGroup>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Who are you?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select one option.</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsRadios @bind-Value="Model.ContactType">
+                @foreach (var contactType in ContactTypes)
+                {
+                    <GdsRadioItem>
+                        <GdsInputRadio Value="@contactType" />
+                        <GdsRadioLabel Text="@contactType.Label" />
+                    </GdsRadioItem>
+                }
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
     <div class="govuk-button-group">
