@@ -99,13 +99,13 @@ else
         </GdsFormGroup>
     }
 
-    <GdsFormGroup For="() => Contact.ContactName">
+    <GdsFormGroup>
         <GdsLabel Text="Contact name" />
         <GdsErrorMessage />
         <GdsInputText @bind-Value="Contact.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Contact.EmailAddress">
+    <GdsFormGroup>
         <GdsLabel Text="Email address" />
         <GdsHint>
             <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
@@ -117,7 +117,7 @@ else
 
     <AuthorizeView Context="authContext">
         <Authorized>
-            <GdsFormGroup For="() => Contact.PhoneNumber">
+            <GdsFormGroup>
                 <GdsLabel Text="Phone number (optional)" />
                 <GdsHint>For international numbers include the country code</GdsHint>
                 <GdsErrorMessage />
