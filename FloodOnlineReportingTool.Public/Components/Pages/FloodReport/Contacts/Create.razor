@@ -5,7 +5,7 @@
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<h1 class="govuk-heading-l">@Title</h1>
+<GdsHeading Level="1" Size="GdsSize.Large">@Title</GdsHeading>
 
 @if (_isLoading)
 {
@@ -24,10 +24,12 @@ else
         <AuthorizeView Context="authContext">
             <NotAuthorized>
                 <GdsNotificationBanner NotificationType="GdsNotificationBanner.NotificationTypeOption.info"
-                                       BannerTitleSize="GdsNotificationBanner.BannerSizeOption.small"
+                                       BannerHeadingLevel="3"
                                        BannerTitle="Important">
-                    You must sign up to edit records after they are sent.
-                    <a class="govuk-notification-banner__link" href="#">Register / Sign in</a>.
+                    <div>
+                        You must sign up to edit records after they are sent.
+                        <GdsLink Href="#" AdditionalCssClasses="govuk-notification-banner__link">Register / Sign in</GdsLink>
+                    </div>
                 </GdsNotificationBanner>
             </NotAuthorized>
         </AuthorizeView>
@@ -38,7 +40,7 @@ else
             <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
             <div class="govuk-button-group">
-                <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                <GdsButton IsSubmit="true" PreventDoubleClick Text="Save" />
                 <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
             </div>
         </EditForm>
