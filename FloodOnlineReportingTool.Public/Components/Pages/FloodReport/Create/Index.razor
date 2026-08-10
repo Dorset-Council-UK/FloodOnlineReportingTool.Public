@@ -20,20 +20,24 @@
             <GdsErrorMessage />
 
             <GdsRadios @bind-Value="Model.IsAddress">
-                @foreach (var addressOptionTypes in _isAddressOptions)
-                {
-                    <GdsRadioItem>
-                        <GdsInputRadio Value="@addressOptionTypes" />
-                        <GdsRadioLabel Text="@addressOptionTypes.Label" />
-                    </GdsRadioItem>
-                }
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="@true" />
+                    <GdsRadioLabel Text="Yes" />
+                </GdsRadioItem>
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="@false" />
+                    <GdsRadioLabel Text="No" />
+                </GdsRadioItem>
+                
             </GdsRadios>
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <p><GdsButton IsSubmit PreventDoubleClick Text="Continue" /></p>
     }
 
 </EditForm>
