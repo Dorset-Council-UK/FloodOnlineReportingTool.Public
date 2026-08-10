@@ -6,7 +6,7 @@
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<h1 class="govuk-heading-l">@Title</h1>
+<GdsHeading Level="1" Size="GdsSize.Large">@Title</GdsHeading>
 
 <GdsSpinner Show="_isLoading" />
 
@@ -22,7 +22,7 @@
                 <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
                 <div class="govuk-button-group">
-                    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                    <GdsButton IsSubmit="true" PreventDoubleClick Text="Save" />
                     <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
                 </div>
             </EditForm>
@@ -50,7 +50,7 @@
                     <ContactInformation Contact="_contactModel" FloodReportSourceId="_floodReportSourceId" ContactTypes="ContactTypes" />
 
                     <div class="govuk-button-group">
-                        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+                        <GdsButton IsSubmit="true" PreventDoubleClick Text="Save" />
                         <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@ContactPages.Summary.Url">Cancel</a>
                     </div>
                 </EditForm>
