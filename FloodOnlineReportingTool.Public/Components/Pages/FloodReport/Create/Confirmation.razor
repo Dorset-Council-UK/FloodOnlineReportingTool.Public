@@ -14,7 +14,7 @@
 
 @if (_loadingError)
 {
-    <h1 class="govuk-heading-xl">@Title</h1>
+    <GdsHeading Level="1">@Title</GdsHeading>
     <p class="govuk-error-message">
         <span class="govuk-visually-hidden">Error:</span> <span>Sorry there was a problem completing your flood report. Please try again but if this issue happens again then please report a bug.</span>
     </p>
@@ -22,7 +22,7 @@
 
 @if (!_isLoading && string.IsNullOrWhiteSpace(Reference))
 {
-    <h1 class="govuk-heading-xl">@Title</h1>
+    <GdsHeading Level="1">@Title</GdsHeading>
     <p class="govuk-error-message">
         <span class="govuk-visually-hidden">Error:</span> <span>The flood report reference was missing from the URL. Please try again but if this issue happens again then please report a bug.</span>
     </p>
@@ -31,15 +31,14 @@
 @if (!_isLoading && !_loadingError)
 {
 
-    <div class="govuk-panel govuk-panel--confirmation">
-        <h1 class="govuk-panel__title">@Title</h1>
-        <div class="govuk-panel__body">Basic details of the flooding have been recorded.</div>
-    </div>
+    <GdsPanel Title="@Title">
+        Basic details of the flooding have been recorded.
+    </GdsPanel>
 
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">Stage 1 - Report and check</h2>
+    <GdsContainer>
+        <GdsGridRow>
+            <GdsGridColumn Width="GdsGridColumnWidth.TwoThirds">
+                <GdsHeading Level="2">Stage 1 - Report and check</GdsHeading>
                 <ul class="govuk-task-list">
                     <li class="govuk-task-list__item govuk-task-list__item--with-link">
                         <div class="govuk-task-list__name-and-hint">
@@ -55,11 +54,12 @@
                         </div>
                     </li>
                 </ul>
-            </div>
-        </div>
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">Stage 2 - Managing your report</h2>
+            </GdsGridColumn>
+        </GdsGridRow>
+
+        <GdsGridRow>
+            <GdsGridColumn Width="GdsGridColumnWidth.TwoThirds">
+                <GdsHeading Level="2">Stage 2 - Managing your report</GdsHeading>
                 <ul class="govuk-task-list">
                     @if (_hasContactInformation)
                     {
@@ -148,11 +148,12 @@
                         </AuthorizeView>
                     }
                 </ul>    
-            </div>
-        </div>
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">Stage 3 - Investigation</h2>
+            </GdsGridColumn>
+        </GdsGridRow>
+
+        <GdsGridRow>
+            <GdsGridColumn Width="GdsGridColumnWidth.TwoThirds">
+                <GdsHeading Level="2">Stage 3 - Investigation</GdsHeading>
                 <ul class="govuk-task-list">
                     <li class="govuk-task-list__item govuk-task-list__item--with-link">
                         <div class="govuk-task-list__name-and-hint">
@@ -178,14 +179,13 @@
                         </div>
                     </li>
                 </ul>
-
-            </div>
-        </div>
-    </div>
+            </GdsGridColumn>
+        </GdsGridRow>
+    </GdsContainer>
 
     <section id="what-happens-next">
-        <main class="govuk-main-wrapper " id="main-content" role="main">
-            <h2 class="govuk-heading-l">What happens next</h2>
+        <GdsMainWrapper id="main-content" role="main">
+            <GdsHeading Level="2">What happens next</GdsHeading>
 
             @if (_hasContactInformation)
             {
@@ -213,11 +213,11 @@
                 <p>If registered, you can edit your record and provide updates for 6 months after which editing will be closed.</p>
                 <p>Your contact details will then be removed after 18 months.</p>
             }
-        </main>
+        </GdsMainWrapper>
     </section>
 
     <section id="further-information">
-        <h2 class="govuk-heading-l">Further Information</h2>
+        <GdsHeading Level="2">Further Information</GdsHeading>
 
         <p>Find out more about <a draggable="false" data-prevent-double-click="true" target="_blank" class="govuk-link" href="https://www.gov.uk/after-flood">what to do after a flood</a>.</p>
 
