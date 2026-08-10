@@ -50,8 +50,13 @@
                                                         <div class="govuk-input__suffix" aria-hidden="true">cm</div>
                                                     </div>
                                                 </GdsFormGroup>
-
-                                                <GdsHint Id="inside-total">This it roughly equal to @Model.InsideFeet feet and @Model.InsideInches inches</GdsHint>
+                                                
+                                                <GdsHint Id="inside-total">
+                                                    @if(Model.InsideCentimetres.HasValue && Model.InsideCentimetres.Value >=0)
+                                                    {
+                                                        <span>This is roughly equal to @Model.InsideFeetAndInches</span>
+                                                    }
+                                                </GdsHint>
                                             </div>
 
                                             <div>
@@ -64,8 +69,13 @@
                                                         <div class="govuk-input__suffix" aria-hidden="true">cm</div>
                                                     </div>
                                                 </GdsFormGroup>
-
-                                                <GdsHint Id="outside-total">This it roughly equal to @Model.OutsideFeet feet and @Model.OutsideInches inches</GdsHint>
+                                                
+                                                <GdsHint Id="outside-total">
+                                                    @if(Model.OutsideCentimetres.HasValue && Model.OutsideCentimetres.Value >=0)
+                                                    {
+                                                        <span>This is roughly equal to @Model.OutsideFeetAndInches</span>
+                                                    }
+                                                </GdsHint>
                                             </div>
                                         </div>
                                     }
