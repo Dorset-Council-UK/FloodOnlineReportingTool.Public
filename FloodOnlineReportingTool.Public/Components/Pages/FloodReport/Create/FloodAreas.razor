@@ -4,7 +4,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodAreas">
     <FluentValidationValidator />
@@ -12,10 +12,10 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.ResidentialOptions" Id="residential-impacts" Show="Model.ShowResidential">
+    <GdsFormGroup Show="Model.ShowResidential">
         <GdsFieldsetGroup>
             <Heading>
-                <h2 class="govuk-fieldset__heading">Which areas of the residential property were flooded?</h2>
+                <GdsHeading Level="2">Which areas of the residential property were flooded?</GdsHeading>
             </Heading>
             <Content>
                 <GdsHint>Select all that apply</GdsHint>
@@ -25,10 +25,10 @@
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Model.CommercialOptions" Id="commercial-impacts" Show="Model.ShowCommercial">
+    <GdsFormGroup Show="Model.ShowCommercial">
         <GdsFieldsetGroup>
             <Heading>
-                <h2 class="govuk-fieldset__heading">Which areas of the commercial property were flooded?</h2>
+                <GdsHeading Level="2">Which areas of the commercial property were flooded?</GdsHeading>
             </Heading>
             <Content>
                 <GdsHint>Select all that apply</GdsHint>
@@ -65,6 +65,6 @@
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
-    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
 
 </EditForm>
