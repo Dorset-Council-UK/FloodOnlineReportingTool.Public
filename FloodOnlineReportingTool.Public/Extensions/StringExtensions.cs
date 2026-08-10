@@ -26,7 +26,7 @@ internal static class StringExtensions
     }
 
 
-    public enum MeasurementDisplayType
+    internal enum MeasurementDisplayType
     {
         Centimetres,
         MetresAndCentimetres,
