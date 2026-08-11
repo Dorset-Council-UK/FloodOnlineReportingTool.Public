@@ -12,15 +12,13 @@ public class PeakDepth
     public string? InsideCentimetresText { get; set; }
     public float? InsideCentimetresNumber => ToFloat(InsideCentimetresText);
     public int? InsideCentimetres => WholeNumberInt(InsideCentimetresNumber);
-    public int InsideFeet => InsideCentimetres.HasValue ? Convert.ToInt32(Math.Floor(InsideCentimetres.Value / 30.48)) : 0;
-    public int InsideInches => InsideCentimetres.HasValue ? Convert.ToInt32(Math.Floor(InsideCentimetres.Value / 2.54)) : 0;
+    public string InsideFeetAndInches => InsideCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches);
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
     public string? OutsideCentimetresText { get; set; }
     public float? OutsideCentimetresNumber => ToFloat(OutsideCentimetresText);
     public int? OutsideCentimetres => WholeNumberInt(OutsideCentimetresNumber);
-    public int OutsideFeet => OutsideCentimetres.HasValue ? Convert.ToInt32(Math.Floor(OutsideCentimetres.Value / 30.48)) : 0;
-    public int OutsideInches => OutsideCentimetres.HasValue ? Convert.ToInt32(Math.Floor(OutsideCentimetres.Value / 2.54)) : 0;
+    public string OutsideFeetAndInches => OutsideCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches);
 
     private static float? ToFloat(string? value)
     {
