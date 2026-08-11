@@ -4,7 +4,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="PropertyType">
     <FluentValidationValidator />
@@ -38,18 +38,18 @@
 
     @if (Model.ResponsibleOrganisations.Count > 0)
     {
-        <h2 class="govuk-heading-l">Information sharing</h2>
+        <GdsHeading Level="2">Information sharing</GdsHeading>
         <p>Details of this report will be shared with the following flood risk organisations.</p>
         @foreach (var org in Model.ResponsibleOrganisations)
         {
-            <div class="govuk-grid-row govuk-!-margin-top-3">
-                <div class="govuk-grid-column-one-quarter">
+            <GdsGridRow AdditionalCssClasses="govuk-!-margin-top-3">
+                <GdsGridColumn Width="GdsGridColumnWidth.OneQuarter">
                     <a href="@org.Website" target="_blank">
                         <img src="@org.Logo" alt="Visit the @org.Name website" class="govuk-!-width-full">
                     </a>
-                </div>
-                <div class="govuk-grid-column-three-quarters">@org.Description</div>
-            </div>
+                </GdsGridColumn>
+                <GdsGridColumn Width="GdsGridColumnWidth.ThreeQuarters">@org.Description</GdsGridColumn>
+            </GdsGridRow>
         }
     }
 
@@ -80,6 +80,6 @@
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
-    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
 
 </EditForm>
