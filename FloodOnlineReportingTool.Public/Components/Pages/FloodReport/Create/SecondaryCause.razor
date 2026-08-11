@@ -4,7 +4,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@FloodReportCreatePages.SecondaryCause.Title</h1>
+<GdsHeading Level="1">@FloodReportCreatePages.SecondaryCause.Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="SecondaryCause">
     <FluentValidationValidator />
@@ -12,10 +12,10 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.SecondaryCauseOptions" Show="!_isLoading">
+    <GdsFormGroup Show="!_isLoading">
         <GdsFieldsetGroup>
             <Heading>
-                <h2 class="govuk-fieldset__heading">Do you know where the water was running off from?</h2>
+                <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know where the water was running off from?</GdsHeading>
             </Heading>
             <Content>
                 <GdsHint>Select all that apply</GdsHint>
@@ -27,7 +27,7 @@
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
     }
 
 </EditForm>
