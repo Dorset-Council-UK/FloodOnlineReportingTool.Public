@@ -1,5 +1,4 @@
 ﻿@page "/floodreport/investigation/entry"
-@using FloodOnlineReportingTool.Database.Models
 @using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -7,7 +6,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -27,10 +26,10 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsFormGroup For="() => Model.EntryOptions" Show="!_isLoading">
+            <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
                     <Heading>
-                        <h2 class="govuk-fieldset__heading">Do you know how the water entered?</h2>
+                        <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know how the water entered?</GdsHeading>
                     </Heading>
                     <Content>
                         <GdsHint>Select all that apply</GdsHint>
@@ -62,7 +61,7 @@
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>
