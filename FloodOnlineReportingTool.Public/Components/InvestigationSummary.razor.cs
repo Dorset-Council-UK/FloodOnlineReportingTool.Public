@@ -166,8 +166,8 @@ public partial class InvestigationSummary : IAsyncDisposable
         {
             _isPeakDepthKnown = true;
 
-            //TODO: Use new Imperial/Metric conversion methods to display the depth in the correct format.
-            //_peakDepthInsideMessage = Entity.PeakInsideCentimetres...
+            _peakDepthInsideMessage = CreatePeakDepthMessage(Entity.PeakInsideCentimetres);
+            _peakDepthOutsideMessage = CreatePeakDepthMessage(Entity.PeakOutsideCentimetres);
         }
         else if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.No)
         {
@@ -177,6 +177,10 @@ public partial class InvestigationSummary : IAsyncDisposable
         {
             _peakDepthNotKnownMessage = Unknown;
         }
+
+
+        string CreatePeakDepthMessage(int? depthInCentimetres)
+            => depthInCentimetres.ConvertMeasurementToDisplayString(UseMetric ? StringExtensions.MeasurementDisplayType.MetresAndCentimetres : StringExtensions.MeasurementDisplayType.FeetAndInches);
     }
 
 
