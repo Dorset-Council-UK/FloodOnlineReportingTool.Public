@@ -125,31 +125,27 @@ public partial class InvestigationSummary : IAsyncDisposable
         PopulateLabel(ShowWaterSpeed, ref _appearanceLabel, e => e.Appearance.TypeName);
     }
 
-    private void GetWaterDestination()
-    {
-        PopulateLabels(ShowWaterDestination, ref _destinationLabels, Entity.Destinations, d => d.FloodProblem.TypeName);
-    }
-    
-    private void GetDamagedVehicles()
-    {
-        PopulateLabel(ShowDamagedVehicles, ref _vehiclesDamagedMessage, e => e.NumberOfVehiclesDamaged switch
+
+    private void GetWaterDestination() 
+        => PopulateLabels(ShowWaterDestination, ref _destinationLabels, Entity.Destinations, d => d.FloodProblem.TypeName);
+
+
+    private void GetDamagedVehicles() 
+        => PopulateLabel(ShowDamagedVehicles, ref _vehiclesDamagedMessage, e => e.NumberOfVehiclesDamaged switch
             {
                 null or 0 => null,
                 1 => "1 vehicle was damaged",
                 _ => $"{Entity.NumberOfVehiclesDamaged} vehicles were damaged"
-            }
-        );
-    }
+            });
+
 
     private void GetInternalHow()
-    {
-        PopulateLabels(IsInternal && ShowInternalHow, ref _entryLabels, Entity.Entries, e => e.FloodProblem.TypeName);
-    }
+        => PopulateLabels(IsInternal && ShowInternalHow, ref _entryLabels, Entity.Entries, e => e.FloodProblem.TypeName);
+
 
     private void GetInternalWhen()
-    {
-        PopulateLabel(IsInternal && ShowInternalWhen, ref _internalWhen, e => e.WhenWaterEnteredKnown?.Text);
-    }
+        => PopulateLabel(IsInternal && ShowInternalWhen, ref _internalWhen, e => e.WhenWaterEnteredKnown?.Text);
+
 
     private void GetPeakDepth()
     {
@@ -166,23 +162,14 @@ public partial class InvestigationSummary : IAsyncDisposable
             return;
         }
 
-        if(Entity.IsPeakDepthKnownId == FloodOnlineReportingTool.Database.Models.Status.RecordStatusIds.Yes)
+        if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.Yes)
         {
-            
+            _isPeakDepthKnown = true;
 
-            //_isPeakDepthKnown = true;
-            //int? cm = Entity.PeakInsideCentimetres;
-            //_peakDepthInsideMessage = (UseMetric, cm) switch
-            //{
-            //    (_, null) => null,
-            //    (true, 1) => "1 centimetre",
-            //    (true, < 100) => $"{cm} centimetres",
-            //    (true, _)
-            //    (false, int insideCentimetres) => $"{insideCentimetres / 2.54m:F2} inch{(insideCentimetres == 2.54m ? "" : "es")}",
-            //    _ => null
-            //};
+            //TODO: Use new Imperial/Metric conversion methods to display the depth in the correct format.
+            //_peakDepthInsideMessage = Entity.PeakInsideCentimetres...
         }
-        else if(Entity.IsPeakDepthKnownId == FloodOnlineReportingTool.Database.Models.Status.RecordStatusIds.No)
+        else if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.No)
         {
             _peakDepthNotKnownMessage = "Not known";
         }
@@ -192,40 +179,34 @@ public partial class InvestigationSummary : IAsyncDisposable
         }
     }
 
+
     private void GetServiceImpact()
-    {
-        PopulateLabels(ShowServiceImpacts, ref _serviceImpactLabels, Entity.ServiceImpacts, s => s.FloodImpact.TypeName);
-    }
+        => PopulateLabels(ShowServiceImpacts, ref _serviceImpactLabels, Entity.ServiceImpacts, s => s.FloodImpact.TypeName);
+
 
     private void GetCommunityImpact()
-    {
-        PopulateLabels(ShowCommunityImpacts, ref _communityImpactLabels, Entity.CommunityImpacts, c => c.FloodImpact.TypeName);
-    }
+        => PopulateLabels(ShowCommunityImpacts, ref _communityImpactLabels, Entity.CommunityImpacts, c => c.FloodImpact.TypeName);
+
 
     private void GetBlockages()
-    {
-        PopulateLabel(ShowBlockages, ref _blockagesKnownProblemsLabel, b => b.KnownProblemDetails);
-    }
+        => PopulateLabel(ShowBlockages, ref _blockagesKnownProblemsLabel, b => b.KnownProblemDetails);
+
 
     private void GetActionsTaken()
-    {
-        PopulateLabels(ShowActionsTaken, ref _actionsTakenLabels, Entity.ActionsTaken, a => a.FloodMitigation.TypeName);
-    }
+        => PopulateLabels(ShowActionsTaken, ref _actionsTakenLabels, Entity.ActionsTaken, a => a.FloodMitigation.TypeName);
+
 
     private void GetHistory()
-    {
-        PopulateLabel(ShowHistory, ref _historyOfFloodingLabel, h => h.HistoryOfFlooding.Text);
-    }
+        => PopulateLabel(ShowHistory, ref _historyOfFloodingLabel, h => h.HistoryOfFlooding.Text);
+
 
     private void GetInsurance()
-    {
-        PopulateLabel(ShowInsurance, ref _propertyInsuredLabel, p => p.PropertyInsured.Text);
-    }
+        => PopulateLabel(ShowInsurance, ref _propertyInsuredLabel, p => p.PropertyInsured.Text);
+
 
     private void GetHelpReceivedWarnings()
-    {
-        PopulateLabels(ShowHelpReceivedWarnings, ref _helpReceivedLabels, Entity.HelpReceived, h => h.FloodMitigation.TypeName);
-    }
+        => PopulateLabels(ShowHelpReceivedWarnings, ref _helpReceivedLabels, Entity.HelpReceived, h => h.FloodMitigation.TypeName);
+
 
     private void GetBeforeTheFloodingWarnings()
     {
@@ -233,10 +214,10 @@ public partial class InvestigationSummary : IAsyncDisposable
         PopulateLabel(ShowBeforeFloodingWarnings, ref _otherWarningReceivedLabel, o => o.WarningReceived.Text);
     }
 
+
     private void GetWarningSources()
-    {
-        PopulateLabels(ShowWarningSources, ref _warningSourcesLabels, Entity.WarningSources, w => w.FloodMitigation.TypeName);
-    }
+        => PopulateLabels(ShowWarningSources, ref _warningSourcesLabels, Entity.WarningSources, w => w.FloodMitigation.TypeName);
+
 
     private void GetFloodlineWarnings()
     {
@@ -286,10 +267,9 @@ public partial class InvestigationSummary : IAsyncDisposable
             await _cts.CancelAsync();
             _cts.Dispose();
         }
-        catch (Exception)
+        finally
         {
-            // Ignore any exceptions that occur during disposal
+            GC.SuppressFinalize(this);
         }
-        GC.SuppressFinalize(this);
     }
 }
