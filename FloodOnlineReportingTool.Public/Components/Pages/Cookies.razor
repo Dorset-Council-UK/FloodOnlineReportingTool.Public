@@ -7,22 +7,22 @@
 
 <GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
-<h1 class="govuk-heading-xl">GeneralPages.Cookies.Title</h1>
+<GdsHeading Level="1">GeneralPages.Cookies.Title</GdsHeading>
 <div>
     <p>Cookies are files saved on your phone, tablet or computer when you visit a website.</p>
     <p>We use some essential cookies to make this website work.</p>
 </div>
 
-<h2 class="govuk-heading-l">Analytics cookies</h2>
+<GdsHeading Level="2">Analytics cookies</GdsHeading>
 <div>
     <p>
         We don't use cookies for marketing purposes but we do collect anonymised statistics
-        using <a href="@WebStatisticsProviderUrl" class="govuk-link">@WebStatisticsProviderName</a>.
+        using <GdsLink Href="@WebStatisticsProviderUrl.ToString()">@WebStatisticsProviderName</GdsLink>.
         These cookies are anonymised and cannot be traced back to you.
     </p>
 </div>
 
-<h2 class="govuk-heading-l">Session storage</h2>
+<GdsHeading Level="2">Session storage</GdsHeading>
 <div>
     <p>
         This website uses session storage in your browser to store answers while you are completing a flood report. Session 
@@ -31,13 +31,13 @@
     </p>
 </div>
 
-<h2 class="govuk-heading-l">How long we keep your data</h2>
+<GdsHeading Level="2">How long we keep your data</GdsHeading>
 <div>
     <p>
         Personal data you give us (contact details, comments and media) is kept for a maximum of @(DataRetentionYears) years.
         Data about the flood itself including the address or location is kept for as long as needed.
     </p>
-    <p><a href="@GeneralPages.Privacy.Url" class="govuk-link">Find out more about how we use your data.</a></p>
+    <p><GdsLink Href="@GeneralPages.Privacy.Url">Find out more about how we use your data.</GdsLink></p>
 </div>
 
 @code {
