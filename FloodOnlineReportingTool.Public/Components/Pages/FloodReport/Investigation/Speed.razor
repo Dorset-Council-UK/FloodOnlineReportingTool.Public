@@ -5,7 +5,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -81,7 +81,7 @@
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
-            <GdsFormGroup For="() => Model.MoreDetails" Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
+            <GdsFormGroup Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
                 <h2 class="govuk-label-wrapper">
                     <GdsLabel Text="Can you provide more detail of the appearance? (optional)" AdditionalCssClasses="govuk-label--m" />
                 </h2>
@@ -93,7 +93,7 @@
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>
