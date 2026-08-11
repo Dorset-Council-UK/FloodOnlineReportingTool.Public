@@ -5,7 +5,7 @@
 
 <GdsBreadcrumbs Items="@Breadcrumbs" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -15,7 +15,7 @@
         @if (_updateModel == null)
         {
             <GdsWarning Text="Flood report not found" />
-            <div><a draggable="false" data-prevent-double-click="true" class="govuk-link" href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</a></div>
+            <div><GdsLink draggable="false" data-prevent-double-click="true" Href="@FloodReportPages.Overview.Url">@FloodReportPages.Overview.Title</GdsLink></div>
         }
         else
         {
@@ -23,6 +23,7 @@
                 <FluentValidationValidator />
                 <GdsErrorSummary />
 
+                @* TODO - Add warning text *@
                 <GdsWarning Text="To do..." />
 
                 <div>Created: @_updateModel.CreatedUtc.GdsReadable()</div>
@@ -31,28 +32,28 @@
                     <div>Updated: @_updateModel.UpdatedUtc.GdsReadable()</div>
                 }
 
-                <GdsFormGroup For="() => _updateModel.UprnText">
+                <GdsFormGroup>
                     <GdsLabel Text="UPRN" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.UprnText" @bind-NumberValue="_updateModel.UprnNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.UprnText" @bind-NumberValue="_updateModel.UprnNumber" />
                 </GdsFormGroup>
 
-                <GdsFormGroup For="() => _updateModel.EastingText">
+                <GdsFormGroup>
                     <GdsLabel Text="Easting" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.EastingText" @bind-NumberValue="_updateModel.EastingNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.EastingText" @bind-NumberValue="_updateModel.EastingNumber" />
                 </GdsFormGroup>
 
-                <GdsFormGroup For="() => _updateModel.NorthingText">
+                <GdsFormGroup>
                     <GdsLabel Text="Northing" />
                     <GdsErrorMessage />
-                    <GdsInputNumber @bind-Value="_updateModel.NorthingText" @bind-NumberValue="_updateModel.NorthingNumber" class="govuk-input" />
+                    <GdsInputNumber @bind-Value="_updateModel.NorthingText" @bind-NumberValue="_updateModel.NorthingNumber" />
                 </GdsFormGroup>
 
-                <GdsFormGroup For="() => _updateModel.LocationDesc">
+                <GdsFormGroup>
                     <GdsLabel Text="Location description" />
                     <GdsErrorMessage />
-                    <GdsInputText @bind-Value="_updateModel.LocationDesc" class="govuk-input" />
+                    <GdsInputText @bind-Value="_updateModel.LocationDesc" />
                 </GdsFormGroup>
             </EditForm>
         }
