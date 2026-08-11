@@ -49,18 +49,18 @@
                                                         <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
                                                         <div class="govuk-input__suffix" aria-hidden="true">cm</div>
                                                     </div>
-                                                </GdsFormGroup>
-                                                
-                                                <GdsHint Id="inside-total">
-                                                    @if(Model.InsideCentimetres.HasValue && Model.InsideCentimetres.Value >=0)
+                                                    
+                                                    @if(Model.InsideCentimetres.HasValue)
                                                     {
+                                                        <GdsHint Id="inside-total" CssClass="govuk-hint govuk-!-margin-bottom-0">
                                                         <span>This is roughly equal to @Model.InsideFeetAndInches</span>
+                                                    </GdsHint>
                                                     }
-                                                </GdsHint>
+                                                </GdsFormGroup>
                                             </div>
 
                                             <div>
-                                                <GdsFormGroup For="() => Model.OutsideCentimetresText">
+                                                <GdsFormGroup For="() => Model.OutsideCentimetresText" AdditionalCssClasses="govuk-!-margin-top-3">
                                                     <GdsLabel Text="What was the depth outside?" />
                                                     <GdsHint>Total centimetres, like 5</GdsHint>
                                                     <GdsErrorMessage />
@@ -68,14 +68,17 @@
                                                         <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
                                                         <div class="govuk-input__suffix" aria-hidden="true">cm</div>
                                                     </div>
+                                                    
+                                                    @if(Model.OutsideCentimetres.HasValue)
+                                                    {
+                                                        <GdsHint Id="outside-total">
+                                                            <span>This is roughly equal to @Model.OutsideFeetAndInches</span>
+                                                        </GdsHint>
+                                                    }
+                                                    
                                                 </GdsFormGroup>
                                                 
-                                                <GdsHint Id="outside-total">
-                                                    @if(Model.OutsideCentimetres.HasValue && Model.OutsideCentimetres.Value >=0)
-                                                    {
-                                                        <span>This is roughly equal to @Model.OutsideFeetAndInches</span>
-                                                    }
-                                                </GdsHint>
+                                                
                                             </div>
                                         </div>
                                     }

@@ -24,6 +24,8 @@ public class PeakDepthValidator : AbstractValidator<PeakDepth>
                 RuleFor(o => o.InsideCentimetresNumber)
                     .NotEmpty()
                     .WithMessage("Depth inside must be a number")
+                    .GreaterThanOrEqualTo(0)
+                    .WithMessage("Depth must be a positive number")
                     .OverridePropertyName(o => o.InsideCentimetresText);
 
                 RuleFor(o => o.InsideCentimetres)
@@ -44,6 +46,8 @@ public class PeakDepthValidator : AbstractValidator<PeakDepth>
                 RuleFor(o => o.OutsideCentimetresNumber)
                 .NotEmpty()
                 .WithMessage("Depth outside must be a number")
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Depth must be a positive number")
                 .OverridePropertyName(o => o.OutsideCentimetresText);
 
                 RuleFor(o => o.OutsideCentimetres)
