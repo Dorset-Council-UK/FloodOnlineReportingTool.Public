@@ -4,14 +4,14 @@
 
 <GdsBreadcrumbs Items="[GeneralPages.Home.ToGdsBreadcrumb()]" />
 
-<h1 class="govuk-heading-xl">@FloodReportPages.Home.Title</h1>
+<GdsHeading Level="1">@FloodReportPages.Home.Title</GdsHeading>
 
 <p>Use this service to report flooding at your property to relevant organisations and groups.</p>
 <p>The organisations who can help you during a flood depend on the type and location of the flooding.</p>
 <p>By reporting a flood, you are helping communities to protect properties from flooding.</p>
 <GdsWarning Text="Call 999 if you or someone else is in immediate danger." />
 
-<h2 class="govuk-heading-l">Before you start</h2>
+<GdsHeading Level="2">Before you start</GdsHeading>
 <ul class="govuk-list govuk-list--bullet">
     <li>it is a legal requirement to report past flooding to potential buyers when selling a property</li>
     <li>if the flooding only affects a road please report it to the relevant highways authority</li>
@@ -19,37 +19,32 @@
     <li>this will not trigger an immediate response from any agency</li>
     <li>you may be asked to provide an update to what happened at a later date</li>
 </ul>
-<p>Read our <a href="@GeneralPages.Privacy.Url" class="govuk-link">@GeneralPages.Privacy.Title.ToLowerInvariant()</a> notice to find out how your personal data is used and shared.</p>
+<p>Read our <GdsLink Href="@GeneralPages.Privacy.Url">@GeneralPages.Privacy.Title.ToLowerInvariant()</GdsLink> notice to find out how your personal data is used and shared.</p>
 
 <div>
-    <a href="@FloodReportCreatePages.Home.Url" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
-        Start now
-        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
-            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
-        </svg>
-    </a>
+    <GdsStartButton Href="@FloodReportCreatePages.Home.Url" Text="Start now" />
 </div>
 
-<h2 class="govuk-heading-l">Need help?</h2>
+<GdsHeading Level="2">Need help?</GdsHeading>
 <div>
     <ul class="govuk-list govuk-list--bullet">
-        <li>for reporting or updating your flood, <a href="https://www.gov.uk/find-local-council" class="govuk-link">contact your local authority</a></li>
-        <li>for advice on how to deal with flooding, <a href="#get-advice" class="govuk-link">contact Floodline</a></li>
+        <li>for reporting or updating your flood, <GdsLink Href="https://www.gov.uk/find-local-council">contact your local authority</GdsLink></li>
+        <li>for advice on how to deal with flooding, <GdsLink Href="#get-advice" >contact Floodline</GdsLink></li>
     </ul>
 
-    <h3 class="govuk-heading-m" id="get-advice">Get advice</h3>
-    <div class="govuk-inset-text">
+    <GdsHeading Level="3" id="get-advice">Get advice</GdsHeading>
+    <GdsInsetText>
         <div><strong>Floodline helpline</strong></div>
         <div>Telephone: 0345 988 1188</div>
         <div>Textphone: 0345 602 6340</div>
         <div>Open 24 hours a day, 7 days a week</div>
-        <div><a href="https://www.gov.uk/call-charges" target="_blank" class="govuk-link">Find out more about call charges</a></div>
-    </div>
+        <div><GdsLink Href="https://www.gov.uk/call-charges" target="_blank">Find out more about call charges</GdsLink></div>
+    </GdsInsetText>
 </div>
 
-<h2 class="govuk-heading-l">Further information about flooding</h2>
+<GdsHeading Level="2">Further information about flooding</GdsHeading>
 <ul class="govuk-list">
     <li>
-        <a class="govuk-link" href="https://www.gov.uk/report-flood-cause">Report a flood or possible cause of flooding</a>
+        <GdsLink Href="https://www.gov.uk/report-flood-cause">Report a flood or possible cause of flooding</GdsLink>
     </li>
 </ul>
