@@ -1,13 +1,11 @@
 ﻿@page "/floodreport/investigation/history"
-@using FloodOnlineReportingTool.Database.Models
-@using FloodOnlineReportingTool.Database.Models.Status
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage?.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -27,62 +25,63 @@
                 </p>
             }
 
-            <GdsFormGroup For="() => Model.HistoryOfFloodingId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.HistoryOfFloodingId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Does this location have a history of flooding?</h2>
-                        </Heading>
-                        <Content>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Does this location have a history of flooding?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.HistoryOfFloodingId">
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="true" ConditionalId="conditional-known" />
+                            <GdsRadioLabel Text="Yes" />
+                        </GdsRadioItem>
+                        <GdsRadioConditional Id="conditional-known">
+                            <GdsLabel Text="Describe the flooding history" />
+                            <GdsHint>Do not include personal or financial information</GdsHint>
                             <GdsErrorMessage />
-                            <div class="govuk-radios" data-module="govuk-radios">
-                                @foreach (var option in _historyOfFloodingOptions)
-                                {
-                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-known" : null;
-                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
-                                    if (conditionalId != null)
-                                    {
-                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                            <GdsFormGroup For="() => Model.HistoryOfFloodingDetails" Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
-                                                <h3 class="govuk-label-wrapper">
-                                                    <GdsLabel Text="Describe the flooding history" AdditionalCssClasses="govuk-label--m" />
-                                                </h3>
-                                                <GdsHint>Do not include personal or financial information</GdsHint>
-                                                <GdsErrorMessage />
-                                                <InputTextArea id="@nameof(Model.HistoryOfFloodingDetails)" @bind-Value="Model.HistoryOfFloodingDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
-                                                <div id="@($"{nameof(Model.HistoryOfFloodingDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
-                                            </GdsFormGroup>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+                            <InputTextArea id="@nameof(Model.HistoryOfFloodingDetails)" @bind-Value="Model.HistoryOfFloodingDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
+                            <div id="@($"{nameof(Model.HistoryOfFloodingDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
+                        </GdsRadioConditional>
+
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="false" />
+                            <GdsRadioLabel Text="No" />
+                        </GdsRadioItem>
+
+                    </GdsRadios>
+
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
-            <GdsFormGroup For="() => Model.PropertyInsuredId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.PropertyInsuredId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Is the property insured against flood damage?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsErrorMessage />
-                            <div class="govuk-radios" data-module="govuk-radios">
-                                @foreach (var option in _propertyInsuredOptions)
-                                {
-                                    <GdsRadio Option="option" /> 
-                                }
-                            </div>
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">
+                            Is the property insured against flood damage?
+                        </GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.PropertyInsuredId">
+                    @foreach (var option in _propertyInsuredOptions)
+                    {
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@option.Value" />
+                            <GdsRadioLabel Text="@option.Label" />
+                        </GdsRadioItem>
+                        }
+                    </GdsRadios>
+
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>
