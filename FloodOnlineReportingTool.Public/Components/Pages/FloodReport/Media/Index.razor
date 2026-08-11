@@ -12,7 +12,7 @@
         <AccessDenied />
     </NotAuthorized>
     <Authorized>
-        <h1 class="govuk-heading-l">@Title</h1>
+        <GdsHeading Level="1">@Title</GdsHeading>
 
         <p>Upload some photos or videos that show the flooding or damage caused. </p>
         <p>Please ensure there are no identifiable people or personal data in your uploaded files.</p>
@@ -24,7 +24,7 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsFormGroup For="() => Model.UploadedFiles">
+            <GdsFormGroup>
                 <GdsLabel Text="Add photos, videos or supporting documents" />
                 <GdsHint>Accepted file types: JPG, PNG, GIF, MP4, WEBM, OGG, PDF</GdsHint>
                 <GdsErrorMessage />
@@ -78,7 +78,7 @@
                                 <td class="govuk-table__cell">
                                     @if (ImageFileTypes.Contains(file.ContentType))
                                     {
-<img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
+                                        <img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
                                     }
                                     else if(VideoFileTypes.Contains(file.ContentType))
                                     {
@@ -97,7 +97,7 @@
                                 <td class="govuk-table__cell">
                                     @if (_renamingFile == file)
                                     {
-                                        <GdsFormGroup For="() => _renameText" AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
+                                        <GdsFormGroup AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
                                             <GdsLabel Text="File name" />
                                             @if (_renameError is not null)
                                             {
@@ -110,14 +110,17 @@
                                         </GdsFormGroup>
 
                                         <div class="govuk-button-group">
-                                            <button type="button" class="govuk-button govuk-button--primary" @onclick="() => SaveRename(file)">Save</button>
-                                            <button type="button" class="govuk-button govuk-button--secondary" @onclick="CancelRename">Cancel</button>
+                                            <GdsButton IsSubmit="false" OnClick="() => SaveRename(file)" Text="Save" />
+                                            <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--secondary" OnClick="CancelRename" Text="Cancel" />
                                         </div>
                                     }
                                     else
                                     {
                                         @file.Name
-                                        <br /><button type="button" class="govuk-link govuk-link--no-visited-state" @onclick="() => StartRename(file)" @onclick:preventDefault>Rename<span class="govuk-visually-hidden"> file '@file.Name'</span></button>
+                                        <br />
+                                        <GdsLink Href="" NoVisitedState OnClick="() => StartRename(file)" PreventDefault>
+                                            Rename<span class="govuk-visually-hidden"> file '@file.Name'</span>
+                                        </GdsLink>
                                     }
                                 </td>
                                 <td class="govuk-table__cell">
@@ -126,8 +129,8 @@
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteUploadedFile(file)">Delete file</button>
-<a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+                                    <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
+                                    <a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
@@ -137,7 +140,7 @@
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
                                     <span class="media-placeholder">
-<img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
+                                        <img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
                                     </span>
                                 </td>
                                 <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
@@ -147,7 +150,7 @@
                                     </strong>
                                 </td>
                                 <td class="govuk-table__cell">
-                                    <button type="button" class="govuk-button govuk-button--warning" @onclick="() => DeleteRejectedFile(rejectedFile)">Delete file</button>
+                                    <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteRejectedFile(rejectedFile)" Text="Delete file" />
                                 </td>
                             </tr>
                         }
@@ -158,7 +161,7 @@
             @if (!_isLoading)
             {
                 <div class="govuk-button-group">
-                    <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save changes</button>
+                    <GdsButton IsSubmit="true" PreventDoubleClick Text="Save changes" />
                     <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@PreviousPage.Url">Cancel</a>
                 </div>
             }
