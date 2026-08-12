@@ -1,6 +1,6 @@
 ﻿@if (ShowId || ShowCreatedDate || ShowUpdatedDate || ShowTermsAgreed)
 {
-    <h2 class="govuk-heading-l">Details</h2>
+    <GdsHeading Level="2">Details</GdsHeading>
     <dl class="govuk-summary-list">
         @if (ShowId)
         {
@@ -46,7 +46,7 @@
 
 @if (ShowIsAddress || ShowLocationDescription || ShowPropertyType || ShowFloodedAreas || ShowIsUninhabitable || ShowTemporaryLocationDescription)
 {
-    <h2 class="govuk-heading-l">Property details</h2>
+    <GdsHeading Level="2">Property details</GdsHeading>
     <dl class="govuk-summary-list">
         @if (ShowIsAddress)
         {
@@ -117,7 +117,7 @@
 
 @if (ShowImpactStart || ShowIsOnGoing || ShowFloodingLasted || ShowVulnerablePeople || ShowCauses || ShowSecondaryCauses)
 {
-    <h2 class="govuk-heading-l">Flood details</h2>
+    <GdsHeading Level="2">Flood details</GdsHeading>
     <dl class="govuk-summary-list">
         @if (ShowImpactStart)
         {
