@@ -12,9 +12,6 @@ public partial class InvestigationSummary : IAsyncDisposable
     public Investigation Entity { get; set; }
 
     [Parameter]
-    public bool UseMetric { get; set; } = true;
-
-    [Parameter]
     public bool ShowWaterSpeed { get; set; } = true;
     private string? _beginLabel;
     private string? _waterSpeedLabel;
@@ -180,7 +177,8 @@ public partial class InvestigationSummary : IAsyncDisposable
 
 
         string CreatePeakDepthMessage(int? depthInCentimetres)
-            => depthInCentimetres.ConvertMeasurementToDisplayString(UseMetric ? StringExtensions.MeasurementDisplayType.MetresAndCentimetres : StringExtensions.MeasurementDisplayType.FeetAndInches);
+            => $@"{depthInCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.MetresAndCentimetres)}
+                 ({depthInCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches)})";
     }
 
 
