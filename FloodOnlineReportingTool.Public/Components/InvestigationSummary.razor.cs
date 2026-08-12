@@ -223,7 +223,7 @@ public partial class InvestigationSummary : IAsyncDisposable
     {
         _isFloodlineWarning = ShowFloodlineWarnings
             && Entity.FloodlineId == FloodOnlineReportingTool.Database.Models.Status.RecordStatusIds.Yes
-            && Entity.WarningSources.Select(m => m.FloodMitigation.Id).ToList().Contains(FloodMitigationIds.FloodlineWarning);
+            && Entity.WarningSources.Any(m => m.FloodMitigation.Id == FloodMitigationIds.FloodlineWarning);
         PopulateLabel(_isFloodlineWarning, ref _warningTimelyLabel, w => w.WarningTimely?.Text);
         PopulateLabel(_isFloodlineWarning, ref _warningAppropriateLabel, w => w.WarningAppropriate?.Text);
     }   
