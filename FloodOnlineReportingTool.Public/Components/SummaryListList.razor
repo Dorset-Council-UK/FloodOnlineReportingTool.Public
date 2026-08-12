@@ -1,11 +1,14 @@
-﻿<dd class="govuk-summary-list__value">
-    <ul class="govuk-list">
-        @foreach (var label in Labels)
-        {
-            <li>@label</li>
-        }
-    </ul>
+﻿<dd class="govuk-summary-list">
+    @foreach (var label in Labels)
+    {        
+        <div class="govuk-summary-list__row--no-border">
+            <SummaryListValue>
+                @label
+            </SummaryListValue>
+        </div>
+    }
 </dd>
+
 
 @code {
     [Parameter]

@@ -148,7 +148,7 @@
                             else if (_floodReportSource.StatusId == RecordStatusIds.ActionCompleted)
                             {
                                 <p class="govuk-body-l">An investigation has been completed for your flood report.</p>
-                                <InvestigationSummary />
+                                <InvestigationSummary Entity="@_floodReportSource.Investigation" IsInternal="true" />
                             }
                             else
                             {
