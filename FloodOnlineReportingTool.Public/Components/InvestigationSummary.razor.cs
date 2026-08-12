@@ -1,7 +1,5 @@
-﻿using Azure.Identity;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Investigate;
-using FloodOnlineReportingTool.Database.Repositories;
 using Microsoft.AspNetCore.Components;
 
 namespace FloodOnlineReportingTool.Public.Components;
