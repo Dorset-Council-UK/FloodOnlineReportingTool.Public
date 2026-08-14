@@ -141,18 +141,14 @@
                         </GdsTabPanel>
 
                         <GdsTabPanel Id="investigation-form" Heading="Tell us more">
-                            @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
+                            @if (_floodReportSource.InvestigationId is null)
                             {
-                                <p class="govuk-body-l">There is currently an ongoing investigation.</p>
-                            }
-                            else if (_floodReportSource.StatusId == RecordStatusIds.ActionCompleted)
-                            {
-                                <p class="govuk-body-l">An investigation has been completed for your flood report.</p>
-                                <InvestigationSummary Entity="@_floodReportSource.Investigation" IsInternal="true" />
+                                <p class="govuk-body-l">There is no completed investigation for the flood report.</p>
                             }
                             else
                             {
-                                <p class="govuk-body-l">There is no active investigation for your flood report.</p>
+                                <p class="govuk-body-l">An investigation has been completed for the flood report.</p>
+                                <InvestigationSummary Entity="@_floodReportSource.Investigation" IsInternal="true" />
                             }
                         </GdsTabPanel>
                     </GdsTabs>
