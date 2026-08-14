@@ -1,0 +1,16 @@
+﻿<dd class="govuk-summary-list">
+    @foreach (var label in Labels)
+    {        
+        <div class="govuk-summary-list__row--no-border">
+            <SummaryListValue>
+                @label
+            </SummaryListValue>
+        </div>
+    }
+</dd>
+
+
+@code {
+    [Parameter]
+    public string[] Labels { get; set; } = [];
+}

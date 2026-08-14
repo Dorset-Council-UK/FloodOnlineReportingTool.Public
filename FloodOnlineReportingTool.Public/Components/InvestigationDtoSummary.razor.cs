@@ -53,7 +53,7 @@ public partial class InvestigationDtoSummary(
     // Internal when
     [Parameter]
     public bool ShowInternalWhen { get; set; } = true;
-    public string? _internalWhen;
+    private string? _internalWhen;
 
     // Water destination
     [Parameter]
