@@ -72,7 +72,7 @@
                 @foreach (var propertyOptionType in Model.PropertyOptions)
                 {
                     <GdsRadioItem>
-                        <GdsInputRadio Value="@propertyOptionType" />
+                        <GdsInputRadio Value="@propertyOptionType.Value" />
                         <GdsRadioLabel Text="@propertyOptionType.Label" />
                     </GdsRadioItem>
                 }
