@@ -53,7 +53,7 @@
         }
     }
 
-    <GdsFormGroup Show="Model.PropertyOptions.Count > 0">
+    <GdsFormGroup>
         <GdsFieldsetGroup>
             <GdsFieldsetLegend>
                 <GdsFieldsetHeading Level="2">Property type</GdsFieldsetHeading>
@@ -69,11 +69,11 @@
             <GdsErrorMessage />
 
             <GdsRadios @bind-Value="Model.Property">
-                @foreach (var propertyOptionType in Model.PropertyOptions)
+                @foreach (var floodImpact in _propertyTypes)
                 {
                     <GdsRadioItem>
-                        <GdsInputRadio Value="@propertyOptionType.Value" />
-                        <GdsRadioLabel Text="@propertyOptionType.Label" />
+                        <GdsInputRadio Value="@floodImpact.Id" />
+                        <GdsRadioLabel Text="@floodImpact.TypeName" />
                     </GdsRadioItem>
                 }
             </GdsRadios>
