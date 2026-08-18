@@ -34,8 +34,8 @@ public partial class Warnings(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _registeredWithFloodlineOptions = [];
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _otherWarningOptions = [];
+    private IList<RecordStatus> _registeredWithFloodlineOptions = [];
+    private IList<RecordStatus> _otherWarningOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -51,12 +51,18 @@ public partial class Warnings(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+        var recordStatuses = await GetRecordStatusesWithoutNotSure();
+        _registeredWithFloodlineOptions = recordStatuses.ToList();
+        _otherWarningOptions = recordStatuses.ToList();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -67,9 +73,6 @@ public partial class Warnings(
             var investigation = await GetInvestigation();
             Model.OtherWarningId = investigation.WarningReceivedId;
             Model.RegisteredWithFloodlineId = investigation.FloodlineId;
-            var recordStatuses = await GetRecordStatusesWithoutNotSure();
-            _registeredWithFloodlineOptions = [.. recordStatuses.Select(o => CreateOption(o, "registered", investigation.FloodlineId))];
-            _otherWarningOptions = [.. recordStatuses.Select(o => CreateOption(o, "other-warning", investigation.WarningReceivedId))];
 
             _isLoading = false;
             StateHasChanged();  
@@ -111,13 +114,4 @@ public partial class Warnings(
         return recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
     }
 
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }

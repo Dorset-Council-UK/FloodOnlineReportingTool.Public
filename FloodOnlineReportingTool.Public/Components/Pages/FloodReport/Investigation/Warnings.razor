@@ -38,8 +38,8 @@
                         @foreach (var registeredWithFloodLineOption in _registeredWithFloodlineOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@registeredWithFloodLineOption" />
-                                <GdsRadioLabel Text="@registeredWithFloodLineOption.Label" />
+                                <GdsInputRadio Value="@registeredWithFloodLineOption.Id" />
+                                <GdsRadioLabel Text="@registeredWithFloodLineOption.Text" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
@@ -66,8 +66,8 @@
                         @foreach (var otherWarningOption in _otherWarningOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@otherWarningOption" />
-                                <GdsRadioLabel Text="@otherWarningOption.Label" />
+                                <GdsInputRadio Value="@otherWarningOption.Id" />
+                                <GdsRadioLabel Text="@otherWarningOption.Text" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
