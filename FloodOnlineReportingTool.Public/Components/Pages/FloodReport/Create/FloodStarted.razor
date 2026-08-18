@@ -10,12 +10,14 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsInputDate Id="flood-start" For="() => Model.StartDate" Show="!_isLoading">
-        <Heading>
-            <GdsHeading Level="1">When did the flooding start?</GdsHeading>
-        </Heading>
-        <Hint>For example, 27 3 2024</Hint>
-    </GdsInputDate>
+    <GdsFormGroup>
+        <GdsInputDate Id="flood-start" For="() => Model.StartDate" Show="!_isLoading">
+            <Heading>
+                <GdsHeading Level="1">When did the flooding start?</GdsHeading>
+            </Heading>
+            <Hint>For example, 27 3 2024</Hint>
+        </GdsInputDate>
+    </GdsFormGroup>
 
     <GdsFormGroup>
         <GdsFieldsetGroup>
@@ -27,13 +29,14 @@
             <GdsErrorMessage />
 
             <GdsRadios @bind-Value="Model.IsFloodOngoing">
-                @foreach (var floodOngoingOption in _floodOngoingOptions)
-                {
-                    <GdsRadioItem>
-                        <GdsInputRadio Value="@floodOngoingOption" />
-                        <GdsRadioLabel Text="@floodOngoingOption.Label" />
-                    </GdsRadioItem>
-                }
+                <GdsRadioItem>
+                    <GdsInputRadio Value="true"  />
+                    <GdsRadioLabel Text="Yes" />
+                </GdsRadioItem>
+                <GdsRadioItem>
+                    <GdsInputRadio Value="false"  />
+                    <GdsRadioLabel Text="No" />
+                </GdsRadioItem>
             </GdsRadios>
         </GdsFieldsetGroup>
     </GdsFormGroup>
