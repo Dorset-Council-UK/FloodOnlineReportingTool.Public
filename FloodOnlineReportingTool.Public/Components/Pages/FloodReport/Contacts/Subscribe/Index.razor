@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/contacts/subscribe"
+@using FloodOnlineReportingTool.Contracts.Shared
 
 <PageTitle>@Title</PageTitle>
 
@@ -37,11 +38,11 @@
             <GdsErrorMessage />
 
             <GdsRadios @bind-Value="Model.ContactType">
-                @foreach (var contactType in ContactTypes)
+                @foreach (var contactType in Enum.GetValues<ContactRecordType>())
                 {
                     <GdsRadioItem>
                         <GdsInputRadio Value="@contactType" />
-                        <GdsRadioLabel Text="@contactType.Label" />
+                        <GdsRadioLabel Text="@contactType.LabelText().ToString()" />
                     </GdsRadioItem>
                 }
             </GdsRadios>
