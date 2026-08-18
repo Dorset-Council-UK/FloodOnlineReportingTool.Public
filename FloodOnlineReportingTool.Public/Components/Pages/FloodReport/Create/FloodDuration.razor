@@ -57,10 +57,10 @@
                 <GdsRadios @bind-Value="Model.DurationKnownId">
                 @foreach (var option in _durationOptions)
                 {
-                    var conditionalId = option.Value == FloodDurationIds.DurationKnown ? "conditional-known" : null;
+                    var conditionalId = option.Id == FloodDurationIds.DurationKnown ? "conditional-known" : null;
                     <GdsRadioItem>
-                        <GdsInputRadio Value="@option" ConditionalId="@conditionalId" />
-                        <GdsRadioLabel Text="@option.Label" />
+                        <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
+                        <GdsRadioLabel Text="@option.TypeDescription" />
                     </GdsRadioItem>
                     if (conditionalId != null)
                     {

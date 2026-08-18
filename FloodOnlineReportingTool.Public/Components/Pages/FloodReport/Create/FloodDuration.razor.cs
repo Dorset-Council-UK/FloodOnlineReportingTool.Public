@@ -41,7 +41,7 @@ public partial class FloodDuration(
     private bool _isLoading = true;
     private DateTimeOffset? _floodStart;
     private bool _isFloodOngoing; // should be false
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _durationOptions { get; set; } = [];
+    private IList<FloodProblem> _durationOptions { get; set; } = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -57,12 +57,17 @@ public partial class FloodDuration(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+        
+        _durationOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Duration, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -88,8 +93,6 @@ public partial class FloodDuration(
                     Model.DurationHoursText = hours.ToString(CultureInfo.CurrentCulture);
                 }
             }
-
-            _durationOptions = await CreateDurationOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -151,20 +154,4 @@ public partial class FloodDuration(
         navigationManager.NavigateTo(NextPage.Url);
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateDurationOptions()
-    {
-        const string idPrefix = "duration-known";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Duration, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, idPrefix, Model.DurationKnownId))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeDescription.AsSpan();
-        var selected = floodProblem.Id == selectedValue;
-        var isExclusive = floodProblem.Id == FloodDurationIds.DurationNotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
-    }
 }
