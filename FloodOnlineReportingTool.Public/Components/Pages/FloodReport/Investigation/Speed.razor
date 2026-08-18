@@ -31,8 +31,8 @@
                         @foreach (var beginOption in _beginOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@beginOption" />
-                                <GdsRadioLabel Text="@beginOption.Label" />
+                                <GdsInputRadio Value="@beginOption.Id" />
+                                <GdsRadioLabel Text="@beginOption.TypeName" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
@@ -52,8 +52,8 @@
                         @foreach (var waterSpeedOption in _waterSpeedOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@waterSpeedOption" />
-                                <GdsRadioLabel Text="@waterSpeedOption.Label" />
+                                <GdsInputRadio Value="@waterSpeedOption.Id" />
+                                <GdsRadioLabel Text="@waterSpeedOption.TypeName" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
@@ -73,8 +73,8 @@
                         @foreach (var appearanceOption in _appearanceOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@appearanceOption" />
-                                <GdsRadioLabel Text="@appearanceOption.Label" />
+                                <GdsInputRadio Value="@appearanceOption.Id" />
+                                <GdsRadioLabel Text="@appearanceOption.TypeName" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
