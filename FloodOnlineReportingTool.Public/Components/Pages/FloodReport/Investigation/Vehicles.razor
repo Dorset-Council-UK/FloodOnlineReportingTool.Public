@@ -37,10 +37,10 @@
                     <GdsRadios @bind-Value="Model.WereVehiclesDamagedId">
                         @foreach (var option in _wereVehiclesDamagedOptions)
                         {
-                            var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-yes" : null;
+                            var conditionalId = option.Id == RecordStatusIds.Yes ? "conditional-yes" : null;
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@option.Value" ConditionalId="@conditionalId"></GdsInputRadio>
-                                <GdsRadioLabel Text="@option.Label" />
+                                <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId"></GdsInputRadio>
+                                <GdsRadioLabel Text="@option.Text" />
                             </GdsRadioItem>
                             if (conditionalId != null)
                             {

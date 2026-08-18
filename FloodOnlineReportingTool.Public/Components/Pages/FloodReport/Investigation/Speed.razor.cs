@@ -114,30 +114,4 @@ public partial class Speed(
         return new InvestigationDto();
     }
 
-    //private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateBeginOptions()
-    //{
-    //    var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.WaterOnset, _cts.Token);
-    //    return [.. floodProblems.Select(o => CreateOption(o, "begin", Model.Begin))];
-    //}
-
-    //private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateWaterSpeedOptions()
-    //{
-    //    var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Speed, _cts.Token);
-    //    return [.. floodProblems.Select(o => CreateOption(o, "speed", Model.WaterSpeed))];
-    //}
-
-    //private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateAppearanceOptions()
-    //{
-    //    var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Appearance, _cts.Token);
-    //    return [.. floodProblems.Select(o => CreateOption(o, "appearance", Model.Appearance))];
-    //}
-
-    //private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, Guid? selectedValue)
-    //{
-    //    var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-    //    var label = floodProblem.TypeName.AsSpan();
-    //    var selected = floodProblem.Id == selectedValue;
-
-    //    return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected);
-    //}
 }
