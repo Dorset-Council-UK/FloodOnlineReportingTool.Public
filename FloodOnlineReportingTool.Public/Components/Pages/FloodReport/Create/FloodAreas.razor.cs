@@ -32,10 +32,6 @@ public partial class FloodAreas(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private readonly IReadOnlyCollection<GdsOptionItem<bool>> _uninhabitableOptions = [
-        new("uninhabitable-yes", "Yes", value: true),
-        new("uninhabitable-no", "No", value: false),
-    ];
 
     protected override void OnInitialized()
     {

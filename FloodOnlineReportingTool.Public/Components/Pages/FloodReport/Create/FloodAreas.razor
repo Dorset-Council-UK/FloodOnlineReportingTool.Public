@@ -54,13 +54,15 @@
             <GdsErrorMessage />
 
             <GdsRadios @bind-Value="Model.IsUninhabitable">
-                @foreach (var isuninhabitableOption in _uninhabitableOptions)
-                {
-                    <GdsRadioItem>
-                        <GdsInputRadio Value="@isuninhabitableOption" />
-                        <GdsRadioLabel Text="@isuninhabitableOption.Label" />
-                    </GdsRadioItem>
-                }
+                <GdsRadioItem>
+                    <GdsInputRadio Value="true" />
+                    <GdsRadioLabel Text="Yes" />
+                </GdsRadioItem>
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="false" />
+                    <GdsRadioLabel Text="No" />
+                </GdsRadioItem>
             </GdsRadios>
         </GdsFieldsetGroup>
     </GdsFormGroup>
