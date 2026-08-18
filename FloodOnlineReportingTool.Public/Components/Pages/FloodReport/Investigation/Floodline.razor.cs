@@ -34,8 +34,8 @@ public partial class Floodline(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _timelyOptions = [];
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _appropriateOptions = [];
+    private IList<RecordStatus> _timelyOptions = [];
+    private IList<RecordStatus> _appropriateOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -51,12 +51,19 @@ public partial class Floodline(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        var recordStatuses = await GetRecordStatusesWithoutNotSure();
+        _timelyOptions = [.. recordStatuses];
+        _appropriateOptions = [.. recordStatuses];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -67,10 +74,7 @@ public partial class Floodline(
             var investigation = await GetInvestigation();
             Model.WarningTimelyId = investigation.WarningTimelyId;
             Model.WarningAppropriateId = investigation.WarningAppropriateId;
-            var recordStatuses = await GetRecordStatusesWithoutNotSure();
-            _timelyOptions = [.. recordStatuses.Select(o => CreateOption(o, "timely", investigation.WarningTimelyId))];
-            _appropriateOptions = [.. recordStatuses.Select(o => CreateOption(o, "appropriate", investigation.WarningAppropriateId))];
-
+            
             _isLoading = false;
             StateHasChanged();
         }
@@ -111,13 +115,4 @@ public partial class Floodline(
         return recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
     }
 
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }

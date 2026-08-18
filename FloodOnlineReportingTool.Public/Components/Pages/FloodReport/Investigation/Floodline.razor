@@ -41,8 +41,8 @@
                         @foreach (var timelyOptionType in _timelyOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@timelyOptionType" />
-                                <GdsRadioLabel Text="@timelyOptionType.Label" />
+                                <GdsInputRadio Value="@timelyOptionType.Id" />
+                                <GdsRadioLabel Text="@timelyOptionType.Text" />
                             </GdsRadioItem>     
                         }
                     </GdsRadios>
@@ -72,8 +72,8 @@
                         @foreach (var appropriateOptionType in _appropriateOptions)
                         {
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@appropriateOptionType" />
-                                <GdsRadioLabel Text="@appropriateOptionType.Label" />
+                                <GdsInputRadio Value="@appropriateOptionType.Id" />
+                                <GdsRadioLabel Text="@appropriateOptionType.Text" />
                             </GdsRadioItem>
                         }
                     </GdsRadios>
