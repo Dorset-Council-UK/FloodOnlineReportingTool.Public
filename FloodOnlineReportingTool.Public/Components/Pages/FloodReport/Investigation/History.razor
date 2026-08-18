@@ -1,5 +1,6 @@
 ﻿@page "/floodreport/investigation/history"
 @using Microsoft.AspNetCore.Components.Authorization
+@using FloodOnlineReportingTool.Database.Models.Status
 
 <PageTitle>@Title</PageTitle>
 
@@ -34,23 +35,25 @@
                     <GdsErrorMessage />
 
                     <GdsRadios @bind-Value="Model.HistoryOfFloodingId">
-                        <GdsRadioItem>
-                            <GdsInputRadio Value="true" ConditionalId="conditional-known" />
-                            <GdsRadioLabel Text="Yes" />
-                        </GdsRadioItem>
-                        <GdsRadioConditional Id="conditional-known">
-                            <GdsLabel Text="Describe the flooding history" />
-                            <GdsHint>Do not include personal or financial information</GdsHint>
-                            <GdsErrorMessage />
-                            <InputTextArea id="@nameof(Model.HistoryOfFloodingDetails)" @bind-Value="Model.HistoryOfFloodingDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
-                            <div id="@($"{nameof(Model.HistoryOfFloodingDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
-                        </GdsRadioConditional>
+                        @foreach (var option in _historyOfFloodingOptions)
+                        {
+                            var conditionalId = option.Id == RecordStatusIds.Yes ? "conditional-known" : null;
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
+                                <GdsRadioLabel Text="@option.Text" />
+                            </GdsRadioItem>
 
-                        <GdsRadioItem>
-                            <GdsInputRadio Value="false" />
-                            <GdsRadioLabel Text="No" />
-                        </GdsRadioItem>
-
+                            @if (conditionalId is not null)
+                            {
+                                <GdsRadioConditional Id="conditional-known">
+                                    <GdsLabel Text="Describe the flooding history" />
+                                    <GdsHint>Do not include personal or financial information</GdsHint>
+                                    <GdsErrorMessage />
+                                    <InputTextArea id="@nameof(Model.HistoryOfFloodingDetails)" @bind-Value="Model.HistoryOfFloodingDetails" class="govuk-textarea govuk-js-character-count" rows="5" />
+                                    <div id="@($"{nameof(Model.HistoryOfFloodingDetails)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 200 characters</div>
+                                </GdsRadioConditional>
+                            }
+                        }
                     </GdsRadios>
 
                 </GdsFieldsetGroup>
@@ -70,8 +73,8 @@
                     @foreach (var option in _propertyInsuredOptions)
                     {
                         <GdsRadioItem>
-                            <GdsInputRadio Value="@option.Value" />
-                            <GdsRadioLabel Text="@option.Label" />
+                            <GdsInputRadio Value="@option.Id" />
+                            <GdsRadioLabel Text="@option.Text" />
                         </GdsRadioItem>
                         }
                     </GdsRadios>
