@@ -34,21 +34,20 @@
                     <GdsRadios @bind-Value="Model.WhenWaterEnteredKnownId">
                         @foreach (var option in _whenWaterEnteredOptions)
                         {
-                            var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-known" : null;
+                            var conditionalId = option.Id == RecordStatusIds.Yes ? "conditional-known" : null;
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@option.Value" ConditionalId="@conditionalId" />
-                                <GdsRadioLabel Text="@option.Label" />
+                                <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
+                                <GdsRadioLabel Text="@option.Text" />
                             </GdsRadioItem>
 
                             if (conditionalId != null)
                             {
                                 <GdsRadioConditional Id="@conditionalId">
-                                    <GdsInputDate Id="water-entered" For="() => Model.WhenWaterEnteredDate">
-                                        <Heading>
-                                            <h3 class="govuk-fieldset__heading">When did the flooding enter the property?</h3>
-                                        </Heading>
-                                        <Hint>For example, 27 3 2024</Hint>
-                                    </GdsInputDate>
+                                    <GdsFormGroup>
+                                        <GdsLabel Text="When did the flooding enter the property?" />
+                                        <GdsHint>For example, 27 3 2024</GdsHint>
+                                        <GdsInputDate Id="water-entered" For="() => Model.WhenWaterEnteredDate"></GdsInputDate>
+                                    </GdsFormGroup>
 
                                     <GdsFormGroup>
                                         <GdsLabel Text="Do you know what time? (optional)" />

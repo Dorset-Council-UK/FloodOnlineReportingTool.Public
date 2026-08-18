@@ -39,7 +39,7 @@ public partial class InternalWhen(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _whenWaterEnteredOptions = [];
+    private IList<RecordStatus> _whenWaterEnteredOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -55,12 +55,19 @@ public partial class InternalWhen(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
+        var withoutNotSure = recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
+        _whenWaterEnteredOptions = [.. withoutNotSure];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -77,8 +84,6 @@ public partial class InternalWhen(
                 Model.WhenWaterEnteredDate = new GdsDate(date);
                 Model.TimeText = timeOnly.ToLongTimeString();
             }
-
-            _whenWaterEnteredOptions = await CreateWhenWaterEnteredOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -160,20 +165,4 @@ public partial class InternalWhen(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateWhenWaterEnteredOptions()
-    {
-        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        var withoutNotSure = recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
-        return [.. withoutNotSure.Select(o => CreateOption(o, "when-entered", Model.WhenWaterEnteredKnownId))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }
