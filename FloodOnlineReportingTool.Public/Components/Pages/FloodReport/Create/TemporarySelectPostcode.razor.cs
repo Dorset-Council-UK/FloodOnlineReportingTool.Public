@@ -31,10 +31,6 @@ public partial class TemporarySelectPostcode(
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _postcodeKnownOptions = [
-        new("postcode-known-yes", "Yes", value: true),
-        new("postcode-known-no", "No", value: false),
-    ];
 
     protected override void OnInitialized()
     {
