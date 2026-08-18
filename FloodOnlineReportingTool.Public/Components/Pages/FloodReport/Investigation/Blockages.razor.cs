@@ -34,7 +34,7 @@ public partial class Blockages(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _blockageOptions = [];
+    private IList<RecordStatus> _blockageOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -50,12 +50,19 @@ public partial class Blockages(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
+        var withoutNotSure = recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
+        _blockageOptions = [.. withoutNotSure];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -66,8 +73,6 @@ public partial class Blockages(
             var investigation = await GetInvestigation();
             Model.HasKnownProblemsId = investigation.HasKnownProblems == true ? RecordStatusIds.Yes : null;
             Model.KnownProblemDetails = investigation.KnownProblemDetails;
-
-            _blockageOptions = await CreateBlockageOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -107,21 +112,4 @@ public partial class Blockages(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateBlockageOptions()
-    {
-        const string idPrefix = "blockage-known";
-        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        var withoutNotSure = recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
-        return [.. withoutNotSure.Select(o => CreateOption(o, idPrefix, Model.HasKnownProblemsId))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }
