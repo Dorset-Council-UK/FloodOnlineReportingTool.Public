@@ -34,10 +34,10 @@
                     <GdsRadios @bind-Value="Model.IsPeakDepthKnownId">
                         @foreach (var option in _peakDepthKnownOptions)
                         {
-                            var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-depth-known" : null;
+                            var conditionalId = option.Id == RecordStatusIds.Yes ? "conditional-depth-known" : null;
                             <GdsRadioItem>
-                                <GdsInputRadio Value="@option.Value" ConditionalId="@conditionalId" />
-                                <GdsRadioLabel Text="@option.Label" />
+                                <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
+                                <GdsRadioLabel Text="@option.Text" />
                             </GdsRadioItem>
 
                             if (conditionalId != null)

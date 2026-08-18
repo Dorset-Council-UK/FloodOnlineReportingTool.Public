@@ -43,7 +43,7 @@ public partial class PeakDepth(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _peakDepthKnownOptions = [];
+    private IList<RecordStatus> _peakDepthKnownOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -59,32 +59,19 @@ public partial class PeakDepth(
         GC.SuppressFinalize(this);
     }
 
-    private async Task<PageInfo> GetPreviousPage()
-    {
-        bool isInternal = false;
-        if (AuthenticationState is not null)
-        {
-            var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
-            if (userId is not null)
-            {
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                isInternal = eligibilityCheck?.IsInternal == true;
-            }
-        }
-
-        return PreviousPage = isInternal 
-            ? InvestigationPages.InternalWhen 
-            : InvestigationPages.Vehicles;
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
         PreviousPage = await GetPreviousPage();
+
+        var recordStatuses = await GetRecordStatusesWithoutNotSure();
+        _peakDepthKnownOptions = [.. recordStatuses];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -96,8 +83,6 @@ public partial class PeakDepth(
             Model.IsPeakDepthKnownId = investigation.IsPeakDepthKnownId;
             Model.InsideCentimetresText = investigation.PeakInsideCentimetres?.ToString(CultureInfo.CurrentCulture);
             Model.OutsideCentimetresText = investigation.PeakOutsideCentimetres?.ToString(CultureInfo.CurrentCulture);
-
-            _peakDepthKnownOptions = await CreatePeakDepthKnownOptions();
 
             _isLoading = false;
             StateHasChanged();
@@ -135,20 +120,29 @@ public partial class PeakDepth(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreatePeakDepthKnownOptions()
+    private async Task<PageInfo> GetPreviousPage()
+    {
+        bool isInternal = false;
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var userId = authState.User.Oid;
+            if (userId is not null)
+            {
+                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
+                isInternal = eligibilityCheck?.IsInternal == true;
+            }
+        }
+
+        return PreviousPage = isInternal
+            ? InvestigationPages.InternalWhen
+            : InvestigationPages.Vehicles;
+    }
+
+    private async Task<IReadOnlyCollection<RecordStatus>> GetRecordStatusesWithoutNotSure()
     {
         var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        var withoutNotSure = recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure).ToList();
-        return [.. withoutNotSure.Select(o => CreateOption(o, "depth-known", Model.IsPeakDepthKnownId))];
+        return [.. recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure)];
     }
 
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }
