@@ -43,7 +43,6 @@ public partial class PeakDepth(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IList<RecordStatus> _peakDepthKnownOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -69,9 +68,6 @@ public partial class PeakDepth(
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
         }
         PreviousPage = await GetPreviousPage();
-
-        var recordStatuses = await GetRecordStatusesWithoutNotSure();
-        _peakDepthKnownOptions = [.. recordStatuses];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -137,12 +133,6 @@ public partial class PeakDepth(
         return PreviousPage = isInternal
             ? InvestigationPages.InternalWhen
             : InvestigationPages.Vehicles;
-    }
-
-    private async Task<IReadOnlyCollection<RecordStatus>> GetRecordStatusesWithoutNotSure()
-    {
-        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        return [.. recordStatuses.Where(o => o.Id != RecordStatusIds.NotSure)];
     }
 
 }

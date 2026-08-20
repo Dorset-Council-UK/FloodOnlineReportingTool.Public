@@ -32,43 +32,37 @@
                     <GdsErrorMessage />
 
                     <GdsRadios @bind-Value="Model.IsPeakDepthKnownId">
-                        @foreach (var option in _peakDepthKnownOptions)
-                        {
-                            var conditionalId = option.Id == RecordStatusIds.Yes ? "conditional-depth-known" : null;
-                            <GdsRadioItem>
-                                <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
-                                <GdsRadioLabel Text="@option.Text" />
-                            </GdsRadioItem>
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@RecordStatusIds.Yes" ConditionalId="conditional-depth-known" />
+                            <GdsRadioLabel Text="Yes" />
+                        </GdsRadioItem>
+                        <GdsRadioConditional Id="conditional-depth-known">
+                            <GdsFormGroup>
+                                <GdsLabel Text="What was the depth inside?" />
+                                <GdsHint>Total centimetres, like 5</GdsHint>
+                                <GdsErrorMessage />
+                                <div class="govuk-input__wrapper">
+                                    <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                    <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                </div>
+                                <p>This it roughly equal to @Model.InsideFeet feet and @Model.InsideInches inches</p>
+                            </GdsFormGroup>
+                            <GdsFormGroup>
+                                <GdsLabel Text="What was the depth outside?" />
+                                <GdsHint>Total centimetres, like 5</GdsHint>
+                                <GdsErrorMessage />
+                                <div class="govuk-input__wrapper">
+                                    <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                    <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                </div>
+                                <p>This it roughly equal to @Model.OutsideFeet feet and @Model.OutsideInches inches</p>
+                            </GdsFormGroup>
+                        </GdsRadioConditional>
 
-                            if (conditionalId != null)
-                            {
-                                <GdsRadioConditional Id="@conditionalId">
-                                    <GdsFormGroup>
-                                        <GdsLabel Text="What was the depth inside?" />
-                                        <GdsHint>Total centimetres, like 5</GdsHint>
-                                        <GdsErrorMessage />
-                                        <div class="govuk-input__wrapper">
-                                            <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
-                                            <div class="govuk-input__suffix" aria-hidden="true">cm</div>
-                                        </div>
-                                    </GdsFormGroup>
-
-                                    <GdsHint Id="inside-total">This it roughly equal to @Model.InsideFeet feet and @Model.InsideInches inches</GdsHint>
-
-                                    <GdsFormGroup>
-                                        <GdsLabel Text="What was the depth outside?" />
-                                        <GdsHint>Total centimetres, like 5</GdsHint>
-                                        <GdsErrorMessage />
-                                        <div class="govuk-input__wrapper">
-                                            <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
-                                            <div class="govuk-input__suffix" aria-hidden="true">cm</div>
-                                        </div>
-                                    </GdsFormGroup>
-
-                                    <GdsHint Id="outside-total">This it roughly equal to @Model.OutsideFeet feet and @Model.OutsideInches inches</GdsHint>
-                                </GdsRadioConditional>
-                            }
-                        }
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@RecordStatusIds.No" />
+                            <GdsRadioLabel Text="No" />
+                        </GdsRadioItem>
                     </GdsRadios>
 
                 </GdsFieldsetGroup>
