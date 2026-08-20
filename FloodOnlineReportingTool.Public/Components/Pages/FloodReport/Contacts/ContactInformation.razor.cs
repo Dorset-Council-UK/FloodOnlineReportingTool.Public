@@ -23,7 +23,7 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
     public bool ViewOnly { get; set; } = false;
 
     [Parameter]
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; set; } = [];
+    public IReadOnlyCollection<ContactRecordType> ContactTypes { get; set; } = [];
 
     [CascadingParameter]
     public Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -57,24 +57,14 @@ public partial class ContactInformation(IContactRecordRepository contactReposito
         }
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<ContactRecordType>>> CreateContactTypeOptions()
+    private async Task<IReadOnlyCollection<ContactRecordType>> CreateContactTypeOptions()
     {
         IList<ContactRecordType> unusedRecordTypes = await contactRepository.GetUnusedRecordTypes(FloodReportSourceId, _cts.Token);
         if (Contact.Id != null)
         {
             unusedRecordTypes.Add(Contact.ContactType.Value);
         }
-        return [.. unusedRecordTypes.Select(CreateOption)];
+        return [.. unusedRecordTypes];
     }
 
-    /// <summary>
-    /// Creates a GDS option item for a contact record type.
-    /// </summary>
-    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
-    {
-        var id = contactRecordType.ToString().AsSpan();
-        var selected = contactRecordType == Contact.ContactType;
-
-        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
-    }
 }
