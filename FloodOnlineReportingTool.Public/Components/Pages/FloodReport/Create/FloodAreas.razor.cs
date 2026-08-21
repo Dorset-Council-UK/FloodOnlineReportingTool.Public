@@ -86,13 +86,15 @@ public partial class FloodAreas(
             Model.IsUninhabitable = eligibilityCheck.Uninhabitable;
             if (Model.ShowResidential)
             {
-                //var options = await CreateResidentialOptions(eligibilityCheck.Residentials);
-                //Model.ResidentialOptions = [.. options];
+                // update model and the selected options
+                Model.Residentials = eligibilityCheck.Residentials;
+                UpdateSelectedResidentialOptions();
             }
             if (Model.ShowCommercial)
             {
-                //var options = await CreateCommercialOptions(eligibilityCheck.Commercials);
-                //Model.CommercialOptions = [.. options];
+                // update model and the selected options
+                Model.Commercials = eligibilityCheck.Commercials;
+                UpdateSelectedCommercialOptions();
             }
 
             _isLoading = false;
@@ -135,15 +137,15 @@ public partial class FloodAreas(
         var updated = runTemporaryAddress ? eligibilityCheck with
         {
             Uninhabitable = Model.IsUninhabitable,
-            Residentials = [.. SelectedResidentialOptions.Where(o => o.Value).Select(o => Guid.Parse(o.Key))],
-            Commercials = [.. SelectedCommercialOptions.Where(o => o.Value).Select(o => Guid.Parse(o.Key))],
+            Residentials = Model.Residentials,
+            Commercials = Model.Commercials,
         } : eligibilityCheck with
         {
             Uninhabitable = Model.IsUninhabitable,
-            Residentials = [.. SelectedResidentialOptions.Where(o => o.Value).Select(o => Guid.Parse(o.Key))],
-            Commercials = [.. SelectedCommercialOptions.Where(o => o.Value).Select(o => Guid.Parse(o.Key))],
+            Residentials = Model.Residentials,
+            Commercials = Model.Commercials,
             TemporaryLocationDesc = null,
-            TemporaryUprn = null
+            TemporaryUprn = null,
         };
         if (runTemporaryAddress == false)
         {
@@ -197,7 +199,7 @@ public partial class FloodAreas(
     /// </summary>
     private void UpdateSelectedResidentialOptions()
     {
-        SelectedResidentialOptions = ResidentialOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.ResidentialOptions.Contains(o.Id), StringComparer.Ordinal);
+        SelectedResidentialOptions = ResidentialOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.Residentials.Contains(o.Id), StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -205,7 +207,7 @@ public partial class FloodAreas(
     /// </summary>
     private void UpdateSelectedCommercialOptions()
     {
-        SelectedCommercialOptions = CommercialOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.CommercialOptions.Contains(o.Id), StringComparer.Ordinal);
+        SelectedCommercialOptions = CommercialOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.Commercials.Contains(o.Id), StringComparer.Ordinal);
     }
 
     private void OnResidentialChanged(bool isChecked, Guid floodSourceId)
@@ -213,14 +215,14 @@ public partial class FloodAreas(
         // update the model
         if (isChecked)
         {
-            if (!Model.ResidentialOptions.Contains(floodSourceId))
+            if (!Model.Residentials.Contains(floodSourceId))
             {
-                Model.ResidentialOptions.Add(floodSourceId);
+                Model.Residentials.Add(floodSourceId);
             }
         }
         else
         {
-            Model.ResidentialOptions.Remove(floodSourceId);
+            Model.Residentials.Remove(floodSourceId);
         }
     }
 
@@ -229,35 +231,14 @@ public partial class FloodAreas(
         // update the model
         if (isChecked)
         {
-            if (!Model.CommercialOptions.Contains(floodSourceId))
+            if (!Model.Commercials.Contains(floodSourceId))
             {
-                Model.CommercialOptions.Add(floodSourceId);
+                Model.Commercials.Add(floodSourceId);
             }
         }
         else
         {
-            Model.CommercialOptions.Remove(floodSourceId);
+            Model.Commercials.Remove(floodSourceId);
         }
     }
-
-    //private async Task<IList<FloodImpact>> CreateResidentialOptions(IList<Guid> selectedIds)
-    //{
-    //    var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.Residential, _cts.Token);
-    //    return [.. floodImpacts];
-    //}
-
-    //private async Task<IList<FloodImpact>> CreateCommercialOptions(IList<Guid> selectedIds)
-    //{
-    //    var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.Commercial, _cts.Token);
-    //    return [.. floodImpacts];
-    //}
-
-    //private static GdsOptionItem<Guid> CreateOption(FloodImpact floodImpact, ReadOnlySpan<char> id, IList<Guid> selectedIds)
-    //{
-    //    var label = floodImpact.TypeName == null ? [] : floodImpact.TypeName.AsSpan();
-    //    var isExclusive = floodImpact.Id == FloodImpactIds.ZoneRNotSure || floodImpact.Id == FloodImpactIds.ZoneCNotSure;
-    //    var selected = selectedIds.Contains(floodImpact.Id);
-
-    //    return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
-    //}
 }
