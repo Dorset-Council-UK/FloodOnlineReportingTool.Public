@@ -8,9 +8,11 @@ public class FloodAreas
 
     public bool ShowCommercial { get; set; }
 
-    public IList<Guid> ResidentialOptions { get; set; } = [];
+    [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
+    public IList<Guid> Residentials { get; set; } = [];
 
-    public IList<Guid> CommercialOptions { get; set; } = [];
+    [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
+    public IList<Guid> Commercials { get; set; } = [];
 
     [GdsFieldErrorClass(GdsFieldTypes.Radio)]
     public bool? IsUninhabitable { get; set; }
