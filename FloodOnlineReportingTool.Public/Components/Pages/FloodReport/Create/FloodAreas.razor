@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/floodareas"
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@Title</PageTitle>
 
@@ -21,12 +22,12 @@
             <GdsHint>Select all that apply</GdsHint>
             <GdsErrorMessage />
 
-            <GdsCheckboxes>
-                @foreach (var residentialFloodArea in ResidentialOptions)
+            <GdsCheckboxes For="() => Model.Residentials">
+                @foreach (var residentialFloodImpact in ResidentialOptions)
                 {
-                    string key = residentialFloodArea.Id.ToString("N");
+                    string key = residentialFloodImpact.Id.ToString("N");
                     string id = $"residential-flood-area-{key}";
-                    bool isNotSure = residentialFloodArea.TypeName.Equals("Not sure", StringComparison.OrdinalIgnoreCase);
+                    bool isNotSure = residentialFloodImpact.Id == FloodImpactIds.ZoneRNotSure;
 
                     if (isNotSure)
                     {
@@ -34,8 +35,8 @@
                     }
 
                     <GdsCheckboxItem>
-                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedResidentialOptions[key]" OnChanged="isChecked => OnResidentialChanged(isChecked, residentialFloodArea.Id)" Exclusive="isNotSure" />
-                        <GdsCheckboxLabel Text="@residentialFloodArea.TypeName" />
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedResidentialOptions[key]" OnChanged="isChecked => OnResidentialChanged(isChecked, residentialFloodImpact.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@residentialFloodImpact.TypeName" />
                     </GdsCheckboxItem>
                 }
             </GdsCheckboxes>
@@ -51,12 +52,12 @@
             <GdsHint>Select all that apply</GdsHint>
             <GdsErrorMessage />
 
-            <GdsCheckboxes>
-                @foreach (var commercialFloodArea in CommercialOptions)
+            <GdsCheckboxes For="() => Model.Commercials">
+                @foreach (var commercialFloodImpact in CommercialOptions)
                 {
-                    string key = commercialFloodArea.Id.ToString("N");
+                    string key = commercialFloodImpact.Id.ToString("N");
                     string id = $"commercial-flood-area-{key}";
-                    bool isNotSure = commercialFloodArea.TypeName.Equals("Not sure", StringComparison.OrdinalIgnoreCase);
+                    bool isNotSure = commercialFloodImpact.Id == FloodImpactIds.ZoneCNotSure;
 
                     if (isNotSure)
                     {
@@ -64,8 +65,8 @@
                     }
 
                     <GdsCheckboxItem>
-                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommercialOptions[key]" OnChanged="isChecked => OnCommercialChanged(isChecked, commercialFloodArea.Id)" Exclusive="isNotSure" />
-                        <GdsCheckboxLabel Text="@commercialFloodArea.TypeName" />
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommercialOptions[key]" OnChanged="isChecked => OnCommercialChanged(isChecked, commercialFloodImpact.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@commercialFloodImpact.TypeName" />
                     </GdsCheckboxItem>
                 }
             </GdsCheckboxes>
