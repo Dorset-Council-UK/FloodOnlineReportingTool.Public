@@ -213,32 +213,18 @@ public partial class FloodAreas(
     private void OnResidentialChanged(bool isChecked, Guid floodSourceId)
     {
         // update the model
-        if (isChecked)
-        {
-            if (!Model.Residentials.Contains(floodSourceId))
-            {
-                Model.Residentials.Add(floodSourceId);
-            }
-        }
-        else
-        {
+        if (isChecked && !Model.Residentials.Contains(floodSourceId))
+            Model.Residentials.Add(floodSourceId);
+        else if (!isChecked)
             Model.Residentials.Remove(floodSourceId);
-        }
     }
 
     private void OnCommercialChanged(bool isChecked, Guid floodSourceId)
     {
         // update the model
-        if (isChecked)
-        {
-            if (!Model.Commercials.Contains(floodSourceId))
-            {
-                Model.Commercials.Add(floodSourceId);
-            }
-        }
-        else
-        {
+        if (isChecked && !Model.Commercials.Contains(floodSourceId))
+            Model.Commercials.Add(floodSourceId);
+        else if (!isChecked)
             Model.Commercials.Remove(floodSourceId);
-        }
     }
 }
