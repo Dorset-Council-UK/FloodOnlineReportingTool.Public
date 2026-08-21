@@ -14,27 +14,61 @@
 
     <GdsFormGroup Show="Model.ShowResidential">
         <GdsFieldsetGroup>
-            <Heading>
-                <GdsHeading Level="2">Which areas of the residential property were flooded?</GdsHeading>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.ResidentialOptions" Name="ResidentialOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Which areas of the residential property were flooded?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+            
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes>
+                @foreach (var residentialFloodArea in ResidentialOptions)
+                {
+                    string key = residentialFloodArea.Id.ToString("N");
+                    string id = $"residential-flood-area-{key}";
+                    bool isNotSure = residentialFloodArea.TypeName.Equals("Not sure", StringComparison.OrdinalIgnoreCase);
+
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedResidentialOptions[key]" OnChanged="isChecked => OnResidentialChanged(isChecked, residentialFloodArea.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@residentialFloodArea.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
     <GdsFormGroup Show="Model.ShowCommercial">
         <GdsFieldsetGroup>
-            <Heading>
-                <GdsHeading Level="2">Which areas of the commercial property were flooded?</GdsHeading>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.CommercialOptions" Name="CommercialOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Which areas of the commercial property were flooded?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes>
+                @foreach (var commercialFloodArea in CommercialOptions)
+                {
+                    string key = commercialFloodArea.Id.ToString("N");
+                    string id = $"commercial-flood-area-{key}";
+                    bool isNotSure = commercialFloodArea.TypeName.Equals("Not sure", StringComparison.OrdinalIgnoreCase);
+
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommercialOptions[key]" OnChanged="isChecked => OnCommercialChanged(isChecked, commercialFloodArea.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@commercialFloodArea.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
