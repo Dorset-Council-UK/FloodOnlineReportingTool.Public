@@ -8,5 +8,5 @@ public class ServiceImpact
     public Guid? WereServicesImpactedId { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
-    public IReadOnlyCollection<GdsOptionItem<Guid>> ImpactedServicesOptions { get; set; } = [];
+    public IList<Guid> ImpactedServicesOptions { get; set; } = [];
 }

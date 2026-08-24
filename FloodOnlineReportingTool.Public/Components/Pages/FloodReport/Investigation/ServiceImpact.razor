@@ -1,6 +1,7 @@
 ﻿@page "/floodreport/investigation/serviceimpact"
 @using FloodOnlineReportingTool.Database.Models.Status
 @using Microsoft.AspNetCore.Components.Authorization
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@InvestigationPages.ServiceImpact.Title</PageTitle>
 
@@ -20,58 +21,69 @@
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
             @if (!_isLoading)
-            {
-                if (Model.ImpactedServicesOptions.Count <= 0 || _wereServicesImpactedOptions.Count <= 0)
-                {
-                    <p class="govuk-error-message">
-                        <span class="govuk-visually-hidden">Error:</span> <span>The service impact options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                    </p>
-                }
-                else
-                {
-                    <GdsFormGroup>
-                        <GdsFieldsetGroup>
-                            <GdsFieldsetLegend>
-                                <GdsFieldsetHeading Level="2">Were services affected by the flooding?</GdsFieldsetHeading>
-                            </GdsFieldsetLegend>
+            {  
+                <GdsFormGroup>
+                    <GdsFieldsetGroup>
+                        <GdsFieldsetLegend>
+                            <GdsFieldsetHeading Level="2">Were services affected by the flooding?</GdsFieldsetHeading>
+                        </GdsFieldsetLegend>
 
-                            <GdsHint>Select one option.</GdsHint>
-                            <GdsErrorMessage />
+                        <GdsHint>Select one option.</GdsHint>
+                        <GdsErrorMessage />
 
-                            <GdsRadios @bind-Value="Model.WereServicesImpactedId">
-                                @foreach (var option in _wereServicesImpactedOptions)
+                        <GdsRadios @bind-Value="Model.WereServicesImpactedId">
+                            @foreach (var option in _wereServicesImpactedOptions)
+                            {
+                                bool isNotSure = option.Id == FloodImpactIds.ServiceImpactNotSure;
+                                var conditionalId = option.Id == RecordStatusIds.Yes ? "were-services-impacted-yes" : null;
+                                <GdsRadioItem>
+                                    <GdsInputRadio Value="@option.Id" ConditionalId="@conditionalId" />
+                                    <GdsRadioLabel Text="@option.Text" />
+                                </GdsRadioItem>
+
+                                if (conditionalId is not null)
                                 {
-                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "were-services-impacted-yes" : null;
-                                    <GdsRadioItem>
-                                        <GdsInputRadio Value="@option.Value" ConditionalId="@conditionalId" />
-                                        <GdsRadioLabel Text="@option.Label" />
-                                    </GdsRadioItem>
+                                    <GdsRadioConditional Id="@conditionalId">
+                                        <GdsFormGroup>
+                                            <GdsFieldsetGroup>
+                                                <GdsFieldsetLegend>
+                                                    <GdsFieldsetHeading Level="2">What services were affected?</GdsFieldsetHeading>
+                                                </GdsFieldsetLegend>
 
-                                    if (conditionalId is not null)
-                                    {
-                                        <GdsRadioConditional Id="@conditionalId">
-                                            <GdsFormGroup>
-                                                <GdsFieldsetGroup>
-                                                    <Heading>
-                                                        <h2 class="govuk-fieldset__heading">What services were affected?</h2>
-                                                    </Heading>
-                                                    <Content>
-                                                        <GdsHint>Select all that apply</GdsHint>
-                                                        <GdsErrorMessage />
-                                                        <GdsCheckboxes Options="Model.ImpactedServicesOptions" Name="services-impacted" />
-                                                    </Content>
-                                                </GdsFieldsetGroup>
-                                            </GdsFormGroup>
-                                        </GdsRadioConditional>
-                                    }
+                                                <GdsHint>Select all that apply</GdsHint>
+                                                <GdsErrorMessage />
+
+                                                <GdsCheckboxes For="() => Model.ImpactedServicesOptions">
+                                                    @foreach (var impactedService in ServiceImpactOptions)
+                                                    {
+                                                        string key = impactedService.Id.ToString("N");
+                                                        string id = $"impacted-service-{key}";
+                                                        bool isNotSure = impactedService.Id == FloodImpactIds.ServiceImpactNotSure;
+
+                                                        if (isNotSure)
+                                                        {
+                                                            <GdsCheckboxDivider />
+                                                        }
+                                                            
+                                                        <GdsCheckboxItem>
+                                                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedServiceImpactOptions[key]" OnChanged="isChecked => OnServiceImpactChanged(isChecked, impactedService.Id)" Exclusive="isNotSure" />
+                                                            <GdsCheckboxLabel Text="@impactedService.TypeName" />
+                                                        </GdsCheckboxItem>
+                                                    }
+                                                </GdsCheckboxes>
+
+                                            </GdsFieldsetGroup>
+                                        </GdsFormGroup>
+                                    </GdsRadioConditional>
                                 }
-                            </GdsRadios>
+                            }
+                        </GdsRadios>
 
-                        </GdsFieldsetGroup>
-                    </GdsFormGroup>
+                    </GdsFieldsetGroup>
+                </GdsFormGroup>
 
-                    <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
-                }
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
+                
             }
         </EditForm>
     </Authorized>
