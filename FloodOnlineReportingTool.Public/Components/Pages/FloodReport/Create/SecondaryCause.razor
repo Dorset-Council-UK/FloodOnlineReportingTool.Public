@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/secondarycause"
+@using FloodOnlineReportingTool.Contracts.Shared
 
 <PageTitle>@FloodReportCreatePages.SecondaryCause.Title</PageTitle>
 
@@ -14,14 +15,32 @@
 
     <GdsFormGroup Show="!_isLoading">
         <GdsFieldsetGroup>
-            <Heading>
-                <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know where the water was running off from?</GdsHeading>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.SecondaryCauseOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know where the water was running off from?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes For="() => Model.SecondaryCauseOptions">
+                @foreach (var secondaryCause in SecondaryCauseOptions)
+                {
+                    string key = secondaryCause.Id.ToString("N");
+                    string id = $"secondary-cause-{key}";
+                    bool isNotSure = secondaryCause.Id == SecondaryCauseIds.NotSure;
+                    
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+                    
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedSecondaryCauseOptions[key]" OnChanged="isChecked => OnSecondaryCauseChanged(isChecked, secondaryCause.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@secondaryCause.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
+
         </GdsFieldsetGroup>
     </GdsFormGroup>
 

@@ -8,7 +8,7 @@ public class FloodSecondaryCauseValidator : AbstractValidator<FloodSecondaryCaus
     public FloodSecondaryCauseValidator()
     {
         RuleFor(o => o.SecondaryCauseOptions)
-            .Must(o => o.Any(item => item.Selected))
+            .NotEmpty()
             .WithMessage("Select where the water was running off from or select 'Not sure'");
     }
 }
