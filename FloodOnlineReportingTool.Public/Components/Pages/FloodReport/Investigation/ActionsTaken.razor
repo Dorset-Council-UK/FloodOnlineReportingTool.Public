@@ -28,34 +28,48 @@
 
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
+                    <GdsFieldsetLegend>
                         <GdsFieldsetHeading Level="2">What actions did you take to deal with the flood?</GdsFieldsetHeading>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                            @foreach (var option in Model.ActionsTakenOptions)
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsCheckboxes For="() => Model.ActionsTakenOptions">
+                        @foreach (var actionTaken in ActionsTakenOptions)
+                        {
+                            string key = actionTaken.Id.ToString("N");
+                            string id = $"action-taken-{key}";
+                            bool noActionTaken = actionTaken.Id == FloodMitigationIds.NoActionTaken;
+                            var conditionalId = actionTaken.Id == FloodMitigationIds.OtherAction ? "conditional-other" : null;
+
+                            if (noActionTaken)
                             {
-                                var conditionalId = option.Value == FloodMitigationIds.OtherAction ? "conditional-other" : null;
-                                <GdsCheckbox Option="option" ConditionalId="@conditionalId" Name="ActionsTaken" />
-                                if (conditionalId != null)
-                                {
-                                    <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="@conditionalId">
-                                        <GdsFormGroup For="() => Model.OtherAction" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
-                                            <h2 class="govuk-label-wrapper">
-                                                <GdsLabel Text="Can you provide more detail of the action you took?" AdditionalCssClasses="govuk-label--m" />
-                                            </h2>
-                                            <GdsHint>Do not include personal or financial information</GdsHint>
-                                            <GdsErrorMessage />
-                                            <InputTextArea id="@nameof(Model.OtherAction)" @bind-Value="Model.OtherAction" class="govuk-textarea govuk-js-character-count" rows="5" />
-                                            <div id="@($"{nameof(Model.OtherAction)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
-                                        </GdsFormGroup>
-                                    </div>
-                                }
+                                <GdsCheckboxDivider />
                             }
-                        </div>
-                    </Content>
+
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedActionsTakenOptions[key]" OnChanged="isChecked => OnActionsTakenChanged(isChecked, actionTaken.Id)" Exclusive="noActionTaken" />
+                                <GdsCheckboxLabel Text="@actionTaken.TypeName" />
+                            </GdsCheckboxItem>
+
+                            if(conditionalId != null)
+                            {
+                                <GdsCheckboxConditional Id="@conditionalId">
+                                    <GdsFormGroup AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
+                                        <h2 class="govuk-label-wrapper">
+                                            <GdsLabel Text="Can you provide more detail of the action you took?" AdditionalCssClasses="govuk-label--m" />
+                                        </h2>
+                                        <GdsHint>Do not include personal or financial information</GdsHint>
+                                        <GdsErrorMessage />
+                                        <InputTextArea id="@nameof(Model.OtherAction)" @bind-Value="Model.OtherAction" class="govuk-textarea govuk-js-character-count" rows="5" />
+                                        <div id="@($"{nameof(Model.OtherAction)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
+                                    </GdsFormGroup>
+                                </GdsCheckboxConditional>
+                            }
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 

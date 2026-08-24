@@ -126,20 +126,4 @@ public partial class FloodDestination(
             Model.DestinationOptions.Remove(floodSourceId);
     }
 
-    //private async Task<IList<GdsOptionItem<Guid>>> CreateDestinationOptions(IList<Guid> selectedValues)
-    //{
-    //    const string idPrefix = "destination";
-    //    var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Destination, _cts.Token);
-    //    return [.. floodProblems.Select(o => CreateOption(o, idPrefix, selectedValues))];
-    //}
-
-    //private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
-    //{
-    //    var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-    //    var label = floodProblem.TypeName.AsSpan();
-    //    var selected = selectedValues.Contains(floodProblem.Id);
-    //    var isExclusive = floodProblem.Id == FloodDestinationIds.NotSure;
-
-    //    return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
-    //}
 }

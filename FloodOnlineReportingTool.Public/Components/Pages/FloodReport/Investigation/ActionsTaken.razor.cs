@@ -34,6 +34,8 @@ public partial class ActionsTaken(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodMitigation> ActionsTakenOptions = [];
+    private Dictionary<string, bool> SelectedActionsTakenOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -49,12 +51,18 @@ public partial class ActionsTaken(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        ActionsTakenOptions = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.ActionsTaken, _cts.Token);
+        UpdateSelectedActionsTakenOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -63,8 +71,9 @@ public partial class ActionsTaken(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            Model.ActionsTakenOptions = await CreateActionsTakenOptions(investigation.ActionsTaken);
+            Model.ActionsTakenOptions = [.. investigation.ActionsTaken];
             Model.OtherAction = investigation.OtherAction;
+            UpdateSelectedActionsTakenOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -73,16 +82,11 @@ public partial class ActionsTaken(
 
     private async Task OnValidSubmit()
     {
-        var selectedActions = Model.ActionsTakenOptions
-            .Where(o => o.Selected)
-            .Select(o => o.Value)
-            .ToList();
-
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            ActionsTaken = selectedActions,
-            OtherAction = selectedActions.Contains(FloodMitigationIds.OtherAction) ? Model.OtherAction : null,
+            ActionsTaken = Model.ActionsTakenOptions,
+            OtherAction = Model.ActionsTakenOptions.Contains(FloodMitigationIds.OtherAction) ? Model.OtherAction : null,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -105,20 +109,21 @@ public partial class ActionsTaken(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateActionsTakenOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected actions taken options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedActionsTakenOptions()
     {
-        const string idPrefix = "action-taken";
-        var floodMitigations = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.ActionsTaken, _cts.Token);
-        return [.. floodMitigations.Select(o => CreateOption(o, idPrefix, selectedValues))];
+        SelectedActionsTakenOptions = ActionsTakenOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.ActionsTakenOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodMitigation floodMitigation, string idPrefix, IList<Guid> selectedValues)
+    private void OnActionsTakenChanged(bool isChecked, Guid floodMitigationId)
     {
-        var id = $"{idPrefix}-{floodMitigation.Id}".AsSpan();
-        var label = floodMitigation.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodMitigation.Id);
-        var isExclusive = floodMitigation.Id == FloodMitigationIds.NoActionTaken;
-
-        return new GdsOptionItem<Guid>(id, label, floodMitigation.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.ActionsTakenOptions.Contains(floodMitigationId))
+            Model.ActionsTakenOptions.Add(floodMitigationId);
+        else if (!isChecked)
+            Model.ActionsTakenOptions.Remove(floodMitigationId);
     }
+
 }
