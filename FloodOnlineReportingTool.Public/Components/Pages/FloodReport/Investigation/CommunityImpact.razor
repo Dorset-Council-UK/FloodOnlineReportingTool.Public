@@ -19,13 +19,6 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            @if (!_isLoading && Model.CommunityImpactOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The community impact options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
                     <GdsFieldsetLegend>
