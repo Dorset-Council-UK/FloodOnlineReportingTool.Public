@@ -1,4 +1,5 @@
 ﻿@page "/floodreport/create/cause"
+@using FloodOnlineReportingTool.Contracts.Shared
 
 <PageTitle>@FloodReportCreatePages.Cause.Title</PageTitle>
 
@@ -14,14 +15,32 @@
 
     <GdsFormGroup Show="!_isLoading">
         <GdsFieldsetGroup>
-            <Heading>
-                <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know where the water is coming from?</GdsHeading>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.CauseOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Do you know where the water is coming from?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes For="() => Model.CauseOptions">
+                @foreach (var cause in CauseOptions)
+                {
+                    string key = cause.Id.ToString("N");
+                    string id = $"flood-cause-{key}";
+                    bool isNotSure = cause.Id == PrimaryCauseIds.NotSure;
+                    
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+                    
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCauseOptions[key]" OnChanged="isChecked => OnCauseChanged(isChecked, cause.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@cause.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
+
         </GdsFieldsetGroup>
     </GdsFormGroup>
 

@@ -26,13 +26,21 @@ public partial class Cause(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodProblem> CauseOptions { get; set; } = [];
+    private Dictionary<string, bool> SelectedCauseOptions = [];
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        CauseOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.PrimaryCause, _cts.Token);
+        UpdateSelectedCauseOptions();
     }
 
     public async ValueTask DisposeAsync()
@@ -55,7 +63,8 @@ public partial class Cause(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            Model.CauseOptions = await CreateCauseOptions(eligibilityCheck.Causes);
+            Model.CauseOptions = [..eligibilityCheck.Causes];
+            UpdateSelectedCauseOptions();
 
             PreviousPage = FromSummary
                 ? FloodReportCreatePages.Summary
@@ -79,7 +88,7 @@ public partial class Cause(
         // Update the eligibility check
         var eligibilityCheck = await GetEligibilityCheck();
 
-        var selectedOptions = Model.CauseOptions.Where(o => o.Selected).Select(o => o.Value);
+        var selectedOptions = SelectedCauseOptions.Where(o => o.Value).Select(o => Guid.Parse(o.Key));
         var hasRainwaterCause = selectedOptions.Contains(PrimaryCauseIds.RainwaterFlowingOverTheGround);
 
         // We need to remove any run off options as it has not been selected
@@ -125,20 +134,21 @@ public partial class Cause(
         return new();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateCauseOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected cause options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedCauseOptions()
     {
-        const string idPrefix = "cause";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.PrimaryCause, _cts.Token);
-        return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
+        SelectedCauseOptions = CauseOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.CauseOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
+    private void OnCauseChanged(bool isChecked, Guid floodProblemId)
     {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == PrimaryCauseIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.CauseOptions.Contains(floodProblemId))
+            Model.CauseOptions.Add(floodProblemId);
+        else if (!isChecked)
+            Model.CauseOptions.Remove(floodProblemId);
     }
+
 }

@@ -8,7 +8,7 @@ public class FloodCauseValidator : AbstractValidator<FloodCause>
     public FloodCauseValidator()
     {
         RuleFor(o => o.CauseOptions)
-            .Must(o => o.Any(item =>item.Selected))
+            .NotEmpty()
             .WithMessage("Select where the flooding came from or select 'Not sure'");
     }
 }
