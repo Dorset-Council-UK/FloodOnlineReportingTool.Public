@@ -34,6 +34,8 @@ public partial class CommunityImpact(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodImpact> CommunityImpactOptions = [];
+    private Dictionary<string, bool> SelectedCommunityImpactOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -49,12 +51,18 @@ public partial class CommunityImpact(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        CommunityImpactOptions = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
+        UpdateSelectedCommunityImpactOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -63,8 +71,8 @@ public partial class CommunityImpact(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            var options = await CreateCommunityImpactOptions(investigation.CommunityImpacts);
-            Model.CommunityImpactOptions = [.. options];
+            Model.CommunityImpactOptions = investigation.CommunityImpacts;
+            UpdateSelectedCommunityImpactOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -76,7 +84,7 @@ public partial class CommunityImpact(
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            CommunityImpacts = [.. Model.CommunityImpactOptions.Where(o => o.Selected).Select(o => o.Value)],
+            CommunityImpacts = Model.CommunityImpactOptions,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -99,20 +107,21 @@ public partial class CommunityImpact(
         return new InvestigationDto();
     }
 
-    private async Task<IList<GdsOptionItem<Guid>>> CreateCommunityImpactOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected community impact options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedCommunityImpactOptions()
     {
-        const string idPrefix = "community-impact";
-        var floodProblems = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.CommunityImpact, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, idPrefix, selectedValues))];
+        SelectedCommunityImpactOptions = CommunityImpactOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.CommunityImpactOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodImpact floodImpact, string idPrefix, IList<Guid> selectedValues)
+    private void OnCommunityImpactChanged(bool isChecked, Guid floodImpactId)
     {
-        var id = $"{idPrefix}-{floodImpact.Id}".AsSpan();
-        var label = floodImpact.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodImpact.Id);
-        var isExclusive = floodImpact.Id == FloodImpactIds.CommunityImpactNotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.CommunityImpactOptions.Contains(floodImpactId))
+            Model.CommunityImpactOptions.Add(floodImpactId);
+        else if (!isChecked)
+            Model.CommunityImpactOptions.Remove(floodImpactId);
     }
+
 }

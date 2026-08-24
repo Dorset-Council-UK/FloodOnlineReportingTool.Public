@@ -1,5 +1,6 @@
 ﻿@page "/floodreport/investigation/communityimpact"
 @using Microsoft.AspNetCore.Components.Authorization
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@Title</PageTitle>
 
@@ -27,14 +28,32 @@
 
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Did the flooding restrict parts of the community?</GdsHeading>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsCheckboxes Options="Model.CommunityImpactOptions" />
-                    </Content>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Did the flooding restrict parts of the community?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+                    
+                    <GdsCheckboxes For="() => Model.CommunityImpactOptions">
+                        @foreach (var communityImpact in CommunityImpactOptions)
+                        {
+                            string key = communityImpact.Id.ToString("N");
+                            string id = $"community-impact-{key}";
+                            bool noCommunityImpact = communityImpact.Id == FloodImpactIds.CommunityImpactNotSure;
+                            
+                            if (noCommunityImpact)
+                            {
+                                <GdsCheckboxDivider />
+                            }
+                           
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommunityImpactOptions[key]" OnChanged="isChecked => OnCommunityImpactChanged(isChecked, communityImpact.Id)" Exclusive="noCommunityImpact" />
+                                <GdsCheckboxLabel Text="@communityImpact.TypeName" />
+                            </GdsCheckboxItem>
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
