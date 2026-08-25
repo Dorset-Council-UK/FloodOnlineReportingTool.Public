@@ -17,13 +17,6 @@
             <FluentValidationValidator />
             <GdsErrorSummary />
 
-            @if (!_isLoading && Model.ActionsTakenOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The actions taken options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
             <GdsFormGroup Show="!_isLoading">
