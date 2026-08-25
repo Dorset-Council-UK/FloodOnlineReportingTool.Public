@@ -32,9 +32,9 @@ public partial class ServiceImpact(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IList<RecordStatus> _wereServicesImpactedOptions = [];
-    private IList<FloodImpact> ServiceImpactOptions = [];
-    private Dictionary<string, bool> SelectedServiceImpactOptions = [];
+    private IList<RecordStatus> ServiceImpactRadioOptions = [];
+    private IList<FloodImpact> ServiceImpactCheckboxOptions = [];
+    private Dictionary<string, bool> SelectedServiceImpactCheckboxOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -60,8 +60,8 @@ public partial class ServiceImpact(
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
         }
 
-        _wereServicesImpactedOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        ServiceImpactOptions = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.ServiceImpact, _cts.Token);
+        ServiceImpactRadioOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
+        ServiceImpactCheckboxOptions = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.ServiceImpact, _cts.Token);
         UpdateSelectedServiceImpactOptions();
     }
 
@@ -80,19 +80,6 @@ public partial class ServiceImpact(
             };
             Model.ImpactedServicesOptions = [.. investigation.ServiceImpacts];
             UpdateSelectedServiceImpactOptions();
-
-            //// Get all the service impacts (flood impacts) This includes not sure, and services not affected
-            //var floodImpacts = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.ServiceImpact, _cts.Token);
-
-            //// Build the yes, no, not sure radio buttons
-            //Guid? selectedValue = investigation.ServiceImpacts switch
-            //{
-            //    var impacts when impacts.Contains(FloodImpactIds.ServiceImpactNotSure) => FloodImpactIds.ServiceImpactNotSure,
-            //    var impacts when impacts.Contains(FloodImpactIds.ServicesNotAffected) => FloodImpactIds.ServicesNotAffected,
-            //    var impacts when impacts.Count > 0 => RecordStatusIds.Yes,
-            //    _ => null,
-            //};
-            //Model.WereServicesImpactedId = selectedValue;
 
             _isLoading = false;
             StateHasChanged();
@@ -142,7 +129,7 @@ public partial class ServiceImpact(
     /// </summary>
     private void UpdateSelectedServiceImpactOptions()
     {
-        SelectedServiceImpactOptions = ServiceImpactOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.ImpactedServicesOptions.Contains(o.Id), StringComparer.Ordinal);
+        SelectedServiceImpactCheckboxOptions = ServiceImpactCheckboxOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.ImpactedServicesOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
     private void OnServiceImpactChanged(bool isChecked, Guid floodImpactId)
@@ -154,75 +141,4 @@ public partial class ServiceImpact(
             Model.ImpactedServicesOptions.Remove(floodImpactId);
     }
 
-
-    //private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateWereServicesImpactedOptions(IList<FloodImpact> floodImpacts, Guid? selectedValue)
-    //{
-    //    const string idPrefix = "were-services-impacted";
-
-    //    var yesRecordStatus = await commonRepository.GetRecordStatus(RecordStatusIds.Yes, _cts.Token);
-    //    var noFloodImpact = floodImpacts.FirstOrDefault(fi => fi.Id == FloodImpactIds.ServicesNotAffected);
-    //    var notSureFloodImpact = floodImpacts.FirstOrDefault(fi => fi.Id == FloodImpactIds.ServiceImpactNotSure);
-
-    //    if (yesRecordStatus is null || noFloodImpact is null || notSureFloodImpact is null)
-    //    {
-    //        return [];
-    //    }
-
-    //    // Change the label for services not affected
-    //    noFloodImpact = noFloodImpact with
-    //    {
-    //        TypeName = "No",
-    //    };
-
-    //    return [
-    //        CreateOption(yesRecordStatus, idPrefix, selectedValue),
-    //        CreateOption(noFloodImpact, idPrefix, selectedValue),
-    //        CreateOption(notSureFloodImpact, idPrefix, selectedValue),
-    //    ];
-    //}
-
-    //private static IReadOnlyCollection<GdsOptionItem<Guid>> CreateImpactedServicesOptions(IList<FloodImpact> floodImpacts, IList<Guid> selectedValues)
-    //{
-    //    const string idPrefix = "impacted-services";
-    //    var withoutNotSureAndNotAffected = floodImpacts.Where(fi => fi.Id != FloodImpactIds.ServicesNotAffected && fi.Id != FloodImpactIds.ServiceImpactNotSure);
-    //    return [.. withoutNotSureAndNotAffected.Select(o => CreateOption(o, idPrefix, selectedValues))];
-    //}
-
-    ///// <summary>
-    ///// Create a GdsOptionItem from a FloodImpact, with possible multiple selections
-    ///// </summary>
-    //private static GdsOptionItem<Guid> CreateOption(FloodImpact floodImpact, string idPrefix, IList<Guid> selectedValues)
-    //{
-    //    var id = $"{idPrefix}-{floodImpact.Id}".AsSpan();
-    //    var label = floodImpact.TypeName.AsSpan();
-    //    var selected = selectedValues.Contains(floodImpact.Id);
-    //    var isExclusive = floodImpact.Id == FloodImpactIds.ServicesNotAffected || floodImpact.Id == FloodImpactIds.ServiceImpactNotSure;
-
-    //    return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
-    //}
-
-    ///// <summary>
-    ///// Create a GdsOptionItem from a FloodImpact, with an optional single selection
-    ///// </summary>
-    //private static GdsOptionItem<Guid> CreateOption(FloodImpact floodImpact, string idPrefix, Guid? selectedValue)
-    //{
-    //    var id = $"{idPrefix}-{floodImpact.Id}".AsSpan();
-    //    var label = floodImpact.TypeName.AsSpan();
-    //    var selected = selectedValue?.Equals(floodImpact.Id) ?? false;
-    //    var isExclusive = floodImpact.Id.Equals(FloodImpactIds.ServiceImpactNotSure);
-
-    //    return new GdsOptionItem<Guid>(id, label, floodImpact.Id, selected, isExclusive);
-    //}
-
-    ///// <summary>
-    ///// Create a GdsOptionItem from a RecordStatus, with an optional single selection
-    ///// </summary>
-    //private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    //{
-    //    var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-    //    var label = recordStatus.Text.AsSpan();
-    //    var selected = selectedValue?.Equals(recordStatus.Id) ?? false;
-
-    //    return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected);
-    //}
 }

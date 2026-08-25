@@ -32,7 +32,7 @@
                         <GdsErrorMessage />
 
                         <GdsRadios @bind-Value="Model.WereServicesImpactedId">
-                            @foreach (var option in _wereServicesImpactedOptions)
+                            @foreach (var option in ServiceImpactRadioOptions)
                             {
                                 bool isNotSure = option.Id == FloodImpactIds.ServiceImpactNotSure;
                                 var conditionalId = option.Id == RecordStatusIds.Yes ? "were-services-impacted-yes" : null;
@@ -54,7 +54,7 @@
                                                 <GdsErrorMessage />
 
                                                 <GdsCheckboxes For="() => Model.ImpactedServicesOptions">
-                                                    @foreach (var impactedService in ServiceImpactOptions)
+                                                    @foreach (var impactedService in ServiceImpactCheckboxOptions)
                                                     {
                                                         string key = impactedService.Id.ToString("N");
                                                         string id = $"impacted-service-{key}";
@@ -66,7 +66,7 @@
                                                         }
                                                             
                                                         <GdsCheckboxItem>
-                                                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedServiceImpactOptions[key]" OnChanged="isChecked => OnServiceImpactChanged(isChecked, impactedService.Id)" Exclusive="isNotSure" />
+                                                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedServiceImpactCheckboxOptions[key]" OnChanged="isChecked => OnServiceImpactChanged(isChecked, impactedService.Id)" Exclusive="isNotSure" />
                                                             <GdsCheckboxLabel Text="@impactedService.TypeName" />
                                                         </GdsCheckboxItem>
                                                     }
