@@ -17,45 +17,52 @@
             <FluentValidationValidator />
             <GdsErrorSummary />
 
-            @if (!_isLoading && Model.WarningSourceOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The warning source options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Where did you receive warnings from?</GdsHeading>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                            @foreach (var option in Model.WarningSourceOptions)
-                            {
-                                var conditionalId = option.Value == FloodMitigationIds.OtherWarning ? "conditional-other" : null;
-                                <GdsCheckbox Option="option" ConditionalId="@conditionalId" Name="WarningSource" />
-                                if (conditionalId != null)
-                                {
-                                    <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="@conditionalId">
-                                        <GdsFormGroup For="() => Model.WarningOther" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
-                                            <h3 class="govuk-label-wrapper">
-                                                <GdsLabel Text="Can you describe the other source?" AdditionalCssClasses="govuk-label--m" />
-                                            </h3>
-                                            <GdsHint>Do not include personal or financial information</GdsHint>
-                                            <GdsErrorMessage />
-                                            <InputTextArea id="@nameof(Model.WarningOther)" @bind-Value="Model.WarningOther" class="govuk-textarea govuk-js-character-count" rows="5" />
-                                            <div id="@($"{nameof(Model.WarningOther)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
-                                        </GdsFormGroup>
-                                    </div>
-                                }
-                            }
-                        </div>
-                    </Content>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Where did you receive warnings from?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsCheckboxes For="() => Model.WarningSourceOptions">
+                    @foreach (var warningSource in WarningSourceOptions)
+                    {
+                        string key = warningSource.Id.ToString("N");
+                        string id = $"warning-source-{key}";
+                        bool noWarningSource = warningSource.Id == FloodMitigationIds.NoWarning;
+                        var conditionalId = warningSource.Id == FloodMitigationIds.OtherWarning ? "conditional-other" : null;
+                        
+                        if (noWarningSource)
+                        {
+                            <GdsCheckboxDivider />
+                        }
+                        
+                        <GdsCheckboxItem>
+                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedWarningSourceOptions[key]" OnChanged="isChecked => OnWarningSourceChanged(isChecked, warningSource.Id)" Exclusive="noWarningSource" />
+                            <GdsCheckboxLabel Text="@warningSource.TypeName" />
+                        </GdsCheckboxItem>
+                        
+                        if(conditionalId != null)
+                        {
+                            <GdsCheckboxConditional Id="@conditionalId">
+                                <GdsFormGroup AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
+                                    <h2 class="govuk-label-wrapper">
+                                        <GdsLabel Text="Can you describe the other source?" AdditionalCssClasses="govuk-label--m" />
+                                    </h2>
+                                    <GdsHint>Do not include personal or financial information</GdsHint>
+                                    <GdsErrorMessage />
+                                    <InputTextArea id="@nameof(Model.WarningOther)" @bind-Value="Model.WarningOther" class="govuk-textarea govuk-js-character-count" rows="5" />
+                                    <div id="@($"{nameof(Model.WarningOther)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
+                                </GdsFormGroup>
+                            </GdsCheckboxConditional>
+                        }
+                    }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 

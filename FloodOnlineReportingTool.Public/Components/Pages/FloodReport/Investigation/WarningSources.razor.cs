@@ -31,6 +31,8 @@ public partial class WarningSources(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodMitigation> WarningSourceOptions = [];
+    private Dictionary<string, bool> SelectedWarningSourceOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -46,12 +48,18 @@ public partial class WarningSources(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        WarningSourceOptions = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.WarningSource, _cts.Token);
+        UpdateSelectedWarningSourceOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -60,8 +68,9 @@ public partial class WarningSources(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            Model.WarningSourceOptions = await CreateWarningSourceOptions(investigation.WarningSources);
+            Model.WarningSourceOptions = [.. investigation.WarningSources];
             Model.WarningOther = investigation.WarningSourceOther;
+            UpdateSelectedWarningSourceOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -70,12 +79,11 @@ public partial class WarningSources(
 
     private async Task OnValidSubmit()
     {
-        var isOtherWarningSelected = Model.WarningSourceOptions.Any(o => o.Selected && o.Value == FloodMitigationIds.OtherWarning);
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            WarningSources = [.. Model.WarningSourceOptions.Where(o => o.Selected).Select(o => o.Value)],
-            WarningSourceOther = isOtherWarningSelected ? Model.WarningOther : null,
+            WarningSources = Model.WarningSourceOptions,
+            WarningSourceOther = Model.WarningOther,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -90,7 +98,7 @@ public partial class WarningSources(
             return InvestigationPages.Summary;
         }
 
-        var isFloodLineWarningSelected = Model.WarningSourceOptions.Any(o => o.Selected && o.Value == FloodMitigationIds.FloodlineWarning);
+        var isFloodLineWarningSelected = Model.WarningSourceOptions.Any(o => o.Equals(FloodMitigationIds.FloodlineWarning));
         return isFloodLineWarningSelected ? InvestigationPages.Floodline : InvestigationPages.History;
     }
 
@@ -109,20 +117,21 @@ public partial class WarningSources(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateWarningSourceOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected warning sources options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedWarningSourceOptions()
     {
-        const string idPrefix = "warning-source";
-        var floodMitigations = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.WarningSource, _cts.Token);
-        return [.. floodMitigations.Select(o => CreateOption(o, idPrefix, selectedValues))];
+        SelectedWarningSourceOptions = WarningSourceOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.WarningSourceOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodMitigation floodMitigation, string idPrefix, IList<Guid> selectedValues)
+    private void OnWarningSourceChanged(bool isChecked, Guid floodMitigationId)
     {
-        var id = $"{idPrefix}-{floodMitigation.Id}".AsSpan();
-        var label = floodMitigation.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodMitigation.Id);
-        var isExclusive = floodMitigation.Id == FloodMitigationIds.NoWarning;
-
-        return new GdsOptionItem<Guid>(id, label, floodMitigation.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.WarningSourceOptions.Contains(floodMitigationId))
+            Model.WarningSourceOptions.Add(floodMitigationId);
+        else if (!isChecked)
+            Model.WarningSourceOptions.Remove(floodMitigationId);
     }
+
 }
