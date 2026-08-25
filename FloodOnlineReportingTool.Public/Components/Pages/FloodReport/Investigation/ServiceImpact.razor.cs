@@ -93,6 +93,7 @@ public partial class ServiceImpact(
         var updatedInvestigation = investigation with
         {
             ServiceImpacts = GetSelectedServiceImpacts(),
+            IsPeakDepthKnownId = investigation.IsPeakDepthKnownId,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
