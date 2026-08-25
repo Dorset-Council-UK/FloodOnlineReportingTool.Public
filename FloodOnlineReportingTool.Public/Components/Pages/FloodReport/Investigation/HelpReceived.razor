@@ -1,5 +1,6 @@
 ﻿@page "/floodreport/investigation/helpreceived"
 @using Microsoft.AspNetCore.Components.Authorization
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@Title</PageTitle>
 
@@ -18,23 +19,34 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            @if (!_isLoading && Model.HelpReceivedOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The help received options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Did you get any help for the flooding?</GdsHeading>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsCheckboxes Options="Model.HelpReceivedOptions" />
-                    </Content>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Did you get any help for the flooding?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+                    
+                    <GdsCheckboxes For="() => Model.HelpReceivedOptions">
+                        @foreach (var helpReceived in HelpReceivedOptions)
+                        {
+                            string key = helpReceived.Id.ToString("N");
+                            string id = $"help-received-{key}";
+                            bool noHelpReceived = helpReceived.Id == FloodMitigationIds.NoHelp;
+                            
+                            if (noHelpReceived)
+                            {
+                                <GdsCheckboxDivider />
+                            }
+                            
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedHelpReceivedOptions[key]" OnChanged="isChecked => OnHelpReceivedChanged(isChecked, helpReceived.Id)" Exclusive="noHelpReceived" />
+                                <GdsCheckboxLabel Text="@helpReceived.TypeName" />
+                            </GdsCheckboxItem>
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
