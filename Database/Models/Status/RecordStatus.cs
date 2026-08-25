@@ -11,11 +11,8 @@ public record RecordStatus
     }
 
     public RecordStatus(Guid id, string category, string text, int order, string description)
-    {
-        Id = id;
-        Category = category;
-        Text = text;
-        Order = order;
+        : this(id, category, text, order)
+    {        
         Description = description;
     }
 
