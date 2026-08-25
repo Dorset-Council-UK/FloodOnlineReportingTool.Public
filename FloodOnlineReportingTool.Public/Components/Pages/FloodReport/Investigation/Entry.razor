@@ -17,45 +17,52 @@
             <FluentValidationValidator />
             <GdsErrorSummary />
 
-            @if (!_isLoading && Model.EntryOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The how the water entered options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
             <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <GdsHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Do you know how the water entered?</GdsHeading>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                            @foreach (var option in Model.EntryOptions)
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Do you know how the water entered?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+                        
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsCheckboxes For="() => Model.EntryOptions">
+                        @foreach (var floodEntry in FloodEntryOptions)
+                        {
+                            string key = floodEntry.Id.ToString("N");
+                            string id = $"flood-entry-{key}";
+                            bool isNotSure = floodEntry.Id == FloodEntryIds.NotSure;
+                            var conditionalId = floodEntry.Id == FloodEntryIds.Other ? "conditional-other" : null;
+
+                            if (isNotSure)
                             {
-                                var conditionalId = option.Value == FloodEntryIds.Other ? "conditional-other" : null;
-                                <GdsCheckbox Option="option" ConditionalId="@conditionalId" Name="Entry" />
-                                if (conditionalId != null)
-                                {
-                                    <div class="govuk-checkboxes__conditional govuk-checkboxes__conditional--hidden" id="@conditionalId">
-                                        <GdsFormGroup For="() => Model.WaterEnteredOther" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
-                                            <h2 class="govuk-label-wrapper">
-                                                <GdsLabel Text="Can you provide more detail of how the water entered?" AdditionalCssClasses="govuk-label--m" />
-                                            </h2>
-                                            <GdsHint>Do not include personal or financial information</GdsHint>
-                                            <GdsErrorMessage />
-                                            <InputTextArea id="@nameof(Model.WaterEnteredOther)" @bind-Value="Model.WaterEnteredOther" class="govuk-textarea govuk-js-character-count" rows="5" />
-                                            <div id="@($"{nameof(Model.WaterEnteredOther)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
-                                        </GdsFormGroup>
-                                    </div>
-                                }
+                                <GdsCheckboxDivider />
                             }
-                        </div>
-                    </Content>
+
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedFloodEntryOptions[key]" OnChanged="isChecked => OnFloodEntryChanged(isChecked, floodEntry.Id)" Exclusive="isNotSure" />
+                                <GdsCheckboxLabel Text="@floodEntry.TypeName" />
+                            </GdsCheckboxItem>
+
+                            if (conditionalId != null)
+                            {
+                                <GdsCheckboxConditional Id="@conditionalId">
+                                    <GdsFormGroup AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="100">
+                                        <h2 class="govuk-label-wrapper">
+                                            <GdsLabel Text="Can you provide more detail of how the water entered?" AdditionalCssClasses="govuk-label--m" />
+                                        </h2>
+                                        <GdsHint>Do not include personal or financial information</GdsHint>
+                                        <GdsErrorMessage />
+                                        <InputTextArea id="@nameof(Model.WaterEnteredOther)" @bind-Value="Model.WaterEnteredOther" class="govuk-textarea govuk-js-character-count" rows="5" />
+                                        <div id="@($"{nameof(Model.WaterEnteredOther)}-info")" class="govuk-hint govuk-character-count__message">You can enter up to 100 characters</div>
+                                    </GdsFormGroup>
+                                </GdsCheckboxConditional>
+                            }
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
