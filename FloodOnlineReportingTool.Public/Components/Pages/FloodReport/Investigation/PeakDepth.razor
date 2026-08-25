@@ -19,73 +19,58 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsFormGroup For="() => Model.IsPeakDepthKnownId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.IsPeakDepthKnownId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Do you know how deep the water was?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>
-                                <div>You will have the option to add a maximum depth both inside and outside the property.</div>
-                                <div>You may be able to measure the depth from a tide mark on a wall.</div>
-                            </GdsHint>
-                            <GdsErrorMessage />
-                            <div class="govuk-radios" data-module="govuk-radios">
-                                @foreach (var option in _peakDepthKnownOptions)
-                                {
-                                    var conditionalId = option.Value == RecordStatusIds.Yes ? "conditional-depth-known" : null;
-                                    <GdsRadio Option="option" ConditionalId="@conditionalId" />
-                                    if (conditionalId != null)
-                                    {
-                                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="@conditionalId">
-                                            <div>
-                                                <GdsFormGroup For="() => Model.InsideCentimetresText">
-                                                    <GdsLabel Text="What was the depth inside?" />
-                                                    <GdsHint>Total centimetres, like 5</GdsHint>
-                                                    <GdsErrorMessage />
-                                                    <div class="govuk-input__wrapper">
-                                                        <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
-                                                        <div class="govuk-input__suffix" aria-hidden="true">cm</div>
-                                                    </div>
-                                                    
-                                                    @if(Model.InsideCentimetres.HasValue)
-                                                    {
-                                                        <GdsHint Id="inside-total" CssClass="govuk-hint govuk-!-margin-bottom-0">
-                                                        <span>This is roughly equal to @Model.InsideFeetAndInches</span>
-                                                    </GdsHint>
-                                                    }
-                                                </GdsFormGroup>
-                                            </div>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Do you know how deep the water was?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
 
-                                            <div>
-                                                <GdsFormGroup For="() => Model.OutsideCentimetresText" AdditionalCssClasses="govuk-!-margin-top-3">
-                                                    <GdsLabel Text="What was the depth outside?" />
-                                                    <GdsHint>Total centimetres, like 5</GdsHint>
-                                                    <GdsErrorMessage />
-                                                    <div class="govuk-input__wrapper">
-                                                        <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
-                                                        <div class="govuk-input__suffix" aria-hidden="true">cm</div>
-                                                    </div>
-                                                    
-                                                    @if(Model.OutsideCentimetres.HasValue)
-                                                    {
-                                                        <GdsHint Id="outside-total">
-                                                            <span>This is roughly equal to @Model.OutsideFeetAndInches</span>
-                                                        </GdsHint>
-                                                    }
-                                                    
-                                                </GdsFormGroup>
-                                                
-                                                
-                                            </div>
-                                        </div>
-                                    }
+                    <GdsHint>
+                        <div>You will have the option to add a maximum depth both inside and outside the property.</div>
+                        <div>You may be able to measure the depth from a tide mark on a wall.</div>
+                    </GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.IsPeakDepthKnownId">
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@RecordStatusIds.Yes" ConditionalId="conditional-depth-known" />
+                            <GdsRadioLabel Text="Yes" />
+                        </GdsRadioItem>
+                        <GdsRadioConditional Id="conditional-depth-known">
+                            <GdsFormGroup>
+                                <GdsLabel Text="What was the depth inside?" />
+                                <GdsHint>Total centimetres, like 5</GdsHint>
+                                <GdsErrorMessage />
+                                <div class="govuk-input__wrapper">
+                                    <GdsInputText @bind-Value="Model.InsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                    <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                </div>
+                                @if(Model.InsideCentimetres.HasValue)
+                                {
+                                    <p>This is roughly equal to @Model.InsideFeetAndInches</p>
                                 }
-                            </div>
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+                            </GdsFormGroup>
+                            <GdsFormGroup>
+                                <GdsLabel Text="What was the depth outside?" />
+                                <GdsHint>Total centimetres, like 5</GdsHint>
+                                <GdsErrorMessage />
+                                <div class="govuk-input__wrapper">
+                                    <GdsInputText @bind-Value="Model.OutsideCentimetresText" class="govuk-input govuk-input--width-3" spellcheck="false" inputmode="numeric" />
+                                    <div class="govuk-input__suffix" aria-hidden="true">cm</div>
+                                </div>
+                                @if(Model.OutsideCentimetres.HasValue)
+                                {
+                                    <p>This is roughly equal to @Model.OutsideFeetAndInches</p>
+                                }
+                            </GdsFormGroup>
+                        </GdsRadioConditional>
+
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@RecordStatusIds.No" />
+                            <GdsRadioLabel Text="No" />
+                        </GdsRadioItem>
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)
