@@ -12,29 +12,25 @@
 
     <GdsSpinner Show="_isSearching" ShowMessage="true" Message="Searching..." />
 
-    @if (!_isSearching && Model.AddressOptions.Count == 0 && Model.IsAddress)
+    @if (!_isSearching && _addresses.Count == 0 && Model.IsAddress)
     {
         <p class="govuk-error-message">
             <span class="govuk-visually-hidden">Error:</span> <span>No addresses were found, please check the postcode and search again</span>
         </p>
     }
 
-    <GdsFormGroup Show="Model.AddressOptions.Count > 0">
-        @{
-            var hintId = "UPRN-hint";
-            var errorId = "UPRN-error";
-            var describedBy = _editContext.IsValid(() => Model.UPRN) ? hintId : $"{hintId} {errorId}";
-        }
+    <GdsFormGroup Show="_addresses.Count > 0">
         <GdsLabel Text="Choose address" />
-        <GdsHint Id="@hintId">Select one option.</GdsHint>
-        <GdsErrorMessage Id="@errorId" />
-        <InputSelect id="@nameof(Model.UPRN)" @bind-Value="Model.UPRN" aria-describedby="@describedBy">
+        <GdsHint>Select one option.</GdsHint>
+        <GdsErrorMessage />
+        <GdsSelect @bind-Value="Model.UPRN">
             <option value=""></option>
-            @foreach (var option in Model.AddressOptions)
+            @foreach (var address in _addresses)
             {
-                <option value="@option.Value" selected="@option.Selected">@option.Label</option>
+                bool selected = address.UPRN == Model.UPRN;
+                <option value="@address.UPRN" selected="@selected">@address.ConcatenatedAddress</option>
             }
-        </InputSelect>
+        </GdsSelect>
     </GdsFormGroup>
 
     <GdsFormGroup>

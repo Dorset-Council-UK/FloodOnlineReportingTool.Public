@@ -73,7 +73,8 @@ public partial class Address(
             Model.UPRN = eligibilityCheck.Uprn == 0 ? null : eligibilityCheck.Uprn;
             Model.IsAddress = eligibilityCheck.IsAddress;
             Model.LocationDesc = eligibilityCheck.LocationDesc;
-            Model.AddressOptions = await CreateAddressOptions();
+
+            _addresses = await AddressSearch();
 
             StateHasChanged();
         }
@@ -149,24 +150,19 @@ public partial class Address(
         return new();
     }
 
-    private async Task<IList<GdsOptionItem<long>>> CreateAddressOptions()
-    {
-        _addresses = await AddressSearch();
-        return [.. _addresses.Select(CreateOption)];
-    }
-
     /// <summary>
     /// Search for addresses based on the postcode.
     /// </summary>
     private async Task<IList<ApiAddress>> AddressSearch()
     {
-        if (string.IsNullOrWhiteSpace(Model.Postcode) && Model.IsAddress == false)
+        if (string.IsNullOrWhiteSpace(Model.Postcode) && !Model.IsAddress)
         {
             logger.LogDebug("Non address query so not searching");
             _isSearching = false;
             return [];
         }
-        else if (string.IsNullOrWhiteSpace(Model.Postcode))
+
+        if (string.IsNullOrWhiteSpace(Model.Postcode))
         {
             logger.LogDebug("No postcode, not searching");
             _isSearching = false;
@@ -200,15 +196,6 @@ public partial class Address(
     private async Task SearchAgain()
     {
         Model.UPRN = null;
-        Model.AddressOptions = await CreateAddressOptions();
-    }
-
-    private GdsOptionItem<long> CreateOption(ApiAddress apiAddress)
-    {
-        var label = apiAddress.ConcatenatedAddress.AsSpan();
-        var value = apiAddress.UPRN;
-        var selected = value == Model.UPRN;
-
-        return new GdsOptionItem<long>(id: "", label, value, selected);
+        _addresses = await AddressSearch();
     }
 }
