@@ -42,7 +42,7 @@
                             }
 
                             <GdsCheckboxItem>
-                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedFloodEntryOptions[key]" OnChanged="isChecked => OnFloodEntryChanged(isChecked, floodEntry.Id)" Exclusive="isNotSure" />
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedFloodEntryOptions[key]" OnChanged="isChecked => OnFloodEntryChanged(isChecked, floodEntry.Id)" Exclusive="isNotSure" ConditionalId="@conditionalId" />
                                 <GdsCheckboxLabel Text="@floodEntry.TypeName" />
                             </GdsCheckboxItem>
 

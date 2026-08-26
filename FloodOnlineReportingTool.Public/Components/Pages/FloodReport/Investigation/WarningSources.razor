@@ -42,7 +42,7 @@
                         }
                         
                         <GdsCheckboxItem>
-                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedWarningSourceOptions[key]" OnChanged="isChecked => OnWarningSourceChanged(isChecked, warningSource.Id)" Exclusive="noWarningSource" />
+                            <GdsInputCheckbox Id="@id" @bind-Value="@SelectedWarningSourceOptions[key]" OnChanged="isChecked => OnWarningSourceChanged(isChecked, warningSource.Id)" Exclusive="noWarningSource" ConditionalId="@conditionalId" />
                             <GdsCheckboxLabel Text="@warningSource.TypeName" />
                         </GdsCheckboxItem>
                         

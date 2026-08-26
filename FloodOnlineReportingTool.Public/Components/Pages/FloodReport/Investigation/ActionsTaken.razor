@@ -42,7 +42,7 @@
                             }
 
                             <GdsCheckboxItem>
-                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedActionsTakenOptions[key]" OnChanged="isChecked => OnActionsTakenChanged(isChecked, actionTaken.Id)" Exclusive="noActionTaken" />
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedActionsTakenOptions[key]" OnChanged="isChecked => OnActionsTakenChanged(isChecked, actionTaken.Id)" Exclusive="noActionTaken" ConditionalId="@conditionalId" />
                                 <GdsCheckboxLabel Text="@actionTaken.TypeName" />
                             </GdsCheckboxItem>
 
