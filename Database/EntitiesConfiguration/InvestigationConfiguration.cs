@@ -23,7 +23,7 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
 
         builder
             .Property(o => o.WaterEnteredOther)
-            .HasMaxLength(100);
+            .HasMaxLength(150);
 
         builder
             .Property(o => o.HistoryOfFloodingDetails)
@@ -31,7 +31,7 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
 
         builder
             .Property(o => o.WarningSourceOther)
-            .HasMaxLength(100);
+            .HasMaxLength(150);
 
         builder
             .Property(o => o.KnownProblemDetails)
@@ -39,7 +39,7 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
 
         builder
             .Property(o => o.OtherAction)
-            .HasMaxLength(100);
+            .HasMaxLength(150);
 
         SetupAutoIncludes(builder);
     }
