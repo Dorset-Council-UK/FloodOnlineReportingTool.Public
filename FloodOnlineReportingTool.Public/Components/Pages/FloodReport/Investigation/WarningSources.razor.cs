@@ -83,7 +83,7 @@ public partial class WarningSources(
         var updatedInvestigation = investigation with
         {
             WarningSources = Model.WarningSourceOptions,
-            WarningSourceOther = Model.WarningOther,
+            WarningSourceOther = Model.WarningOther ?? null,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
