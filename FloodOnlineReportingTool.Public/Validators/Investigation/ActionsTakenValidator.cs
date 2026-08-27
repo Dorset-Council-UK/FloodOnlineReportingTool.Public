@@ -15,7 +15,7 @@ public class ActionsTakenValidator : AbstractValidator<ActionsTaken>
         RuleFor(o => o.OtherAction)
             .NotEmpty()
             .WithMessage("Enter the other actions you took")
-            .MaximumLength(100)
+            .MaximumLength(150)
             .WithMessage("Other actions must be {MaxLength} characters or less")
             .When(entry => entry.ActionsTakenOptions.Any(option => option.Equals(FloodMitigationIds.OtherAction)));
     }
