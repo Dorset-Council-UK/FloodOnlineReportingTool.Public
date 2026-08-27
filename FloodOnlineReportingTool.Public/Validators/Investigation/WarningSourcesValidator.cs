@@ -15,7 +15,7 @@ public class WarningSourcesValidator : AbstractValidator<WarningSources>
         RuleFor(o => o.WarningOther)
             .NotEmpty()
             .WithMessage("Enter the other warning source")
-            .MaximumLength(100)
+            .MaximumLength(150)
             .WithMessage("Other warning source must be {MaxLength} characters or less")
             .When(entry => entry.WarningSourceOptions.Any(option => option.Equals(FloodMitigationIds.OtherWarning)));
     }

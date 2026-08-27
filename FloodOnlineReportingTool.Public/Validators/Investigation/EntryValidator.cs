@@ -15,7 +15,7 @@ public class EntryValidator : AbstractValidator<Entry>
         RuleFor(o => o.WaterEnteredOther)
             .NotEmpty()
             .WithMessage("Enter other details of how the water entered")
-            .MaximumLength(100)
+            .MaximumLength(150)
             .WithMessage("Other details must be {MaxLength} characters or less")
             .When(entry => entry.EntryOptions.Any(option => option.Equals(FloodEntryIds.Other)));
     }
