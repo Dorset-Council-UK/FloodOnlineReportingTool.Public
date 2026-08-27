@@ -53,32 +53,35 @@
         }
     }
 
-    <GdsFormGroup>
-        <GdsFieldsetGroup>
-            <GdsFieldsetLegend>
-                <GdsFieldsetHeading Level="2">Property type</GdsFieldsetHeading>
-            </GdsFieldsetLegend>
+    @if (!_isLoading)
+    {
+        <GdsFormGroup>
+            <GdsFieldsetGroup>
+                <GdsFieldsetLegend>
+                    <GdsFieldsetHeading Level="2">Property type</GdsFieldsetHeading>
+                </GdsFieldsetLegend>
 
-            <GdsHint>
-                <div>Select one option.</div>
-                @if (!string.IsNullOrWhiteSpace(_classification))
-                {
-                    <div>The selected address/location is listed as @_classification. Select a different property type if this is incorrect.</div>
-                }
-            </GdsHint>
-            <GdsErrorMessage />
+                <GdsHint>
+                    <div>Select one option.</div>
+                    @if (!string.IsNullOrWhiteSpace(_classification))
+                    {
+                        <div>The selected address/location is listed as @_classification. Select a different property type if this is incorrect.</div>
+                    }
+                </GdsHint>
+                <GdsErrorMessage />
 
-            <GdsRadios @bind-Value="Model.Property">
-                @foreach (var floodImpact in _propertyTypes)
-                {
-                    <GdsRadioItem>
-                        <GdsInputRadio Value="@floodImpact.Id" />
-                        <GdsRadioLabel Text="@floodImpact.TypeName" />
-                    </GdsRadioItem>
-                }
-            </GdsRadios>
-        </GdsFieldsetGroup>
-    </GdsFormGroup>
+                <GdsRadios @bind-Value="Model.Property">
+                    @foreach (var floodImpact in _propertyTypes)
+                    {
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@floodImpact.Id" />
+                            <GdsRadioLabel Text="@floodImpact.TypeName" />
+                        </GdsRadioItem>
+                    }
+                </GdsRadios>
+            </GdsFieldsetGroup>
+        </GdsFormGroup>
+    }
 
     <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
 

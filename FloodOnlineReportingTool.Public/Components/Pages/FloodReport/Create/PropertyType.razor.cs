@@ -64,17 +64,16 @@ public partial class PropertyType(
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _validationMessageStore = new(_editContext);
         }
-
-        // load data from database
-        _propertyTypes = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.PropertyType, _cts.Token);
-
-        ValidatePropertyTypes();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // load data from database
+            _propertyTypes = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.PropertyType, _cts.Token);
+            ValidatePropertyTypes();
+
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();
