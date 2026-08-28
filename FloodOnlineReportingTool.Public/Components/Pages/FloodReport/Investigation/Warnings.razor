@@ -5,7 +5,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -25,19 +25,25 @@
                 </p>
             }
 
-            <GdsFormGroup For="() => Model.RegisteredWithFloodlineId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.RegisteredWithFloodlineId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Are you registered to receive floodline warnings from the Environment Agency?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>See <a href="https://www.gov.uk/sign-up-for-flood-warnings" target="_blank" class="govuk-link">https://www.gov.uk/sign-up-for-flood-warnings</a> for more information</GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_registeredWithFloodlineOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Are you registered to receive floodline warnings from the Environment Agency?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>See <a href="https://www.gov.uk/sign-up-for-flood-warnings" target="_blank" class="govuk-link">https://www.gov.uk/sign-up-for-flood-warnings</a> for more information</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.RegisteredWithFloodlineId">
+                        @foreach (var registeredWithFloodLineOption in _registeredWithFloodlineOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@registeredWithFloodLineOption.Id" />
+                                <GdsRadioLabel Text="@registeredWithFloodLineOption.Text" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading && _otherWarningOptions.Count <= 0)
@@ -47,24 +53,30 @@
                 </p>
             }
 
-            <GdsFormGroup For="() => Model.OtherWarningId" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.OtherWarningId">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">Did you get any other warnings of the flood from another source?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>For example, from the TV, radio, neighbours or somewhere else</GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_otherWarningOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Did you get any other warnings of the flood from another source?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>For example, from the TV, radio, neighbours or somewhere else</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.OtherWarningId">
+                        @foreach (var otherWarningOption in _otherWarningOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@otherWarningOption.Id" />
+                                <GdsRadioLabel Text="@otherWarningOption.Text" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>

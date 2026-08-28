@@ -1,4 +1,4 @@
-﻿<h2 class="govuk-heading-l">Investigation details</h2>
+﻿<GdsHeading Level="2">Investigation details</GdsHeading>
 <dl class="govuk-summary-list">
     @if (ShowWaterSpeed)
     {
@@ -172,7 +172,7 @@
 
 @if (ShowHelpReceivedWarnings || ShowBeforeFloodingWarnings || ShowWarningSources || (ShowFloodlineWarnings && _isFloodlineWarning))
 {
-    <h2 class="govuk-heading-l">Warnings</h2>
+    <GdsHeading Level="2">Warnings</GdsHeading>
     <dl class="govuk-summary-list">
 
         @if (ShowHelpReceivedWarnings)

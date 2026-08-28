@@ -35,6 +35,8 @@ public partial class Entry(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodProblem> FloodEntryOptions = [];
+    private Dictionary<string, bool> SelectedFloodEntryOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -50,12 +52,18 @@ public partial class Entry(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        FloodEntryOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Entry, _cts.Token);
+        UpdateSelectedFloodEntryOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -64,8 +72,9 @@ public partial class Entry(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            Model.EntryOptions = await CreateEntryOptions(investigation.Entries);
+            Model.EntryOptions = [.. investigation.Entries];
             Model.WaterEnteredOther = investigation.WaterEnteredOther;
+            UpdateSelectedFloodEntryOptions();
 
             _isLoading = false;
             StateHasChanged();
@@ -74,13 +83,11 @@ public partial class Entry(
 
     private async Task OnValidSubmit()
     {
-        var otherEntrySelected = Model.EntryOptions.Any(option => option.Selected && option.Value.Equals(FloodEntryIds.Other));
-        var hasOther = Model.EntryOptions.Any(option => option.Value.Equals(FloodEntryIds.Other));
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            Entries = [.. Model.EntryOptions.Where(o => o.Selected).Select(o => o.Value)],
-            WaterEnteredOther = otherEntrySelected ? Model.WaterEnteredOther : null,
+            Entries = Model.EntryOptions,
+            WaterEnteredOther = Model.EntryOptions.Contains(FloodEntryIds.Other) ? Model.WaterEnteredOther : null,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -103,19 +110,21 @@ public partial class Entry(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateEntryOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected flood entry options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedFloodEntryOptions()
     {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Entry, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, "water-entry", selectedValues))];
+        SelectedFloodEntryOptions = FloodEntryOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.EntryOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
+    private void OnFloodEntryChanged(bool isChecked, Guid floodEntryId)
     {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodEntryIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.EntryOptions.Contains(floodEntryId))
+            Model.EntryOptions.Add(floodEntryId);
+        else if (!isChecked)
+            Model.EntryOptions.Remove(floodEntryId);
     }
+
 }

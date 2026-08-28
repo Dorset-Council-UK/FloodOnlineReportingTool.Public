@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.Models.Flood.FloodProblemIds;
 using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
@@ -35,6 +36,8 @@ public partial class FloodDestination(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodProblem> DestinationOptions { get; set; } = [];
+    private Dictionary<string, bool> SelectedDestinationOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -50,12 +53,18 @@ public partial class FloodDestination(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        DestinationOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Destination, _cts.Token);
+        UpdateSelectedDestinationOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -64,20 +73,20 @@ public partial class FloodDestination(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            var options = await CreateDestinationOptions(investigation.Destinations);
-            Model.DestinationOptions = [.. options];
+            Model.DestinationOptions = [.. investigation.Destinations];
+            UpdateSelectedDestinationOptions();
 
             _isLoading = false;
             StateHasChanged();  
         }
     }
-
+    
     private async Task OnValidSubmit()
     {
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            Destinations = [.. Model.DestinationOptions.Where(o => o.Selected).Select(o => o.Value)],
+            Destinations = Model.DestinationOptions,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -100,20 +109,21 @@ public partial class FloodDestination(
         return new InvestigationDto();
     }
 
-    private async Task<IList<GdsOptionItem<Guid>>> CreateDestinationOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected destination options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedDestinationOptions()
     {
-        const string idPrefix = "destination";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Destination, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, idPrefix, selectedValues))];
+        SelectedDestinationOptions = DestinationOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.DestinationOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
+    private void OnDestinationChanged(bool isChecked, Guid floodSourceId)
     {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == FloodDestinationIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.DestinationOptions.Contains(floodSourceId))
+            Model.DestinationOptions.Add(floodSourceId);
+        else if (!isChecked)
+            Model.DestinationOptions.Remove(floodSourceId);
     }
+
 }

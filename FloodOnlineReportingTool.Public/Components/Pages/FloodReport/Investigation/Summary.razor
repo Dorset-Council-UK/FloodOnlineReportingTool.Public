@@ -3,7 +3,7 @@
 
 <PageTitle>@InvestigationPages.Summary.Title</PageTitle>
 
-<h1 class="govuk-heading-xl">@InvestigationPages.Summary.Title</h1>
+<GdsHeading Level="1">@InvestigationPages.Summary.Title</GdsHeading>
 
 <AuthorizeView>
     <NotAuthorized>
@@ -35,10 +35,10 @@
 
             @if (_summaryErrors.Count == 0)
             {
-                <h2 class="govuk-heading-l">Now send the investigation</h2>
+                <GdsHeading Level="2">Now send the investigation</GdsHeading>
                 <p>You are confirming that, to the best of your knowledge, the details you are providing are correct.</p>
                 <p>You also agree that the information provided may be used by flood authorities to help with work to better understand flooding.</p>
-                <p><button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" @onclick="OnAcceptAndSend">Accept and send</button></p>
+                <p><GdsButton IsSubmit ="false" PreventDoubleClick  OnClick="OnAcceptAndSend" Text="Accept and send" /></p>
             }
         }
     </Authorized>

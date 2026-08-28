@@ -77,29 +77,35 @@ else
         <input type="hidden" name="Contact.ContactType" value="@Contact.ContactType" />
     } else
     {
-        <GdsFormGroup For="() => Contact.ContactType">
-            <InputRadioGroup @bind-Value="Contact.ContactType">
-                <GdsFieldsetGroup>
-                    <Heading>
-                        <h2 class="govuk-fieldset__heading">Type of contact</h2>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select one option.</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsRadios Options="ContactTypes" />
-                    </Content>
-                </GdsFieldsetGroup>
-            </InputRadioGroup>
+        <GdsFormGroup>
+            <GdsFieldsetGroup>
+                <GdsFieldsetLegend>
+                    <GdsFieldsetHeading Level="2">Type of contact</GdsFieldsetHeading>
+                </GdsFieldsetLegend>
+
+                <GdsHint>Select one option.</GdsHint>
+                <GdsErrorMessage />
+
+                <GdsRadios @bind-Value="Contact.ContactType">
+                    @foreach (var contactType in ContactTypes)
+                    {
+                        <GdsRadioItem>
+                            <GdsInputRadio Value="@contactType" />
+                            <GdsRadioLabel Text="@contactType.LabelText()" />
+                        </GdsRadioItem>
+                    }
+                </GdsRadios>
+            </GdsFieldsetGroup>
         </GdsFormGroup>
     }
 
-    <GdsFormGroup For="() => Contact.ContactName">
+    <GdsFormGroup>
         <GdsLabel Text="Contact name" />
         <GdsErrorMessage />
         <GdsInputText @bind-Value="Contact.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Contact.EmailAddress">
+    <GdsFormGroup>
         <GdsLabel Text="Email address" />
         <GdsHint>
             <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
@@ -111,7 +117,7 @@ else
 
     <AuthorizeView Context="authContext">
         <Authorized>
-            <GdsFormGroup For="() => Contact.PhoneNumber">
+            <GdsFormGroup>
                 <GdsLabel Text="Phone number (optional)" />
                 <GdsHint>For international numbers include the country code</GdsHint>
                 <GdsErrorMessage />

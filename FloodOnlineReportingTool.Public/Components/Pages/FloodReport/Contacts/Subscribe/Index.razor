@@ -1,23 +1,24 @@
 ﻿@page "/floodreport/contacts/subscribe"
+@using FloodOnlineReportingTool.Contracts.Shared
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBreadcrumbs Items="Breadcrumbs" />
 
-<h1 class="govuk-heading-l">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="CreateSubscription" novalidate>
     @* novalidate used to disable browser validation as this form needs to only validate on submit due to a validation glitch *@
     @* <FluentValidationValidator /> *@
     <GdsErrorSummary />
 
-    <GdsFormGroup For="() => Model.ContactName">
+    <GdsFormGroup>
         <GdsLabel Text="Contact name" />
         <GdsErrorMessage />
         <GdsInputText @bind-Value="Model.ContactName" class="govuk-input govuk-input--width-20" spellcheck="false" autocomplete="name" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Model.EmailAddress">
+    <GdsFormGroup>
         <GdsLabel Text="Email address" />
         <GdsHint>
             <div>We’ll only use this to send you a confirmation and for updates on your case.</div>
@@ -27,23 +28,29 @@
         <GdsInputText @bind-Value="Model.EmailAddress" class="govuk-input" type="email" spellcheck="false" autocomplete="email" aria-describedby="EmailAddress-hint" />
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Model.ContactType">
-        <InputRadioGroup @bind-Value="Model.ContactType">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Who are you?</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>Select one option.</GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="ContactTypes" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+    <GdsFormGroup>
+        <GdsFieldsetGroup>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Who are you?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select one option.</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsRadios @bind-Value="Model.ContactType">
+                @foreach (var contactType in Enum.GetValues<ContactRecordType>())
+                {
+                    <GdsRadioItem>
+                        <GdsInputRadio Value="@contactType" />
+                        <GdsRadioLabel Text="@contactType.LabelText().ToString()" />
+                    </GdsRadioItem>
+                }
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
     <div class="govuk-button-group">
-        <button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Save</button>
+        <GdsButton IsSubmit="true" PreventDoubleClick Text="Save" />
         <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@FloodReportCreatePages.Confirmation.Url">Cancel</a>
     </div>
 </EditForm>

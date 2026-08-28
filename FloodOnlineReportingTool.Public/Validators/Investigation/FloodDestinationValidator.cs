@@ -8,7 +8,7 @@ public class FloodDestinationValidator : AbstractValidator<FloodDestination>
     public FloodDestinationValidator()
     {
         RuleFor(o => o.DestinationOptions)
-            .Must(o => o.Any(x => x.Selected))
+            .NotEmpty()
             .WithMessage("Select where the flood water was flowing to or select 'Not sure'");
     }
 }

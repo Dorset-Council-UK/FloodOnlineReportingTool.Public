@@ -15,7 +15,7 @@
     </NavLinks>
 </GdsHeader>
 
-<div class="govuk-width-container flex-fill">
+<GdsContainer AdditionalCssClasses="flex-fill">
     @if (!Env.IsProduction())
     {
         // Show development banner in all non-production environments
@@ -28,7 +28,7 @@
     }
     <SectionOutlet SectionName="Layout.GdsBreadcrumbs" />
 
-    <main class="govuk-main-wrapper govuk-body" id="main-content" role="main">
+    <GdsMainWrapper AdditionalCssClasses="govuk-body" id="main-content" role="main">
         @if (Env.IsProduction())
         {
             <GdsErrorBoundary>
@@ -41,25 +41,25 @@
                 @Body
             </GdsErrorBoundary>
         }
-    </main>
-</div>
+    </GdsMainWrapper>
+</GdsContainer>
 
 <GdsFooter>
     <Meta>
         <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-            <h2 class="govuk-visually-hidden">Support links</h2>
+            <GdsHeading Level="2" AdditionalCssClasses="govuk-visually-hidden">Support links</GdsHeading>
             <ul class="govuk-footer__inline-list">
                 <li class="govuk-footer__inline-list-item">
-                    <a class="govuk-footer__link" href="@GeneralPages.Privacy.Url">@GeneralPages.Privacy.Title</a>
+                    <GdsLink Href="@GeneralPages.Privacy.Url">@GeneralPages.Privacy.Title</GdsLink>
                 </li>
                 <li class="govuk-footer__inline-list-item">
-                    <a class="govuk-footer__link" href="@GeneralPages.Cookies.Url">@GeneralPages.Cookies.Title</a>
+                    <GdsLink Href="@GeneralPages.Cookies.Url">@GeneralPages.Cookies.Title</GdsLink>
                 </li>
             </ul>
 
-            <a class="govuk-link govuk-link-image" href="https://www.dorsetcouncil.gov.uk" title="Go to Dorset Council">
+            <GdsLink Href="https://www.dorsetcouncil.gov.uk" AdditionalCssClasses="govuk-link govuk-link-image" title="Go to Dorset Council">
                 <img src="@Assets["images/footer-x2.webp"]" alt="Dorset Council logo" width="188" height="80">
-            </a>
+            </GdsLink>
         </div>
         <div class="govuk-footer__meta-item">
             <div>Copyright &copy; @(DateTimeOffset.UtcNow.Year) Dorset Council</div>

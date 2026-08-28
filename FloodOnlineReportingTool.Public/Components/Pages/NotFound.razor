@@ -1,6 +1,6 @@
 ﻿<PageTitle>Page not found</PageTitle>
 
-<h1 class="govuk-heading-l">Page not found</h1>
+<GdsHeading Level="1">Page not found</GdsHeading>
 
 <p>If you typed the web address, check it is correct.</p>
 
@@ -14,8 +14,7 @@
     }
     else
     {
-        <a href="@ContactLink" class="govuk-link">@ContactText</a>
-
+        <GdsLink Href="@ContactLink.ToString()">@ContactText</GdsLink>
     }
     if you need to speak to someone.
 </p>

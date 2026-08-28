@@ -5,7 +5,7 @@
 
 <GdsBreadcrumbs Items="@_breadcrumbs" />
 
-<h1 class="govuk-heading-xl">@FloodReportCreatePages.Summary.Title</h1>
+<GdsHeading Level="1">@FloodReportCreatePages.Summary.Title</GdsHeading>
 
 @if (_isLoading)
 {
@@ -27,7 +27,7 @@ else if (_eligibilityCheckDto is not null)
         </div>
     }
 
-    <h2 class="govuk-heading-l">Property details</h2>
+    <GdsHeading Level="2">Property details</GdsHeading>
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Postal address</dt>
@@ -91,7 +91,7 @@ else if (_eligibilityCheckDto is not null)
         }
     </dl>
 
-    <h2 class="govuk-heading-l">Flood details</h2>
+    <GdsHeading Level="2">Flood details</GdsHeading>
     <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">The flooding started on</dt>
@@ -150,11 +150,11 @@ else if (_eligibilityCheckDto is not null)
 
     @if (_validationFailures.Count == 0)
     {
-        <h2 class="govuk-heading-l">Now send your flood report</h2>
+        <GdsHeading Level="2">Now send your flood report</GdsHeading>
         <p>By submitting this form, you confirm that the information you’re providing is accurate to the best of your knowledge.</p>
         <p>Your input will help flood authorities build a clearer picture of where and when flooding has occurred. This contributes to a better understanding of flood patterns and supports future planning and response efforts.</p>
         <p>Flooding reports will be stored as part of a historical record. Since no personal data is collected at this stage, entries will only be removed if they are found to be factually incorrect.</p>
-        <p><button type="button" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" @onclick="OnAcceptAndSend">Accept and send</button></p>
+        <p><GdsButton IsSubmit="false" PreventDoubleClick OnClick="OnAcceptAndSend" Text="Accept and send" /></p>
     }
 }
 

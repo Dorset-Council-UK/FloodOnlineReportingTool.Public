@@ -30,13 +30,21 @@ public partial class SecondaryCause(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodProblem> SecondaryCauseOptions = [];
+    private Dictionary<string, bool> SelectedSecondaryCauseOptions = [];
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        SecondaryCauseOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
+        UpdateSelectedSecondaryCauseOptions();
     }
 
     public async ValueTask DisposeAsync()
@@ -59,7 +67,8 @@ public partial class SecondaryCause(
         {
             var eligibilityCheck = await GetEligibilityCheck();
 
-            Model.SecondaryCauseOptions = await CreateSecondaryCauseOptions(eligibilityCheck.SecondaryCauses);
+            Model.SecondaryCauseOptions = [..eligibilityCheck.SecondaryCauses];
+            UpdateSelectedSecondaryCauseOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -80,7 +89,7 @@ public partial class SecondaryCause(
         var eligibilityCheck = await GetEligibilityCheck();
         var updated = eligibilityCheck with
         {
-            SecondaryCauses = [.. Model.SecondaryCauseOptions.Where(o => o.Selected).Select(o => o.Value)],
+            SecondaryCauses = [.. Model.SecondaryCauseOptions],
         };
 
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
@@ -101,20 +110,21 @@ public partial class SecondaryCause(
         return new();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateSecondaryCauseOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected secondary causes options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedSecondaryCauseOptions()
     {
-        const string idPrefix = "secondary-cause";
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.SecondaryCause, _cts.Token);
-        return [.. floodProblems.Select((o, idx) => CreateOption(o, idPrefix, selectedValues))];
+        SelectedSecondaryCauseOptions = SecondaryCauseOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.SecondaryCauseOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, IList<Guid> selectedValues)
+    private void OnSecondaryCauseChanged(bool isChecked, Guid floodProblemId)
     {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodProblem.Id);
-        var isExclusive = floodProblem.Id == SecondaryCauseIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.SecondaryCauseOptions.Contains(floodProblemId))
+            Model.SecondaryCauseOptions.Add(floodProblemId);
+        else if (!isChecked)
+            Model.SecondaryCauseOptions.Remove(floodProblemId);
     }
+
 }

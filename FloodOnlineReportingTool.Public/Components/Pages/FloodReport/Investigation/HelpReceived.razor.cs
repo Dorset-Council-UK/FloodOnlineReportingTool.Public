@@ -34,6 +34,8 @@ public partial class HelpReceived(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
+    private IList<FloodMitigation> HelpReceivedOptions = [];
+    private Dictionary<string, bool> SelectedHelpReceivedOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -49,12 +51,17 @@ public partial class HelpReceived(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+        HelpReceivedOptions = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.HelpReceived, _cts.Token);
+        UpdateSelectedHelpReceivedOptions();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -63,8 +70,8 @@ public partial class HelpReceived(
         {
             // Set any previously entered data
             var investigation = await GetInvestigation();
-            var options = await CreateHelpReceivedOptions(investigation.HelpReceived);
-            Model.HelpReceivedOptions = [.. options];
+            Model.HelpReceivedOptions = [.. investigation.HelpReceived];
+            UpdateSelectedHelpReceivedOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -76,7 +83,7 @@ public partial class HelpReceived(
         var investigation = await GetInvestigation();
         var updatedInvestigation = investigation with
         {
-            HelpReceived = [.. Model.HelpReceivedOptions.Where(o => o.Selected).Select(o => o.Value)],
+            HelpReceived = Model.HelpReceivedOptions,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
@@ -99,20 +106,21 @@ public partial class HelpReceived(
         return new InvestigationDto();
     }
 
-    private async Task<IList<GdsOptionItem<Guid>>> CreateHelpReceivedOptions(IList<Guid> selectedValues)
+    /// <summary>
+    /// Set up the selected help received options (string, bool dictionary)
+    /// </summary>
+    private void UpdateSelectedHelpReceivedOptions()
     {
-        const string idPrefix = "help-received";
-        var floodMitigations = await commonRepository.GetFloodMitigationsByCategory(FloodMitigationCategory.HelpReceived, _cts.Token);
-        return [.. floodMitigations.Select(o => CreateOption(o, idPrefix, selectedValues))];
+        SelectedHelpReceivedOptions = HelpReceivedOptions.ToDictionary(o => o.Id.ToString("N"), o => Model.HelpReceivedOptions.Contains(o.Id), StringComparer.Ordinal);
     }
 
-    private static GdsOptionItem<Guid> CreateOption(FloodMitigation floodMitigation, string idPrefix, IList<Guid> selectedValues)
+    private void OnHelpReceivedChanged(bool isChecked, Guid floodMitigationId)
     {
-        var id = $"{idPrefix}-{floodMitigation.Id}".AsSpan();
-        var label = floodMitigation.TypeName.AsSpan();
-        var selected = selectedValues.Contains(floodMitigation.Id);
-        var isExclusive = floodMitigation.Id == FloodMitigationIds.NoHelp;
-
-        return new GdsOptionItem<Guid>(id, label, floodMitigation.Id, selected, isExclusive);
+        // update the model
+        if (isChecked && !Model.HelpReceivedOptions.Contains(floodMitigationId))
+            Model.HelpReceivedOptions.Add(floodMitigationId);
+        else if (!isChecked)
+            Model.HelpReceivedOptions.Remove(floodMitigationId);
     }
+
 }

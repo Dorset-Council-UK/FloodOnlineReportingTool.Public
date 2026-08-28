@@ -57,7 +57,7 @@ public partial class Change(
 
     // Public Properties
 
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes { get; private set; } = [];
+    public IReadOnlyCollection<ContactRecordType> ContactTypes { get; private set; } = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -175,7 +175,7 @@ public partial class Change(
         }
 
         // Convert to GDS option items for rendering in the form
-        ContactTypes = [.. availableTypes.Select(CreateOption)];
+        ContactTypes = [.. availableTypes];
     }
 
     /// <remarks>
@@ -302,18 +302,4 @@ public partial class Change(
         }
     }
 
-    /// <summary>
-    /// Creates a GDS option item for a contact record type.
-    /// </summary>
-    private static GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
-    {
-        var id = contactRecordType.ToString().AsSpan();
-        var selected = false;
-        return new GdsOptionItem<ContactRecordType>(
-            id, 
-            contactRecordType.LabelText(), 
-            contactRecordType, 
-            selected, 
-            hint: contactRecordType.HintText());
-    }
 }

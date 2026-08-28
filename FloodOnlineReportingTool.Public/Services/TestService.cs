@@ -85,7 +85,7 @@ internal sealed class TestService(
         Postcode = "DT1 1XJ",
         PrimaryClassification = "TEST Commercial",
         SecondaryClassification = "TEST Office",
-        PropertyType = FloodImpactIds.Commercial,
+        PropertyType = FloodImpactIds.PropertyTypeOther,
         TemporaryPostcode = null,
     };
 

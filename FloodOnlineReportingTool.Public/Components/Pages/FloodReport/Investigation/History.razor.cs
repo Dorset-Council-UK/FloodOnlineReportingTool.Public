@@ -31,8 +31,8 @@ public partial class History(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _historyOfFloodingOptions = [];
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _propertyInsuredOptions = [];
+    private IList<RecordStatus> _historyOfFloodingOptions = [];
+    private IList<RecordStatus> _propertyInsuredOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -48,12 +48,18 @@ public partial class History(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        _historyOfFloodingOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
+        _propertyInsuredOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -69,9 +75,7 @@ public partial class History(
 
             Model.HistoryOfFloodingId = investigation.HistoryOfFloodingId;
             Model.HistoryOfFloodingDetails = investigation.HistoryOfFloodingDetails;
-            _historyOfFloodingOptions = await CreateHistoryOfFloodingOptions(investigation.HistoryOfFloodingId);
             Model.PropertyInsuredId = investigation.PropertyInsuredId;
-            _propertyInsuredOptions = await CreatePropertyInsuredOptions(investigation.PropertyInsuredId);
 
             _isLoading = false;
             StateHasChanged();
@@ -108,27 +112,4 @@ public partial class History(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateHistoryOfFloodingOptions(Guid? selectedValue)
-    {
-        const string idPrefix = "history-of-flooding";
-        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        return [.. recordStatuses.Select(o => CreateOption(o, idPrefix, selectedValue))];
-    }
-
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreatePropertyInsuredOptions(Guid? selectedValue)
-    {
-        const string idPrefix = "property-insured";
-        var recordStatuses = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        return [.. recordStatuses.Select(o => CreateOption(o, idPrefix, selectedValue))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }

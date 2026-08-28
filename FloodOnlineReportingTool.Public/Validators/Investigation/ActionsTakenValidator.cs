@@ -9,7 +9,7 @@ public class ActionsTakenValidator : AbstractValidator<ActionsTaken>
     public ActionsTakenValidator()
     {
         RuleFor(o => o.ActionsTakenOptions)
-            .Must(o => o.Any(x => x.Selected))
+            .NotEmpty()
             .WithMessage("Select what actions you took or select 'No action taken'");
 
         RuleFor(o => o.OtherAction)
@@ -17,6 +17,6 @@ public class ActionsTakenValidator : AbstractValidator<ActionsTaken>
             .WithMessage("Enter the other actions you took")
             .MaximumLength(150)
             .WithMessage("Other actions must be {MaxLength} characters or less")
-            .When(entry => entry.ActionsTakenOptions.Any(option => option.Selected && option.Value.Equals(FloodMitigationIds.OtherAction)));
+            .When(entry => entry.ActionsTakenOptions.Any(option => option.Equals(FloodMitigationIds.OtherAction)));
     }
 }

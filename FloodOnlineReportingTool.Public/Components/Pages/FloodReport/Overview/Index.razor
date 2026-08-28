@@ -9,7 +9,7 @@
 
 @{
     RenderFragment tableColumnFragment =
-    @<div class="govuk-grid-column-full">
+    @<GdsGridColumn Width="GdsGridColumnWidth.Full">
         <ul class="govuk-list">
             <li>@_manageText</li>
             <li>Use the actions next to each flood report to:
@@ -21,7 +21,7 @@
             </li>
         </ul>
 
-        <GdsTable T="FloodReportSource" Items="@_floodReportSources" Caption="@_tableCaption" CaptionSize="GdsTableCaptionSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
+        <GdsTable T="FloodReportSource" Items="@_floodReportSources" Caption="@_tableCaption" CaptionTextSize="GdsSize.Large" Density="GdsTableDensity.SmallTextUntilTablet">
             <HeaderContent>
                 <GdsTableTh>Reference</GdsTableTh>
                 <GdsTableTh>Status</GdsTableTh>
@@ -56,35 +56,35 @@
                 <GdsTableTd>
                     <ul class="govuk-list">
                         <li>
-                            <a class="govuk-link" href="@($"{FloodReportPages.Details.Url}/{item.Id}")">View<span class="govuk-visually-hidden"> flood report</span></a>
+                            <GdsLink Href="@($"{FloodReportPages.Details.Url}/{item.Id}")">View<span class="govuk-visually-hidden"> flood report</span></GdsLink>
                         </li>
                         <AuthorizeView>
                             <Authorized>
                                 @if (item.EligibilityCheckId.HasValue)
                                 {
                                     <li>
-                                        <a class="govuk-link" href="@($"{FloodReportPages.Update.Url}/{item.EligibilityCheckId.Value}")">Update<span class="govuk-visually-hidden"> flood report</span></a>
+                                        <GdsLink Href="@($"{FloodReportPages.Update.Url}/{item.EligibilityCheckId.Value}")">Update<span class="govuk-visually-hidden"> flood report</span></GdsLink>
                                     </li>
                                 }
                             </Authorized>
                         </AuthorizeView>
                         <li>
-                            <a class="govuk-link" href="@($"{ContactPages.Summary.Url}/{item.Id}")">Contacts<span class="govuk-visually-hidden"> information</span></a>
+                            <GdsLink Href="@($"{ContactPages.Summary.Url}/{item.Id}")">Contacts<span class="govuk-visually-hidden"> information</span></GdsLink>
                         </li>
                         @if (item.StatusId == RecordStatusIds.ActionNeeded)
                         {
                             <li>
-                                <a class="govuk-link" href="@($"{InvestigationPages.Home.Url}/{item.Id}")">Tell us more</a>
+                                <GdsLink Href="@($"{InvestigationPages.Home.Url}/{item.Id}")">Tell us more</GdsLink>
                             </li>
                         }
                         <li>
-                            <a class="govuk-link" href="@($"{MediaPages.Home.Url}/{item.Id}")?back_url=manage">Add photos or videos</a>
+                            <GdsLink Href="@($"{MediaPages.Home.Url}/{item.Id}?back_url=manage")">Add photos or videos</GdsLink>
                         </li>
                     </ul>
                 </GdsTableTd>
             </RowTemplate>
         </GdsTable>
-    </div>;
+    </GdsGridColumn>;
 }
 
 @if (_isLoading)
@@ -93,16 +93,16 @@
 }
 else
 {
-    <h1 class="govuk-heading-xl">@_h1TitleText</h1>
-    <div class="govuk-grid-row">
+    <GdsHeading Level="1">@_h1TitleText</GdsHeading>
+    <GdsGridRow>
         <AuthorizeView>
             <NotAuthorized>
                 @if (_floodReportSources.Count == 0)
                 {
-                    <div class="govuk-grid-column-full">
+                    <GdsGridColumn Width="GdsGridColumnWidth.Full">
                         <GdsWarning Text="You need to sign in to view and manage your flood reports." />
                         <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@_signInUrl">@AccountPages.SignIn.Title</a>
-                    </div>
+                    </GdsGridColumn>
                 }
                 else
                 {
@@ -113,9 +113,9 @@ else
             <Authorized>
                 @if (_floodReportSources.Count == 0)
                 {
-                    <div class="govuk-grid-column-full">
+                    <GdsGridColumn Width="GdsGridColumnWidth.Full">
                         <GdsWarning Text="@_noneFoundText" />
-                    </div>
+                    </GdsGridColumn>
                 }
                 else
                 {
@@ -123,5 +123,5 @@ else
                 }
             </Authorized>
         </AuthorizeView>
-    </div>
+    </GdsGridRow>
 }

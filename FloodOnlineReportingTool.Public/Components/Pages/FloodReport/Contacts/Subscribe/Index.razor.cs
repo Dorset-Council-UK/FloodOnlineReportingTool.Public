@@ -45,7 +45,6 @@ public partial class Index(
     private ValidationMessageStore _messageStore = default!;
 
     // Public Properties
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
     public string Title { get; set; } = SubscriptionPages.Home.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
         GeneralPages.Home.ToGdsBreadcrumb(),
@@ -78,7 +77,6 @@ public partial class Index(
             _editContext = new(Model);
             _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
             _messageStore = new(_editContext);
-            ContactTypes = CreateContactTypeOptions();
         }
 
         // Check if user is authenticated
@@ -303,20 +301,4 @@ public partial class Index(
         }
     }
 
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
-    {
-        var allTypes = Enum.GetValues<ContactRecordType>();
-
-        return [.. allTypes.Select(CreateOption)];
-    }
-
-    /// <summary>
-    /// Creates a GDS option item for a contact record type.
-    /// </summary>
-    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
-    {
-        var id = contactRecordType.ToString().AsSpan();
-        var selected = false;
-        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
-    }
 }

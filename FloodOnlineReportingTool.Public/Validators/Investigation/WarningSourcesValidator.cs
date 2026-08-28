@@ -9,7 +9,7 @@ public class WarningSourcesValidator : AbstractValidator<WarningSources>
     public WarningSourcesValidator()
     {
         RuleFor(o => o.WarningSourceOptions)
-            .Must(o => o.Any(x => x.Selected))
+            .NotEmpty()
             .WithMessage("Select where you received warnings from or select 'I did not get a warning'");
 
         RuleFor(o => o.WarningOther)
@@ -17,6 +17,6 @@ public class WarningSourcesValidator : AbstractValidator<WarningSources>
             .WithMessage("Enter the other warning source")
             .MaximumLength(150)
             .WithMessage("Other warning source must be {MaxLength} characters or less")
-            .When(entry => entry.WarningSourceOptions.Any(option => option.Selected && option.Value.Equals(FloodMitigationIds.OtherWarning)));
+            .When(entry => entry.WarningSourceOptions.Any(option => option.Equals(FloodMitigationIds.OtherWarning)));
     }
 }

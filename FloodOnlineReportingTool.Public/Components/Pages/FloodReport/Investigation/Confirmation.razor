@@ -12,20 +12,19 @@
     <Authorized>
         @if (_investigation == null)
         {
-            <h1 class="govuk-heading-xl">@Title</h1>
+            <GdsHeading Level="1">@Title</GdsHeading>
             <GdsWarning Text="We cannot find your investigation." />
         }
         else
         {
-            <div class="govuk-panel govuk-panel--confirmation">
-                <h1 class="govuk-panel__title">@Title</h1>
-                <div class="govuk-panel__body">Created on @_investigation.CreatedUtc.GdsReadable()</div>
-            </div>
+            <GdsPanel Title="@Title" AdditionalCssClasses="govuk-panel--confirmation">
+                Created on @_investigation.CreatedUtc.GdsReadable()
+            </GdsPanel>
 
             <p>Thank you for taking the time to complete this investigation.</p>
             
             <section id="what-happens-next">
-                <h2 class="govuk-heading-l">What happens next</h2>
+                <GdsHeading Level="2">What happens next</GdsHeading>
 
                 <p>The responsible organisation that requested you complete the form will now be able to access the additional information you have provided. This will be used as part of the ongoing investigation work.</p>
 

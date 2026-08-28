@@ -9,13 +9,7 @@ public class PropertyTypeValidator : AbstractValidator<PropertyType>
     {
         RuleFor(x => x.Property)
             .NotEmpty()
-            .WithMessage("Select a property type")
-            .When(x => x.PropertyOptions.Count > 0);
-
-        RuleFor(o => o.PropertyOptions)
-            .NotEmpty()
-            .WithMessage("The property types are missing, please refresh and try again. If this message continues to appear please raise a bug report.")
-            .OverridePropertyName(o => o.Property);
+            .WithMessage("Select a property type");
 
         RuleFor(x => x.ResponsibleOrganisations)
             .NotEmpty()

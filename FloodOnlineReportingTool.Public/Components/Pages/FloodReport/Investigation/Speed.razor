@@ -5,7 +5,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -18,52 +18,70 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsFormGroup For="() => Model.Begin" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.Begin">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">How quickly did the flooding start?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>Select one option.</GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_beginOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">How quickly did the flooding start?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.Begin">
+                        @foreach (var beginOption in _beginOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@beginOption.Id" />
+                                <GdsRadioLabel Text="@beginOption.TypeName" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
+            </GdsFormGroup>
+            
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">How fast was the water moving?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.WaterSpeed">
+                        @foreach (var waterSpeedOption in _waterSpeedOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@waterSpeedOption.Id" />
+                                <GdsRadioLabel Text="@waterSpeedOption.TypeName" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
-            <GdsFormGroup For="() => Model.WaterSpeed" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.WaterSpeed">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">How fast was the water moving?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>Select one option.</GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_waterSpeedOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
+            <GdsFormGroup Show="!_isLoading">
+                <GdsFieldsetGroup>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">What did the water look like?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select one option.</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsRadios @bind-Value="Model.Appearance">
+                        @foreach (var appearanceOption in _appearanceOptions)
+                        {
+                            <GdsRadioItem>
+                                <GdsInputRadio Value="@appearanceOption.Id" />
+                                <GdsRadioLabel Text="@appearanceOption.TypeName" />
+                            </GdsRadioItem>
+                        }
+                    </GdsRadios>
+                </GdsFieldsetGroup>
             </GdsFormGroup>
 
-            <GdsFormGroup For="() => Model.Appearance" Show="!_isLoading">
-                <InputRadioGroup @bind-Value="Model.Appearance">
-                    <GdsFieldsetGroup>
-                        <Heading>
-                            <h2 class="govuk-fieldset__heading">What did the water look like?</h2>
-                        </Heading>
-                        <Content>
-                            <GdsHint>Select one option.</GdsHint>
-                            <GdsErrorMessage />
-                            <GdsRadios Options="_appearanceOptions" />
-                        </Content>
-                    </GdsFieldsetGroup>
-                </InputRadioGroup>
-            </GdsFormGroup>
-
-            <GdsFormGroup For="() => Model.MoreDetails" Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
+            <GdsFormGroup Show="!_isLoading" AdditionalCssClasses="govuk-character-count govuk-!-margin-top-4" DataModule="govuk-character-count" DataMaxLength="200">
                 <h2 class="govuk-label-wrapper">
                     <GdsLabel Text="Can you provide more detail of the appearance? (optional)" AdditionalCssClasses="govuk-label--m" />
                 </h2>
@@ -75,7 +93,7 @@
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>

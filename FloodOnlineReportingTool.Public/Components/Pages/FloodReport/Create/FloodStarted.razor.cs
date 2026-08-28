@@ -32,7 +32,6 @@ public partial class FloodStarted(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _floodOngoingOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -69,7 +68,6 @@ public partial class FloodStarted(
                 Model.IsFloodOngoing = eligibilityCheck.OnGoing;
             }
 
-            _floodOngoingOptions = CreateFloodOptions();
             _isLoading = false;
             StateHasChanged();
         }
@@ -129,12 +127,4 @@ public partial class FloodStarted(
         navigationManager.NavigateTo(NextPage.Url);
     }
 
-    private static IReadOnlyCollection<GdsOptionItem<bool>> CreateFloodOptions()
-    {
-        return
-        [
-            new("flood-ongoing-yes", "Yes", value: true),
-            new("flood-ongoing-no", "No", value: false),
-        ];
-    }
 }

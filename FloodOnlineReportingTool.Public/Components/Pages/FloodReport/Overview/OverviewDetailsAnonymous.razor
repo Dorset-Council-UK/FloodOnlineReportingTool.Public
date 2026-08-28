@@ -8,19 +8,19 @@
     return;
 }
 
-<div class="govuk-grid-row">
+<GdsGridRow>
     <AuthorizeView>
         <NotAuthorized>
             @if (_floodReportSource is null)
             {
-                <div class="govuk-grid-column-full">
+                <GdsGridColumn Width="GdsGridColumnWidth.Full">
                     <GdsWarning Text="You need to sign in to view and manage your flood reports." />
                     <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@_signInUrl">@AccountPages.SignIn.Title</a>
-                </div>
+                </GdsGridColumn>
             }
             else
             {
-                <div class="govuk-grid-column-full">
+                <GdsGridColumn Width="GdsGridColumnWidth.Full">
                     <GdsTabs Title="Contents">
                         <GdsTabPanel Id="overview" Heading="Overview">
                             <p class="govuk-body-l">
@@ -43,7 +43,7 @@
                                 var result = _eligibilityResult.Value;
 
                                 <section id="eligibility-results">
-                                    <h3 class="govuk-heading-m">Eligibility results</h3>
+                                    <GdsHeading Level="3">Eligibility results</GdsHeading>
 
                                     @if (result.IsEmergencyResponse)
                                     {
@@ -115,7 +115,7 @@
                             @if (!_accessHasExpired)
                             {
                                 <section id="investigation-actions">
-                                    <h3 class="govuk-heading-m">Tell us more</h3>
+                                    <GdsHeading Level="3">Tell us more</GdsHeading>
                                     @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
                                     {
                                         <p>There is currently an ongoing investigation.</p>
@@ -152,8 +152,8 @@
                             }
                         </GdsTabPanel>
                     </GdsTabs>
-                </div>
+                </GdsGridColumn>
             }
         </NotAuthorized>
     </AuthorizeView>
-</div>
+</GdsGridRow>

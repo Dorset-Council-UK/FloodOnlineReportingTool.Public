@@ -31,10 +31,6 @@ public partial class Index(
     private EditContext editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<bool>> _isAddressOptions = [
-        new("is-address-yes", "Yes", value: true),
-        new("is-address-no", "No", value: false),
-    ];
 
     protected override void OnInitialized()
     {
@@ -51,7 +47,6 @@ public partial class Index(
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             Model.IsAddress = eligibilityCheck.IsAddress;
-            _isAddressOptions.Single(o => o.Value).Selected = true;
 
             _isLoading = false;
             StateHasChanged();

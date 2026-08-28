@@ -49,7 +49,7 @@ body {
         border-bottom-color: var(--govuk-frontend-color-white);
     }
 
-    .govuk-footer__link {
+    .govuk-link {
         // copied from govuk-link-style-inverse mixin
         &:link, &:visited {
             color: var(--govuk-frontend-color-white);

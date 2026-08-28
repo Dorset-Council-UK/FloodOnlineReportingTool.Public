@@ -1,10 +1,11 @@
 ﻿@page "/floodreport/create/floodareas"
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <EditForm EditContext="_editContext" OnSubmit="OnSubmit" FormName="FloodAreas">
     <FluentValidationValidator />
@@ -12,29 +13,63 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.ResidentialOptions" Id="residential-impacts" Show="Model.ShowResidential">
+    <GdsFormGroup Show="Model.ShowResidential">
         <GdsFieldsetGroup>
-            <Heading>
-                <h2 class="govuk-fieldset__heading">Which areas of the residential property were flooded?</h2>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.ResidentialOptions" Name="ResidentialOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Which areas of the residential property were flooded?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+            
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes For="() => Model.Residentials">
+                @foreach (var residentialFloodImpact in ResidentialOptions)
+                {
+                    string key = residentialFloodImpact.Id.ToString("N");
+                    string id = $"residential-flood-area-{key}";
+                    bool isNotSure = residentialFloodImpact.Id == FloodImpactIds.ZoneRNotSure;
+
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedResidentialOptions[key]" OnChanged="isChecked => OnResidentialChanged(isChecked, residentialFloodImpact.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@residentialFloodImpact.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
-    <GdsFormGroup For="() => Model.CommercialOptions" Id="commercial-impacts" Show="Model.ShowCommercial">
+    <GdsFormGroup Show="Model.ShowCommercial">
         <GdsFieldsetGroup>
-            <Heading>
-                <h2 class="govuk-fieldset__heading">Which areas of the commercial property were flooded?</h2>
-            </Heading>
-            <Content>
-                <GdsHint>Select all that apply</GdsHint>
-                <GdsErrorMessage />
-                <GdsCheckboxes Options="Model.CommercialOptions" Name="CommercialOptions" />
-            </Content>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Which areas of the commercial property were flooded?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select all that apply</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsCheckboxes For="() => Model.Commercials">
+                @foreach (var commercialFloodImpact in CommercialOptions)
+                {
+                    string key = commercialFloodImpact.Id.ToString("N");
+                    string id = $"commercial-flood-area-{key}";
+                    bool isNotSure = commercialFloodImpact.Id == FloodImpactIds.ZoneCNotSure;
+
+                    if (isNotSure)
+                    {
+                        <GdsCheckboxDivider />
+                    }
+
+                    <GdsCheckboxItem>
+                        <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommercialOptions[key]" OnChanged="isChecked => OnCommercialChanged(isChecked, commercialFloodImpact.Id)" Exclusive="isNotSure" />
+                        <GdsCheckboxLabel Text="@commercialFloodImpact.TypeName" />
+                    </GdsCheckboxItem>
+                }
+            </GdsCheckboxes>
         </GdsFieldsetGroup>
     </GdsFormGroup>
 
@@ -44,23 +79,29 @@
             <span class="govuk-visually-hidden">Error:</span> <span>There was a problem working out what type of property you have. Please try again but if this issue happens again then please report a bug.</span>
         </p>
     }
-    <GdsFormGroup For="() => Model.IsUninhabitable">
-        <InputRadioGroup @bind-Value="Model.IsUninhabitable">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h2 class="govuk-fieldset__heading">Did you have to evacuate the property?</h2>
-                </Heading>
-                <Content>
-                    <GdsHint>
-                        <GdsWarning Text="This service will not trigger an emergency response - contact 999 if there is a danger to life." />
-                    </GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="_uninhabitableOptions" Inline="true" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+    <GdsFormGroup>
+        <GdsFieldsetGroup>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Did you have to evacuate the property?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>Select one option.</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsRadios @bind-Value="Model.IsUninhabitable">
+                <GdsRadioItem>
+                    <GdsInputRadio Value="true" />
+                    <GdsRadioLabel Text="Yes" />
+                </GdsRadioItem>
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="false" />
+                    <GdsRadioLabel Text="No" />
+                </GdsRadioItem>
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
-    <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+    <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
 
 </EditForm>

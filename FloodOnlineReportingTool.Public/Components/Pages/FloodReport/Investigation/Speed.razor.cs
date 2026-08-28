@@ -34,9 +34,9 @@ public partial class Speed(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _beginOptions = [];
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _waterSpeedOptions = [];
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _appearanceOptions = [];
+    private IList<FloodProblem> _beginOptions = [];
+    private IList<FloodProblem> _waterSpeedOptions = [];
+    private IList<FloodProblem> _appearanceOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -52,12 +52,19 @@ public partial class Speed(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+        
+        _beginOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.WaterOnset, _cts.Token);
+        _waterSpeedOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Speed, _cts.Token);
+        _appearanceOptions = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Appearance, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -70,10 +77,6 @@ public partial class Speed(
             Model.WaterSpeed = investigation.WaterSpeedId;
             Model.Appearance = investigation.AppearanceId;
             Model.MoreDetails = investigation.MoreAppearanceDetails;
-
-            _beginOptions = await CreateBeginOptions();
-            _waterSpeedOptions = await CreateWaterSpeedOptions();
-            _appearanceOptions = await CreateAppearanceOptions();
 
             _isLoading = false;
             StateHasChanged(); 
@@ -111,30 +114,4 @@ public partial class Speed(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateBeginOptions()
-    {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.WaterOnset, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, "begin", Model.Begin))];
-    }
-
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateWaterSpeedOptions()
-    {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Speed, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, "speed", Model.WaterSpeed))];
-    }
-
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateAppearanceOptions()
-    {
-        var floodProblems = await commonRepository.GetFloodProblemsByCategory(FloodProblemCategory.Appearance, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, "appearance", Model.Appearance))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(FloodProblem floodProblem, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{floodProblem.Id}".AsSpan();
-        var label = floodProblem.TypeName.AsSpan();
-        var selected = floodProblem.Id == selectedValue;
-
-        return new GdsOptionItem<Guid>(id, label, floodProblem.Id, selected);
-    }
 }

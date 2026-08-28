@@ -1,11 +1,12 @@
 ﻿@page "/floodreport/investigation/communityimpact"
 @using Microsoft.AspNetCore.Components.Authorization
+@using FloodOnlineReportingTool.Database.Models.Flood
 
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -18,29 +19,40 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            @if (!_isLoading && Model.CommunityImpactOptions.Count <= 0)
-            {
-                <p class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> <span>The community impact options are missing, please refresh and try again. If this message continues to appear please raise a bug report.</span>
-                </p>
-            }
-
-            <GdsFormGroup For="() => Model.CommunityImpactOptions" Show="!_isLoading">
+            <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <h2 class="govuk-fieldset__heading">Did the flooding restrict parts of the community?</h2>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsCheckboxes Options="Model.CommunityImpactOptions" />
-                    </Content>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2" AdditionalCssClasses="govuk-fieldset__heading">Did the flooding restrict parts of the community?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+                    
+                    <GdsCheckboxes For="() => Model.CommunityImpactOptions">
+                        @foreach (var communityImpact in CommunityImpactOptions)
+                        {
+                            string key = communityImpact.Id.ToString("N");
+                            string id = $"community-impact-{key}";
+                            bool noCommunityImpact = communityImpact.Id == FloodImpactIds.CommunityImpactNotSure;
+                            
+                            if (noCommunityImpact)
+                            {
+                                <GdsCheckboxDivider />
+                            }
+                           
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedCommunityImpactOptions[key]" OnChanged="isChecked => OnCommunityImpactChanged(isChecked, communityImpact.Id)" Exclusive="noCommunityImpact" />
+                                <GdsCheckboxLabel Text="@communityImpact.TypeName" />
+                            </GdsCheckboxItem>
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>

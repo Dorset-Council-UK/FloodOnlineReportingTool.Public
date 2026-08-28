@@ -10,24 +10,34 @@
 
     <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-    <GdsFormGroup For="() => Model.IsAddress" Id="location-or-address" Show="!_isLoading">
-        <InputRadioGroup @bind-Value="Model.IsAddress">
-            <GdsFieldsetGroup>
-                <Heading>
-                    <h1 class="govuk-fieldset__heading">Are you reporting an address or property?</h1>
-                </Heading>
-                <Content>
-                    <GdsHint>This would be a location with a Royal Mail postal address rather than a structure or land.</GdsHint>
-                    <GdsErrorMessage />
-                    <GdsRadios Options="_isAddressOptions" />
-                </Content>
-            </GdsFieldsetGroup>
-        </InputRadioGroup>
+    <GdsFormGroup Show="!_isLoading">
+        <GdsFieldsetGroup>
+            <GdsFieldsetLegend>
+                <GdsFieldsetHeading Level="2">Are you reporting an address or property?</GdsFieldsetHeading>
+            </GdsFieldsetLegend>
+
+            <GdsHint>This would be a location with a Royal Mail postal address rather than a structure or land.</GdsHint>
+            <GdsErrorMessage />
+
+            <GdsRadios @bind-Value="Model.IsAddress">
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="@true" />
+                    <GdsRadioLabel Text="Yes" />
+                </GdsRadioItem>
+
+                <GdsRadioItem>
+                    <GdsInputRadio Value="@false" />
+                    <GdsRadioLabel Text="No" />
+                </GdsRadioItem>
+                
+            </GdsRadios>
+        </GdsFieldsetGroup>
     </GdsFormGroup>
 
     @if (!_isLoading)
     {
-        <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+        <p><GdsButton IsSubmit PreventDoubleClick Text="Continue" /></p>
     }
 
 </EditForm>

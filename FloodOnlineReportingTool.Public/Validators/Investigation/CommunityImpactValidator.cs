@@ -8,7 +8,7 @@ public class CommunityImpactValidator : AbstractValidator<CommunityImpact>
     public CommunityImpactValidator()
     {
         RuleFor(o => o.CommunityImpactOptions)
-            .Must(o => o.Any(x => x.Selected))
+            .NotEmpty()
             .WithMessage("Select where the community was impacted or select 'Not sure'");
     }
 }

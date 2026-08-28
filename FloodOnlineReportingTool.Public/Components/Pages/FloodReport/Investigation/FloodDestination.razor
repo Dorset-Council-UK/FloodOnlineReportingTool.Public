@@ -5,7 +5,7 @@
 
 <GdsBackLink Href="@PreviousPage.Url" />
 
-<h1 class="govuk-heading-xl">@Title</h1>
+<GdsHeading Level="1">@Title</GdsHeading>
 
 <AuthorizeView Context="authContext">
     <NotAuthorized>
@@ -18,22 +18,38 @@
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />
 
-            <GdsFormGroup For="() => Model.DestinationOptions" Show="!_isLoading">
+            <GdsFormGroup Show="!_isLoading">
                 <GdsFieldsetGroup>
-                    <Heading>
-                        <h2 class="govuk-fieldset__heading">Do you know where the water was going?</h2>
-                    </Heading>
-                    <Content>
-                        <GdsHint>Select all that apply</GdsHint>
-                        <GdsErrorMessage />
-                        <GdsCheckboxes Options="Model.DestinationOptions" />
-                    </Content>
+                    <GdsFieldsetLegend>
+                        <GdsFieldsetHeading Level="2">Do you know where the water was going?</GdsFieldsetHeading>
+                    </GdsFieldsetLegend>
+
+                    <GdsHint>Select all that apply</GdsHint>
+                    <GdsErrorMessage />
+
+                    <GdsCheckboxes For="() => Model.DestinationOptions">
+                        @foreach (var destination in DestinationOptions)
+                        {
+                            string key = destination.Id.ToString("N");
+                            string id = $"flood-destination-{key}";
+                            bool isNotSure = destination.Id == Database.Models.Flood.FloodProblemIds.FloodDestinationIds.NotSure;
+                            if (isNotSure)
+                            {
+                                <GdsCheckboxDivider />
+                            }
+                            <GdsCheckboxItem>
+                                <GdsInputCheckbox Id="@id" @bind-Value="@SelectedDestinationOptions[key]" OnChanged="isChecked => OnDestinationChanged(isChecked, destination.Id)" Exclusive="isNotSure" />
+                                <GdsCheckboxLabel Text="@destination.TypeName" />
+                            </GdsCheckboxItem>
+                        }
+                    </GdsCheckboxes>
+
                 </GdsFieldsetGroup>
             </GdsFormGroup>
 
             @if (!_isLoading)
             {
-                <p><button type="submit" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button">Continue</button></p>
+                <p><GdsButton IsSubmit="true" PreventDoubleClick Text="Continue" /></p>
             }
         </EditForm>
     </Authorized>

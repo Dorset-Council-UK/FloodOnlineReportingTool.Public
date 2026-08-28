@@ -39,7 +39,7 @@ public partial class Vehicles(
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    private IReadOnlyCollection<GdsOptionItem<Guid>> _wereVehiclesDamagedOptions = [];
+    private IList<RecordStatus> _wereVehiclesDamagedOptions = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -55,12 +55,17 @@ public partial class Vehicles(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            // Setup model and edit context
+            Model ??= new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        }
+
+        _wereVehiclesDamagedOptions = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -72,8 +77,6 @@ public partial class Vehicles(
             Model.WereVehiclesDamagedId = investigation.WereVehiclesDamagedId;
             Model.NumberOfVehiclesDamagedNumber = investigation.NumberOfVehiclesDamaged;
             Model.NumberOfVehiclesDamagedText = investigation.NumberOfVehiclesDamaged?.ToString(CultureInfo.CurrentCulture);
-
-            _wereVehiclesDamagedOptions = await CreateVehiclesDamagedOptions();
 
             _isLoading = false;
             StateHasChanged();  
@@ -132,19 +135,4 @@ public partial class Vehicles(
         return new InvestigationDto();
     }
 
-    private async Task<IReadOnlyCollection<GdsOptionItem<Guid>>> CreateVehiclesDamagedOptions()
-    {
-        var floodProblems = await commonRepository.GetRecordStatusesByCategory(RecordStatusCategory.General, _cts.Token);
-        return [.. floodProblems.Select(o => CreateOption(o, "vehicles-damaged", Model.WereVehiclesDamagedId))];
-    }
-
-    private static GdsOptionItem<Guid> CreateOption(RecordStatus recordStatus, string idPrefix, Guid? selectedValue)
-    {
-        var id = $"{idPrefix}-{recordStatus.Id}".AsSpan();
-        var label = recordStatus.Text.AsSpan();
-        var selected = recordStatus.Id == selectedValue;
-        var isExclusive = recordStatus.Id == RecordStatusIds.NotSure;
-
-        return new GdsOptionItem<Guid>(id, label, recordStatus.Id, selected, isExclusive);
-    }
 }

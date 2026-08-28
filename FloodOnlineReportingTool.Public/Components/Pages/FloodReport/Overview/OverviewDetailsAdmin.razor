@@ -9,25 +9,25 @@
     return;
 }
 
-<div class="govuk-grid-row">
+<GdsGridRow>
     <AuthorizeView Policy="@PolicyNames.Admin">
         <NotAuthorized>
-            <div class="govuk-grid-column-full">
+            <GdsGridColumn Width="GdsGridColumnWidth.Full">
                 <GdsWarning Text="You need to sign in to view and manage the flood report." />
                 <a role="button" draggable="false" data-prevent-double-click="true" class="govuk-button" data-module="govuk-button" href="@_signInUrl">@AccountPages.SignIn.Title</a>
-            </div>
+            </GdsGridColumn>
         </NotAuthorized>
 
         <Authorized>
             @if (_floodReportSource is null)
             {
-                <div class="govuk-grid-column-full">
+                <GdsGridColumn Width="GdsGridColumnWidth.Full">
                     <GdsWarning Text="We cannot find the flood report." />
-                </div>
+                </GdsGridColumn>
             }
             else
             {
-                <div class="govuk-grid-column-full">
+                <GdsGridColumn Width="GdsGridColumnWidth.Full">
                     <GdsTabs Title="Contents">
                         <GdsTabPanel Id="overview" Heading="Overview">
                             <p class="govuk-body-l">
@@ -50,7 +50,7 @@
                                 var result = _eligibilityResult.Value;
 
                                 <section id="eligibility-results">
-                                    <h3 class="govuk-heading-m">Eligibility results</h3>
+                                    <GdsHeading Level="3">Eligibility results</GdsHeading>
 
                                     @if (result.IsEmergencyResponse)
                                     {
@@ -118,7 +118,7 @@
                             }
 
                             <section id="investigation-actions">
-                                <h3 class="govuk-heading-m">Investigation</h3>
+                                <GdsHeading Level="3">Investigation</GdsHeading>
                                 @if (_floodReportSource.StatusId == RecordStatusIds.ActionNeeded)
                                 {
                                     <p>There is currently an ongoing investigation.</p>
@@ -142,7 +142,7 @@
                             </section>
 
                             <section id="subscription-actions">
-                                <h3 class="govuk-heading-m">Contact details</h3>
+                                <GdsHeading Level="3">Contact details</GdsHeading>
 
                                 @if (_floodReportSource.ContactRecords.Count > 0)
                                 {
@@ -175,8 +175,8 @@
                             }
                         </GdsTabPanel>
                     </GdsTabs>
-                </div>
+                </GdsGridColumn>
             }
         </Authorized>
     </AuthorizeView>
-</div>
+</GdsGridRow>

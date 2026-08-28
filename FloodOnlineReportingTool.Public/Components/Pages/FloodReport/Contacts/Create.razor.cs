@@ -47,7 +47,7 @@ public partial class Create(
     private readonly CancellationTokenSource _cts = new();
 
     // Public Properties
-    public IReadOnlyCollection<GdsOptionItem<ContactRecordType>> ContactTypes = [];
+    public IReadOnlyCollection<ContactRecordType> ContactTypes = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -101,7 +101,7 @@ public partial class Create(
 
             // This is a create page, so we need to get the unused contact types only
             var allTypes = await contactRepository.GetUnusedRecordTypes(_floodReportSourceId, _cts.Token);
-            ContactTypes = [.. allTypes.Select(CreateOption)];
+            ContactTypes = [.. allTypes];
 
             _isLoading = false;
             StateHasChanged();
@@ -253,21 +253,12 @@ public partial class Create(
         }
     }
 
-    private IReadOnlyCollection<GdsOptionItem<ContactRecordType>> CreateContactTypeOptions()
+    private IReadOnlyCollection<ContactRecordType> CreateContactTypeOptions()
     {
 
         var allTypes = Enum.GetValues<ContactRecordType>();
 
-        return [.. allTypes.Select(CreateOption)];
+        return [.. allTypes];
     }
 
-    /// <summary>
-    /// Creates a GDS option item for a contact record type.
-    /// </summary>
-    private GdsOptionItem<ContactRecordType> CreateOption(ContactRecordType contactRecordType)
-    {
-        var id = contactRecordType.ToString().AsSpan();
-        var selected = false;
-        return new GdsOptionItem<ContactRecordType>(id, contactRecordType.LabelText(), contactRecordType, selected, hint: contactRecordType.HintText());
-    }
 }

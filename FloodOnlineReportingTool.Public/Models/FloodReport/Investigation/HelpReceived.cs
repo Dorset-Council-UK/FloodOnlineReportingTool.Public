@@ -5,5 +5,5 @@ namespace FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
 public class HelpReceived
 {
     [GdsFieldErrorClass(GdsFieldTypes.Checkbox)]
-    public IReadOnlyCollection<GdsOptionItem<Guid>> HelpReceivedOptions { get; set; } = [];
+    public IList<Guid> HelpReceivedOptions { get; set; } = [];
 }

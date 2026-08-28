@@ -33,10 +33,12 @@ public partial class PropertyType(
     private Models.FloodReport.Create.PropertyType Model { get; set; } = default!;
 
     private EditContext _editContext = default!;
+    private ValidationMessageStore _validationMessageStore = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
     private string? _addressPreview;
     private string? _classification;
+    private IList<FloodImpact> _propertyTypes = [];
 
     public async ValueTask DisposeAsync()
     {
@@ -52,18 +54,26 @@ public partial class PropertyType(
         GC.SuppressFinalize(this);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
-        Model ??= new();
-        _editContext = new(Model);
-        _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+        if (Model is null)
+        {
+            Model = new();
+            _editContext = new(Model);
+            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
+            _validationMessageStore = new(_editContext);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // load data from database
+            _propertyTypes = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.PropertyType, _cts.Token);
+            ValidatePropertyTypes();
+
             // Set any previously entered data
             var eligibilityCheck = await GetEligibilityCheck();
             var createExtraData = await GetCreateExtraData();
@@ -71,9 +81,7 @@ public partial class PropertyType(
             _addressPreview = eligibilityCheck.LocationDesc;
             _classification = Classification(createExtraData.PrimaryClassification, createExtraData.SecondaryClassification);
 
-            var propertyTypes = await commonRepository.GetFloodImpactsByCategory(FloodImpactCategory.PropertyType, _cts.Token);
-            Model.Property = GetPropertyType(createExtraData, propertyTypes);
-            Model.PropertyOptions = [.. propertyTypes.Select(CreateOption)];
+            Model.Property = GetPropertyType(createExtraData);
             Model.IsAddress = eligibilityCheck.IsAddress;
 
             var organisations = await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, _cts.Token);
@@ -86,10 +94,32 @@ public partial class PropertyType(
 
     private async Task OnSubmit()
     {
-        if (_editContext.Validate())
+        _validationMessageStore.Clear();
+
+        if (!ValidatePropertyTypes() || !_editContext.Validate())
         {
-            await OnValidSubmit();
+            return;
         }
+
+        await OnValidSubmit();
+    }
+
+    /// <summary>
+    /// Check that the property types have been loaded from the database. If not then add a Blazor error message.
+    /// </summary>
+    private bool ValidatePropertyTypes()
+    {
+        if (_propertyTypes.Count == 0)
+        {
+            logger.LogWarning("No property types were found in the database.");
+            var fieldIdentifier = _editContext.Field(nameof(Model.Property));
+            _validationMessageStore.Add(fieldIdentifier, "The property types are missing, please refresh and try again. If this message continues to appear please raise a bug report.");
+            _editContext.NotifyValidationStateChanged();
+
+            return false;
+        }
+
+        return true;
     }
 
     private async Task OnValidSubmit()
@@ -162,8 +192,9 @@ public partial class PropertyType(
     /// <summary>
     /// Work out the property type. The priority is as follows: previously stored value, primary classification, 'other'.
     /// </summary>
-    private static Guid? GetPropertyType(ExtraData createExtraData, IList<FloodImpact> floodImpacts)
+    private Guid? GetPropertyType(ExtraData createExtraData)
     {
+        // previously stored value
         if (createExtraData.PropertyType != null)
         {
             return createExtraData.PropertyType;
@@ -172,7 +203,7 @@ public partial class PropertyType(
         // Use the primary classification to find the flood impact
         if (createExtraData.PrimaryClassification != null)
         {
-            Guid? propertyType = floodImpacts
+            Guid? propertyType = _propertyTypes
                 .Where(o => o.TypeName != null && o.TypeName.Equals(createExtraData.PrimaryClassification, StringComparison.CurrentCultureIgnoreCase))
                 .Select(o => o.Id)
                 .FirstOrDefault();
@@ -181,18 +212,10 @@ public partial class PropertyType(
                 return propertyType.Value;
             }
 
+            // didn't find a match, so return the 'other' property type
             return FloodImpactIds.PropertyTypeOther;
         }
 
         return null;
-    }
-
-    private GdsOptionItem<Guid> CreateOption(FloodImpact floodImpact)
-    {
-        var label = floodImpact.TypeName == null ? [] : floodImpact.TypeName.AsSpan();
-        var id = floodImpact.TypeName == null ? "property-unknown" : $"property-{floodImpact.TypeName.Replace(' ', '-').ToLowerInvariant()}";
-        var selected = floodImpact.Id == Model.Property;
-
-        return new GdsOptionItem<Guid>(id, label, value: floodImpact.Id, selected);
     }
 }
