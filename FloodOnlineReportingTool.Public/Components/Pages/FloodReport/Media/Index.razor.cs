@@ -252,6 +252,16 @@ public partial class Index(
         return ImageFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
     }
 
+    private static bool IsVideoFileType(string contentType)
+    {
+        return VideoFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsDocumentFileType(string contentType)
+    {
+        return DocumentFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string GetThumbnailBlobUrl(string imageBlobUrl)
     {
         return $"{imageBlobUrl}{ThumbnailSuffix}";

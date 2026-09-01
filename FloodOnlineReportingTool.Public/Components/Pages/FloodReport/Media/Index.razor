@@ -76,17 +76,17 @@
                         {
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
-                                    @if (ImageFileTypes.Contains(file.ContentType))
+                                    @if (IsImageFileType(file.ContentType))
                                     {
                                         <img class="media-image-preview" src="@GetThumbnailReadUrl(file.Url)" onerror="@GetImagePreviewErrorFallback(file.Url)" alt="Preview of @file.Name" />
                                     }
-                                    else if(VideoFileTypes.Contains(file.ContentType))
+                                    else if(IsVideoFileType(file.ContentType))
                                     {
                                         <span class="media-placeholder">
                                             <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
                                         </span>
                                     }
-                                    else if (DocumentFileTypes.Contains(file.ContentType))
+                                    else if (IsDocumentFileType(file.ContentType))
                                     {
                                         <span class="media-placeholder">
                                             <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
