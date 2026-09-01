@@ -37,7 +37,7 @@
                 }
                 @if (RemainingSlots > 0)
                 {
-                    <GdsFileInput IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
+                    <GdsFileInput Id="upload-file" IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
                 }
                 else
                 {
@@ -78,7 +78,7 @@
                                 <td class="govuk-table__cell">
                                     @if (ImageFileTypes.Contains(file.ContentType))
                                     {
-                                        <img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
+                                        <img class="media-image-preview" src="@GetThumbnailReadUrl(file.Url)" onerror="@GetImagePreviewErrorFallback(file.Url)" alt="Preview of @file.Name" />
                                     }
                                     else if(VideoFileTypes.Contains(file.ContentType))
                                     {
@@ -130,7 +130,7 @@
                                 </td>
                                 <td class="govuk-table__cell">
                                     <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
-                                    <a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+                                    <a href="@GetBlobReadUrl(file.Url)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
