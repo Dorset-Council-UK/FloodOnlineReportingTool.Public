@@ -10,7 +10,6 @@ using FluentValidation.Results;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
