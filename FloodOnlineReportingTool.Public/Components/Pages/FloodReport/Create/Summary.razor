@@ -83,7 +83,7 @@ else if (_eligibilityCheckDto is not null)
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Temporary address</dt>
-                @ValueOrMissing(_eligibilityCheckDto.TemporaryLocationDesc, FloodReportCreatePages.TemporaryAddress)
+                @ValueOrMissing(_eligibilityCheckDto.TemporaryLocationDesc, FloodReportCreatePages.TemporaryAddress, allowBlankLabel: string.IsNullOrEmpty(_extraData?.TemporaryPostcode))
                 <dd class="govuk-summary-list__actions">
                     <a draggable="false" data-prevent-double-click="true" href="@(FloodReportCreatePages.TemporaryAddress.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> temporary address</span></a>
                 </dd>
@@ -159,9 +159,9 @@ else if (_eligibilityCheckDto is not null)
 }
 
 @code {
-    private RenderFragment ValueOrMissing(string? label, PageInfo pageInfo)
+    private RenderFragment ValueOrMissing(string? label, PageInfo pageInfo, bool allowBlankLabel = false)
     {
-        var hasFailures = label is null
+        var hasFailures = (label is null && !allowBlankLabel)
             || _validationFailures.Exists(failure => failure.CustomState is PageInfo p && p == pageInfo);
         return hasFailures
             ? @<SummaryListValue AdditionalCssClasses="govuk-error-message">missing information</SummaryListValue>

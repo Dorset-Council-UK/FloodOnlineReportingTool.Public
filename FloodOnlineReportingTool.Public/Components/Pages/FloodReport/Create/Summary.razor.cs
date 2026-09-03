@@ -10,6 +10,7 @@ using FluentValidation.Results;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
@@ -106,6 +107,9 @@ public partial class Summary(
 
             _eligibilityCheckDto = await GetEligibilityCheckDto();
             _extraData = await GetCreateExtraData();
+
+            //We record whether or not a temporary postcode exists to enable correct validation.
+            _eligibilityCheckDto.TemporaryPostcodeExists = !string.IsNullOrEmpty(_extraData.TemporaryPostcode);
 
             _propertyTypeLabel = EligibilityCheckFloodImpacts?.FirstOrDefault(fi => fi.Id.Equals(_extraData.PropertyType))?.TypeName;
             _floodedAreaLabels = GetFloodedAreas();
