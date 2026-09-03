@@ -37,7 +37,7 @@
                 }
                 @if (RemainingSlots > 0)
                 {
-                    <GdsFileInput IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
+                    <GdsFileInput Id="upload-file" IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
                 }
                 else
                 {
@@ -76,17 +76,17 @@
                         {
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
-                                    @if (ImageFileTypes.Contains(file.ContentType))
+                                    @if (IsImageFileType(file.ContentType))
                                     {
-                                        <img class="media-image-preview" src="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" alt="Preview of @file.Name" />
+                                        <img class="media-image-preview" src="@GetThumbnailReadUrl(file.Url)" onerror="@GetImagePreviewErrorFallback(file.Url)" alt="Preview of @file.Name" />
                                     }
-                                    else if(VideoFileTypes.Contains(file.ContentType))
+                                    else if(IsVideoFileType(file.ContentType))
                                     {
                                         <span class="media-placeholder">
                                             <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
                                         </span>
                                     }
-                                    else if (DocumentFileTypes.Contains(file.ContentType))
+                                    else if (IsDocumentFileType(file.ContentType))
                                     {
                                         <span class="media-placeholder">
                                             <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
@@ -130,7 +130,7 @@
                                 </td>
                                 <td class="govuk-table__cell">
                                     <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
-                                    <a href="@(string.IsNullOrWhiteSpace(blobStoageOptions.Value.ReadSASToken) ? file.Url : $"{file.Url}?{blobStoageOptions.Value.ReadSASToken.TrimStart('?')}")" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+                                    <a href="@GetBlobReadUrl(file.Url)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
