@@ -14,6 +14,7 @@ public record EligibilityCheckDto
     public bool IsAddress { get; init; } = true;
     public string? LocationDesc { get; init; }
     public long? TemporaryUprn { get; init; }
+    public const string BlankTemporaryLocationDesc = "No temporary address";
     public string? TemporaryLocationDesc { get; init; }
     public DateTimeOffset? ImpactStart { get; init; }
     public Guid? DurationKnownId { get; init; }
@@ -27,6 +28,6 @@ public record EligibilityCheckDto
     public IList<Guid> Causes { get; init; } = [];
     public IList<Guid> SecondaryCauses { get; init; } = [];
 
-    [NotMapped]
-    public bool TemporaryPostcodeExists { get; set; }
+    //[NotMapped]
+    //public bool TemporaryPostcodeExists { get; set; }
 }

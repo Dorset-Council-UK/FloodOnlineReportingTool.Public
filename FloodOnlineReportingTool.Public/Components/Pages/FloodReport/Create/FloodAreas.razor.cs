@@ -133,20 +133,28 @@ public partial class FloodAreas(
         var createExtraData = await GetCreateExtraData();
 
         // We need to clear any temporary address data that might be stored if they click No
-        bool runTemporaryAddress = Model.IsUninhabitable is null ? false : (bool)Model.IsUninhabitable;
-        var updated = runTemporaryAddress ? eligibilityCheck with
+        EligibilityCheckDto updatedEligibilityCheck;        
+        bool runTemporaryAddress = Model.IsUninhabitable ?? false;
+        if (runTemporaryAddress)
         {
-            Uninhabitable = Model.IsUninhabitable,
-            Residentials = Model.Residentials,
-            Commercials = Model.Commercials,
-        } : eligibilityCheck with
+            updatedEligibilityCheck = eligibilityCheck with
+            {
+                Uninhabitable = Model.IsUninhabitable,
+                Residentials = Model.Residentials,
+                Commercials = Model.Commercials,
+            };
+        }
+        else
         {
-            Uninhabitable = Model.IsUninhabitable,
-            Residentials = Model.Residentials,
-            Commercials = Model.Commercials,
-            TemporaryLocationDesc = null,
-            TemporaryUprn = null,
-        };
+            updatedEligibilityCheck = eligibilityCheck with
+            {
+                Uninhabitable = Model.IsUninhabitable,
+                Residentials = Model.Residentials,
+                Commercials = Model.Commercials,
+                TemporaryLocationDesc = null,
+                TemporaryUprn = null,
+            };
+        }
         if (runTemporaryAddress == false)
         {
             var updatedExtraData = createExtraData with
@@ -155,7 +163,7 @@ public partial class FloodAreas(
             };
             await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
         }
-        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updated);
+        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
 
         // Go to the next page or back to the summary
         var nextPage = FromSummary

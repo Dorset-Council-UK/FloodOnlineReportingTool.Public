@@ -107,8 +107,8 @@ public partial class Summary(
             _eligibilityCheckDto = await GetEligibilityCheckDto();
             _extraData = await GetCreateExtraData();
 
-            //We record whether or not a temporary postcode exists to enable correct validation.
-            _eligibilityCheckDto.TemporaryPostcodeExists = !string.IsNullOrEmpty(_extraData.TemporaryPostcode);
+            ////We record whether or not a temporary postcode exists to enable correct validation.
+            //_eligibilityCheckDto.TemporaryPostcodeExists = !string.IsNullOrEmpty(_extraData.TemporaryPostcode);
 
             _propertyTypeLabel = EligibilityCheckFloodImpacts?.FirstOrDefault(fi => fi.Id.Equals(_extraData.PropertyType))?.TypeName;
             _floodedAreaLabels = GetFloodedAreas();

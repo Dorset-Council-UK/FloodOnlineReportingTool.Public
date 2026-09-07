@@ -1,4 +1,5 @@
-﻿using FloodOnlineReportingTool.Public.Models;
+﻿using FloodOnlineReportingTool.Database.Models.Eligibility;
+using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
 using GdsBlazorComponents;
@@ -19,9 +20,19 @@ public partial class TemporarySelectPostcode(
 
     [SupplyParameterFromQuery]
     private bool FromSummary { get; set; }
-    private PageInfo NextPage => FromSummary
-        ? FloodReportCreatePages.Summary
-        : Model.PostcodeKnown == true ? FloodReportCreatePages.TemporaryAddress : FloodReportCreatePages.Vulnerability;
+    private PageInfo NextPage
+    { 
+        get {
+            if (Model.PostcodeKnown != true)
+                return FromSummary
+                    ? FloodReportCreatePages.Summary
+                    : FloodReportCreatePages.Vulnerability;
+
+            return FromSummary
+                ? FloodReportCreatePages.TemporaryAddressWithFromSummaryIsTrue
+                : FloodReportCreatePages.TemporaryAddress;
+        }
+    }
     private PageInfo PreviousPage => FromSummary
         ? FloodReportCreatePages.Summary
         : FloodReportCreatePages.FloodAreas;
@@ -79,9 +90,18 @@ public partial class TemporarySelectPostcode(
     private async Task OnValidSubmit()
     {
         // Save the postcode
+        var eligibilityCheck = await GetEligibilityCheck();
         var createExtraData = await GetCreateExtraData();
+        
         ExtraData updatedExtraData;
-        if (Model.PostcodeKnown != null && (bool)Model.PostcodeKnown)
+        // Reset the temporary location description. If the user has selected No to PostcodeKnown this will remain unchanged.
+        //  If they select Yes then this will be properly set on the next screen.
+        EligibilityCheckDto updatedEligibilityCheck = eligibilityCheck with
+        {
+            TemporaryLocationDesc = EligibilityCheckDto.BlankTemporaryLocationDesc,
+        };
+
+        if (Model.PostcodeKnown ?? false)
         {
             updatedExtraData = createExtraData with
             {
@@ -96,10 +116,26 @@ public partial class TemporarySelectPostcode(
             };
         }
 
+        await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck, updatedEligibilityCheck);
         await protectedSessionStorage.SetAsync(SessionConstants.EligibilityCheck_ExtraData, updatedExtraData);
 
         // Go to the next page or back to the summary
         navigationManager.NavigateTo(NextPage.Url);
+    }
+
+    private async Task<EligibilityCheckDto> GetEligibilityCheck()
+    {
+        var data = await protectedSessionStorage.GetAsync<EligibilityCheckDto>(SessionConstants.EligibilityCheck);
+        if (data.Success)
+        {
+            if (data.Value != null)
+            {
+                return data.Value;
+            }
+        }
+
+        logger.LogWarning("Eligibility Check was not found in the protected storage.");
+        return new EligibilityCheckDto();
     }
 
     private async Task<ExtraData> GetCreateExtraData()
