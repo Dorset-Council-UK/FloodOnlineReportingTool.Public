@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace FloodOnlineReportingTool.Database.Models.Eligibility;
+﻿namespace FloodOnlineReportingTool.Database.Models.Eligibility;
 
 /// <summary>
 /// A data transfer object representing an eligibility check. Only the data which can be changed.
@@ -27,7 +25,4 @@ public record EligibilityCheckDto
     public IList<Guid> Commercials { get; init; } = [];
     public IList<Guid> Causes { get; init; } = [];
     public IList<Guid> SecondaryCauses { get; init; } = [];
-
-    //[NotMapped]
-    //public bool TemporaryPostcodeExists { get; set; }
 }

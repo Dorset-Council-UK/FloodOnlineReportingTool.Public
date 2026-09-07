@@ -41,27 +41,4 @@ internal record PageInfo
     }
 
     public GdsBreadcrumb ToGdsBreadcrumb() => new(Url, Title);
-
-
-    //private const string fromSummaryIsTrue = "fromSummary=true";
-    //public void AppendFromSummaryIsTrueToURL()
-    //{
-    //    if (!Url.Contains(fromSummaryIsTrue, StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        if (Url.Contains("?"))
-    //            Url += "&" + fromSummaryIsTrue;
-    //        else
-    //            Url += "?" + fromSummaryIsTrue;
-    //    }        
-    //}
-
-    //private string URLWithoutSummaryIsTrue(string currentURL)
-    //{ 
-    //    if (currentURL.Contains(fromSummaryIsTrue, StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        if (currentURL.Contains("&"))
-    //            Url += "&" + fromSummaryIsTrue;
-    //    }
-    //}
-
 }
