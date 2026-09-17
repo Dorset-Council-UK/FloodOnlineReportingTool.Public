@@ -40,13 +40,7 @@ public class EligibilityCheckDtoValidator : AbstractValidator<EligibilityCheckDt
             .NotEmpty()
             .WithState(dto => FloodReportCreatePages.Location)
             .When(dto => !dto.IsAddress);
-
-        // Temporary Uprn
-        RuleFor(dto => dto.TemporaryUprn)
-            .NotEmpty()
-            .WithState(dto => FloodReportCreatePages.TemporaryAddress)
-            .When(dto => dto.Uninhabitable == true);
-
+                
         // Temporary location description
         RuleFor(dto => dto.TemporaryLocationDesc)
             .NotEmpty()

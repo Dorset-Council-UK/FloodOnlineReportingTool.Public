@@ -4,8 +4,14 @@ namespace FloodOnlineReportingTool.Public.Models.Order;
 
 internal record PageInfo
 {
-    public string Url { get; }
+    public string Url 
+        => includeFromSummaryIsTrueInURL
+            ? field.Contains("?") ? field + "&fromSummary=true" : field + "?fromSummary=true"
+            : field;
+
     public string Title { get; }
+
+    private bool includeFromSummaryIsTrueInURL { get; }
 
     public void Deconstruct(out string url, out string title)
     {
@@ -25,6 +31,13 @@ internal record PageInfo
         // Efficient allocation at construction only
         Url = string.Concat(baseUrl, path);
         Title = title.ToString();
+    }
+
+    public PageInfo(PageInfo basePageInfo, bool includeFromSummaryIsTrueInURL)
+    {
+        Url = basePageInfo.Url;
+        Title = basePageInfo.Title;
+        this.includeFromSummaryIsTrueInURL = includeFromSummaryIsTrueInURL;
     }
 
     public GdsBreadcrumb ToGdsBreadcrumb() => new(Url, Title);

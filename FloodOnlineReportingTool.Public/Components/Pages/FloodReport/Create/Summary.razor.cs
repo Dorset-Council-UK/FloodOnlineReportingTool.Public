@@ -106,7 +106,7 @@ public partial class Summary(
 
             _eligibilityCheckDto = await GetEligibilityCheckDto();
             _extraData = await GetCreateExtraData();
-
+                       
             _propertyTypeLabel = EligibilityCheckFloodImpacts?.FirstOrDefault(fi => fi.Id.Equals(_extraData.PropertyType))?.TypeName;
             _floodedAreaLabels = GetFloodedAreas();
             _isUninhabitableLabel = GetIsUninhabitable();
