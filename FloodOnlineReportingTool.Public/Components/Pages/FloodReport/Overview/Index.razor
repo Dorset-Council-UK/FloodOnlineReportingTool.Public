@@ -39,6 +39,8 @@
                         if (item.StatusId == RecordStatusIds.ActionNeeded)
                         {
                             <GdsTag Colour="GdsTagColour.Yellow" Text="@statusText" />
+                            <hr />
+                            <GdsStartButton Href="@($"{InvestigationPages.Home.Url}/{item.Id}")" Text="Start now" />
                         }
                         else if (item.StatusId == RecordStatusIds.MarkedForDeletion)
                         {
@@ -58,6 +60,8 @@
                         <li>
                             <GdsLink Href="@($"{FloodReportPages.Details.Url}/{item.Id}")">View<span class="govuk-visually-hidden"> flood report</span></GdsLink>
                         </li>
+                        @*
+                        TODO - make the update link work!
                         <AuthorizeView>
                             <Authorized>
                                 @if (item.EligibilityCheckId.HasValue)
@@ -68,15 +72,10 @@
                                 }
                             </Authorized>
                         </AuthorizeView>
+                        *@
                         <li>
                             <GdsLink Href="@($"{ContactPages.Summary.Url}/{item.Id}")">Contacts<span class="govuk-visually-hidden"> information</span></GdsLink>
                         </li>
-                        @if (item.StatusId == RecordStatusIds.ActionNeeded)
-                        {
-                            <li>
-                                <GdsLink Href="@($"{InvestigationPages.Home.Url}/{item.Id}")">Tell us more</GdsLink>
-                            </li>
-                        }
                         <li>
                             <GdsLink Href="@($"{MediaPages.Home.Url}/{item.Id}?back_url=manage")">Add photos or videos</GdsLink>
                         </li>
