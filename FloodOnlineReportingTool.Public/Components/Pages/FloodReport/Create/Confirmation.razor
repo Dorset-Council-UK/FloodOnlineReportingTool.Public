@@ -27,7 +27,15 @@
     </p>
 }
 
-@if (!_isLoading && !_loadingError)
+@if (!_isLoading && !_isAuthorised)
+{
+    <GdsHeading Level="1">Unauthorised</GdsHeading>
+    <p class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span> <span>You need to be logged in to search by reference.</span>
+    </p>
+}
+
+@if (!_isLoading && !_loadingError && _isAuthorised)
 {
 
     <GdsPanel Title="@Title">
