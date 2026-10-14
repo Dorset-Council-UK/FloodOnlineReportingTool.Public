@@ -9,9 +9,11 @@ public record InvestigationDto
     public DateTimeOffset? FloodInternalUtc { get; init; }
 
     // Peak depth fields
-    public Guid? IsPeakDepthKnownId { get; init; }
-    public int? PeakInsideCentimetres { get; init; }
-    public int? PeakOutsideCentimetres { get; init; }
+    //public Guid? IsPeakDepthKnownId { get; init; }
+    //public int? PeakInsideCentimetres { get; init; }
+    //public int? PeakOutsideCentimetres { get; init; }
+
+    public IList<InvestigationPeakDepth> InvestigationPeakDepths { get; init; } = [];
 
     // History fields
     public Guid? HistoryOfFloodingId { get; init; }

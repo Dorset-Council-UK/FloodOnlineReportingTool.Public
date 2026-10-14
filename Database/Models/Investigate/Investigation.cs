@@ -39,10 +39,8 @@ public record Investigation
     public DateTimeOffset? FloodInternalUtc { get; init; }
 
     // Peak depth, which is a related record status
-    public required Guid IsPeakDepthKnownId { get; init; }
-    public RecordStatus IsPeakDepthKnown { get; init; } = default!;
-    public int? PeakInsideCentimetres { get; init; }
-    public int? PeakOutsideCentimetres { get; init; }
+
+    public IList<InvestigationPeakDepth> PeakDepths { get; set; } = [];
 
     // Service impact, which are related flood impacts
     public IList<InvestigationServiceImpact> ServiceImpacts { get; init; } = [];
