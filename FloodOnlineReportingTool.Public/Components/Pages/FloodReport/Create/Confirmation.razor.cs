@@ -1,14 +1,11 @@
-﻿using FloodOnlineReportingTool.Database.Repositories;
+using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Authentication;
-using FloodOnlineReportingTool.Public.Models.FloodReport.Contact;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Services;
 using GdsBlazorComponents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Identity.Web;
 using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Create;
@@ -22,7 +19,6 @@ public partial class Confirmation(
     IAuthorizationService authorizationService
 ) : IPageOrder, IAsyncDisposable
 {
-    // Parameters
     [SupplyParameterFromQuery]
     private string? Reference { get; set; }
 
@@ -39,7 +35,7 @@ public partial class Confirmation(
     private bool _hasContactInformation;
     private IEnumerable<string?> _userIds = [];
     private int _mediaItemsAssociatedWithReport;
-    
+
     // Public Properties
     public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
     public IReadOnlyCollection<GdsBreadcrumb> Breadcrumbs { get; set; } = [
@@ -52,7 +48,6 @@ public partial class Confirmation(
         // Check if user is authenticated
         if (AuthenticationState is not null)
         {
-
             var authState = await AuthenticationState;
             var user = authState.User;
             _userId = user.Oid;
@@ -84,31 +79,37 @@ public partial class Confirmation(
         if (!string.IsNullOrWhiteSpace(Reference))
         {
             await LoadFromReferenceAsync();
-            if (_userId is not null && _hasContactInformation)
-            {
-                if (AuthenticationState is not null)
-                {
-                    var authState = await AuthenticationState;
-                    var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
-                    _isAuthorised = adminPolicyCheck.Succeeded;
-                }
-
-                if (!_isAuthorised)
-                {
-                    _isAuthorised = _userIds.Contains(_userId, StringComparer.OrdinalIgnoreCase);
-
-                }
-            } else if (_hasContactInformation)
-            {
-                _isAuthorised = false;
-            } else
-            {
-                _isAuthorised = true;
-            }
-        }   
+        }
         else
         {
             await LoadFromSessionAsync();
+        }
+
+        if (!_loadingError && _FloodReportId != Guid.Empty)
+        {
+            var sessionFloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
+
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                if (authState.User.Identity?.IsAuthenticated == true)
+                {
+                    var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
+                    _isAuthorised = adminPolicyCheck.Succeeded
+                        || (_userId is not null && _userIds.Contains(_userId, StringComparer.OrdinalIgnoreCase));
+                }
+            }
+
+            if (!_isAuthorised && !_hasContactInformation && sessionFloodReportId == _FloodReportId)
+            {
+                _isAuthorised = true;
+                await scopedSessionStorage.SaveFloodReporSourceId(Guid.Empty);
+            }
+
+            if (_isAuthorised)
+            {
+                await LoadMediaItemCountAsync();
+            }
         }
 
         _isLoading = false;
@@ -128,13 +129,6 @@ public partial class Confirmation(
             }
 
             _FloodReportId = floodReportSource.Id;
-
-            if (_FloodReportId != Guid.Empty)
-            {
-                await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
-                await LoadMediaItemCountAsync();
-            }
-
             _hasContactInformation = floodReportSource.ContactRecords.Count > 0;
             if (_hasContactInformation)
             {
@@ -158,13 +152,18 @@ public partial class Confirmation(
         }
 
         var result = await floodReportSourceRepository.GetById(_FloodReportId, _cts.Token);
-        Reference = result?.Reference;
-        _hasContactInformation = result?.ContactRecords.Count > 0;
-        if (result != null && _hasContactInformation)
+        if (result is null)
+        {
+            _FloodReportId = Guid.Empty;
+            return;
+        }
+
+        Reference = result.Reference;
+        _hasContactInformation = result.ContactRecords.Count > 0;
+        if (_hasContactInformation)
         {
             _userIds = result.ContactRecords.Select(c => c.ContactUserId).ToArray();
         }
-        await LoadMediaItemCountAsync();
     }
 
     private async Task LoadMediaItemCountAsync()

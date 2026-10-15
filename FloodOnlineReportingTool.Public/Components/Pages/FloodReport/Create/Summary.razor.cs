@@ -5,6 +5,7 @@ using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
 using FloodOnlineReportingTool.Public.Models.FloodReport.Create;
 using FloodOnlineReportingTool.Public.Models.Order;
+using FloodOnlineReportingTool.Public.Services;
 using FluentValidation;
 using FluentValidation.Results;
 using GdsBlazorComponents;
@@ -20,6 +21,7 @@ public partial class Summary(
     IFloodReportSourceRepository floodReportSourceRepository,
     IValidator<EligibilityCheckDto> validator,
     ProtectedSessionStorage protectedSessionStorage,
+    SessionStateService scopedSessionStorage,
     NavigationManager navigationManager
 ) : IAsyncDisposable
 {
@@ -157,6 +159,8 @@ public partial class Summary(
             }
             return;
         }
+
+        await scopedSessionStorage.SaveFloodReporSourceId(createFloodReportSource.Value.Id);
 
         // Clear the stored data
         await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);
