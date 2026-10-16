@@ -16,7 +16,8 @@ public partial class Confirmation(
     IMediaItemRepository mediaItemRepository,
     IFloodReportSourceRepository floodReportSourceRepository,
     SessionStateService scopedSessionStorage,
-    IAuthorizationService authorizationService
+    IAuthorizationService authorizationService,
+    NavigationManager navigationManager
 ) : IPageOrder, IAsyncDisposable
 {
     [SupplyParameterFromQuery]
@@ -42,6 +43,8 @@ public partial class Confirmation(
         GeneralPages.Home.ToGdsBreadcrumb(),
         FloodReportPages.Home.ToGdsBreadcrumb(),
     ];
+
+    private string RegisterLoginUrl => $"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(SubscriptionPages.Home.Url + "?Me=true&Owns=true")}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,28 +90,34 @@ public partial class Confirmation(
 
         if (!_loadingError && _FloodReportId != Guid.Empty)
         {
-            var sessionFloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
+            var authState = AuthenticationState is not null
+                ? await AuthenticationState
+                : null;
 
-            if (AuthenticationState is not null)
+            if (authState?.User.Identity?.IsAuthenticated == true)
             {
-                var authState = await AuthenticationState;
-                if (authState.User.Identity?.IsAuthenticated == true)
+                _isAuthorised = await IsAuthenticatedOwnerOrAdminAsync();
+
+                if (_isAuthorised)
                 {
-                    var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
-                    _isAuthorised = adminPolicyCheck.Succeeded
-                        || (_userId is not null && _userIds.Contains(_userId, StringComparer.OrdinalIgnoreCase));
+                    await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
+                    await scopedSessionStorage.SaveConfirmationAccessConsumed(true);
+                    await scopedSessionStorage.SaveConfirmationLoginPending(false);
+                    await LoadMediaItemCountAsync();
                 }
             }
-
-            if (!_isAuthorised && !_hasContactInformation && sessionFloodReportId == _FloodReportId)
+            else
             {
-                _isAuthorised = true;
-                await scopedSessionStorage.SaveFloodReporSourceId(Guid.Empty);
-            }
+                var sessionFloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
+                var confirmationAccessConsumed = await scopedSessionStorage.GetConfirmationAccessConsumed();
+                var confirmationLoginPending = await scopedSessionStorage.GetConfirmationLoginPending();
 
-            if (_isAuthorised)
-            {
-                await LoadMediaItemCountAsync();
+                if (!_hasContactInformation && sessionFloodReportId == _FloodReportId && (!confirmationAccessConsumed || confirmationLoginPending))
+                {
+                    _isAuthorised = true;
+                    await scopedSessionStorage.SaveConfirmationAccessConsumed(true);
+                    await LoadMediaItemCountAsync();
+                }
             }
         }
 
@@ -140,6 +149,36 @@ public partial class Confirmation(
             logger.LogError(ex, "There was a problem getting the eligibility check from the database");
             _loadingError = true;
         }
+    }
+
+    private async Task<bool> IsAuthenticatedOwnerOrAdminAsync()
+    {
+        if (AuthenticationState is null)
+        {
+            return false;
+        }
+
+        var authState = await AuthenticationState;
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            return false;
+        }
+
+        var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
+        if (adminPolicyCheck.Succeeded)
+        {
+            return true;
+        }
+
+        return _userId is not null && _userIds.Contains(_userId, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private async Task OnRegisterLoginClickedAsync()
+    {
+        _isLoading = true;
+        await scopedSessionStorage.SaveConfirmationLoginPending(true);
+        await InvokeAsync(StateHasChanged);
+        navigationManager.NavigateTo(RegisterLoginUrl, forceLoad: true);
     }
 
     private async Task LoadFromSessionAsync()

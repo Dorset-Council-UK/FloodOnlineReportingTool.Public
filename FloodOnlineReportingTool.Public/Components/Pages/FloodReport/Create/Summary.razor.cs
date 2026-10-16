@@ -161,6 +161,7 @@ public partial class Summary(
         }
 
         await scopedSessionStorage.SaveFloodReporSourceId(createFloodReportSource.Value.Id);
+        await scopedSessionStorage.SaveConfirmationAccessConsumed(false);
 
         // Clear the stored data
         await protectedSessionStorage.DeleteAsync(SessionConstants.EligibilityCheck);

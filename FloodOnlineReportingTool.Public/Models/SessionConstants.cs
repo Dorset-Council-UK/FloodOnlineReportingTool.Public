@@ -3,6 +3,8 @@
 internal static class SessionConstants
 {
     public const string FloodReportSourceId = "FloodReportSourceId";
+    public const string ConfirmationAccessConsumed = "ConfirmationAccessConsumed";
+    public const string ConfirmationLoginPending = "ConfirmationLoginPending";
     public const string EligibilityCheck = "EligibilityForm";
     public const string EligibilityCheck_ExtraData = "EligibilityForm_ExtraData";
     public const string Investigation = "InvestigationForm";

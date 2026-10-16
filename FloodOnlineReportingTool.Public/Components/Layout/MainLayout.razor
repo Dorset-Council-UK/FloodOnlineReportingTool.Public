@@ -6,10 +6,14 @@
     <NavLinks>
         <AuthorizeView>
             <Authorized>
-                <GdsHeaderNavLink Href="@AccountPages.SignOut.Url" Match="NavLinkMatch.All">Sign out</GdsHeaderNavLink>
+                <li class="govuk-header__navigation-item">
+                    <a class="govuk-header__link" href="@AccountPages.SignOut.Url" @onclick="OnSignOutClickedAsync" @onclick:preventDefault="true">Sign out</a>
+                </li>
             </Authorized>
             <NotAuthorized>
-                <GdsHeaderNavLink Href="@_signInUrl" Match="NavLinkMatch.All">Sign in</GdsHeaderNavLink>
+                <li class="govuk-header__navigation-item">
+                    <a class="govuk-header__link" href="@_signInUrl" @onclick="OnSignInClickedAsync" @onclick:preventDefault="true">Sign in</a>
+                </li>
             </NotAuthorized>
         </AuthorizeView>
     </NavLinks>
@@ -75,6 +79,19 @@
     private NavigationManager Navigation { get; set; } = default!;
 
     private readonly Uri _feedbackUri = new("https://dorset-self.achieveservice.com/service/flood-reporting-tool-feedback");
+
+    private Task OnSignOutClickedAsync()
+    {
+        Navigation.NavigateTo(AccountPages.SignOut.Url, forceLoad: true);
+        return Task.CompletedTask;
+    }
+
+    private Task OnSignInClickedAsync()
+    {
+        Navigation.NavigateTo(_signInUrl, forceLoad: true);
+        return Task.CompletedTask;
+    }
+
     private string _signInUrl
     {
         get
