@@ -24,7 +24,7 @@
     </p>
 }
 
-@if (!_isLoading && !_isAuthorised)
+@if (!_isLoading && !string.IsNullOrWhiteSpace(Reference) && !_isAuthorised)
 {
     <GdsHeading Level="1">Unauthorised</GdsHeading>
     <p class="govuk-error-message">
