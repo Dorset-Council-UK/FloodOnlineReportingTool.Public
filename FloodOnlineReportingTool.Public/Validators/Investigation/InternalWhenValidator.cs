@@ -16,6 +16,11 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
 
         When(o => o.WhenWaterEnteredKnownId == RecordStatusIds.Yes, () =>
         {
+            /**
+             *Note: Since water entry date could be a long time ago, we allow for a date up to 100 years in the past. 
+             *This is to accommodate older properties or historical records where the exact date may not be known but is still relevant for investigation purposes.
+             *Ideally we could use the reports created date as a reference, but we don't have that context at this point. This is probably good enough
+             ***/
             RuleFor(o => o.WhenWaterEnteredDate)
                 .Cascade(CascadeMode.Stop)
                 .DayMonthYearNotEmpty()
@@ -24,7 +29,7 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
                 .YearMustBeNumber()
                 .DayInclusiveBetween(1, 31)
                 .MonthInclusiveBetween(1, 12)
-                .YearInclusiveBetween(now.Year - 1, now.Year)
+                .YearInclusiveBetween(now.Year - 100, now.Year)
                 .CorrectDaysInMonth()
                 .IsRealDate()
                 .WithName("When water entered");
@@ -38,10 +43,10 @@ public class InternalWhenValidator : AbstractValidator<InternalWhen>
 
             // If the date must be between two dates
             RuleFor(o => o.WhenWaterEnteredDate.DateUtc)
-                .InclusiveBetween(now.AddYears(-1), now)
+                .InclusiveBetween(now.AddYears(-100), now)
                 .WithMessage((o, d) =>
                 {
-                    var from = now.AddYears(-1).GdsReadable();
+                    var from = now.AddYears(-100).GdsReadable();
                     var to = now.GdsReadable();
                     return $"When water entered date must be between {from} and {to}";
                 })
