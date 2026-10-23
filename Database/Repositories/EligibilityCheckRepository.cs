@@ -49,6 +49,7 @@ public class EligibilityCheckRepository(
         return await context.EligibilityChecks
             .AsNoTracking()
             .Include(ec => ec.FloodReportSource)
+            .Include(navigationPropertyPath: ec => ec.FloodReportSource.ContactRecords)
             .Where(ec => ec.FloodReportSource != null && ec.FloodReportSource.Reference == reference)
             .FirstOrDefaultAsync(ct);
     }

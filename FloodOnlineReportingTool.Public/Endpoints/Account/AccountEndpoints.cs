@@ -1,5 +1,6 @@
 ﻿using FloodOnlineReportingTool.Database.Options;
 using FloodOnlineReportingTool.Public.Authentication;
+using FloodOnlineReportingTool.Public.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
@@ -54,12 +55,15 @@ internal static class AccountEndpoints
         return RedirectHttpResult.IsLocalUrl(absolutePath) ? absolutePath : null;
     }
 
-    internal static Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult> SignIn(
+    internal static async Task<Results<ChallengeHttpResult, UnauthorizedHttpResult, ForbidHttpResult>> SignIn(
         IOptions<GISOptions> options,
         string? redirectUri,
         string? loginHint,
         string? domainHint
-    ) {
+    )
+    {
+        await Task.CompletedTask;
+
         var normalisedRedirectUri = NormaliseRedirectUrl(redirectUri, options.Value.PathBase);
 
         var properties = new AuthenticationProperties

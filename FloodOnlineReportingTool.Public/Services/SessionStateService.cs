@@ -33,6 +33,56 @@ public class SessionStateService
         await _sessionStorage.SetAsync(SessionConstants.FloodReportSourceId, floodReportSourceId);
     }
 
+    /// <summary>
+    /// Gets whether the confirmation page's anonymous access has already been consumed.
+    /// </summary>
+    public async Task<bool> GetConfirmationAccessConsumed()
+    {
+        try
+        {
+            var storedValue = await _sessionStorage.GetAsync<bool>(SessionConstants.ConfirmationAccessConsumed);
+            return storedValue.Success && storedValue.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting confirmation access state from protected storage: {ErrorMessage}", ex.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Stores whether the confirmation page's anonymous access has been consumed.
+    /// </summary>
+    public async Task SaveConfirmationAccessConsumed(bool consumed)
+    {
+        await _sessionStorage.SetAsync(SessionConstants.ConfirmationAccessConsumed, consumed);
+    }
+
+    /// <summary>
+    /// Gets whether the confirmation page is waiting for a login handoff to complete.
+    /// </summary>
+    public async Task<bool> GetConfirmationLoginPending()
+    {
+        try
+        {
+            var storedValue = await _sessionStorage.GetAsync<bool>(SessionConstants.ConfirmationLoginPending);
+            return storedValue.Success && storedValue.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting confirmation login state from protected storage: {ErrorMessage}", ex.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Stores whether the confirmation page is waiting for a login handoff to complete.
+    /// </summary>
+    public async Task SaveConfirmationLoginPending(bool pending)
+    {
+        await _sessionStorage.SetAsync(SessionConstants.ConfirmationLoginPending, pending);
+    }
+
     public async Task<Guid> GetVerificationId()
     {
         try

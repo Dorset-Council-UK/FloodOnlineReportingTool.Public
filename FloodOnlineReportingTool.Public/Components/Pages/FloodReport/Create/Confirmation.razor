@@ -7,9 +7,6 @@
 
 <GdsSpinner Show="_isLoading" />
 
-@{
-    var signInUrl = $"{AccountPages.SignIn.Url}";
-}
 
 @if (_loadingError)
 {
@@ -27,7 +24,15 @@
     </p>
 }
 
-@if (!_isLoading && !_loadingError)
+@if (!_isLoading && !string.IsNullOrWhiteSpace(Reference) && !_isAuthorised)
+{
+    <GdsHeading Level="1">Unauthorised</GdsHeading>
+    <p class="govuk-error-message">
+        <span class="govuk-visually-hidden">Error:</span> <span>You need to be logged in to search by reference.</span>
+    </p>
+}
+
+@if (!_isLoading && !_loadingError && _isAuthorised)
 {
 
     <GdsPanel Title="@Title">
@@ -105,7 +110,7 @@
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="report-and-check-2-contacts">
                                     <div class="govuk-task-list__name-and-hint">
                                         
-                                        <a href="@($"{signInUrl}?redirectUri={Uri.EscapeDataString(SubscriptionPages.Home.Url + "?Me=true&Owns=true")}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
+                                        <a href="@RegisterLoginUrl" @onclick="OnRegisterLoginClickedAsync" @onclick:preventDefault="true" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to manage your report
                                         <div id="report-and-check-2-contacts-login-hint" class="govuk-task-list__hint">
                                             You will be allowed to login and manage your notifications and reports on this website.
                                         </div>
@@ -132,7 +137,7 @@
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
                                     <div class="govuk-task-list__name-and-hint">
 
-                                        <a href="@($"{signInUrl}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url + "?back_url=confirmation")}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to add photos or videos to your report
+                                        <a href="@($"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url)}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to add photos or videos to your report
                                         <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
                                             You need to register for an account to provide photos for your report. This will also allow you to manage your report and subscriptions.
                                         </div>
@@ -202,7 +207,7 @@
                 </ul>
                 <p>Using an account is the best way to manage your record and allows you to edit the information you have provided.</p>
                 <p>
-                    <GdsStartButton Href="@signInUrl" Text="Register / Sign in" />
+                    <GdsStartButton Href="@RegisterLoginUrl" Text="Register / Sign in" />
                 </p>
                 <p>
                     If you don't wish to use an account you can 
