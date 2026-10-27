@@ -31,7 +31,8 @@ public static class InvestigationExtensions
                 HasEntries = investigation.Entries.Any(o => o.FloodProblemId != FloodEntryIds.NotSure),
                 HasHistory = investigation.HistoryOfFloodingId == RecordStatusIds.Yes,
                 HasPropertyInsurance = investigation.PropertyInsuredId == RecordStatusIds.Yes,
-                HasPeakDepth = investigation.IsPeakDepthKnownId == RecordStatusIds.Yes,
+                // assuming this is how the change to a list of peak depths will be handled here.
+                HasPeakDepth = investigation.PeakDepths.Count > 0,
                 HasInternalFlooding = investigation.WhenWaterEnteredKnownId == RecordStatusIds.Yes,
                 HasDestination = investigation.Destinations.Any(o => o.FloodProblemId != FloodDestinationIds.NotSure),
                 HasDamagedVehicles = investigation.WereVehiclesDamagedId == RecordStatusIds.Yes,
@@ -55,9 +56,7 @@ public static class InvestigationExtensions
                 FloodInternalUtc = investigation.FloodInternalUtc,
 
                 // Peak depth fields
-                IsPeakDepthKnownId = investigation.IsPeakDepthKnownId,
-                PeakInsideCentimetres = investigation.PeakInsideCentimetres,
-                PeakOutsideCentimetres = investigation.PeakOutsideCentimetres,
+                InvestigationPeakDepths = investigation.PeakDepths, 
 
                 // History fields
                 HistoryOfFloodingId = investigation.HistoryOfFloodingId,
@@ -139,25 +138,14 @@ public static class InvestigationExtensions
         /// </summary>
         internal Investigation ApplyPeakDepth(InvestigationDto dto)
         {
-            if (dto.IsPeakDepthKnownId == null)
-            {
-                return investigation;
-            }
-
-            if (dto.IsPeakDepthKnownId != RecordStatusIds.Yes)
+            if(dto.InvestigationPeakDepths != null && dto.InvestigationPeakDepths.Count > 0)
             {
                 return investigation with
                 {
-                    IsPeakDepthKnownId = dto.IsPeakDepthKnownId.Value,
+                    PeakDepths = dto.InvestigationPeakDepths,
                 };
             }
-
-            return investigation with
-            {
-                IsPeakDepthKnownId = dto.IsPeakDepthKnownId.Value,
-                PeakInsideCentimetres = dto.PeakInsideCentimetres!.Value,
-                PeakOutsideCentimetres = dto.PeakOutsideCentimetres!.Value,
-            };
+            return investigation;
         }
 
         /// <summary>

@@ -157,21 +157,21 @@ public partial class InvestigationSummary : IAsyncDisposable
             return;
         }
 
-        if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.Yes)
-        {
-            _isPeakDepthKnown = true;
+        //if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.Yes)
+        //{
+        //    _isPeakDepthKnown = true;
 
-            _peakDepthInsideMessage = CreatePeakDepthMessage(Entity.PeakInsideCentimetres);
-            _peakDepthOutsideMessage = CreatePeakDepthMessage(Entity.PeakOutsideCentimetres);
-        }
-        else if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.No)
-        {
-            _peakDepthNotKnownMessage = "Not known";
-        }
-        else
-        {
-            _peakDepthNotKnownMessage = Unknown;
-        }
+        //    _peakDepthInsideMessage = CreatePeakDepthMessage(Entity.PeakInsideCentimetres);
+        //    _peakDepthOutsideMessage = CreatePeakDepthMessage(Entity.PeakOutsideCentimetres);
+        //}
+        //else if(Entity.IsPeakDepthKnownId == Database.Models.Status.RecordStatusIds.No)
+        //{
+        //    _peakDepthNotKnownMessage = "Not known";
+        //}
+        //else
+        //{
+        //    _peakDepthNotKnownMessage = Unknown;
+        //}
 
 
         string CreatePeakDepthMessage(int? depthInCentimetres)

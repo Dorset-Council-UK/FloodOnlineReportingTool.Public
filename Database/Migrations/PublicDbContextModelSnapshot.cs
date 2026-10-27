@@ -1516,14 +1516,14 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<bool>("HasKnownProblems")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("HasPeakDepth")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("HistoryOfFloodingDetails")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
                     b.Property<Guid>("HistoryOfFloodingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IsPeakDepthKnownId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("KnownProblemDetails")
@@ -1540,12 +1540,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<string>("OtherAction")
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
-
-                    b.Property<int?>("PeakInsideCentimetres")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PeakOutsideCentimetres")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("PropertyInsuredId")
                         .HasColumnType("uuid");
@@ -1588,8 +1582,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.HasIndex("FloodlineId");
 
                     b.HasIndex("HistoryOfFloodingId");
-
-                    b.HasIndex("IsPeakDepthKnownId");
 
                     b.HasIndex("PropertyInsuredId");
 
@@ -1699,6 +1691,39 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         {
                             t.HasComment("Relationships between investigation and help received for the flood");
                         });
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationPeakDepth", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InvestigationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IsPeakDepthKnownId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("PeakInsideCentimetres")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PeakOutsideCentimetres")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvestigationId");
+
+                    b.HasIndex("IsPeakDepthKnownId");
+
+                    b.ToTable("InvestigationPeakDepths", "fortpublic");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationServiceImpact", b =>
@@ -2769,12 +2794,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "IsPeakDepthKnown")
-                        .WithMany()
-                        .HasForeignKey("IsPeakDepthKnownId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "PropertyInsured")
                         .WithMany()
                         .HasForeignKey("PropertyInsuredId")
@@ -2818,8 +2837,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("Floodline");
 
                     b.Navigation("HistoryOfFlooding");
-
-                    b.Navigation("IsPeakDepthKnown");
 
                     b.Navigation("PropertyInsured");
 
@@ -2921,6 +2938,23 @@ namespace FloodOnlineReportingTool.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("FloodMitigation");
+                });
+
+            modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationPeakDepth", b =>
+                {
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Investigate.Investigation", null)
+                        .WithMany("PeakDepths")
+                        .HasForeignKey("InvestigationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FloodOnlineReportingTool.Database.Models.Status.RecordStatus", "IsPeakDepthKnown")
+                        .WithMany()
+                        .HasForeignKey("IsPeakDepthKnownId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IsPeakDepthKnown");
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationServiceImpact", b =>
@@ -3031,6 +3065,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Navigation("Entries");
 
                     b.Navigation("HelpReceived");
+
+                    b.Navigation("PeakDepths");
 
                     b.Navigation("ServiceImpacts");
 

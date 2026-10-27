@@ -131,9 +131,8 @@ internal sealed class TestService(
                 NumberOfVehiclesDamaged = 6,
 
                 // Peak depth (RecordStatus)
-                IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
-                PeakInsideCentimetres = 35,
-                PeakOutsideCentimetres = 50,
+                // IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
+
 
                 // Service impacts (FloodImpact's)
                 ServiceImpacts = [

@@ -3,6 +3,7 @@ using FloodOnlineReportingTool.Database.Models.Investigate;
 using FloodOnlineReportingTool.Database.Models.Status;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Models;
+using FloodOnlineReportingTool.Public.Models.FloodReport.Investigation;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FluentValidation;
 using GdsBlazorComponents;
@@ -17,122 +18,28 @@ using System.Security.Claims;
 namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Investigation;
 
 [Authorize]
-public partial class PeakDepth(
-    ILogger<PeakDepth> logger,
-    ICommonRepository commonRepository,
-    IEligibilityCheckRepository eligibilityCheckRepository,
-    ProtectedSessionStorage protectedSessionStorage,
-    NavigationManager navigationManager
-) : IAsyncDisposable
+public partial class PeakDepth
 {
     // Page order properties
-    public string Title { get; set; } = InvestigationPages.PeakDepth.Title;
+    [Parameter]
+    public EventCallback<Models.FloodReport.Investigation.PeakDepth> OnAdd { get; set; }
 
-    [CascadingParameter]
-    public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    [SupplyParameterFromQuery]
-    private bool FromSummary { get; set; }
-    private PageInfo NextPage => FromSummary
-        ? InvestigationPages.Summary
-        : InvestigationPages.ServiceImpact;
-    private PageInfo? PreviousPage;
-
-    private Models.FloodReport.Investigation.PeakDepth Model { get; set; } = default!;
+    private Models.FloodReport.Investigation.PeakDepth Model = new ();
 
     private EditContext _editContext = default!;
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
 
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            await _cts.CancelAsync();
-            _cts.Dispose();
-        }
-        catch (Exception)
-        {
-        }
 
-        GC.SuppressFinalize(this);
-    }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (Model is null)
-        {
-            // Setup model and edit context
-            Model ??= new();
-            _editContext = new(Model);
-            _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
-        }
-        PreviousPage = await GetPreviousPage();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Set any previously entered data
-            var investigation = await GetInvestigation();
-            Model.IsPeakDepthKnownId = investigation.IsPeakDepthKnownId;
-            Model.InsideCentimetresText = investigation.PeakInsideCentimetres?.ToString(CultureInfo.CurrentCulture);
-            Model.OutsideCentimetresText = investigation.PeakOutsideCentimetres?.ToString(CultureInfo.CurrentCulture);
-
-            _isLoading = false;
-            StateHasChanged();
-        }
-    }
 
     private async Task OnValidSubmit()
     {
-        var isKnown = Model.IsPeakDepthKnownId == RecordStatusIds.Yes;
-        var investigation = await GetInvestigation();
-        var updatedInvestigation = investigation with
-        {
-            IsPeakDepthKnownId = Model.IsPeakDepthKnownId,
-            PeakInsideCentimetres = isKnown ? Model.InsideCentimetres : null,
-            PeakOutsideCentimetres = isKnown ? Model.OutsideCentimetres : null,
-        };
-        await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
-        // Go to the next page or back to the summary
-        navigationManager.NavigateTo(NextPage.Url);
+        await OnAdd.InvokeAsync(Model);
+
+        Model = new();
+
     }
-
-    private async Task<InvestigationDto> GetInvestigation()
-    {
-        var data = await protectedSessionStorage.GetAsync<InvestigationDto>(SessionConstants.Investigation);
-        if (data.Success)
-        {
-            if (data.Value != null)
-            {
-                return data.Value;
-            }
-        }
-
-        logger.LogWarning("Investigation was not found in the protected storage.");
-        return new InvestigationDto();
-    }
-
-    private async Task<PageInfo> GetPreviousPage()
-    {
-        bool isInternal = false;
-        if (AuthenticationState is not null)
-        {
-            var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
-            if (userId is not null)
-            {
-                var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
-                isInternal = eligibilityCheck?.IsInternal == true;
-            }
-        }
-
-        return PreviousPage = isInternal
-            ? InvestigationPages.InternalWhen
-            : InvestigationPages.Vehicles;
-    }
-
 }

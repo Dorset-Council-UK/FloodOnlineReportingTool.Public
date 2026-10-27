@@ -69,8 +69,7 @@ public partial class InvestigationDtoSummary(
     [Parameter]
     public bool ShowPeakDepth { get; set; } = true;
     private bool _isPeakDepthKnown;
-    private string? _peakDepthInsideMessage;
-    private string? _peakDepthOutsideMessage;
+    private List<InvestigationPeakDepth> _peakDepths = new();
     private string? _peakDepthNotKnownMessage;
 
     // Service impacts
@@ -350,27 +349,20 @@ public partial class InvestigationDtoSummary(
         // Reset all peak depth fields
         _isPeakDepthKnown = false;
         _peakDepthNotKnownMessage = null;
-        _peakDepthInsideMessage = null;
-        _peakDepthOutsideMessage = null;
+        _peakDepths = [];
+
+        if (InvestigationDto.InvestigationPeakDepths.Count == 0)
+        {
+            _peakDepths = [.. InvestigationDto.InvestigationPeakDepths];
+        }
+        else
+        {
+            _peakDepths = [];
+        }
 
         if (!ShowPeakDepth)
         {
             return;
-        }
-
-        if (InvestigationDto.IsPeakDepthKnownId == RecordStatusIds.Yes)
-        {
-            _isPeakDepthKnown = true;
-            _peakDepthInsideMessage = BuildMessage(InvestigationDto.PeakInsideCentimetres, "{0} centimetre", "{0} centimetres");
-            _peakDepthOutsideMessage = BuildMessage(InvestigationDto.PeakOutsideCentimetres, "{0} centimetre", "{0} centimetres");
-        }
-        else if (InvestigationDto.IsPeakDepthKnownId == RecordStatusIds.No)
-        {
-            _peakDepthNotKnownMessage = "Not known";
-        }
-        else
-        {
-            _peakDepthNotKnownMessage = Unknown;
         }
     }
 

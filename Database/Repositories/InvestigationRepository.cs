@@ -117,7 +117,13 @@ public class InvestigationRepository(
             // Internal (handled within ApplyInternalFields)
 
             // Peak depth (handled with ApplyPeakDepth)
-            IsPeakDepthKnownId = Guid.Empty,
+            // IsPeakDepthKnownId = Guid.Empty,
+            PeakDepths = dto.InvestigationPeakDepths
+                .Select(peakDepth => new InvestigationPeakDepth(investigationId, peakDepth.IsPeakDepthKnownId, peakDepth.PeakInsideCentimetres, peakDepth.PeakOutsideCentimetres)
+                {
+                    IsPeakDepthKnownId = peakDepth.IsPeakDepthKnownId,  
+                })
+                .ToList(),
 
             // Service impacts
             ServiceImpacts = [.. dto.ServiceImpacts.Select(floodImpactId => new InvestigationServiceImpact(investigationId, floodImpactId))],

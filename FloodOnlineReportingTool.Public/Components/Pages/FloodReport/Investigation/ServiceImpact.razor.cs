@@ -25,7 +25,7 @@ public partial class ServiceImpact(
     private PageInfo NextPage => FromSummary
         ? InvestigationPages.Summary
         : InvestigationPages.CommunityImpact;
-    private static PageInfo PreviousPage => InvestigationPages.PeakDepth;
+    private static PageInfo PreviousPage => InvestigationPages.PeakDepthsPage;
 
     private Models.FloodReport.Investigation.ServiceImpact Model { get; set; } = default!;
    
@@ -93,7 +93,8 @@ public partial class ServiceImpact(
         var updatedInvestigation = investigation with
         {
             ServiceImpacts = GetSelectedServiceImpacts(),
-            IsPeakDepthKnownId = investigation.IsPeakDepthKnownId,
+            // Think ok to remove?
+            // IsPeakDepthKnownId = investigation.InvestigationPeakDepths.Any() ? investigation.InvestigationPeakDepths.First().IsPeakDepthKnownId : null,
         };
         await protectedSessionStorage.SetAsync(SessionConstants.Investigation, updatedInvestigation);
 
