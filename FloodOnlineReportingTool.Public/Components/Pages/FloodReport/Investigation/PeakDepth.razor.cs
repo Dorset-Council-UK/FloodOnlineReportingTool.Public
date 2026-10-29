@@ -24,10 +24,18 @@ public partial class PeakDepth
     [Parameter]
     public EventCallback<Models.FloodReport.Investigation.PeakDepth> OnAdd { get; set; }
 
+    [Parameter]
+    public Models.FloodReport.Investigation.PeakDepth? Item { get; set; }
 
-    private Models.FloodReport.Investigation.PeakDepth Model = new ();
+    private Models.FloodReport.Investigation.PeakDepth Model => Item ??= new Models.FloodReport.Investigation.PeakDepth();
 
     private EditContext _editContext = default!;
+
+    protected override void OnParametersSet()
+    {
+        _editContext = new EditContext(Model);
+        _isLoading = false;
+    }
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
 
@@ -37,9 +45,9 @@ public partial class PeakDepth
     private async Task OnValidSubmit()
     {
 
-        await OnAdd.InvokeAsync(Model);
+        await OnAdd.InvokeAsync(Item);
 
-        Model = new();
+        Item = new Models.FloodReport.Investigation.PeakDepth();
 
     }
 }

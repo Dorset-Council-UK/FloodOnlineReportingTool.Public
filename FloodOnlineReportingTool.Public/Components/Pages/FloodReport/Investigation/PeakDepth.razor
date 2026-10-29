@@ -1,8 +1,8 @@
-﻿@page "/floodreport/investigation/peakdepth"
+﻿
 @using FloodOnlineReportingTool.Database.Models.Status
 
-        <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="InvestigationPeakDepth">
-            <FluentValidationValidator />
+<EditForm Model="@Item" OnValidSubmit="OnValidSubmit">
+    <FluentValidationValidator />
             <GdsErrorSummary />
 
             <GdsSpinner Show="_isLoading" ShowMessage="true" />

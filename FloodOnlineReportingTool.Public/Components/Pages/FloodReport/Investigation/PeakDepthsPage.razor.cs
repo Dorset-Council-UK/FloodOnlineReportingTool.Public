@@ -34,7 +34,7 @@ public partial class PeakDepthsPage(
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
 
-
+    private Models.FloodReport.Investigation.PeakDepth PeakDepthModel = new();
 
     public async ValueTask DisposeAsync()
     {
@@ -81,6 +81,11 @@ public partial class PeakDepthsPage(
                 })
                 .ToList()
                 ?? new List<Models.FloodReport.Investigation.PeakDepth>();
+
+            logger.LogInformation(
+                "InvestigationPeakDepths: {SourceCount}, Model: {ModelCount}",
+                investigation.InvestigationPeakDepths?.Count ?? 0,
+                Model.Count);
 
             _isLoading = false;
             StateHasChanged();
