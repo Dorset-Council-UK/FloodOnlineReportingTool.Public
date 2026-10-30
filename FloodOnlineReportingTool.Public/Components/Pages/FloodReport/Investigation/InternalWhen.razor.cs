@@ -81,7 +81,7 @@ public partial class InternalWhen(
             {
                 var date = investigation.FloodInternalUtc.Value;
                 var (dateOnly, timeOnly, offset) = date;
-                Model.WhenWaterEnteredDate = new GdsDate(date);
+                Model.WhenWaterEnteredDate.DateUtc = date;
                 Model.TimeText = timeOnly.ToLongTimeString();
             }
 
