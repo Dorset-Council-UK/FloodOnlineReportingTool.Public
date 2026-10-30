@@ -1,9 +1,12 @@
 ﻿import { rm, stat } from "node:fs/promises";
+import { resolve } from "node:path";
 
 export default async function clean() {
 	console.log("🧹 Cleaning up...");
 
-	const directories = ["./wwwroot/css", "./wwwroot/favicons", "./wwwroot/images", "./wwwroot/js"];
+	const directories = ["wwwroot/css", "wwwroot/favicons", "wwwroot/images", "wwwroot/js"].map((d) =>
+		resolve(import.meta.dir, d),
+	);
 
 	for (const directory of directories) {
 		if (await isDirectory(directory)) {
