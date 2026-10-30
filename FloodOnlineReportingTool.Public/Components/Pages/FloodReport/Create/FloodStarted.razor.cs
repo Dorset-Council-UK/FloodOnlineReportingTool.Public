@@ -64,7 +64,7 @@ public partial class FloodStarted(
             var impactStart = eligibilityCheck.ImpactStart;
             if (impactStart.HasValue)
             {
-                Model.StartDate = new GdsDate(impactStart.Value);
+                Model.StartDate.DateUtc = impactStart.Value;
                 Model.IsFloodOngoing = eligibilityCheck.OnGoing;
             }
 
