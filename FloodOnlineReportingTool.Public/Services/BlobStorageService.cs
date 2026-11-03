@@ -31,7 +31,7 @@ internal class BlobStorageService : IBlobStorageService
         return container;
     }
 
-    public async Task<bool> DeleteFileFromBlobAsync(string fileName)
+    public async Task<bool> DeleteBlobIfExistsAsync(string blobName)
     {
         var container = await GetContainer().ConfigureAwait(false);
         if (container is null)
@@ -42,31 +42,22 @@ internal class BlobStorageService : IBlobStorageService
         try
         {
             var deleteResponse = await container
-                .DeleteBlobIfExistsAsync(fileName, DeleteSnapshotsOption.IncludeSnapshots)
+                .DeleteBlobIfExistsAsync(blobName, DeleteSnapshotsOption.IncludeSnapshots)
                 .ConfigureAwait(false);
 
             var existsAndDeleted = deleteResponse.Value;
             if (!existsAndDeleted)
             {
-                _logger.LogWarning("Blob {FileName} does not exist in container {BlobContainerName}. So could not delete it.", fileName, _blobContainerName);
+                _logger.LogWarning("Blob {BlobName} does not exist in container {BlobContainerName}. So could not delete it.", blobName, _blobContainerName);
             }
 
             return existsAndDeleted;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred deleting blob {FileName} from container {BlobContainerName}", fileName, _blobContainerName);
+            _logger.LogError(ex, "An error occurred deleting blob {BlobName} from container {BlobContainerName}", blobName, _blobContainerName);
             throw;
         }
-    }
-
-    public async Task<bool> DeleteFileFromBlobByURLAsync(string url)
-    {
-        var uri = new Uri(url);
-        var absolutePath = Uri.UnescapeDataString(uri.AbsolutePath);
-        var fileName = absolutePath.Replace($"/{_blobContainerName}/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
-
-        return await DeleteFileFromBlobAsync(fileName).ConfigureAwait(false);
     }
 
     public async Task<string> UploadFileToBlobAsync(string fileName, string contentType, Stream fileStream)
@@ -77,21 +68,42 @@ internal class BlobStorageService : IBlobStorageService
             return "";
         }
 
-        var location = fileName.StartsWith("media/", StringComparison.OrdinalIgnoreCase) ? fileName : $"media/{fileName}";
+        var blobName = fileName.StartsWith("media/", StringComparison.OrdinalIgnoreCase) ? fileName : $"media/{fileName}";
 
         try
         {
-            var blob = container.GetBlobClient(location);
+            var blob = container.GetBlobClient(blobName);
 
             await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots).ConfigureAwait(false);
             await blob.UploadAsync(fileStream, new BlobHttpHeaders { ContentType = contentType }).ConfigureAwait(false);
 
-            return blob.Uri.ToString();
+            return blob.Name;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred uploading blob {FileName} from container {BlobContainerName}", location, _blobContainerName);
+            _logger.LogError(ex, "An error occurred uploading blob {BlobName} from container {BlobContainerName}", blobName, _blobContainerName);
             throw;
         }
+    }
+
+    public async Task<(Stream Content, string ContentType)?> OpenReadAsync(string fileName, CancellationToken cancellationToken)
+    {
+        var container = await GetContainer().ConfigureAwait(false);
+        if (container is null)
+        {
+            return null;
+        }
+
+        var blobName = fileName.StartsWith("media/", StringComparison.OrdinalIgnoreCase) ? fileName : $"media/{fileName}";
+        var blob = container.GetBlobClient(blobName);
+        if (!await blob.ExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var stream = await blob.OpenReadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return (stream, properties.Value.ContentType);
     }
 }
