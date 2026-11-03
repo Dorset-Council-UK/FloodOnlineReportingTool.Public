@@ -58,7 +58,7 @@ public partial class Index(
         "video/ogg",
     ];
     private static readonly string[] DocumentFileTypes = [
-        "application/pdf"
+        "application/pdf",
     ];
     private static readonly string[] AllowedFileTypes = [
         .. ImageFileTypes, 
@@ -96,7 +96,6 @@ public partial class Index(
         _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
         _validationMessageStore = new(_editContext);
         _fieldIdentifier = new(Model, nameof(Model.UploadedFiles));
-
     }
 
     public async ValueTask DisposeAsync()
@@ -135,15 +134,14 @@ public partial class Index(
         }
 
         var mediaItems = await mediaItemRepository.GetByReport(_floodReportId, _cts.Token);
-        Model.UploadedFiles = mediaItems
+        Model.UploadedFiles = [.. mediaItems
             .Select(mediaItem => new Models.FloodReport.Create.MediaItem
             {
                 Id = mediaItem.Id,
-                Name = mediaItem.Title ?? Path.GetFileName(mediaItem.URL),
-                Url = mediaItem.URL,
-                ContentType = GetContentTypeFromUrl(mediaItem.URL),
-            })
-            .ToList();
+                Name = mediaItem.Title ?? "",
+                BlobName = mediaItem.BlobName,
+                ContentType = mediaItem.ContentType,
+            })];
     }
 
     private async Task OnFilesSubmitted(IReadOnlyList<IBrowserFile>? files)
@@ -190,12 +188,12 @@ public partial class Index(
         {
             var trustedFileNameForFileStorage = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
             await using var fileStream = file.OpenReadStream(MaxFileSize, _cts.Token);
-            var blobUrl = await blobStorageService.UploadFileToBlobAsync(
+            var blobName = await blobStorageService.UploadFileToBlobAsync(
                 trustedFileNameForFileStorage,
                 file.ContentType,
                 fileStream);
 
-            if (!string.IsNullOrWhiteSpace(blobUrl))
+            if (!string.IsNullOrWhiteSpace(blobName))
             {
                 if (IsImageFileType(file.ContentType))
                 {
@@ -212,7 +210,7 @@ public partial class Index(
                 Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
                     Name = Path.GetFileNameWithoutExtension(file.Name),
-                    Url = blobUrl,
+                    BlobName = blobName,
                     ContentType = file.ContentType,
                 });
                 return true;
@@ -220,7 +218,7 @@ public partial class Index(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while processing file {FileName}", file?.Name);
+            logger.LogError(ex, "An error occurred while processing file {FileName}", file.Name);
         }
 
         _rejectedFiles.Add(new RejectedFile(file, FileRejectionReason.UploadError));
@@ -239,14 +237,6 @@ public partial class Index(
         { ".pdf",  "application/pdf" },
     };
 
-    private static string GetContentTypeFromUrl(string url)
-    {
-        var extension = Path.GetExtension(new Uri(url).LocalPath);
-        return _extensionToContentType.TryGetValue(extension, out var contentType)
-            ? contentType
-            : string.Empty;
-    }
-
     private static bool IsImageFileType(string contentType)
     {
         return ImageFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
@@ -262,28 +252,20 @@ public partial class Index(
         return DocumentFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static string GetThumbnailBlobUrl(string imageBlobUrl)
+    private static string GetThumbnailFromBlobName(string blobName)
     {
-        return $"{imageBlobUrl}{ThumbnailSuffix}";
+        return $"{blobName}{ThumbnailSuffix}";
     }
 
-    private string GetBlobReadUrl(string blobUrl)
+    private static string GetMediaItemUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
-        var readSasToken = blobStoageOptions.Value.ReadSASToken;
-        return string.IsNullOrWhiteSpace(readSasToken)
-            ? blobUrl
-            : $"{blobUrl}?{readSasToken.TrimStart('?')}";
+        var encodedBlobName = Uri.EscapeDataString(mediaItem.BlobName);
+        return $"api/media?blobName={encodedBlobName}";
     }
-
-    private string GetThumbnailReadUrl(string imageBlobUrl)
+    private static string GetMediaItemThumbnailUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
-        return GetBlobReadUrl(GetThumbnailBlobUrl(imageBlobUrl));
-    }
-
-    private string GetImagePreviewErrorFallback(string originalImageBlobUrl)
-    {
-        var fallbackUrl = GetBlobReadUrl(originalImageBlobUrl).Replace("'", "\\'", StringComparison.Ordinal);
-        return $"this.onerror=null;this.src='{fallbackUrl}';";
+        var encodedBlobName = Uri.EscapeDataString(GetThumbnailFromBlobName(mediaItem.BlobName));
+        return $"api/media?blobName={encodedBlobName}";
     }
 
     private async Task UploadThumbnailAsync(IBrowserFile file, string trustedFileNameForFileStorage)
@@ -379,17 +361,17 @@ public partial class Index(
             }
 
             //delete from storage
-            if (!await blobStorageService.DeleteFileFromBlobByURLAsync(file.Url))
+            if (!await blobStorageService.DeleteBlobIfExistsAsync(file.BlobName))
             {
-                logger.LogWarning("An error occurred deleting media item with URL {url} from blob storage", file.Url);
+                logger.LogWarning("An error occurred deleting media item with blob name {BlobName} from blob storage", file.BlobName);
             }
 
             if (IsImageFileType(file.ContentType))
             {
-                var thumbnailBlobUrl = GetThumbnailBlobUrl(file.Url);
-                if (!await blobStorageService.DeleteFileFromBlobByURLAsync(thumbnailBlobUrl))
+                var thumbnailBlobName = GetThumbnailFromBlobName(file.BlobName);
+                if (!await blobStorageService.DeleteBlobIfExistsAsync(thumbnailBlobName))
                 {
-                    logger.LogWarning("An error occurred deleting media thumbnail with URL {url} from blob storage", thumbnailBlobUrl);
+                    logger.LogWarning("An error occurred deleting media thumbnail with blob name {BlobName} from blob storage", thumbnailBlobName);
                 }
             }
 
@@ -485,8 +467,9 @@ public partial class Index(
             .Select(file => new Database.Models.MediaItem
             {
                 UploadDateUtc = DateTimeOffset.UtcNow,
-                URL = file.Url,
                 Title = file.Name,
+                BlobName = file.BlobName,
+                ContentType = file.ContentType,
             })
             .ToList();
 

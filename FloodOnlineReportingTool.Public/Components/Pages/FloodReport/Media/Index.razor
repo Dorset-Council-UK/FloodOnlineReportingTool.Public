@@ -1,9 +1,7 @@
 ﻿@page "/floodreport/media/add-photos-or-videos/{FloodReportId:guid?}"
 @page "/floodreport/media/add-photos-or-videos"
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.Extensions.Options
-@using FloodOnlineReportingTool.Public.Options
-@inject IOptions<AzureBlobStorageOptions> blobStoageOptions
+
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
@@ -78,7 +76,7 @@
                                 <td class="govuk-table__cell">
                                     @if (IsImageFileType(file.ContentType))
                                     {
-                                        <img class="media-image-preview" src="@GetThumbnailReadUrl(file.Url)" onerror="@GetImagePreviewErrorFallback(file.Url)" alt="Preview of @file.Name" />
+                                        <img class="media-image-preview" src="@GetMediaItemThumbnailUrl(file)" onerror="this.onerror=null;this.src='@GetMediaItemUrl(file)'" alt="Preview of @file.Name" />
                                     }
                                     else if(IsVideoFileType(file.ContentType))
                                     {
@@ -130,7 +128,7 @@
                                 </td>
                                 <td class="govuk-table__cell">
                                     <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
-                                    <a href="@GetBlobReadUrl(file.Url)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+                                    <a href="@GetMediaItemUrl(file)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
                                 </td>
                             </tr>
                         }
