@@ -4,7 +4,6 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -70,24 +69,15 @@ public class MediaItemRepository(
             return Result<IReadOnlyCollection<MediaItem>>.Failure([$"Cannot create media items, no flood report found for ID {floodReportId}"]);
         }
 
-        var createdMediaItems = mediaItems
-            .Select(mediaItem => new MediaItem
-            {
-                Id = mediaItem.Id,
-                UploadDateUtc = mediaItem.UploadDateUtc ?? DateTimeOffset.UtcNow,
-                URL = mediaItem.URL,
-                Title = mediaItem.Title,
-            })
-            .ToList();
-
-        foreach (var mediaItem in createdMediaItems)
+        foreach (var mediaItem in mediaItems)
         {
+            mediaItem.UploadDateUtc ??= DateTimeOffset.UtcNow;
             floodReport.MediaItems.Add(mediaItem);
         }
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return Result<IReadOnlyCollection<MediaItem>>.Success(createdMediaItems);
+        return Result<IReadOnlyCollection<MediaItem>>.Success(mediaItems);
     }
 
     public async Task<DeleteResult<MediaItem>> Delete(Guid mediaItemId, CancellationToken cancellationToken)
