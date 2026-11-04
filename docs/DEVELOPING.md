@@ -101,7 +101,6 @@ Then add your configuration:
 
 - **ConnectionStrings**: Required for database access and boundaries database access.
 - **AzureBlobStorage**: Required for file storage.
-  - The `ReadSASToken` is optional and can be used to provide read-only access to the blob storage.
 - **GIS**: Used to configure the Address API and other mapping related services.
 - **GovNotify**: Used to configure the GovNotify service for sending notifications.
 - **DownstreamApis**: Used to configure downstream APIs.
@@ -116,8 +115,7 @@ Example public secrets file:
   },
   "AzureBlobStorage": {
     "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YourAccountName;AccountKey=YourAccountKey;EndpointSuffix=core.windows.net",
-    "ContainerName": "YourContainerName",
-    "ReadSASToken": "YourReadSASToken"
+    "ContainerName": "YourContainerName"
   },
   "GIS": {
     "ApiKey": "YourApiKey",
