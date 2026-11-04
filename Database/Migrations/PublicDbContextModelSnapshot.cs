@@ -1742,14 +1742,18 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("BlobName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("FloodReportSourceId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<string>("URL")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UploadDateUtc")
