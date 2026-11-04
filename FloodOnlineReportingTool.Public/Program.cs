@@ -90,7 +90,7 @@ app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 app.MapAuthenticationEndpoints();
 
-app.MapGet("api/media", MediaEndpoints.GetMedia)
+app.MapGet("api/media/{floodReportSourceId:guid}", MediaEndpoints.GetMedia)
     .WithTags("Media")
     .WithDisplayName("Get media by URL")
     .RequireAuthorization();
