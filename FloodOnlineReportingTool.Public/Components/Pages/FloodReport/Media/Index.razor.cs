@@ -17,7 +17,6 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Media;
 [Authorize]
 public partial class Index(
     ILogger<Index> logger,
-    SessionStateService scopedSessionStorage,
     NavigationManager navigationManager,
     IJSRuntime JS,
     IBlobStorageService blobStorageService,
@@ -28,7 +27,7 @@ public partial class Index(
     public string Title { get; set; } = MediaPages.Home.Title;
 
     [Parameter]
-    public Guid? FloodReportId { get; set; }
+    public Guid FloodReportSourceId { get; set; }
     [SupplyParameterFromQuery(Name = "back_url")]
     public string BackURL { get; set; } = "confirmation";
 
@@ -75,8 +74,7 @@ public partial class Index(
     private ValidationMessageStore _validationMessageStore = default!;
     private FieldIdentifier _fieldIdentifier;
 
-    private Guid _floodReportId;
-    private bool _isLoading = true;
+    private bool _isSubmittingFiles = false;
 
     private readonly List<IBrowserFile> _uploadingFiles = [];
     private readonly List<RejectedFile> _rejectedFiles = [];
@@ -88,7 +86,7 @@ public partial class Index(
 
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
         Model ??= new();
@@ -96,6 +94,17 @@ public partial class Index(
         _editContext.SetFieldCssClassProvider(new GdsFieldCssClassProvider());
         _validationMessageStore = new(_editContext);
         _fieldIdentifier = new(Model, nameof(Model.UploadedFiles));
+
+        if (FloodReportSourceId == Guid.Empty)
+        {
+            logger.LogWarning("Flood report source ID was not available");
+            _validationMessageStore.Add(_fieldIdentifier, "You are not able to add media without a related flood report source");
+            _editContext.NotifyValidationStateChanged();
+        }
+        else
+        {
+            await LoadExistingMediaItems();
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -113,32 +122,14 @@ public partial class Index(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportSourceId();
-            await LoadExistingMediaItems();
-
-            _isLoading = false;
-            StateHasChanged();
-        }
-    }
-
     private async Task LoadExistingMediaItems()
     {
-        if (_floodReportId == Guid.Empty)
-        {
-            logger.LogWarning("Flood report ID was not available when loading media items");
-            return;
-        }
-
-        var mediaItems = await mediaItemRepository.GetByReport(_floodReportId, _cts.Token);
+        var mediaItems = await mediaItemRepository.GetByReport(FloodReportSourceId, _cts.Token);
         Model.UploadedFiles = [.. mediaItems
             .Select(mediaItem => new Models.FloodReport.Create.MediaItem
             {
                 Id = mediaItem.Id,
-                Name = mediaItem.Title ?? "",
+                Name = mediaItem.Title ?? Path.GetFileName(mediaItem.BlobName),
                 BlobName = mediaItem.BlobName,
                 ContentType = mediaItem.ContentType,
             })];
@@ -146,12 +137,12 @@ public partial class Index(
 
     private async Task OnFilesSubmitted(IReadOnlyList<IBrowserFile>? files)
     {
-        _isLoading = true;
+        _isSubmittingFiles = true;
 
         if (!ValidateFileUploadLimits(files))
         {
             StateHasChanged();
-            _isLoading = false;
+            _isSubmittingFiles = false;
             return;
         }
 
@@ -166,7 +157,7 @@ public partial class Index(
         //finished uploading
         CheckValidationStateOfFileUploads();
 
-        _isLoading = false;
+        _isSubmittingFiles = false;
         StateHasChanged();
     }
 
@@ -245,15 +236,15 @@ public partial class Index(
         return $"{blobName}{ThumbnailSuffix}";
     }
 
-    private static string GetMediaItemUrl(Models.FloodReport.Create.MediaItem mediaItem)
+    private string GetMediaItemUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
         var encodedBlobName = Uri.EscapeDataString(mediaItem.BlobName);
-        return $"api/media?blobName={encodedBlobName}";
+        return $"api/media/{FloodReportSourceId}?blobName={encodedBlobName}";
     }
-    private static string GetMediaItemThumbnailUrl(Models.FloodReport.Create.MediaItem mediaItem)
+    private string GetMediaItemThumbnailUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
         var encodedBlobName = Uri.EscapeDataString(GetThumbnailFromBlobName(mediaItem.BlobName));
-        return $"api/media?blobName={encodedBlobName}";
+        return $"api/media/{FloodReportSourceId}?blobName={encodedBlobName}";
     }
 
     private async Task UploadThumbnailAsync(IBrowserFile file, string trustedFileNameForFileStorage)
@@ -433,16 +424,13 @@ public partial class Index(
 
     private async Task OnValidSubmit()
     {
-        _validationMessageStore.Clear();
-        _editContext.NotifyValidationStateChanged();
-
-        if (_floodReportId == Guid.Empty)
+        if (FloodReportSourceId == Guid.Empty)
         {
-            logger.LogWarning("Flood report ID was not available when saving media items");
-            _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
-            _editContext.NotifyValidationStateChanged();
             return;
         }
+
+        _validationMessageStore.Clear();
+        _editContext.NotifyValidationStateChanged();
 
         if (Model.UploadedFiles.Count == 0)
         {
@@ -467,7 +455,7 @@ public partial class Index(
             return;
         }
 
-        var createMediaItems = await mediaItemRepository.Create(_floodReportId, mediaItems, _cts.Token);
+        var createMediaItems = await mediaItemRepository.Create(FloodReportSourceId, mediaItems, _cts.Token);
         if (!createMediaItems.IsSuccess)
         {
             foreach (var error in createMediaItems.Errors)

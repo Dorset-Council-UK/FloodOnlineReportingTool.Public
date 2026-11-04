@@ -93,7 +93,7 @@
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
                                     <div class="govuk-task-list__name-and-hint">
 
-                                        <a href="@(MediaPages.Home.Url)?back_url=confirmation" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Add photos or videos to your report</a>
+                                        <GdsLink Href="@($"{MediaPages.Home.Url}/{_FloodReportId}?back_url=confirmation")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Add photos or videos to your report</GdsLink>
                                         <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
                                             You can provide up to 10 photos, videos or documents to support your report.
                                         </div>
@@ -137,7 +137,7 @@
                                 <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
                                     <div class="govuk-task-list__name-and-hint">
 
-                                        <a href="@($"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url)}")" class="govuk-link govuk-task-list__link govuk-link--no-visited-state">Register/Login</a> to add photos or videos to your report
+                                        <GdsLink Href="@($"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url + "/" + _FloodReportId.ToString())}")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Register/Login</GdsLink> to add photos or videos to your report
                                         <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
                                             You need to register for an account to provide photos for your report. This will also allow you to manage your report and subscriptions.
                                         </div>
