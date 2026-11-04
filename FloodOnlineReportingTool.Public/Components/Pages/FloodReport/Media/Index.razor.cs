@@ -225,18 +225,6 @@ public partial class Index(
         return false;
     }
 
-    private static readonly Dictionary<string, string> _extensionToContentType = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { ".jpg",  "image/jpeg" },
-        { ".jpeg", "image/jpeg" },
-        { ".png",  "image/png" },
-        { ".gif",  "image/gif" },
-        { ".mp4",  "video/mp4" },
-        { ".webm", "video/webm" },
-        { ".ogg",  "video/ogg" },
-        { ".pdf",  "application/pdf" },
-    };
-
     private static bool IsImageFileType(string contentType)
     {
         return ImageFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
