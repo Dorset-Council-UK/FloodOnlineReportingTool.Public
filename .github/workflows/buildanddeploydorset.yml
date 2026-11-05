@@ -11,20 +11,32 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          dotnet-version: '10.0.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - uses: oven-sh/setup-bun@v2
+  
+      - name: bun install
+        run: bun install
+        working-directory: ./FloodOnlineReportingTool.Public
+        shell: bash
+
+      - name: bun build
+        run: bun run bun.build.ts --${{ inputs.environment }}
+        working-directory: ./FloodOnlineReportingTool.Public
+        shell: bash
+
+      - run: dotnet restore
+
+      - run: dotnet build --configuration Release --no-restore
+  
+      - run: dotnet test --no-build --configuration Release --verbosity normal
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
