@@ -4,7 +4,6 @@ using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.ResultModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
@@ -13,81 +12,72 @@ public class MediaItemRepository(
     IDbContextFactory<PublicDbContext> contextFactory
 ) : IMediaItemRepository
 {
-    public async Task<int> GetCountByReport(Guid floodReportId, CancellationToken cancellationToken)
+    public async Task<int> GetCountByReport(Guid floodReportSourceId, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Getting media item count for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Getting media item count for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Where(fr => fr.Id == floodReportId)
-            .Select(fr => fr.MediaItems.Count)
+            .Where(frs => frs.Id == floodReportSourceId)
+            .Select(frs => frs.MediaItems.Count)
             .SingleOrDefaultAsync(cancellationToken);
     }
-    public async Task<IReadOnlyCollection<MediaItem>> GetByReport(Guid floodReportId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<MediaItem>> GetByReport(Guid floodReportSourceId, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Getting media items for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Getting media items for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var floodReport = await context.FloodReportSources
+        var floodReportSource = await context.FloodReportSources
             .AsNoTracking()
             .IgnoreAutoIncludes()
-            .Include(fr => fr.MediaItems)
-            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, cancellationToken);
+            .Include(frs => frs.MediaItems)
+            .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId, cancellationToken);
 
-        var mediaItems = floodReport?.MediaItems
+        var mediaItems = floodReportSource?.MediaItems
             .OrderByDescending(mi => mi.UploadDateUtc)
             .ToList();
 
         return mediaItems ?? [];
     }
 
-    public async Task<Result<IReadOnlyCollection<MediaItem>>> Create(Guid floodReportId, IReadOnlyCollection<MediaItem> mediaItems, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyCollection<MediaItem>>> Create(Guid floodReportSourceId, IReadOnlyCollection<MediaItem> mediaItems, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Creating media items for flood report ID: {FloodReportId}", floodReportId);
+        logger.LogInformation("Creating media items for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
 
-        if (floodReportId == Guid.Empty)
+        if (floodReportSourceId == Guid.Empty)
         {
-            logger.LogInformation("Empty flood report ID provided for media items");
-            return Result<IReadOnlyCollection<MediaItem>>.Failure(["Cannot create media items with empty flood report ID"]);
+            logger.LogInformation("Empty flood report source ID provided for media items");
+            return Result<IReadOnlyCollection<MediaItem>>.Failure(["Cannot create media items with empty flood report source ID"]);
         }
 
         if (mediaItems.Count == 0)
         {
-            logger.LogInformation("No media items provided for flood report ID: {FloodReportId}", floodReportId);
+            logger.LogInformation("No media items provided for flood report source ID: {FloodReportSourceId}", floodReportSourceId);
             return Result<IReadOnlyCollection<MediaItem>>.Success([]);
         }
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-        FloodReportSource? floodReport = await context.FloodReportSources
-            .Include(fr => fr.MediaItems)
-            .FirstOrDefaultAsync(fr => fr.Id == floodReportId, cancellationToken);
+        FloodReportSource? floodReportSource = await context.FloodReportSources
+            .Include(frs => frs.MediaItems)
+            .FirstOrDefaultAsync(frs => frs.Id == floodReportSourceId, cancellationToken);
 
-        if (floodReport is null)
+        if (floodReportSource is null)
         {
-            logger.LogInformation("Flood report {FloodReportId} not found for media items", floodReportId);
-            return Result<IReadOnlyCollection<MediaItem>>.Failure([$"Cannot create media items, no flood report found for ID {floodReportId}"]);
+            logger.LogInformation("Flood report source {FloodReportSourceId} not found for media items", floodReportSourceId);
+            return Result<IReadOnlyCollection<MediaItem>>.Failure([$"Cannot create media items, no flood report source found for ID {floodReportSourceId}"]);
         }
 
-        var createdMediaItems = mediaItems
-            .Select(mediaItem => new MediaItem
-            {
-                Id = mediaItem.Id,
-                UploadDateUtc = mediaItem.UploadDateUtc ?? DateTimeOffset.UtcNow,
-                URL = mediaItem.URL,
-                Title = mediaItem.Title,
-            })
-            .ToList();
-
-        foreach (var mediaItem in createdMediaItems)
+        foreach (var mediaItem in mediaItems)
         {
-            floodReport.MediaItems.Add(mediaItem);
+            mediaItem.UploadDateUtc ??= DateTimeOffset.UtcNow;
+            floodReportSource.MediaItems.Add(mediaItem);
         }
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return Result<IReadOnlyCollection<MediaItem>>.Success(createdMediaItems);
+        return Result<IReadOnlyCollection<MediaItem>>.Success(mediaItems);
     }
 
     public async Task<DeleteResult<MediaItem>> Delete(Guid mediaItemId, CancellationToken cancellationToken)

@@ -1,9 +1,6 @@
-﻿@page "/floodreport/media/add-photos-or-videos/{FloodReportId:guid?}"
-@page "/floodreport/media/add-photos-or-videos"
+﻿@page "/floodreport/media/add-photos-or-videos/{floodReportSourceId:guid}"
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.Extensions.Options
-@using FloodOnlineReportingTool.Public.Options
-@inject IOptions<AzureBlobStorageOptions> blobStoageOptions
+
 <PageTitle>@Title</PageTitle>
 
 <GdsBackLink Href="@PreviousPage.Url"></GdsBackLink>
@@ -14,158 +11,156 @@
     <Authorized>
         <GdsHeading Level="1">@Title</GdsHeading>
 
-        <p>Upload some photos or videos that show the flooding or damage caused. </p>
-        <p>Please ensure there are no identifiable people or personal data in your uploaded files.</p>
-        <p>You can upload up to @MaxNumFiles files, maximum of @MaxFileSizeMB MB per file.</p>
-
         <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit" FormName="Media">
             <FluentValidationValidator />
             <GdsErrorSummary />
 
-            <GdsSpinner Show="_isLoading" ShowMessage="true" />
-
-            <GdsFormGroup>
-                <GdsLabel Text="Add photos, videos or supporting documents" />
-                <GdsHint>Accepted file types: JPG, PNG, GIF, MP4, WEBM, OGG, PDF</GdsHint>
-                <GdsErrorMessage />
-                @if (_uploadLimitError is not null)
-                {
-                    <p class="govuk-error-message">
-                        <span class="govuk-visually-hidden">Error:</span>
-                        @_uploadLimitError
-                    </p>
-                }
-                @if (RemainingSlots > 0)
-                {
-                    <GdsFileInput Id="upload-file" IsBusy="@_isLoading" OnFilesSubmitted="OnFilesSubmitted" />
-                }
-                else
-                {
-                    <p class="govuk-body">You have reached the maximum of @MaxNumFiles files. Delete a file to upload a different one.</p>
-                }
-            </GdsFormGroup>
-
-
-            @if ((Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0) || (_uploadingFiles is not null && _uploadingFiles.Count != 0) || (_rejectedFiles is not null && _rejectedFiles.Count != 0))
+            @if (FloodReportSourceId != Guid.Empty)
             {
-                <table class="govuk-table">
-                    <thead class="govuk-table__head">
-                        <tr class="govuk-table__row">
-                            <th scope="col" class="govuk-table__header">Preview</th>
-                            <th scope="col" class="govuk-table__header">File</th>
-                            <th scope="col" class="govuk-table__header">Status</th>
-                            <th scope="col" class="govuk-table__header">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                        @foreach (var file in _uploadingFiles)
-                        {
+                <p>Upload some photos or videos that show the flooding or damage caused.</p>
+                <p>Please ensure there are no identifiable people or personal data in your uploaded files.</p>
+                <p>You can upload up to @MaxNumFiles files, maximum of @MaxFileSizeMB MB per file.</p>
+
+                <GdsFormGroup>
+                    <GdsLabel Text="Add photos, videos or supporting documents" />
+                    <GdsHint>Accepted file types: JPG, PNG, GIF, MP4, WEBM, OGG, PDF</GdsHint>
+                    <GdsErrorMessage />
+                    @if (_uploadLimitError is not null)
+                    {
+                        <p class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @_uploadLimitError
+                        </p>
+                    }
+                    @if (RemainingSlots > 0)
+                    {
+                        <GdsFileInput Id="upload-file" IsBusy="@_isSubmittingFiles" OnFilesSubmitted="OnFilesSubmitted" />
+                    }
+                    else
+                    {
+                        <p class="govuk-body">You have reached the maximum of @MaxNumFiles files. Delete a file to upload a different one.</p>
+                    }
+                </GdsFormGroup>
+
+
+                @if ((Model.UploadedFiles is not null && Model.UploadedFiles.Count != 0) || (_uploadingFiles is not null && _uploadingFiles.Count != 0) || (_rejectedFiles is not null && _rejectedFiles.Count != 0))
+                {
+                    <table class="govuk-table">
+                        <thead class="govuk-table__head">
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell"><GdsSpinner Show="true" ShowMessage="false"></GdsSpinner></td>
-                                <td class="govuk-table__cell">@file.Name</td>
-                                <td class="govuk-table__cell">
-                                    <strong class="govuk-tag govuk-tag--blue">
-                                        Uploading
-                                    </strong>
-                                </td>
-                                <td class="govuk-table__cell">
-                                </td>
+                                <th scope="col" class="govuk-table__header">Preview</th>
+                                <th scope="col" class="govuk-table__header">File</th>
+                                <th scope="col" class="govuk-table__header">Status</th>
+                                <th scope="col" class="govuk-table__header">Actions</th>
                             </tr>
-                        }
-                        @foreach (var file in Model.UploadedFiles)
-                        {
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">
-                                    @if (IsImageFileType(file.ContentType))
-                                    {
-                                        <img class="media-image-preview" src="@GetThumbnailReadUrl(file.Url)" onerror="@GetImagePreviewErrorFallback(file.Url)" alt="Preview of @file.Name" />
-                                    }
-                                    else if(IsVideoFileType(file.ContentType))
-                                    {
-                                        <span class="media-placeholder">
-                                            <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
-                                        </span>
-                                    }
-                                    else if (IsDocumentFileType(file.ContentType))
-                                    {
-                                        <span class="media-placeholder">
-                                            <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
-                                        </span>
-                                    }
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            @foreach (var file in _uploadingFiles)
+                            {
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell"><GdsSpinner Show="true" ShowMessage="false"></GdsSpinner></td>
+                                    <td class="govuk-table__cell">@file.Name</td>
+                                    <td class="govuk-table__cell">
+                                        <strong class="govuk-tag govuk-tag--blue">
+                                            Uploading
+                                        </strong>
+                                    </td>
+                                    <td class="govuk-table__cell">
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var file in Model.UploadedFiles)
+                            {
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">
+                                        @if (IsImageFileType(file.ContentType))
+                                        {
+                                            <img class="media-image-preview" src="@GetMediaItemThumbnailUrl(file)" onerror="this.onerror=null;this.src='@GetMediaItemUrl(file)'" alt="Preview of @file.Name" />
+                                        }
+                                        else if(IsVideoFileType(file.ContentType))
+                                        {
+                                            <span class="media-placeholder">
+                                                <img src="@Assets["/images/video-preview.svg"]" alt="Video file icon" class="media-placeholder__icon" />
+                                            </span>
+                                        }
+                                        else if (IsDocumentFileType(file.ContentType))
+                                        {
+                                            <span class="media-placeholder">
+                                                <img src="@Assets["/images/file-preview.svg"]" alt="Document file icon" class="media-placeholder__icon" />
+                                            </span>
+                                        }
                                     
-                                </td>
-                                <td class="govuk-table__cell">
-                                    @if (_renamingFile == file)
-                                    {
-                                        <GdsFormGroup AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
-                                            <GdsLabel Text="File name" />
-                                            @if (_renameError is not null)
-                                            {
-                                                <p class="govuk-error-message">
-                                                    <span class="govuk-visually-hidden">Error:</span>
-                                                    @_renameError
-                                                </p>
-                                            }
-                                            <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="@($"govuk-input govuk-input--width-20{(_renameError is not null ? " govuk-input--error" : "")}")" />
-                                        </GdsFormGroup>
+                                    </td>
+                                    <td class="govuk-table__cell">
+                                        @if (_renamingFile == file)
+                                        {
+                                            <GdsFormGroup AdditionalCssClasses="@($"govuk-!-margin-bottom-2{(_renameError is not null ? " govuk-form-group--error" : "")}")">
+                                                <GdsLabel Text="File name" />
+                                                @if (_renameError is not null)
+                                                {
+                                                    <p class="govuk-error-message">
+                                                        <span class="govuk-visually-hidden">Error:</span>
+                                                        @_renameError
+                                                    </p>
+                                                }
+                                                <GdsInputText @bind-Value="_renameText" @bind:event="oninput" class="@($"govuk-input govuk-input--width-20{(_renameError is not null ? " govuk-input--error" : "")}")" />
+                                            </GdsFormGroup>
 
-                                        <div class="govuk-button-group">
-                                            <GdsButton IsSubmit="false" OnClick="() => SaveRename(file)" Text="Save" />
-                                            <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--secondary" OnClick="CancelRename" Text="Cancel" />
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        @file.Name
-                                        <br />
-                                        <GdsLink Href="" NoVisitedState OnClick="() => StartRename(file)" PreventDefault>
-                                            Rename<span class="govuk-visually-hidden"> file '@file.Name'</span>
-                                        </GdsLink>
-                                    }
-                                </td>
-                                <td class="govuk-table__cell">
-                                    <strong class="govuk-tag govuk-tag--green">
-                                        Uploaded
-                                    </strong>
-                                </td>
-                                <td class="govuk-table__cell">
-                                    <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
-                                    <a href="@GetBlobReadUrl(file.Url)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
-                                </td>
-                            </tr>
-                        }
-                        @foreach (var rejectedFile in _rejectedFiles)
-                        {
-                            var errorMessage = GetErrorMessageForFile(rejectedFile);
-                            <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">
-                                    <span class="media-placeholder">
-                                        <img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
-                                    </span>
-                                </td>
-                                <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
-                                <td class="govuk-table__cell">
-                                    <strong class="govuk-tag govuk-tag--red">
-                                        Rejected
-                                    </strong>
-                                </td>
-                                <td class="govuk-table__cell">
-                                    <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteRejectedFile(rejectedFile)" Text="Delete file" />
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
+                                            <div class="govuk-button-group">
+                                                <GdsButton IsSubmit="false" OnClick="() => SaveRename(file)" Text="Save" />
+                                                <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--secondary" OnClick="CancelRename" Text="Cancel" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @file.Name
+                                            <br />
+                                            <GdsLink Href="" NoVisitedState OnClick="() => StartRename(file)" PreventDefault>
+                                                Rename<span class="govuk-visually-hidden"> file '@file.Name'</span>
+                                            </GdsLink>
+                                        }
+                                    </td>
+                                    <td class="govuk-table__cell">
+                                        <strong class="govuk-tag govuk-tag--green">
+                                            Uploaded
+                                        </strong>
+                                    </td>
+                                    <td class="govuk-table__cell">
+                                        <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteUploadedFile(file)" Text="Delete file" />
+                                        <a href="@GetMediaItemUrl(file)" target="_blank" rel="noreferrer noopener" class="govuk-button govuk-button--secondary">View<span class="govuk-visually-hidden"> (opens in new tab)</span></a>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var rejectedFile in _rejectedFiles)
+                            {
+                                var errorMessage = GetErrorMessageForFile(rejectedFile);
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">
+                                        <span class="media-placeholder">
+                                            <img src="@Assets["/images/ban.svg"]" alt="Rejected file icon" class="media-placeholder__icon" />
+                                        </span>
+                                    </td>
+                                    <td class="govuk-table__cell">@rejectedFile.File.Name<br /><span class="govuk-error-message">@errorMessage</span></td>
+                                    <td class="govuk-table__cell">
+                                        <strong class="govuk-tag govuk-tag--red">
+                                            Rejected
+                                        </strong>
+                                    </td>
+                                    <td class="govuk-table__cell">
+                                        <GdsButton IsSubmit="false" AdditionalCssClasses="govuk-button--warning" OnClick="() => DeleteRejectedFile(rejectedFile)" Text="Delete file" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
 
-                </table>
-            }
-            @if (!_isLoading)
-            {
+                    </table>
+                }
+
                 <div class="govuk-button-group">
                     <GdsButton IsSubmit="true" PreventDoubleClick Text="Save changes" />
                     <a draggable="false" data-prevent-double-click="true" class="govuk-link govuk-link--no-visited-state" href="@PreviousPage.Url">Cancel</a>
                 </div>
             }
         </EditForm>
-
     </Authorized>
 </AuthorizeView>

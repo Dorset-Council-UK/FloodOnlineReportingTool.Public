@@ -95,4 +95,9 @@ public interface IFloodReportSourceRepository
     /// </summary>
     Task<EligibilityResult> CalculateEligibilityWithReference(string reference, CancellationToken ct);
     bool HasInvestigationStarted(Guid status);
+
+    /// <summary>
+    /// Does the flood report source exist for the user
+    /// </summary>
+    Task<bool> Exists(string userId, Guid floodReportSourceId, CancellationToken cancellationToken);
 }

@@ -17,7 +17,6 @@ namespace FloodOnlineReportingTool.Public.Components.Pages.FloodReport.Media;
 [Authorize]
 public partial class Index(
     ILogger<Index> logger,
-    SessionStateService scopedSessionStorage,
     NavigationManager navigationManager,
     IJSRuntime JS,
     IBlobStorageService blobStorageService,
@@ -28,7 +27,7 @@ public partial class Index(
     public string Title { get; set; } = MediaPages.Home.Title;
 
     [Parameter]
-    public Guid? FloodReportId { get; set; }
+    public Guid FloodReportSourceId { get; set; }
     [SupplyParameterFromQuery(Name = "back_url")]
     public string BackURL { get; set; } = "confirmation";
 
@@ -58,7 +57,7 @@ public partial class Index(
         "video/ogg",
     ];
     private static readonly string[] DocumentFileTypes = [
-        "application/pdf"
+        "application/pdf",
     ];
     private static readonly string[] AllowedFileTypes = [
         .. ImageFileTypes, 
@@ -75,8 +74,7 @@ public partial class Index(
     private ValidationMessageStore _validationMessageStore = default!;
     private FieldIdentifier _fieldIdentifier;
 
-    private Guid _floodReportId;
-    private bool _isLoading = true;
+    private bool _isSubmittingFiles = false;
 
     private readonly List<IBrowserFile> _uploadingFiles = [];
     private readonly List<RejectedFile> _rejectedFiles = [];
@@ -88,7 +86,7 @@ public partial class Index(
 
     private Models.FloodReport.Create.Media Model { get; set; } = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Setup model and edit context
         Model ??= new();
@@ -97,6 +95,16 @@ public partial class Index(
         _validationMessageStore = new(_editContext);
         _fieldIdentifier = new(Model, nameof(Model.UploadedFiles));
 
+        if (FloodReportSourceId == Guid.Empty)
+        {
+            logger.LogWarning("Flood report source ID was not available");
+            _validationMessageStore.Add(_fieldIdentifier, "You are not able to add media without a related flood report source");
+            _editContext.NotifyValidationStateChanged();
+        }
+        else
+        {
+            await LoadExistingMediaItems();
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -114,46 +122,27 @@ public partial class Index(
         GC.SuppressFinalize(this);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _floodReportId = FloodReportId ?? await scopedSessionStorage.GetFloodReportSourceId();
-            await LoadExistingMediaItems();
-
-            _isLoading = false;
-            StateHasChanged();
-        }
-    }
-
     private async Task LoadExistingMediaItems()
     {
-        if (_floodReportId == Guid.Empty)
-        {
-            logger.LogWarning("Flood report ID was not available when loading media items");
-            return;
-        }
-
-        var mediaItems = await mediaItemRepository.GetByReport(_floodReportId, _cts.Token);
-        Model.UploadedFiles = mediaItems
+        var mediaItems = await mediaItemRepository.GetByReport(FloodReportSourceId, _cts.Token);
+        Model.UploadedFiles = [.. mediaItems
             .Select(mediaItem => new Models.FloodReport.Create.MediaItem
             {
                 Id = mediaItem.Id,
-                Name = mediaItem.Title ?? Path.GetFileName(mediaItem.URL),
-                Url = mediaItem.URL,
-                ContentType = GetContentTypeFromUrl(mediaItem.URL),
-            })
-            .ToList();
+                Name = mediaItem.Title ?? Path.GetFileName(mediaItem.BlobName),
+                BlobName = mediaItem.BlobName,
+                ContentType = mediaItem.ContentType,
+            })];
     }
 
     private async Task OnFilesSubmitted(IReadOnlyList<IBrowserFile>? files)
     {
-        _isLoading = true;
+        _isSubmittingFiles = true;
 
         if (!ValidateFileUploadLimits(files))
         {
             StateHasChanged();
-            _isLoading = false;
+            _isSubmittingFiles = false;
             return;
         }
 
@@ -168,7 +157,7 @@ public partial class Index(
         //finished uploading
         CheckValidationStateOfFileUploads();
 
-        _isLoading = false;
+        _isSubmittingFiles = false;
         StateHasChanged();
     }
 
@@ -190,12 +179,12 @@ public partial class Index(
         {
             var trustedFileNameForFileStorage = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
             await using var fileStream = file.OpenReadStream(MaxFileSize, _cts.Token);
-            var blobUrl = await blobStorageService.UploadFileToBlobAsync(
+            var blobName = await blobStorageService.UploadFileToBlobAsync(
                 trustedFileNameForFileStorage,
                 file.ContentType,
                 fileStream);
 
-            if (!string.IsNullOrWhiteSpace(blobUrl))
+            if (!string.IsNullOrWhiteSpace(blobName))
             {
                 if (IsImageFileType(file.ContentType))
                 {
@@ -212,7 +201,7 @@ public partial class Index(
                 Model.UploadedFiles.Add(new Models.FloodReport.Create.MediaItem
                 {
                     Name = Path.GetFileNameWithoutExtension(file.Name),
-                    Url = blobUrl,
+                    BlobName = blobName,
                     ContentType = file.ContentType,
                 });
                 return true;
@@ -220,31 +209,11 @@ public partial class Index(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while processing file {FileName}", file?.Name);
+            logger.LogError(ex, "An error occurred while processing file {FileName}", file.Name);
         }
 
         _rejectedFiles.Add(new RejectedFile(file, FileRejectionReason.UploadError));
         return false;
-    }
-
-    private static readonly Dictionary<string, string> _extensionToContentType = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { ".jpg",  "image/jpeg" },
-        { ".jpeg", "image/jpeg" },
-        { ".png",  "image/png" },
-        { ".gif",  "image/gif" },
-        { ".mp4",  "video/mp4" },
-        { ".webm", "video/webm" },
-        { ".ogg",  "video/ogg" },
-        { ".pdf",  "application/pdf" },
-    };
-
-    private static string GetContentTypeFromUrl(string url)
-    {
-        var extension = Path.GetExtension(new Uri(url).LocalPath);
-        return _extensionToContentType.TryGetValue(extension, out var contentType)
-            ? contentType
-            : string.Empty;
     }
 
     private static bool IsImageFileType(string contentType)
@@ -262,28 +231,20 @@ public partial class Index(
         return DocumentFileTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static string GetThumbnailBlobUrl(string imageBlobUrl)
+    private static string GetThumbnailFromBlobName(string blobName)
     {
-        return $"{imageBlobUrl}{ThumbnailSuffix}";
+        return $"{blobName}{ThumbnailSuffix}";
     }
 
-    private string GetBlobReadUrl(string blobUrl)
+    private string GetMediaItemUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
-        var readSasToken = blobStoageOptions.Value.ReadSASToken;
-        return string.IsNullOrWhiteSpace(readSasToken)
-            ? blobUrl
-            : $"{blobUrl}?{readSasToken.TrimStart('?')}";
+        var encodedBlobName = Uri.EscapeDataString(mediaItem.BlobName);
+        return $"api/media/{FloodReportSourceId}?blobName={encodedBlobName}";
     }
-
-    private string GetThumbnailReadUrl(string imageBlobUrl)
+    private string GetMediaItemThumbnailUrl(Models.FloodReport.Create.MediaItem mediaItem)
     {
-        return GetBlobReadUrl(GetThumbnailBlobUrl(imageBlobUrl));
-    }
-
-    private string GetImagePreviewErrorFallback(string originalImageBlobUrl)
-    {
-        var fallbackUrl = GetBlobReadUrl(originalImageBlobUrl).Replace("'", "\\'", StringComparison.Ordinal);
-        return $"this.onerror=null;this.src='{fallbackUrl}';";
+        var encodedBlobName = Uri.EscapeDataString(GetThumbnailFromBlobName(mediaItem.BlobName));
+        return $"api/media/{FloodReportSourceId}?blobName={encodedBlobName}";
     }
 
     private async Task UploadThumbnailAsync(IBrowserFile file, string trustedFileNameForFileStorage)
@@ -379,17 +340,17 @@ public partial class Index(
             }
 
             //delete from storage
-            if (!await blobStorageService.DeleteFileFromBlobByURLAsync(file.Url))
+            if (!await blobStorageService.DeleteBlobIfExistsAsync(file.BlobName))
             {
-                logger.LogWarning("An error occurred deleting media item with URL {url} from blob storage", file.Url);
+                logger.LogWarning("An error occurred deleting media item with blob name {BlobName} from blob storage", file.BlobName);
             }
 
             if (IsImageFileType(file.ContentType))
             {
-                var thumbnailBlobUrl = GetThumbnailBlobUrl(file.Url);
-                if (!await blobStorageService.DeleteFileFromBlobByURLAsync(thumbnailBlobUrl))
+                var thumbnailBlobName = GetThumbnailFromBlobName(file.BlobName);
+                if (!await blobStorageService.DeleteBlobIfExistsAsync(thumbnailBlobName))
                 {
-                    logger.LogWarning("An error occurred deleting media thumbnail with URL {url} from blob storage", thumbnailBlobUrl);
+                    logger.LogWarning("An error occurred deleting media thumbnail with blob name {BlobName} from blob storage", thumbnailBlobName);
                 }
             }
 
@@ -463,16 +424,13 @@ public partial class Index(
 
     private async Task OnValidSubmit()
     {
-        _validationMessageStore.Clear();
-        _editContext.NotifyValidationStateChanged();
-
-        if (_floodReportId == Guid.Empty)
+        if (FloodReportSourceId == Guid.Empty)
         {
-            logger.LogWarning("Flood report ID was not available when saving media items");
-            _validationMessageStore.Add(_fieldIdentifier, "Sorry, something went wrong");
-            _editContext.NotifyValidationStateChanged();
             return;
         }
+
+        _validationMessageStore.Clear();
+        _editContext.NotifyValidationStateChanged();
 
         if (Model.UploadedFiles.Count == 0)
         {
@@ -485,8 +443,9 @@ public partial class Index(
             .Select(file => new Database.Models.MediaItem
             {
                 UploadDateUtc = DateTimeOffset.UtcNow,
-                URL = file.Url,
                 Title = file.Name,
+                BlobName = file.BlobName,
+                ContentType = file.ContentType,
             })
             .ToList();
 
@@ -496,7 +455,7 @@ public partial class Index(
             return;
         }
 
-        var createMediaItems = await mediaItemRepository.Create(_floodReportId, mediaItems, _cts.Token);
+        var createMediaItems = await mediaItemRepository.Create(FloodReportSourceId, mediaItems, _cts.Token);
         if (!createMediaItems.IsSuccess)
         {
             foreach (var error in createMediaItems.Errors)

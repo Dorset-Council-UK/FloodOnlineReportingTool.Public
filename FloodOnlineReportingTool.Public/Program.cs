@@ -1,5 +1,6 @@
 using FloodOnlineReportingTool.Database.Compliance;
 using FloodOnlineReportingTool.Database.Options;
+using FloodOnlineReportingTool.Public.Endpoints;
 using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
@@ -88,5 +89,10 @@ app.MapStaticAssets();
 app.MapRazorComponents<FloodOnlineReportingTool.Public.Components.App>()
    .AddInteractiveServerRenderMode();
 app.MapAuthenticationEndpoints();
+
+app.MapGet("api/media/{floodReportSourceId:guid}", MediaEndpoints.GetMedia)
+    .WithTags("Media")
+    .WithDisplayName("Get media by URL")
+    .RequireAuthorization();
 
 await app.RunAsync();

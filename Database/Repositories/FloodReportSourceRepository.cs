@@ -500,4 +500,14 @@ public class FloodReportSourceRepository(
         }
         return new string(chars);
     }
+
+    public async Task<bool> Exists(string userId, Guid floodReportSourceId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.ContactRecords
+            .AsNoTracking()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReportSources)
+            .AnyAsync(frs => frs.Id == floodReportSourceId, cancellationToken);
+    }
 }
