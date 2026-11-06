@@ -1,0 +1,90 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy - fort-dorset-public
+
+on:
+  release:
+      types: [released]
+
+permissions: 
+  contents: read
+
+jobs:
+  build:
+    if: github.event_name == 'release' && github.event.action == 'released' && github.event.release.prerelease == false && endsWith(github.event.release.tag_name, '-dorset')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify release commit belongs to main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: oven-sh/setup-bun@v2
+  
+      - name: bun install
+        run: bun install
+        working-directory: ./FloodOnlineReportingTool.Public
+        shell: bash
+
+      - name: bun build
+        run: bun run bun.build.ts
+        working-directory: ./FloodOnlineReportingTool.Public
+        shell: bash
+
+      - run: dotnet restore
+
+      - run: dotnet build --configuration Release --no-restore
+  
+      - run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: dotnet publish
+        run: >
+          dotnet publish
+          FloodOnlineReportingTool.Public/FloodOnlineReportingTool.Public.csproj
+          --configuration Release
+          --no-build
+          --output "${{ env.DOTNET_ROOT }}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    permissions: 
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'fort-dorset-public'
+          package: .
