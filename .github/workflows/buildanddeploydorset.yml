@@ -64,6 +64,7 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
+    environment: production
 
     permissions: 
       contents: read
