@@ -74,7 +74,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler(GeneralPages.Error.Url, createScopeForErrors: true);
+    app.UseExceptionHandler($"/{GeneralPages.Error.Url}", createScopeForErrors: true);
     app.UseHsts();
 }
 
