@@ -22,9 +22,9 @@ using System.Security.Claims;
 
 namespace FloodOnlineReportingTool.Public.Components.Pages;
 
+[Authorize(Policy = PolicyNames.Admin)]
 public partial class Test(
     ILogger<Test> logger,
-    IAuthorizationService authorizationService,
     ProtectedSessionStorage protectedSessionStorage,
     ITestService testService,
     IGovNotifyEmailSender govNotifyEmailSender,
@@ -94,6 +94,8 @@ public partial class Test(
         { SessionConstants.VerificationId, new ProtectedStorageInfo("Verification ID") },
     };
 
+    private string _userId = string.Empty;
+
     // Flood report sources
     private int _floodReportSourcesCount;
     private int _floodReportSourcesCountUser;
@@ -146,44 +148,53 @@ public partial class Test(
 
     protected override async Task OnInitializedAsync()
     {
-        // Admin policy check
+        // Protected by the [Authorize] attribute
+
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            if (authState.User.IsAuthenticated)
+            _userId = authState.User.Oid ?? "";
+            if (string.IsNullOrWhiteSpace(_userId))
             {
-                var adminPolicyResult = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
-                if (adminPolicyResult.Succeeded)
-                {
-                    string? userId = authState.User.Oid;
-
-                    // Protected storage
-                    await ProtectedStorage_Refresh();
-
-                    // Flood report sources
-                    await FloodReportSourcesCounts_Refresh(userId);
-
-                    // Contact records
-                    _contactRecordsCount = await contactRepository.Count(_cts.Token);
-                    _contactRecordsCountUser = userId is null ? 0 : await contactRepository.Count(userId, _cts.Token);
-
-                    // Subscribe records
-                    _subscribeRecordsCount = await subscribeRecordRepository.Count(_cts.Token);
-                    _subscribeRecordsCountUser = userId is null ? 0 : await subscribeRecordRepository.Count(userId, _cts.Token);
-
-                    // Investigation
-                    await InvestigationsCount_Refresh();
-
-                    // Outbox messages
-                    await OutboxMessage_GetCounts();
-
-                    // Notifications
-                    var options = govNotifyOptions.Value;
-                    _notificationTestEmailAddress = options.TestEmail;
-                    _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
-                }
+                logger.LogError("The authenticated user does not have a valid OID / Object ID claim.");
+                throw new InvalidOperationException("User must have a valid OID / Object ID claim to access the test page.");
             }
+
+            // Protected storage
+            await ProtectedStorage_Refresh();
+
+            // Flood report sources
+            await FloodReportSourcesCounts_Refresh();
+
+            // Contact records
+            await ContactRecords_Refresh();
+
+            // Subscribe records
+            await SubscribeRecords_Refresh();
+            
+            // Investigation
+            await InvestigationsCount_Refresh();
+
+            // Outbox messages
+            await OutboxMessage_GetCounts();
+
+            // Notifications
+            var options = govNotifyOptions.Value;
+            _notificationTestEmailAddress = options.TestEmail;
+            _notificationHasTestNotification = !string.IsNullOrWhiteSpace(options.Templates.TestNotification);
         }
+    }
+
+    private async Task SubscribeRecords_Refresh()
+    {
+        _subscribeRecordsCount = await subscribeRecordRepository.Count(_cts.Token);
+        _subscribeRecordsCountUser = await subscribeRecordRepository.Count(_userId, _cts.Token);
+    }
+
+    private async Task ContactRecords_Refresh()
+    {
+        _contactRecordsCount = await contactRepository.Count(_cts.Token);
+        _contactRecordsCountUser = await contactRepository.Count(_userId, _cts.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -332,25 +343,10 @@ public partial class Test(
     }
 
     // Flood report sources
-    private async Task FloodReportSourcesCounts_Refresh(string? userId = null)
+    private async Task FloodReportSourcesCounts_Refresh()
     {
         _floodReportSourcesCount = await floodReportSourceRepository.Count(_cts.Token);
-
-        if (userId is null)
-        {
-            if (AuthenticationState is not null)
-            {
-                var authState = await AuthenticationState;
-                if (authState.User.IsAuthenticated)
-                {
-                    userId = authState.User.Oid;
-                }
-            }
-        }
-
-        _floodReportSourcesCountUser = userId is not null
-            ? await floodReportSourceRepository.Count(userId, _cts.Token)
-            : 0;
+        _floodReportSourcesCountUser = await floodReportSourceRepository.Count(_userId, _cts.Token);
     }
     private async Task FloodReportSources_CreateTestConfirmation()
     {
@@ -378,21 +374,6 @@ public partial class Test(
     }
     private async Task Investigation_AddTestFloodReportSource()
     {
-        string? userId = null;
-        if (AuthenticationState is not null)
-        {
-            var authState = await AuthenticationState;
-            if (authState.User.IsAuthenticated)
-            {
-                userId = authState.User.Oid;
-            }
-        }
-        if (userId is null)
-        {
-            logger.LogError("Cannot create a test flood report source for investigation without an authenticated user.");
-            throw new InvalidOperationException("User must be authenticated to create a test investigations.");
-        }
-
         // flood report source
         var viewUriBase = new Uri(navigationManager.Uri);
         var createReportResult = await floodReportSourceRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
@@ -403,10 +384,10 @@ public partial class Test(
         }
         var floodReportSourceId = createReportResult.Value.Id;
         await testService.TestFloodReportSource_SetInvestigationHasStarted(floodReportSourceId, _cts.Token);
-        await FloodReportSourcesCounts_Refresh(userId);
+        await FloodReportSourcesCounts_Refresh();
 
         // contact record
-        var createContactResult = await contactRepository.Create(userId, floodReportSourceId, _cts.Token);
+        var createContactResult = await contactRepository.Create(_userId, floodReportSourceId, _cts.Token);
         if (!createContactResult.IsSuccess)
         {
             logger.LogError("Failed to create a test contact record for investigation.");
@@ -432,7 +413,7 @@ public partial class Test(
         {
             FloodReportSourceId = floodReportSourceId,
         };
-        var createInvestigationResult = await investigationRepository.CreateForFloodReportSource(userId, investigationDto, _cts.Token);
+        var createInvestigationResult = await investigationRepository.CreateForFloodReportSource(_userId, investigationDto, _cts.Token);
         if (!createInvestigationResult.IsSuccess)
         {
             logger.LogError("Failed to create a test investigation.");
