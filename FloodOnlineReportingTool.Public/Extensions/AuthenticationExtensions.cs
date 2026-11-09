@@ -34,6 +34,7 @@ internal static class AuthenticationExtensions
         builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, options =>
         {
             options.AccessDeniedPath = $"/{GeneralPages.AccessDenied.Url}";
+            options.ReturnUrlParameter = "redirectUri";
         });
 
         // Configure all HttpClients to be resilient. For example: Identity Web + DownstreamApi
