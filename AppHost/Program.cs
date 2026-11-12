@@ -23,15 +23,11 @@ var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(databasePublic)
     .WaitFor(databasePublic);
 
-var connectionStringBoundaries = builder.AddConnectionString(ConnectionStringNames.Boundaries);
-
 builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
     .WithDeveloperCertificateTrust(true)
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(databasePublic)
-    .WithReference(connectionStringBoundaries)
-    .WaitFor(connectionStringBoundaries)
     .WaitForCompletion(migrations)
     .WithUrls(context =>
     {
