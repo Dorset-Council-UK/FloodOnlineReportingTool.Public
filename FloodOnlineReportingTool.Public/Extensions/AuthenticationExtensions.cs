@@ -1,8 +1,10 @@
 ﻿using FloodOnlineReportingTool.Database.Services;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Endpoints.Account;
+using FloodOnlineReportingTool.Public.Models.Order;
 using FloodOnlineReportingTool.Public.Options;
 using FloodOnlineReportingTool.Public.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.Options;
@@ -28,6 +30,12 @@ internal static class AuthenticationExtensions
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddDownstreamApi(DownstreamAPIOptions.ReportStatusApi, reportStatusApiSection)
             .AddInMemoryTokenCaches();
+
+        builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+        {
+            options.AccessDeniedPath = $"/{GeneralPages.AccessDenied.Url}";
+            options.ReturnUrlParameter = "redirectUri";
+        });
 
         // Configure all HttpClients to be resilient. For example: Identity Web + DownstreamApi
         builder.Services
