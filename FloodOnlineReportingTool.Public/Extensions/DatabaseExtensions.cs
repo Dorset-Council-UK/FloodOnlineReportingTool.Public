@@ -30,15 +30,6 @@ internal static class DatabaseExtensions
 
             return builder;
         }
-        
-        internal IHostApplicationBuilder AddBoundariesDatabase()
-        {
-            builder.AddNpgsqlDbContext<BoundariesDbContext>(ConnectionStringNames.Boundaries,
-                configureDbContextOptions: options =>
-                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
-
-            return builder;
-        }
 
         internal IHostApplicationBuilder AddFloodReportingDatabaseServices()
         {

@@ -99,7 +99,7 @@ You must set up user secrets for development. Run the following command in the t
   ```
 Then add your configuration:
 
-- **ConnectionStrings**: Required for database access and boundaries database access.
+- **ConnectionStrings**: Required for the public database (and Service Bus in the messaging worker). Boundary lookups use an API, not a separate database.
 - **AzureBlobStorage**: Required for file storage.
 - **GIS**: Used to configure the Address API and other mapping related services.
 - **GovNotify**: Used to configure the GovNotify service for sending notifications.
@@ -110,8 +110,7 @@ Example public secrets file:
 ```json
 {
   "ConnectionStrings": {
-    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public",
-    "Boundaries": "Host=YourHost;Port=YourPort;Database=YourDatabase;Search Path=YourSearchPath"
+    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public"
   },
   "AzureBlobStorage": {
     "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YourAccountName;AccountKey=YourAccountKey;EndpointSuffix=core.windows.net",
@@ -143,6 +142,12 @@ Example public secrets file:
     }
   },
   "DownstreamApis": {
+    "BoundaryApi": {
+      "BaseUrl": "https://your-api-gateway.example/",
+      "ApiKey": "YourBoundaryApiSubscriptionKey",
+      "ApiKeyHeaderName": "Ocp-Apim-Subscription-Key",
+      "GetCountyPathTemplate": "geoserver/get/county?x={x}&y={y}"
+    },
     "ReportStatusApi": {
       "BaseUrl": "YourReportStatusApiBaseUrl",
       "Scopes": "ScopesRequired"
@@ -164,13 +169,40 @@ Example messaging secrets file:
 {
   "ConnectionStrings": {
     "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public",
-    "Boundaries": "Host=YourHost;Port=YourPort;Database=YourDatabase;Search Path=YourSearchPath",
     "service-bus": "Endpoint=YourEndpoint;SharedAccessKeyName=YourKeyName;SharedAccessKey=YourKey",
+  },
+  "DownstreamApis": {
+    "BoundaryApi": {
+      "BaseUrl": "https://your-api-gateway.example/",
+      "ApiKey": "YourBoundaryApiSubscriptionKey",
+      "ApiKeyHeaderName": "Ocp-Apim-Subscription-Key",
+      "GetCountyPathTemplate": "geoserver/get/county?x={x}&y={y}"
+    }
   },
   "Messaging:TopicSuffix": "-test",
   "Inbox:SubscriptionName": "testing"
 }
 ```
+
+### Boundary API
+
+Configure `DownstreamAPIs:BoundaryApi` in both the web application and messaging worker.
+Configuration is validated at startup. `BaseUrl` must be an absolute HTTPS URL, `ApiKey`
+must be non-empty, and `GetCountyPathTemplate` must be a relative path containing `{x}`
+and `{y}`. Keep the key in user secrets or your deployment secret store, not source control.
+
+The boundary client uses a typed `HttpClient`, independently of Microsoft Identity, and
+inherits the hosts' standard HTTP resilience configuration. Redirects are disabled to avoid
+forwarding the subscription key to another endpoint.
+Each GET request includes the API key in the header named by `ApiKeyHeaderName`, which
+defaults to `Ocp-Apim-Subscription-Key` when omitted. Set it to another valid HTTP header
+name, such as `X-Api-Key`, if required by your endpoint. Requests use British National
+Grid easting/northing coordinates, formatted independently of the server culture. No Entra
+scopes or signed-in user are needed for this API. Responses must be GeoJSON
+`FeatureCollection` objects with `features[].properties.admin_unit_id` as a positive integer;
+geometry is ignored and may be null. All distinct IDs are used to find responsible
+organisations. An empty features array means no matching county. HTTP errors, invalid
+responses, and cancellation are propagated rather than treated as an empty result.
 
 ## Authentication
 
