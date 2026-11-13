@@ -110,8 +110,7 @@ Example public secrets file:
 ```json
 {
   "ConnectionStrings": {
-    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public",
-    "Boundaries": "Host=YourHost;Port=YourPort;Database=YourDatabase;Search Path=YourSearchPath"
+    "FloodReportingPublic": "Host=localhost;Port=5432;Database=YourDatabaseName;Username=YourUserName;Password=YourPassword;Search Path=fortpublic,public"
   },
   "AzureBlobStorage": {
     "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YourAccountName;AccountKey=YourAccountKey;EndpointSuffix=core.windows.net",
