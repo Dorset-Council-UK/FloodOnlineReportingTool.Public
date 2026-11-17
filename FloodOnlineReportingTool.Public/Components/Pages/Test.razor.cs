@@ -153,7 +153,7 @@ public partial class Test(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _userId = authState.User.Oid ?? "";
+            _userId = authState.User.UserId ?? "";
             if (string.IsNullOrWhiteSpace(_userId))
             {
                 logger.LogError("The authenticated user does not have a valid OID / Object ID claim.");

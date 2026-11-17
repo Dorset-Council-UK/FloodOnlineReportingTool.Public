@@ -63,7 +63,7 @@ public partial class Summary(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
+            var userId = authState.User.UserId;
             if (userId is not null)
             {
                 var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);
@@ -105,7 +105,7 @@ public partial class Summary(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            userId = authState.User.Oid;
+            userId = authState.User.UserId;
         }
         if (userId is null)
         {

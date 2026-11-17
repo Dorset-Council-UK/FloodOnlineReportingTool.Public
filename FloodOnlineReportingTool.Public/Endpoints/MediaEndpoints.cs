@@ -15,7 +15,7 @@ internal static class MediaEndpoints
         IBlobStorageService blobStorageService,
         CancellationToken cancellationToken)
     {
-        var userId = user.Oid;
+        var userId = user.UserId;
         if (userId is null)
         {
             return TypedResults.Unauthorized();
