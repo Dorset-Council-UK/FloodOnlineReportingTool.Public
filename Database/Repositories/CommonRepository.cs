@@ -3,14 +3,13 @@ using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Models.Flood;
 using FloodOnlineReportingTool.Database.Models.Responsibilities;
 using FloodOnlineReportingTool.Database.Models.Status;
+using FloodOnlineReportingTool.Database.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FloodOnlineReportingTool.Database.Repositories;
 
-public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory, BoundariesDbContext boundariesDb) : ICommonRepository
+public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory, IBoundaryApiClient boundaryApiClient) : ICommonRepository
 {
-    private const string SqlAllCounties = @"SELECT name, area_description, admin_unit_id FROM dc_boundaries.uk_county WHERE public.ST_Contains(geom, public.ST_SetSRID(public.ST_MakePoint({0}, {1}), 27700)) ORDER BY name";
-
     public async Task<FloodImpact?> GetFloodImpact(Guid id, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
@@ -150,13 +149,10 @@ public class CommonRepository(IDbContextFactory<PublicDbContext> contextFactory,
             return [];
         }
 
-        // Get all the counties which intersect the flood location
-        var adminUnitIds = await boundariesDb.Counties
-            .FromSqlRaw(SqlAllCounties, easting, northing)
-            .Select(c => c.AdminUnitId)
-            .ToListAsync(ct);
+        // Get county admin unit ID for the given easting/northing
+        var adminUnitIds = await boundaryApiClient.GetCountyAdminUnitIds(easting.Value, northing.Value, ct);
 
-        if (adminUnitIds is null || adminUnitIds.Count == 0)
+        if (adminUnitIds.Count == 0)
         {
             return [];
         }

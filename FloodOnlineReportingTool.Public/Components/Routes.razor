@@ -3,8 +3,15 @@
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <RedirectToSignIn />
+            <NotAuthorized Context="_authState">
+                @if (_authState.User.Identity?.IsAuthenticated == true)
+                {
+                    <RedirectToAccessDenied />
+                }
+                else
+                {
+                    <RedirectToSignIn />
+                }
             </NotAuthorized>
         </AuthorizeRouteView>
     </Found>
