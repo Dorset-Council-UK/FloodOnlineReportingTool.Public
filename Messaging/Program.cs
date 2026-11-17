@@ -19,6 +19,9 @@ builder.Services
     .AddScoped<IUserContext, UserContext>()
     .AddScoped<ISubscribeRecordRepository, SubscribeRecordRepository>();
 
+// Downstream APIs
+builder.Services.AddBoundaryApi(builder.Configuration);
+
 // Consumers
 builder.Services
     .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>()
