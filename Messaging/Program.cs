@@ -36,15 +36,6 @@ if (string.IsNullOrWhiteSpace(databaseConnectionString))
 builder.Services.AddDbContextFactory<PublicDbContext>(options => options.UseNpgsql(databaseConnectionString, npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
 builder.EnrichNpgsqlDbContext<PublicDbContext>();
 
-// add boundaries database (referenced by ICommonRepository)
-if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString(ConnectionStringNames.Boundaries)))
-{
-    throw new InvalidOperationException($"Missing configuration setting: The boundaries database connection string '{ConnectionStringNames.Boundaries}' is missing.");
-}
-builder.AddNpgsqlDbContext<BoundariesDbContext>(ConnectionStringNames.Boundaries,
-    configureDbContextOptions: options => options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
-builder.EnrichNpgsqlDbContext<BoundariesDbContext>();
-
 // add service bus
 string? serviceBusConnectionString = builder.Configuration.GetConnectionString(ConnectionStringNames.ServiceBus);
 if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
