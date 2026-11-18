@@ -44,8 +44,9 @@ jobs:
       - run: dotnet restore
 
       - run: dotnet build --configuration Release --no-restore
-  
-      - run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Run solution tests
+        run: dotnet test --no-build --configuration Release --verbosity normal
 
       - name: dotnet publish
         run: >
@@ -54,6 +55,15 @@ jobs:
           --configuration Release
           --no-build
           --output "${{ env.DOTNET_ROOT }}/myapp"
+
+      - name: Publish Messaging as a continuous WebJob
+        shell: bash
+        run: |
+          job_dir="$DOTNET_ROOT/myapp/App_Data/jobs/continuous/messaging"
+          dotnet publish Messaging/Messaging.csproj \
+            --configuration Release --no-build -p:UseAppHost=false --output "$job_dir"
+          printf '%s\r\n' '@echo off' 'cd /d "%~dp0"' 'dotnet Messaging.dll' > "$job_dir/run.cmd"
+          printf '%s\n' '{"is_singleton": true}' > "$job_dir/settings.job"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -71,6 +81,13 @@ jobs:
       id-token: write
     
     steps:
+      - name: Validate restart configuration
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_RESOURCE_GROUP)) {
+            throw 'Set the AZURE_RESOURCE_GROUP variable in the production GitHub environment.'
+          }
+
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
@@ -87,5 +104,9 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'fort-dorset-public'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: .
+
+      - name: Restart Azure Web App
+        shell: pwsh
+        run: az webapp restart --name "$env:AZURE_WEBAPP_NAME" --resource-group "$env:AZURE_RESOURCE_GROUP"
