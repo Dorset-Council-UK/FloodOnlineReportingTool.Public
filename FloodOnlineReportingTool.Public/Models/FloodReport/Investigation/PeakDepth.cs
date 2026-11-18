@@ -9,16 +9,13 @@ public class PeakDepth
     public Guid? IsPeakDepthKnownId { get; set; }
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public string? InsideCentimetresText { get; set; }
-    public float? InsideCentimetresNumber => ToFloat(InsideCentimetresText);
-    public int? InsideCentimetres => WholeNumberInt(InsideCentimetresNumber);
-    public string InsideFeetAndInches => InsideCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches);
+    public string? PeakCentimetresText { get; set; }
+    public float? PeakCentimetresNumber => ToFloat(PeakCentimetresText);
+    public int? PeakCentimetres => WholeNumberInt(PeakCentimetresNumber);
+    public string PeakFeetAndInches => PeakCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches);
 
     [GdsFieldErrorClass(GdsFieldTypes.Input)]
-    public string? OutsideCentimetresText { get; set; }
-    public float? OutsideCentimetresNumber => ToFloat(OutsideCentimetresText);
-    public int? OutsideCentimetres => WholeNumberInt(OutsideCentimetresNumber);
-    public string OutsideFeetAndInches => OutsideCentimetres.ConvertMeasurementToDisplayString(StringExtensions.MeasurementDisplayType.FeetAndInches);
+    public string? DepthLocation { get; set; }
 
     private static float? ToFloat(string? value)
     {

@@ -119,7 +119,7 @@ public class InvestigationRepository(
             // Peak depth (handled with ApplyPeakDepth)
             // IsPeakDepthKnownId = Guid.Empty,
             PeakDepths = dto.InvestigationPeakDepths
-                .Select(peakDepth => new InvestigationPeakDepth(investigationId, peakDepth.IsPeakDepthKnownId, peakDepth.PeakInsideCentimetres, peakDepth.PeakOutsideCentimetres)
+                .Select(peakDepth => new InvestigationPeakDepth(investigationId, peakDepth.IsPeakDepthKnownId, peakDepth.PeakCentimetres, peakDepth.DepthLocation)
                 {
                     IsPeakDepthKnownId = peakDepth.IsPeakDepthKnownId,  
                 })
