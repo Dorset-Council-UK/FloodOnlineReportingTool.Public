@@ -75,6 +75,9 @@ jobs:
     runs-on: windows-latest
     needs: build
     environment: production
+    env:
+      AZURE_WEBAPP_NAME: fort-dorset-public
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
 
     permissions: 
       contents: read
