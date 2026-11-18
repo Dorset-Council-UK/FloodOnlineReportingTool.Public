@@ -21,7 +21,7 @@ public partial class PeakDepthsPage(
 ) : IAsyncDisposable
 {
     private List<Models.FloodReport.Investigation.PeakDepth> Model { get; set; } = default!;
-
+    private bool _showPeakDepthForm = false;
     public string Title { get; set; } = InvestigationPages.PeakDepthsPage.Title;
 
     private bool FromSummary { get; set; }
@@ -75,9 +75,8 @@ public partial class PeakDepthsPage(
             Model = investigation.InvestigationPeakDepths?
                 .Select(peakDepth => new Models.FloodReport.Investigation.PeakDepth
                 {
-                    IsPeakDepthKnownId = peakDepth.IsPeakDepthKnownId,
-                    InsideCentimetresText = peakDepth.PeakInsideCentimetres?.ToString(),
-                    OutsideCentimetresText = peakDepth.PeakOutsideCentimetres?.ToString(),
+                    DepthLocation = peakDepth.DepthLocation,
+                    PeakCentimetresText = peakDepth.PeakCentimetres?.ToString(),
                 })
                 .ToList()
                 ?? new List<Models.FloodReport.Investigation.PeakDepth>();
@@ -95,9 +94,21 @@ public partial class PeakDepthsPage(
     private Task AddPeakDepth(Models.FloodReport.Investigation.PeakDepth peakDepth)
     {
         Model.Add(peakDepth);
+        _showPeakDepthForm = false;
         return Task.CompletedTask;
     }
 
+    private Task RemovePeakDepth(Models.FloodReport.Investigation.PeakDepth peakDepth)
+    {
+        Model.Remove(peakDepth);
+        return Task.CompletedTask;
+    }
+
+    private void ShowAddForm()
+    {
+        _showPeakDepthForm = true;
+
+    }
     private async Task<InvestigationDto> GetInvestigation()
     {
         var data = await protectedSessionStorage.GetAsync<InvestigationDto>(SessionConstants.Investigation);
