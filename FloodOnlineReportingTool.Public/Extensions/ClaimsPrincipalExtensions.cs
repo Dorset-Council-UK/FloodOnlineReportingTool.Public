@@ -58,6 +58,6 @@ internal static class ClaimsPrincipalExtensions
         /// <summary>
         /// Get the object ID (oid) claim from the identity provider
         /// </summary>
-        internal string UserId => claimsPrincipal?.GetObjectId() ?? string.Empty;
+internal string? UserId => claimsPrincipal?.GetObjectId();
     }
 }
