@@ -1702,16 +1702,17 @@ namespace FloodOnlineReportingTool.Database.Migrations
                     b.Property<DateTimeOffset>("CreatedUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DepthLocation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("InvestigationId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("IsPeakDepthKnownId")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("PeakInsideCentimetres")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PeakOutsideCentimetres")
+                    b.Property<int?>("PeakCentimetres")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("UpdatedUtc")
