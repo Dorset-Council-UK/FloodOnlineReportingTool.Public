@@ -60,7 +60,7 @@ public partial class OverviewDetailsUser(
                 var readerPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Reader);
                 var hasReaderPolicy = readerPolicyCheck.Succeeded;
 
-                string? userId = authState.User.Oid;
+                string? userId = authState.User.UserId;
                 if (hasReaderPolicy && userId is not null)
                 {
                     if (FloodReportSourceId is not null)

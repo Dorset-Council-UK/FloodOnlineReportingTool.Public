@@ -109,7 +109,7 @@ public partial class Vehicles(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
+            var userId = authState.User.UserId;
             if (userId is not null)
             {
                 var eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, _cts.Token);

@@ -90,7 +90,7 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            userId = authState.User.Oid;
+            userId = authState.User.UserId;
         }
         if (userId is null)
         {
@@ -131,7 +131,7 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
+            var userId = authState.User.UserId;
             if (userId is not null)
             {
                 EligibilityCheck? eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);

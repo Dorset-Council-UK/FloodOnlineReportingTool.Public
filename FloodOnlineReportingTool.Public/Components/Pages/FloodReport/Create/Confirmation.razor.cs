@@ -53,7 +53,7 @@ public partial class Confirmation(
         {
             var authState = await AuthenticationState;
             var user = authState.User;
-            _userId = user.Oid;
+            _userId = user.UserId;
         }
     }
 

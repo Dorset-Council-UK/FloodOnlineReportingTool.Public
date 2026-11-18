@@ -86,7 +86,7 @@ public partial class Change(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _userID = authState.User.Oid;
+            _userID = authState.User.UserId;
         }
     }
 

@@ -83,7 +83,7 @@ public partial class Index(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _userID = authState.User.Oid;
+            _userID = authState.User.UserId;
         }
     }
 
