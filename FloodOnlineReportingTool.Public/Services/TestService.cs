@@ -136,32 +136,32 @@ internal sealed class TestService(
                         investigationId,
                         Database.Models.Status.RecordStatusIds.Yes,
                         35,
-                        50
+                        "Kitchen"
                     ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes },
                     new(
                         investigationId,
                         Database.Models.Status.RecordStatusIds.No,
-                        null,
-                        null
+                        44,
+                        "Living Room"
                     ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
                     new(
                         investigationId,
                         Database.Models.Status.RecordStatusIds.NotSure,
                         21,
-                        5
+                        "Bathroom"
                     ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
                     new(
                             investigationId,
                             Database.Models.Status.RecordStatusIds.No,
                             40,
-                            60
+                            "Bedroom"
                         )
                     { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
                     new(
                             investigationId,
                             Database.Models.Status.RecordStatusIds.NotSure,
                             21,
-                            5
+                            "Garage"
                         )
                     { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
                 ],
