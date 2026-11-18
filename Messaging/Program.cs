@@ -19,6 +19,9 @@ builder.Services
     .AddScoped<IUserContext, UserContext>()
     .AddScoped<ISubscribeRecordRepository, SubscribeRecordRepository>();
 
+// Downstream APIs
+builder.Services.AddBoundaryApi(builder.Configuration);
+
 // Consumers
 builder.Services
     .AddSingleton<IInboxConsumer, FloodReportExtraInfoRequestConsumer>()
@@ -35,8 +38,6 @@ if (string.IsNullOrWhiteSpace(databaseConnectionString))
 }
 builder.Services.AddDbContextFactory<PublicDbContext>(options => options.UseNpgsql(databaseConnectionString, npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
 builder.EnrichNpgsqlDbContext<PublicDbContext>();
-
-builder.Services.AddBoundaryApi(builder.Configuration);
 
 // add service bus
 string? serviceBusConnectionString = builder.Configuration.GetConnectionString(ConnectionStringNames.ServiceBus);
