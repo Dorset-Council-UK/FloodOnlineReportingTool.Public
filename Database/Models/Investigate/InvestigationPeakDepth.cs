@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FloodOnlineReportingTool.Database.Models.Investigate
 {
-    public record InvestigationPeakDepth(Guid InvestigationId, Guid IsPeakDepthKnownId, int? PeakInsideCentimetres, int? PeakOutsideCentimetres)
+    public record InvestigationPeakDepth(Guid InvestigationId, Guid IsPeakDepthKnownId, int? PeakCentimetres, string DepthLocation)
     {
         public Guid InvestigationId { get; init; } = InvestigationId;
         public Guid Id { get; init; } = Guid.CreateVersion7();
@@ -13,7 +13,8 @@ namespace FloodOnlineReportingTool.Database.Models.Investigate
         public DateTimeOffset? UpdatedUtc { get; init; }
         public required Guid IsPeakDepthKnownId { get; init; } = IsPeakDepthKnownId;
         public RecordStatus IsPeakDepthKnown { get; init; } = default!;
-        public int? PeakInsideCentimetres { get; init; } = PeakInsideCentimetres;
-        public int? PeakOutsideCentimetres { get; init; } = PeakOutsideCentimetres;
+        public int? PeakCentimetres { get; init; } = PeakCentimetres;
+        public string DepthLocation { get; init; } = DepthLocation;
+
     }
 }
