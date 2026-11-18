@@ -117,7 +117,7 @@ public partial class Vehicles(
             }
         }
 
-        return isInternal ? InvestigationPages.InternalHow : InvestigationPages.PeakDepth;
+        return isInternal ? InvestigationPages.InternalHow : InvestigationPages.PeakDepthsPage;
     }
 
     private async Task<InvestigationDto> GetInvestigation()

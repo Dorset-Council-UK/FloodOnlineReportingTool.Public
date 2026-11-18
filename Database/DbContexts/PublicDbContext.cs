@@ -38,6 +38,8 @@ public class PublicDbContext(DbContextOptions<PublicDbContext> options) : DbCont
 
     public DbSet<FailedImport> FailedImports { get; set; } // Table to track failed imports
 
+    public DbSet<InvestigationPeakDepth> InvestigationPeakDepths { get; set; } // Table to track investigation peak depths
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

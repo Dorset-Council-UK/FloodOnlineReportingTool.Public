@@ -31,7 +31,7 @@ public partial class InternalWhen(
     private bool FromSummary { get; set; }
     private PageInfo NextPage => FromSummary
         ? InvestigationPages.Summary
-        : InvestigationPages.PeakDepth;
+        : InvestigationPages.PeakDepthsPage;
     private static PageInfo PreviousPage => InvestigationPages.InternalHow;
 
     private Models.FloodReport.Investigation.InternalWhen Model { get; set; } = default!;

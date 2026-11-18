@@ -64,7 +64,7 @@ public partial class Test(
         new (InvestigationPages.Vehicles),
         new (InvestigationPages.InternalHow, "(optional)"),
         new (InvestigationPages.InternalWhen, "(optional)"),
-        new (InvestigationPages.PeakDepth),
+        new (InvestigationPages.PeakDepthsPage),
         new (InvestigationPages.ServiceImpact),
         new (InvestigationPages.CommunityImpact),
         new (InvestigationPages.Blockages),

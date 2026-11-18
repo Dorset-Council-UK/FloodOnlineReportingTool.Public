@@ -78,26 +78,26 @@
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth inside</dt>
-                @SummaryValueOrMissing(_peakDepthInsideMessage, InvestigationPages.PeakDepth)
+                @SummaryValueOrMissing("_peakDepthInsideMessage", InvestigationPages.PeakDepthsPage)
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth inside</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepthsPage.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth inside</span></a>
                 </dd>
             </div>
-            <div class="govuk-summary-list__row">
+            @* <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth outside</dt>
-                @SummaryValueOrMissing(_peakDepthOutsideMessage, InvestigationPages.PeakDepth)
+                @SummaryValueOrMissing("_peakDepthOutsideMessage", InvestigationPages.PeakDepthsPage)
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth outside</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepthsPage.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth outside</span></a>
                 </dd>
-            </div>
+            </div> *@
         }
         else
         {
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key govuk-!-width-one-quarter govuk-!-padding-right-1">Peak water depth</dt>
-                @SummaryValueOrMissing(_peakDepthNotKnownMessage, InvestigationPages.PeakDepth)
+                @SummaryValueOrMissing("_peakDepthNotKnownMessage", InvestigationPages.PeakDepthsPage)
                 <dd class="govuk-summary-list__actions">
-                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepth.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth</span></a>
+                    <a draggable="false" data-prevent-double-click="true" href="@(InvestigationPages.PeakDepthsPage.Url)?fromSummary=true" class="govuk-link">Change<span class="govuk-visually-hidden"> peak depth</span></a>
                 </dd>
             </div>
         }

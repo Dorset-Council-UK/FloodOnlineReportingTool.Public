@@ -125,15 +125,46 @@ internal sealed class TestService(
                     new(investigationId, FloodDestinationIds.StreamOrWatercourse),
                     new(investigationId, FloodDestinationIds.DitchesAndDrainageChannels),
                 ],
-
+    
                 // Damaged vehicles (RecordStatus)
                 WereVehiclesDamagedId = Database.Models.Status.RecordStatusIds.Yes,
                 NumberOfVehiclesDamaged = 6,
 
                 // Peak depth (RecordStatus)
-                IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
-                PeakInsideCentimetres = 35,
-                PeakOutsideCentimetres = 50,
+                PeakDepths = [
+                    new(
+                        investigationId,
+                        Database.Models.Status.RecordStatusIds.Yes,
+                        35,
+                        "Kitchen"
+                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes },
+                    new(
+                        investigationId,
+                        Database.Models.Status.RecordStatusIds.No,
+                        44,
+                        "Living Room"
+                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
+                    new(
+                        investigationId,
+                        Database.Models.Status.RecordStatusIds.NotSure,
+                        21,
+                        "Bathroom"
+                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
+                    new(
+                            investigationId,
+                            Database.Models.Status.RecordStatusIds.No,
+                            40,
+                            "Bedroom"
+                        )
+                    { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
+                    new(
+                            investigationId,
+                            Database.Models.Status.RecordStatusIds.NotSure,
+                            21,
+                            "Garage"
+                        )
+                    { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
+                ],
 
                 // Service impacts (FloodImpact's)
                 ServiceImpacts = [

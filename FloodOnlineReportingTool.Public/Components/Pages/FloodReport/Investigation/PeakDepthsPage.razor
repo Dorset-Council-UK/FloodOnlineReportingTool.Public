@@ -1,0 +1,44 @@
+﻿@page "/floodreport/investigation/peakdepthspage"
+<h3>Peak depths</h3>
+
+
+@if (Model?.Any() == true)
+{
+    <p>@Model.Count() items found</p>
+
+    <GdsTable T="FloodOnlineReportingTool.Public.Models.FloodReport.Investigation.PeakDepth" Items="@Model" Density="GdsTableDensity.SmallTextUntilTablet">
+        <HeaderContent>
+            <GdsTableTh>Depth location</GdsTableTh>
+            <GdsTableTh>Depth</GdsTableTh>
+            <GdsTableTh>Actions</GdsTableTh>
+        </HeaderContent>
+        <RowTemplate Context="item">
+            <GdsTableTd Value="@(item.DepthLocation ?? "-")" />
+            <GdsTableTd Value="@(item.PeakCentimetresNumber.HasValue ? $"{item.PeakCentimetresNumber} cm" : "-")" />
+            <GdsTableTd>
+                <a class="govuk-link" href="" @onclick="() => RemovePeakDepth(item)" @onclick:preventDefault>
+                    Remove<span class="govuk-visually-hidden"> peak depth @(item.DepthLocation ?? "entry")</span>
+                </a>
+            </GdsTableTd>
+        </RowTemplate>
+    </GdsTable>
+          
+
+
+}
+else
+{
+    <p>No items found</p>
+}
+
+<GdsButton onclick="ShowAddForm"
+           aria-expanded="@_showPeakDepthForm"
+           aria-controls="peak-depth-form"
+           Text="Add Peak Depth">
+</GdsButton>
+
+@if (_showPeakDepthForm)
+{
+    <PeakDepth OnAdd="AddPeakDepth"
+               Item="@PeakDepthModel" />
+}

@@ -38,11 +38,11 @@ public record Investigation
     public RecordStatus? WhenWaterEnteredKnown { get; init; }
     public DateTimeOffset? FloodInternalUtc { get; init; }
 
-    // Peak depth, which is a related record status
-    public required Guid IsPeakDepthKnownId { get; init; }
-    public RecordStatus IsPeakDepthKnown { get; init; } = default!;
-    public int? PeakInsideCentimetres { get; init; }
-    public int? PeakOutsideCentimetres { get; init; }
+    // Peak depths, which is a related record status
+    public IList<InvestigationPeakDepth> PeakDepths { get; set; } = [];
+
+    // Keeping for now, as referenced in FloodOnlineReportingTool.Contracts project
+    public bool HasPeakDepth { get; init; }
 
     // Service impact, which are related flood impacts
     public IList<InvestigationServiceImpact> ServiceImpacts { get; init; } = [];

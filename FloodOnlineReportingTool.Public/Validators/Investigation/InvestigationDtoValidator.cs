@@ -76,20 +76,21 @@ public class InvestigationDtoValidator : AbstractValidator<InvestigationDto>
             .When(dto => dto.WereVehiclesDamagedId == RecordStatusIds.Yes);
 
         // Peak depth (RecordStatus)
-        RuleFor(dto => dto.IsPeakDepthKnownId)
-            .NotEmpty()
-            .WithMessage("Select if you know how deep the water was")
-            .WithState(dto => InvestigationPages.PeakDepth);
-        RuleFor(dto => dto.PeakInsideCentimetres)
-            .NotEmpty()
-            .WithMessage("Enter the depth inside")
-            .WithState(dto => InvestigationPages.PeakDepth)
-            .When(dto => dto.IsPeakDepthKnownId == RecordStatusIds.Yes);
-        RuleFor(dto => dto.PeakOutsideCentimetres)
-            .NotEmpty()
-            .WithMessage("Enter the depth outside")
-            .WithState(dto => InvestigationPages.PeakDepth)
-            .When(dto => dto.IsPeakDepthKnownId == RecordStatusIds.Yes);
+        // TODO move to own validator
+        //RuleFor(dto => dto.IsPeakDepthKnownId)
+        //    .NotEmpty()
+        //    .WithMessage("Select if you know how deep the water was")
+        //    .WithState(dto => InvestigationPages.PeakDepth);
+        //RuleFor(dto => dto.PeakInsideCentimetres)
+        //    .NotEmpty()
+        //    .WithMessage("Enter the depth inside")
+        //    .WithState(dto => InvestigationPages.PeakDepth)
+        //    .When(dto => dto.IsPeakDepthKnownId == RecordStatusIds.Yes);
+        //RuleFor(dto => dto.PeakOutsideCentimetres)
+        //    .NotEmpty()
+        //    .WithMessage("Enter the depth outside")
+        //    .WithState(dto => InvestigationPages.PeakDepth)
+        //    .When(dto => dto.IsPeakDepthKnownId == RecordStatusIds.Yes);
 
         // Service impacts (FloodImpact's)
         RuleFor(dto => dto.ServiceImpacts)
