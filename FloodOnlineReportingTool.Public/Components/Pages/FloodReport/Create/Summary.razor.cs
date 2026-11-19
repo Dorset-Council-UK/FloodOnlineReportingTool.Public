@@ -148,7 +148,7 @@ public partial class Summary(
     private async Task SaveFloodReport(EligibilityCheckDto dto)
     {
         // Create a new flood report source
-        var viewUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
+        var viewUri = navigationManager.ToAbsoluteUri($"{FloodReportPages.Details.Url}/");
         var createFloodReportSource = await floodReportSourceRepository.Create(dto, viewUri, _cts.Token);
 
         if (!createFloodReportSource.IsSuccess)
