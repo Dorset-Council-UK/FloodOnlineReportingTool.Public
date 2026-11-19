@@ -248,7 +248,7 @@ public class FloodReportSourceRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<Result<FloodReportSource>> Create(EligibilityCheckDto dto, Uri Base, CancellationToken ct)
+    public async Task<Result<FloodReportSource>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report source with eligibility check.");
 
