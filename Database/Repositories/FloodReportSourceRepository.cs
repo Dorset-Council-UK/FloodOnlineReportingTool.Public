@@ -248,7 +248,7 @@ public class FloodReportSourceRepository(
         return (true, hasInvestigation, HasInvestigationStarted(result.StatusId), investigationCreatedUtc);
     }
 
-    public async Task<Result<FloodReportSource>> Create(EligibilityCheckDto dto, Uri viewUriBase, CancellationToken ct)
+    public async Task<Result<FloodReportSource>> Create(EligibilityCheckDto dto, Uri Base, CancellationToken ct)
     {
         logger.LogInformation("Creating a new flood report source with eligibility check.");
 
@@ -273,7 +273,7 @@ public class FloodReportSourceRepository(
         FloodReportSourceCreated message = new(
             Buffer: 25,
             floodReportSource.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
+            ViewUri: new Uri(viewUriBase, Uri.EscapeDataString(floodReportSource.Reference)),
             eligibilityCheck.ToEligibilityCheckRecord(
                 await commonRepository.GetResponsibleOrganisations(eligibilityCheck.Easting, eligibilityCheck.Northing, ct),
                 await commonRepository.GetFloodProblemsForCauses(eligibilityCheck, ct)
@@ -337,7 +337,7 @@ public class FloodReportSourceRepository(
         // Create a message
         FloodReportSourceUpdated message = new(
             floodReportSource.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
+            ViewUri: new Uri(viewUriBase, Uri.EscapeDataString(floodReportSource.Reference)),
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
             ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
@@ -389,7 +389,7 @@ public class FloodReportSourceRepository(
         // Create a message
         FloodReportSourceUpdated message = new(
             floodReportSource.Reference,
-            ViewUri: new Uri(viewUriBase, $"details/{Uri.EscapeDataString(floodReportSource.Reference)}"),
+            ViewUri: new Uri(viewUriBase, Uri.EscapeDataString(floodReportSource.Reference)),
             status,
             EligibilityCheckRecord: null, // Temporary: this is going to be removed
             ActionStatusUpdates: [], // Temporary: this is going to be removed or changed
