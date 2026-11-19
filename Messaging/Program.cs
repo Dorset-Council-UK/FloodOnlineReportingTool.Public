@@ -10,6 +10,8 @@ using ServiceDefaults;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.AddKeyVaults();
+
 builder.AddServiceDefaults();
 
 // Services
