@@ -28,7 +28,7 @@ public class SessionStateService
         }
     }
 
-    public async Task SaveFloodReporSourceId(Guid floodReportSourceId)
+    public async Task SaveFloodReportSourceId(Guid floodReportSourceId)
     {
         await _sessionStorage.SetAsync(SessionConstants.FloodReportSourceId, floodReportSourceId);
     }

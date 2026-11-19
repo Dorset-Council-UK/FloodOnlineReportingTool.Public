@@ -100,7 +100,7 @@ public partial class Confirmation(
 
                 if (_isAuthorised)
                 {
-                    await scopedSessionStorage.SaveFloodReporSourceId(_FloodReportId);
+                    await scopedSessionStorage.SaveFloodReportSourceId(_FloodReportId);
                     await scopedSessionStorage.SaveConfirmationAccessConsumed(true);
                     await scopedSessionStorage.SaveConfirmationLoginPending(false);
                     await LoadMediaItemCountAsync();
