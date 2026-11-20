@@ -1,4 +1,3 @@
-using FloodOnlineReportingTool.Database.Models.Eligibility;
 using FloodOnlineReportingTool.Database.Repositories;
 using FloodOnlineReportingTool.Public.Authentication;
 using FloodOnlineReportingTool.Public.Models.Order;
@@ -15,7 +14,6 @@ public partial class Confirmation(
     ILogger<Confirmation> logger,
     IEligibilityCheckRepository eligibilityRepository,
     IMediaItemRepository mediaItemRepository,
-    IFloodReportSourceRepository floodReportSourceRepository,
     SessionStateService scopedSessionStorage,
     IAuthorizationService authorizationService,
     NavigationManager navigationManager
@@ -30,20 +28,12 @@ public partial class Confirmation(
     // Private Fields
     private readonly CancellationTokenSource _cts = new();
     private bool _isLoading = true;
-    //private bool _loadingError;
-    //private bool _isAuthorised;
-    //private string? _userId;
-    //private Guid _FloodReportId;
-    //private bool _hasContactInformation;
-    //private IEnumerable<string?> _userIds = [];
-    private int _mediaItemsAssociatedWithReport;
-
-    private bool _testIsAuthenticated = false;
-    //private string? _testUserId = null;
-    private bool _testIsReader = false;
-    private bool _testIsSessionOwner = false;
-    private bool _testIsContactOwner = false;
-    private Guid _testFloodReportSourceId = Guid.Empty;
+    private bool _isAuthenticated = false;
+    private bool _isReader = false;
+    private bool _isSessionOwner = false;
+    private bool _isContactOwner = false;
+    private Guid _floodReportSourceId = Guid.Empty;
+    private int _mediaItemsCount;
 
     // Public Properties
     public string Title { get; set; } = FloodReportCreatePages.Confirmation.Title;
@@ -56,31 +46,42 @@ public partial class Confirmation(
 
     protected override async Task OnInitializedAsync()
     {
-        // Check if user is authenticated
+        if (string.IsNullOrWhiteSpace(Reference))
+        {
+            logger.LogError("Reference is missing in the query string for the confirmation page");
+        }
+
+        // check permissions
+
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            _testIsAuthenticated = authState.User.Identity?.IsAuthenticated == true;
-            if (_testIsAuthenticated)
+            _isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+            if (_isAuthenticated)
             {
                 var readerPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Reader);
-                _testIsReader = readerPolicyCheck.Succeeded;
+                _isReader = readerPolicyCheck.Succeeded;
+                logger.LogInformation("User is signed in, reader policy: {IsReader}", _isReader);
 
                 string? userId = authState.User.Oid;
-                if (!string.IsNullOrWhiteSpace(userId))
+                if (!string.IsNullOrWhiteSpace(userId) && !string.IsNullOrWhiteSpace(Reference))
                 {
                     // Check if the user has reported a flood report source
-                    var eligibilityCheck = await eligibilityRepository.ReportedByUser(userId, _cts.Token);
+                    var eligibilityCheck = await eligibilityRepository.ReportedByUser(userId, Reference, _cts.Token);
                     if (eligibilityCheck is null)
                     {
-                        _testIsContactOwner = false;
-                        _testFloodReportSourceId = Guid.Empty;
+                        _isContactOwner = false;
+                        _isSessionOwner = false;
+                        _floodReportSourceId = Guid.Empty;
                     }
                     else
                     {
-                        _testIsContactOwner = true;
-                        _testFloodReportSourceId = eligibilityCheck.FloodReportSource?.Id ?? Guid.Empty;
+                        _isContactOwner = true;
+                        _isSessionOwner = false;
+                        _floodReportSourceId = eligibilityCheck.FloodReportSource?.Id ?? Guid.Empty;
                     }
+
+                    logger.LogInformation("Signed in user, contact owner: {IsContactOwner}, flood report source ID: {FloodReportSourceId}", _isContactOwner, _floodReportSourceId);
                 }
             }
         }
@@ -107,188 +108,68 @@ public partial class Confirmation(
         {
             // read from protected session storage
 
-            if (_testIsAuthenticated && _testIsReader)
+            if (_isAuthenticated && _isReader)
             {
-                await scopedSessionStorage.SaveFloodReportSourceId(_testFloodReportSourceId);
+                // signed in and reader
+                await scopedSessionStorage.SaveFloodReportSourceId(_floodReportSourceId);
                 await scopedSessionStorage.SaveConfirmationAccessConsumed(consumed: true);
                 await scopedSessionStorage.SaveConfirmationLoginPending(pending: false);
             }
 
-            if (!_testIsAuthenticated)
+            if (!_isAuthenticated)
             {
+                // not signed in
+                logger.LogInformation("User is not signed in");
+
                 if (!string.IsNullOrWhiteSpace(Reference))
                 {
+                    // need the reference
                     var eligibilityCheck = await eligibilityRepository.GetByReference(Reference, _cts.Token);
-                    if (eligibilityCheck is not null)
+                    _floodReportSourceId = eligibilityCheck?.FloodReportSource?.Id ?? Guid.Empty;
+
+                    var sessionFloodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
+                    var sessionConfirmationAccessConsumed = await scopedSessionStorage.GetConfirmationAccessConsumed();
+                    var sessionConfirmationLoginPending = await scopedSessionStorage.GetConfirmationLoginPending();
+
+                    _isContactOwner = false;
+                    _isSessionOwner = sessionFloodReportSourceId != Guid.Empty && sessionFloodReportSourceId == _floodReportSourceId;
+                    logger.LogInformation("Not signed in user, session owner: {IsSessionOwner}, flood report source ID: {FloodReportSourceId}", _isSessionOwner, _floodReportSourceId);
+
+                    if (_isSessionOwner && (!sessionConfirmationAccessConsumed || sessionConfirmationLoginPending))
                     {
-                        _testIsContactOwner = eligibilityCheck.FloodReportSource?.ContactRecords.Any(cr => cr.ContactUserId == _userId) ?? false;
-                        _testFloodReportSourceId = eligibilityCheck.FloodReportSource?.Id ?? Guid.Empty;
+                        await scopedSessionStorage.SaveConfirmationAccessConsumed(consumed: true);
                     }
-                    else
-                    {
-                        _testIsContactOwner = false;
-                        _testFloodReportSourceId = Guid.Empty;
-                    }
-                }
-
-                var sessionFloodReportSourceId = await scopedSessionStorage.GetFloodReportSourceId();
-                var sessionConfirmationAccessConsumed = await scopedSessionStorage.GetConfirmationAccessConsumed();
-                var sessionConfirmationLoginPending = await scopedSessionStorage.GetConfirmationLoginPending();
-
-                _testIsSessionOwner = sessionFloodReportSourceId != Guid.Empty && sessionFloodReportSourceId == _testFloodReportSourceId;
-
-                if (_testIsSessionOwner && (!sessionConfirmationAccessConsumed || sessionConfirmationLoginPending))
-                {
-                    await scopedSessionStorage.SaveConfirmationAccessConsumed(consumed: true);
                 }
             }
 
-            _mediaItemsAssociatedWithReport = await LoadMediaItemCountAsync();
+            _mediaItemsCount = await LoadMediaItemCountAsync();
 
             _isLoading = false;
             StateHasChanged();
+
+            bool hasAccess = (_isAuthenticated && _isReader) || _isContactOwner || _isSessionOwner;
+            if (!hasAccess)
+            {
+                logger.LogWarning("Access denied to confirmation page for reference {Reference}. Session owner and contact owner could not be worked out.", Reference);
+                navigationManager.NavigateTo(GeneralPages.AccessDenied.Url, forceLoad: true);
+                return;
+            }
         }
-
-
-
-
-        //if (!firstRender)
-        //{
-        //    return;
-        //}
-
-        //if (!string.IsNullOrWhiteSpace(Reference))
-        //{
-        //    await LoadFromReferenceAsync();
-        //}
-        //else
-        //{
-        //    await LoadFromSessionAsync();
-        //}
-
-        //if (!_loadingError && _FloodReportId != Guid.Empty)
-        //{
-        //    var authState = AuthenticationState is not null
-        //        ? await AuthenticationState
-        //        : null;
-
-        //    if (authState?.User.Identity?.IsAuthenticated == true)
-        //    {
-        //        _isAuthorised = await IsAuthenticatedOwnerOrAdminAsync();
-
-        //        if (_isAuthorised)
-        //        {
-        //            await scopedSessionStorage.SaveFloodReportSourceId(_FloodReportId);
-        //            await scopedSessionStorage.SaveConfirmationAccessConsumed(true);
-        //            await scopedSessionStorage.SaveConfirmationLoginPending(false);
-        //            _mediaItemsAssociatedWithReport = await LoadMediaItemCountAsync();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var sessionFloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
-        //        var confirmationAccessConsumed = await scopedSessionStorage.GetConfirmationAccessConsumed();
-        //        var confirmationLoginPending = await scopedSessionStorage.GetConfirmationLoginPending();
-
-        //        if (!_hasContactInformation && sessionFloodReportId == _FloodReportId && (!confirmationAccessConsumed || confirmationLoginPending))
-        //        {
-        //            _isAuthorised = true;
-        //            await scopedSessionStorage.SaveConfirmationAccessConsumed(true);
-        //            _mediaItemsAssociatedWithReport = await LoadMediaItemCountAsync();
-        //        }
-        //    }
-        //}
-
-        //_isLoading = false;
-        //StateHasChanged();
     }
-
-    //private async Task LoadFromReferenceAsync()
-    //{
-    //    try
-    //    {
-    //        var result = await eligibilityRepository.GetByReference(Reference!, _cts.Token);
-    //        var floodReportSource = result?.FloodReportSource;
-
-    //        if (floodReportSource is null)
-    //        {
-    //            return;
-    //        }
-
-    //        _FloodReportId = floodReportSource.Id;
-    //        _hasContactInformation = floodReportSource.ContactRecords.Count > 0;
-    //        if (_hasContactInformation)
-    //        {
-    //            _userIds = floodReportSource.ContactRecords.Select(c => c.ContactUserId).ToArray();
-    //        }
-    //    }
-    //    catch (InvalidOperationException ex)
-    //    {
-    //        logger.LogError(ex, "There was a problem getting the eligibility check from the database");
-    //        _loadingError = true;
-    //    }
-    //}
-
-    //private async Task<bool> IsAuthenticatedOwnerOrAdminAsync()
-    //{
-    //    if (AuthenticationState is null)
-    //    {
-    //        return false;
-    //    }
-
-    //    var authState = await AuthenticationState;
-    //    if (authState.User.Identity?.IsAuthenticated != true)
-    //    {
-    //        return false;
-    //    }
-
-    //    var adminPolicyCheck = await authorizationService.AuthorizeAsync(authState.User, PolicyNames.Admin);
-    //    if (adminPolicyCheck.Succeeded)
-    //    {
-    //        return true;
-    //    }
-
-    //    return _userId is not null && _userIds.Contains(_userId, StringComparer.OrdinalIgnoreCase);
-    //}
 
     private async Task OnRegisterLoginClickedAsync()
     {
-        _isLoading = true;
-        await scopedSessionStorage.SaveConfirmationLoginPending(true);
+        await scopedSessionStorage.SaveConfirmationLoginPending(pending: true);
         await InvokeAsync(StateHasChanged);
         navigationManager.NavigateTo(RegisterLoginUrl, forceLoad: true);
     }
 
-    //private async Task LoadFromSessionAsync()
-    //{
-    //    _FloodReportId = await scopedSessionStorage.GetFloodReportSourceId();
-
-    //    if (_FloodReportId == Guid.Empty)
-    //    {
-    //        return;
-    //    }
-
-    //    var result = await floodReportSourceRepository.GetById(_FloodReportId, _cts.Token);
-    //    if (result is null)
-    //    {
-    //        _FloodReportId = Guid.Empty;
-    //        return;
-    //    }
-
-    //    Reference = result.Reference;
-    //    _hasContactInformation = result.ContactRecords.Count > 0;
-    //    if (_hasContactInformation)
-    //    {
-    //        _userIds = result.ContactRecords.Select(c => c.ContactUserId).ToArray();
-    //    }
-    //}
-
     private async Task<int> LoadMediaItemCountAsync()
     {
-        if (_testFloodReportSourceId == Guid.Empty)
+        if (_floodReportSourceId == Guid.Empty)
         {
             return 0;
         }
-        return await mediaItemRepository.GetCountByReport(_testFloodReportSourceId, _cts.Token);
+        return await mediaItemRepository.GetCountByReport(_floodReportSourceId, _cts.Token);
     }
 }
