@@ -150,7 +150,7 @@ public partial class Confirmation(
             bool hasAccess = (_isAuthenticated && _isReader) || _isContactOwner || _isSessionOwner;
             if (!hasAccess)
             {
-                logger.LogWarning("Access denied to confirmation page for reference {Reference}. Session owner and contact owner could not be worked out.", Reference);
+                logger.LogWarning("Access denied to confirmation page. Session owner and contact owner could not be worked out.");
                 navigationManager.NavigateTo(GeneralPages.AccessDenied.Url, forceLoad: true);
                 return;
             }
