@@ -350,7 +350,7 @@ public partial class Test(
     }
     private async Task FloodReportSources_CreateTestConfirmation()
     {
-        var viewUriBase = new Uri($"{navigationManager.BaseUri}{GeneralPages.Test.Url}");
+        var viewUriBase = navigationManager.ToAbsoluteUri($"{FloodReportPages.Details.Url}/");
         var createResult = await floodReportSourceRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
         if (!createResult.IsSuccess)
         {
@@ -375,7 +375,7 @@ public partial class Test(
     private async Task Investigation_AddTestFloodReportSource()
     {
         // flood report source
-        var viewUriBase = new Uri(navigationManager.Uri);
+        var viewUriBase = navigationManager.ToAbsoluteUri($"{FloodReportPages.Details.Url}/");
         var createReportResult = await floodReportSourceRepository.Create(testService.TestData_EligibilityCheckDto, viewUriBase, _cts.Token);
         if (!createReportResult.IsSuccess)
         {
