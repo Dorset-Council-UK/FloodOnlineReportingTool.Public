@@ -32,6 +32,21 @@ public class EligibilityCheckRepository(
             .FirstOrDefaultAsync(ec => ec != null && ec.Id == eligibilityCheckId, ct);
     }
 
+    public async Task<EligibilityCheck?> ReportedByUser(string userId, string reference, CancellationToken ct)
+    {
+        var floodReportSourceReference = reference.ReplaceLineEndings("");
+        logger.LogInformation("Getting eligibility check by user ID and flood report source reference {Reference}", floodReportSourceReference);
+
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        return await context.ContactRecords
+            .AsNoTracking()
+            .Where(cr => cr.ContactUserId == userId)
+            .SelectMany(cr => cr.FloodReportSources)
+            .Where(frs => frs.EligibilityCheckId != null && frs.Reference == floodReportSourceReference)
+            .Select(frs => frs.EligibilityCheck)
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<EligibilityCheck?> GetById(Guid eligibilityCheckId, CancellationToken ct)
     {
         logger.LogInformation("Getting eligibility check by id {EligibilityCheckId}", eligibilityCheckId);

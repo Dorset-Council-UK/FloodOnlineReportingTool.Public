@@ -14,6 +14,11 @@ public interface IEligibilityCheckRepository
     /// </summary>
     Task<EligibilityCheck?> ReportedByUser(string userId, Guid eligibilityCheckId, CancellationToken ct);
 
+    /// <summary>
+    /// Get the eligibility check reported by the user
+    /// </summary>
+    Task<EligibilityCheck?> ReportedByUser(string userId, string reference, CancellationToken ct);
+
     Task<EligibilityCheck?> GetById(Guid id, CancellationToken ct);
     Task<EligibilityCheck?> GetByReference(string reference, CancellationToken ct);
 }
