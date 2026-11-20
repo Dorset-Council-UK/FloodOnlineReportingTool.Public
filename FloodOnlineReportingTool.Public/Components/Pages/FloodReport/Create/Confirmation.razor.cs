@@ -63,7 +63,7 @@ public partial class Confirmation(
                 _isReader = readerPolicyCheck.Succeeded;
                 logger.LogInformation("User is signed in, reader policy: {IsReader}", _isReader);
 
-                string? userId = authState.User.Oid;
+                string? userId = authState.User.UserId;
                 if (!string.IsNullOrWhiteSpace(userId) && !string.IsNullOrWhiteSpace(Reference))
                 {
                     // Check if the user has reported a flood report source
