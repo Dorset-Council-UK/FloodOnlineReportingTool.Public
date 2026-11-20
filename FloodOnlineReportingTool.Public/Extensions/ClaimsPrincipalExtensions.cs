@@ -1,8 +1,6 @@
 ﻿using Microsoft.Identity.Web;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Security.Claims;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 internal static class ClaimsPrincipalExtensions
 {
@@ -33,8 +31,7 @@ internal static class ClaimsPrincipalExtensions
         /// Get the display name from the claims
         /// </summary>
         /// <remarks>
-        ///     <para>GetDisplayName() from Microsoft.Identity.Web finds claims in the order preferred_username, http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name, name.</para>
-        ///     <para>We need name to be more important.</para>
+        ///     <para>GetDisplayName() from Microsoft.Identity.Web finds claims in the order name, http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name, preferred_username.</para>
         /// </remarks>
         internal string DisplayName => GetClaimValue(claimsPrincipal, ["name", ClaimTypes.Name, "preferred_username"]) ?? Unknown;
 
@@ -42,7 +39,7 @@ internal static class ClaimsPrincipalExtensions
         /// Get the email address from the claims
         /// </summary>
         /// <remarks>Checking the claims in the order http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress, emails, preferred_username</remarks>
-        internal string Email => GetClaimValue(claimsPrincipal, [ClaimTypes.Email, "emails", "preferred_username"]) ?? Unknown;
+        internal string Email => GetClaimValue(claimsPrincipal, [ClaimTypes.Email, "emails", "preferred_username"]) ?? string.Empty;
 
         /// <summary>
         /// Get the identity provider from the claims
@@ -59,14 +56,8 @@ internal static class ClaimsPrincipalExtensions
         internal bool IsAuthenticated => claimsPrincipal?.Identity?.IsAuthenticated ?? false;
 
         /// <summary>
-        /// Get the nameidentifier claim which is http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
+        /// Get the object ID (oid) claim from the identity provider
         /// </summary>
-        internal string UserId => claimsPrincipal?.GetNameIdentifierId() ?? Unknown;
-
-        /// <summary>
-        /// Gets the unique object ID associated with the <see cref="ClaimsPrincipal"/>.
-        /// </summary>
-        /// <remarks>Checking the claims in the order oid, http://schemas.microsoft.com/identity/claims/objectidentifier</remarks>
-        internal string? Oid => claimsPrincipal?.GetObjectId();
+internal string? UserId => claimsPrincipal?.GetObjectId();
     }
 }

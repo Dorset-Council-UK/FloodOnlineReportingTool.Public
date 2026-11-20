@@ -113,7 +113,7 @@ public partial class Index(
             return [];
         }
 
-        string? userId = authState.User.Oid;
+        string? userId = authState.User.UserId;
         if (userId is null)
         {
             return [];

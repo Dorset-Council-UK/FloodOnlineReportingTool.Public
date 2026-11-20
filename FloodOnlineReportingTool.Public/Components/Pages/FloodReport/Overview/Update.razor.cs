@@ -90,7 +90,7 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            userId = authState.User.Oid;
+            userId = authState.User.UserId;
         }
         if (userId is null)
         {
@@ -106,7 +106,7 @@ public partial class Update(
         }
 
         logger.LogDebug("Updating flood report source");
-        var viewBaseUri = new Uri($"{navigationManager.BaseUri}{FloodReportPages.Overview.Url}");
+        var viewBaseUri = navigationManager.ToAbsoluteUri($"{FloodReportPages.Details.Url}/");
         var status = Guid.Empty; // TODO: Decide what status is used when updating a flood report source from the overview page
         var updateResult = await floodReportSourceRepository.Update(userId, EligibilityCheckId, _updateModel.ToDto(), status, viewBaseUri, _cts.Token);
         if (!updateResult.IsSuccess)
@@ -131,7 +131,7 @@ public partial class Update(
         if (AuthenticationState is not null)
         {
             var authState = await AuthenticationState;
-            var userId = authState.User.Oid;
+            var userId = authState.User.UserId;
             if (userId is not null)
             {
                 EligibilityCheck? eligibilityCheck = await eligibilityCheckRepository.ReportedByUser(userId, EligibilityCheckId, _cts.Token);
