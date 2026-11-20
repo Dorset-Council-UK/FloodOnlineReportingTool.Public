@@ -75,20 +75,23 @@ else
                                     </strong>
                                 </div>
                             </li>
-                            <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
-                                <div class="govuk-task-list__name-and-hint">
+                            @if (_floodReportSourceId != Guid.Empty)
+                            {
+                                <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
+                                    <div class="govuk-task-list__name-and-hint">
 
-                                    <GdsLink Href="@($"{MediaPages.Home.Url}/{_floodReportSourceId}?back_url=confirmation")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Add photos or videos to your report</GdsLink>
-                                    <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
-                                        You can provide up to 10 photos, videos or documents to support your report.
+                                        <GdsLink Href="@($"{MediaPages.Home.Url}/{_floodReportSourceId}?back_url=confirmation")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Add photos or videos to your report</GdsLink>
+                                        <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
+                                            You can provide up to 10 photos, videos or documents to support your report.
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="govuk-task-list__status">
-                                    <strong class="govuk-tag govuk-tag--@(_mediaItemsCount == 0 ? "blue" : "green")" id="add-media-not-logged-in">
-                                        @(_mediaItemsCount == 0 ? "Incomplete" : "Complete")
-                                    </strong>
-                                </div>
-                            </li>
+                                    <div class="govuk-task-list__status">
+                                        <strong class="govuk-tag govuk-tag--@(_mediaItemsCount == 0 ? "blue" : "green")" id="add-media-not-logged-in">
+                                            @(_mediaItemsCount == 0 ? "Incomplete" : "Complete")
+                                        </strong>
+                                    </div>
+                                </li>
+                            }
                         }
 
                         @if (_isSessionOwner)
@@ -120,20 +123,23 @@ else
                                     </strong>
                                 </div>
                             </li>
-                            <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
-                                <div class="govuk-task-list__name-and-hint">
+                            @if (_floodReportSourceId != Guid.Empty)
+                            {
+                                <li class="govuk-task-list__item govuk-task-list__item--with-link" aria-describedby="add-media-not-logged-in">
+                                    <div class="govuk-task-list__name-and-hint">
 
-                                    <GdsLink Href="@($"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url + "/" + _floodReportSourceId.ToString())}")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Register/Login</GdsLink> to add photos or videos to your report
-                                    <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
-                                        You need to register for an account to provide photos for your report. This will also allow you to manage your report and subscriptions.
+                                        <GdsLink Href="@($"{AccountPages.SignIn.Url}?redirectUri={Uri.EscapeDataString(MediaPages.Home.Url + "/" + _floodReportSourceId.ToString())}")" NoVisitedState AdditionalCssClasses="govuk-task-list__link">Register/Login</GdsLink> to add photos or videos to your report
+                                        <div id="add-media-not-logged-in-login-hint" class="govuk-task-list__hint">
+                                            You need to register for an account to provide photos for your report. This will also allow you to manage your report and subscriptions.
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="govuk-task-list__status">
-                                    <strong class="govuk-tag govuk-tag--blue" id="add-media-not-logged-in">
-                                        Incomplete
-                                    </strong>
-                                </div>
-                            </li>
+                                    <div class="govuk-task-list__status">
+                                        <strong class="govuk-tag govuk-tag--blue" id="add-media-not-logged-in">
+                                            Incomplete
+                                        </strong>
+                                    </div>
+                                </li>
+                            }
                         }
                     </ul>
                 </GdsGridColumn>
