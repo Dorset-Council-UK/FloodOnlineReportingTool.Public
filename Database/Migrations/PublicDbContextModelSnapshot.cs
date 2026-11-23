@@ -1696,7 +1696,6 @@ namespace FloodOnlineReportingTool.Database.Migrations
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationPeakDepth", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedUtc")
@@ -1704,7 +1703,8 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.Property<string>("DepthLocation")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<Guid>("InvestigationId")
                         .HasColumnType("uuid");
@@ -1724,7 +1724,10 @@ namespace FloodOnlineReportingTool.Database.Migrations
 
                     b.HasIndex("IsPeakDepthKnownId");
 
-                    b.ToTable("InvestigationPeakDepths", "fortpublic");
+                    b.ToTable("InvestigationPeakDepths", "fortpublic", t =>
+                        {
+                            t.HasComment("Investigations peak depths");
+                        });
                 });
 
             modelBuilder.Entity("FloodOnlineReportingTool.Database.Models.Investigate.InvestigationServiceImpact", b =>
