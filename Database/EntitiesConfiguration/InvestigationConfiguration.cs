@@ -112,5 +112,9 @@ internal class InvestigationConfiguration : IEntityTypeConfiguration<Investigati
         builder
             .Navigation(o => o.PropertyInsured)
             .AutoInclude();
+
+        builder
+            .Navigation(o => o.PeakDepths)
+            .AutoInclude();
     }
 }
