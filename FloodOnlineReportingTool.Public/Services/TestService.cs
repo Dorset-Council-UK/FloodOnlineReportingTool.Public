@@ -132,38 +132,41 @@ internal sealed class TestService(
 
                 // Peak depth (RecordStatus)
                 PeakDepths = [
-                    new(
-                        investigationId,
-                        Database.Models.Status.RecordStatusIds.Yes,
-                        35,
-                        "Kitchen"
-                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes },
-                    new(
-                        investigationId,
-                        Database.Models.Status.RecordStatusIds.No,
-                        44,
-                        "Living Room"
-                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
-                    new(
-                        investigationId,
-                        Database.Models.Status.RecordStatusIds.NotSure,
-                        21,
-                        "Bathroom"
-                    ) { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
-                    new(
-                            investigationId,
-                            Database.Models.Status.RecordStatusIds.No,
-                            40,
-                            "Bedroom"
-                        )
-                    { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No },
-                    new(
-                            investigationId,
-                            Database.Models.Status.RecordStatusIds.NotSure,
-                            21,
-                            "Garage"
-                        )
-                    { IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure },
+                    new()
+                    {
+                        InvestigationId = investigationId,
+                        IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.Yes,
+                        PeakCentimetres = 35,
+                        DepthLocation = "Kitchen",
+                    },
+                    new()
+                    {
+                        InvestigationId = investigationId,
+                        IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No,
+                        PeakCentimetres = 44,
+                        DepthLocation = "Living Room",
+                    },
+                    new()
+                    {
+                        InvestigationId = investigationId,
+                        IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure,
+                        PeakCentimetres = 21,
+                        DepthLocation = "Bathroom",
+                    },
+                    new()
+                    {
+                        InvestigationId = investigationId,
+                        IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.No,
+                        PeakCentimetres = 40,
+                        DepthLocation = "Bedroom",
+                    },
+                    new()
+                    {
+                        InvestigationId = investigationId,
+                        IsPeakDepthKnownId = Database.Models.Status.RecordStatusIds.NotSure,
+                        PeakCentimetres = 21,
+                        DepthLocation = "Garage",
+                    },
                 ],
 
                 // Service impacts (FloodImpact's)
