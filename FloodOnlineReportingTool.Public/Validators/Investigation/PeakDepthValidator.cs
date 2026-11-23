@@ -39,15 +39,9 @@ public class PeakDepthValidator : AbstractValidator<PeakDepth>
             // Outside centimetres
             RuleFor(o => o.DepthLocation)
                 .NotEmpty()
-                .WithMessage("Enter the depth outside");
-
-            When(o => !string.IsNullOrWhiteSpace(o.DepthLocation), () =>
-            {
-                RuleFor(o => o.DepthLocation)
-                .NotEmpty()
-                .WithMessage("Enter the depth location");
-
-            });
+                .WithMessage("Enter the depth location")
+                .MaximumLength(200)
+                .WithMessage("Depth location must be 200 characters or less");
         });
     }
 }
