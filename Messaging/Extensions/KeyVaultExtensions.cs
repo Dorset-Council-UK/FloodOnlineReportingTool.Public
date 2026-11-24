@@ -13,23 +13,26 @@ internal static class KeyVaultExtensions
                 .GetSection(KeyVaultOptions.SectionName)
                 .Get<KeyVaultOptions>();
 
-            if (string.IsNullOrWhiteSpace(keyVaultOptions.SharedVaultName))
+            if (keyVaultOptions is null)
             {
                 return builder;
             }
 
-            builder.Configuration.AddAzureKeyVault(
-                new Uri($"https://{keyVaultOptions.SharedVaultName}.vault.azure.net/"),
-                new DefaultAzureCredential());
-
-            if (keyVaultOptions is null || string.IsNullOrWhiteSpace(keyVaultOptions.VaultName))
+            // This KeyVault has options shared over multiple projects
+            if (!string.IsNullOrWhiteSpace(keyVaultOptions.SharedVaultName))
             {
-                return builder;
+                builder.Configuration.AddAzureKeyVault(
+                    new Uri($"https://{keyVaultOptions.SharedVaultName}.vault.azure.net/"),
+                    new DefaultAzureCredential());
             }
 
-            builder.Configuration.AddAzureKeyVault(
-                new Uri($"https://{keyVaultOptions.VaultName}.vault.azure.net/"),
-                new DefaultAzureCredential());
+            // This KeyVault is specific to this project
+            if (!string.IsNullOrWhiteSpace(keyVaultOptions.VaultName))
+            {
+                builder.Configuration.AddAzureKeyVault(
+                    new Uri($"https://{keyVaultOptions.VaultName}.vault.azure.net/"),
+                    new DefaultAzureCredential());
+            }
 
             return builder;
         }
