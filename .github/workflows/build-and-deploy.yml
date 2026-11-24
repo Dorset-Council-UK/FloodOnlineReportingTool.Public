@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy - fort-dorset-public
+name: Build and deploy to Azure
 
 on:
   release:
@@ -76,7 +76,7 @@ jobs:
     needs: build
     environment: production
     env:
-      AZURE_WEBAPP_NAME: fort-dorset-public
+      AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
       AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
 
     permissions: 
@@ -89,6 +89,9 @@ jobs:
         run: |
           if ([string]::IsNullOrWhiteSpace($env:AZURE_RESOURCE_GROUP)) {
             throw 'Set the AZURE_RESOURCE_GROUP variable in the production GitHub environment.'
+          }
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_WEBAPP_NAME)) {
+            throw 'Set the AZURE_WEBAPP_NAME variable in the production GitHub environment.'
           }
 
       - name: Download artifact from build job
