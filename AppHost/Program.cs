@@ -3,13 +3,28 @@ using ServiceDefaults;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+const string topicSuffix = "-local";
+const string inboxSubscription = "fort-report-status-local";
+const string outboxSubscription = "fort-public-local";
+
 var serviceBus = builder.AddAzureServiceBus(ConnectionStringNames.ServiceBus)
     .RunAsEmulator();
 
-serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceCreated)
-    .AddServiceBusSubscription("test-subscription-1", "test-fort-public");
-serviceBus.AddServiceBusTopic(TopicNames.FloodReportSourceUpdated)
-    .AddServiceBusSubscription("test-subscription-2", "test-fort-public");
+// Outbound (published by Messaging OutboxWorker)
+serviceBus
+    .AddServiceBusTopic($"{TopicNames.FloodReportSourceCreated}{topicSuffix}")
+    .AddServiceBusSubscription("outbox-frs-created", outboxSubscription);
+serviceBus
+    .AddServiceBusTopic($"{TopicNames.FloodReportSourceUpdated}{topicSuffix}")
+    .AddServiceBusSubscription("outbox-frs-updated", outboxSubscription);
+
+// Inbound (consumed by Messaging InboxWorker)
+serviceBus
+    .AddServiceBusTopic($"{TopicNames.FloodReportExtraInfoRequest}{topicSuffix}")
+    .AddServiceBusSubscription("inbox-frs-extra-info-request", inboxSubscription);
+serviceBus
+    .AddServiceBusTopic($"{TopicNames.FloodReportSourceVerifyContact}{topicSuffix}")
+    .AddServiceBusSubscription("inbox-frs-verify-contact", inboxSubscription);
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "18-3.6")
@@ -51,6 +66,8 @@ builder.AddProject<Projects.FloodOnlineReportingTool_Public>("public-web")
 builder.AddProject<Projects.Messaging>("messaging")
     .WithReference(databasePublic)
     .WithReference(serviceBus)
+    .WithEnvironment("Messaging__TopicSuffix", topicSuffix)
+    .WithEnvironment("Inbox__SubscriptionName", inboxSubscription)
     .WaitFor(serviceBus)
     .WaitForCompletion(migrations);
 
