@@ -26,7 +26,6 @@ var identityOptions = builder.AddOptions_Required<MicrosoftIdentityOptions>(Cons
 builder.AddAuthentication();
 builder.Services.AddScoped<SessionStateService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
-builder.Services.AddScoped<VulnerabilityValidationContext>();
 
 builder.AddGovNotify();
 
