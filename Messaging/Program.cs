@@ -53,7 +53,9 @@ builder.Services.AddAzureClients(clientBuilder =>
         .AddServiceBusClient(serviceBusConnectionString)
         .ConfigureOptions(options =>
         {
-            options.TransportType = ServiceBusTransportType.AmqpWebSockets;
+            options.TransportType = serviceBusConnectionString.Contains("UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase)
+                ? ServiceBusTransportType.AmqpTcp
+                : ServiceBusTransportType.AmqpWebSockets;
         });
 });
 
