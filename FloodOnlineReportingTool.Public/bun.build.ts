@@ -106,9 +106,10 @@ async function compileSass() {
 async function copyAssets() {
 	console.log("📦 Copying assets...");
 
-	// Copy MapLibre GL CSS
+	// Copy MapLibre GL CSS and web workers
 	await Bun.write("./wwwroot/css/maplibre-gl.css", Bun.file("./node_modules/maplibre-gl/dist/maplibre-gl.css"));
-
+	await Bun.write("./wwwroot/js/workers/maplibre-gl-worker.mjs", Bun.file("./node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs"));
+	await Bun.write("./wwwroot/js/workers/maplibre-gl-shared.mjs", Bun.file("./node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs"))
 	// Favicons
 	await copyFaviconsDirectory("./Scripts/favicons", "./wwwroot/favicons");
 

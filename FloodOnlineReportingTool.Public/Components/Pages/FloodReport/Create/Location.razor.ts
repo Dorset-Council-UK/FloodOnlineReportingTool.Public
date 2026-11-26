@@ -1,5 +1,7 @@
 import proj4 from "proj4";
-import maplibregl, { Map, Marker, LngLat } from "maplibre-gl";
+import { Map, Marker, LngLat, MapMouseEvent, AttributionControl, NavigationControl, setWorkerUrl } from "maplibre-gl";
+
+setWorkerUrl(new URL('js/workers/maplibre-gl-worker.mjs', document.baseURI).toString());
 
 // Define the British National Grid projection for coordinate transformations
 proj4.defs(
@@ -38,7 +40,7 @@ export function setupMap(
     // Available styles: Road, Outdoor, Light, Night
     const styleUrl = `https://api.os.uk/maps/vector/v1/vts/resources/styles?srs=3857&key=${apiKey}`;
 
-    map = new maplibregl.Map({
+    map = new Map({
       container: element,
       style: styleUrl,
       center: [centreLng, centreLat],
@@ -53,13 +55,13 @@ export function setupMap(
 
     // Add custom attribution control with OS licence
     map.addControl(
-      new maplibregl.AttributionControl({
+      new AttributionControl({
         customAttribution: `&copy; Crown Copyright and database rights ${new Date().getFullYear()} OS ${osLicenceNumber}`,
       }),
     );
 
     // Add navigation controls
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.addControl(new NavigationControl(), "top-right");
 
     // Wait for map to load before adding marker and click handler
     map.on("load", () => {
@@ -114,7 +116,7 @@ function transformToBNG(lng: number, lat: number): [number, number] {
 /**
  * When the user clicks on the map, set the marker location and remember the coordinates.
  */
-function onMapClick(evt: maplibregl.MapMouseEvent) {
+function onMapClick(evt: MapMouseEvent) {
   if (!markerEnabled) return;
 
   const lngLat = evt.lngLat;
@@ -133,7 +135,7 @@ function setMarkerLocation(lngLat: LngLat) {
     return;
   }
 
-  marker = new maplibregl.Marker({
+  marker = new Marker({
     draggable: true,
     color: "#05476d", // Blue marker color
   })
