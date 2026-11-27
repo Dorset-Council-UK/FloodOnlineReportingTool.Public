@@ -12,7 +12,7 @@ public class ServiceImpactValidator : AbstractValidator<ServiceImpact>
             .NotEmpty()
             .WithMessage("Select if any services were impacted");
 
-        RuleFor(o => o.ImpactedServicesOptions)
+        RuleFor(o => o.ImpactedServices)
             .NotEmpty()
             .WithMessage("Select which services were impacted")
             .When(o => o.WereServicesImpactedId == RecordStatusIds.Yes);
